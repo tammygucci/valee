@@ -474,7 +474,7 @@ void fm1_cstart(void)
     clk320.state = clk320.state == CLK_ARMED || clk320.state == CLK_TRIPPED ? CLK_TRIPPED : CLK_NONE;
     clk320.why = 0;
     clk320.loop_mhz = 0;
-#if FELUCCA_CAST
+#if FELUCCA_CAST && defined(CAST_BOOT)            /* (cast.c in: the unit's build, not the browser's) */
     if (!(p3 & 0x40u))                          /* ((Vallée) a cast's restart is a soft reset (cast.c cast_flush): after
                                                  * any other (the switch: a power-on, R01) the mark is RAM left over, not
                                                  * a cast: no intro, the splash held 10 s for an editor, on one FM-1) */
