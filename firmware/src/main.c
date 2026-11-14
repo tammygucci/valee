@@ -306,8 +306,7 @@ static void fm1_main(void)
             draw_splash();                        /* ((Vallée) no intro after all (a failed start before): the splash, */
             boot_why_at('F', 1);                  /* why under it (MENU > ABOUT keeps it too) */
             len = 3000u;                          /* (long enough to read) */
-        } else
-            len = 3000u;                          /* ((Vallée) ANIM OFF or a cast: the splash and why, readable */
+        }
         while ((now = fm1_ms - t0) < len) {
             fm1_delay_ms(10);
             master_poll();
@@ -475,6 +474,12 @@ void fm1_cstart(void)
     clk320.state = clk320.state == CLK_ARMED || clk320.state == CLK_TRIPPED ? CLK_TRIPPED : CLK_NONE;
     clk320.why = 0;
     clk320.loop_mhz = 0;
+#if FELUCCA_CAST
+    if (!(p3 & 0x40u))                          /* ((Vallée) a cast's restart is a soft reset (cast.c cast_flush): after
+                                                 * any other (the switch: a power-on, R01) the mark is RAM left over, not
+                                                 * a cast: no intro, the splash held 10 s for an editor, on one FM-1) */
+        cast_boot = 0;
+#endif
     if (bootguard.pending && (p3 & 0x44u))     /* ((Vallée) a failed start: a watchdog (bit 2) or a soft reset (bit 6, a
                                                  * crash's reboot). A power-on, the power key's long press (bit 4), a
                                                  * supply dip: not (the FM-1's power key held at power-on reset it) */
