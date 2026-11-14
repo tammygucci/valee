@@ -290,27 +290,26 @@ static __attribute__((noinline)) AUDIO_RAM int perf_begin(uint32_t n)
     perf_act = pf.act;
     pf.dfb += clamp(((pf.act >> PF_DUB) & 1u ? DUB_FB : 0) - pf.dfb, -24, 120);   /* DUB's feedback: up in 0.2 s, down
                                                                                    * in 0.9 s (the echoes ring out) */
-    /* the filters: LPF from open down over a bar while its key is held, KNOB 1 left; HPF up, KNOB 1 right */
+    /* the filters: LPF closed while its key is held ((Vallée) at once), KNOB 1 left; HPF up, KNOB 1 right */
     m = perf_k[0];
     {
         uint32_t bar = 16u * pf.P, t;
         int32_t lt = PF_TOP, ht = 0;
         pf.lt = (pf.act & PF_BIT(PF_LPF)) ? pf.lt + n : 0u;
         pf.ht = (pf.act & PF_BIT(PF_HPF)) ? pf.ht + n : 0u;
-        if (pf.lt) {
-            t = pf.lt < bar ? pf.lt : bar;
-            lt = PF_TOP - (int32_t)((uint32_t)(PF_TOP - PF_LOW) / 64u * (t * 64u / bar));
-        }
+        (void)bar;
+        (void)t;
+        if (pf.lt)                                  /* ((Vallée) at once: closed while held, open when let go (was over a
+                                                     * bar) */
+            lt = PF_LOW;
         if (m < 0 && PF_TOP + m * (PF_TOP - PF_LOW) / 100 < lt)
             lt = PF_TOP + m * (PF_TOP - PF_LOW) / 100;
-        if (pf.ht) {
-            t = pf.ht < bar ? pf.ht : bar;
-            ht = (int32_t)((uint32_t)(PF_TOP - PF_LOW) / 64u * (t * 64u / bar));
-        }
+        if (pf.ht)                                  /* ((Vallée) at once, as the LPF) */
+            ht = PF_TOP - PF_LOW;
         if (m > 0 && m * (PF_TOP - PF_LOW) / 100 > ht)
             ht = m * (PF_TOP - PF_LOW) / 100;
-        pf.lc += clamp(lt - pf.lc, -192, 192);      /* ~45 ms over the range */
-        pf.hc += clamp(ht - pf.hc, -192, 192);
+        pf.lc += clamp(lt - pf.lc, -1536, 1536);    /* ((Vallée) ~6 ms over the range (was ~45): no click, no fade */
+        pf.hc += clamp(ht - pf.hc, -1536, 1536);
         for (k = 0; k < 3u; k++) {                  /* the coefficients, between two table rows */
             int32_t i = pf.lc >> 8, f = pf.lc & 255, j = pf.hc >> 8, g = pf.hc & 255;
             pf.lk[k] = (int16_t)(PF_SVF[i][k] + (((PF_SVF[i < 63 ? i + 1 : 63][k] - PF_SVF[i][k]) * f) >> 8));

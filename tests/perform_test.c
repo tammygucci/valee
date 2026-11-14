@@ -506,6 +506,13 @@ static int test_misc(void)
         run(120, 1, ev, 1, 100000);
         snprintf(what, sizeof what, "HPF held a bar: an 80 Hz sine down to %d of 30000", peak(out_l, 92000, 100000));
         bad += check(what, peak(out_l, 92000, 100000) < 3000);
+        snprintf(what, sizeof what, "(Vallée) HPF at once: down to %d of 30000 by 25 ms", peak(out_l, 1100, 3000));
+        bad += check(what, peak(out_l, 1100, 3000) < 3000);
+        ev[0].e = PF_LPF + 1;
+        test_signal(5000, 30000, 5000, 30000);
+        run(120, 1, ev, 1, 100000);
+        snprintf(what, sizeof what, "(Vallée) LPF at once: a 5 kHz sine down to %d of 30000 by 25 ms", peak(out_l, 1100, 3000));
+        bad += check(what, peak(out_l, 1100, 3000) < 3000);
         for (t = 0; t < NT; t++) {                 /* full scale square waves, past Q15 */
             in_l[t] = (t / 37u) & 1u ? 120000 : -120000;
             in_r[t] = (t / 53u) & 1u ? 120000 : -120000;
