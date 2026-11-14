@@ -275,7 +275,7 @@ static void fm1_main(void)
         boot_music();
     {   /* the splash; the pot followed (MIDI IN plays under it). (Vallée) the intro over it with its chime (ui_draw.c
          * intro_frame, chime.c), INTRO_MS; a button ends it. ANIM OFF, a crash recovered, a cast's restart: 400 ms */
-        uint32_t t0 = fm1_ms, len = 400u, last = 0xFFFFFFFFu, now;
+        uint32_t t0 = fm1_ms, len = 400u, last = 0xFFFFFFFFu, now, held = fm1_in.buttons;
         if (!bootguard.failed && !(ui_prefs & PREF_ANIM_OFF) && !CAST_AUDIO_LATE()) {
             len = INTRO_MS;                       /* ((Vallée) the intro unless the last start failed (bootguard: it
                                                    * died within its first 30 s, the intro's own included): not
@@ -283,7 +283,10 @@ static void fm1_main(void)
                                                    * on its battery) can still read WDT from an update long after */
             chime_start();
         } else if (!(ui_prefs & PREF_ANIM_OFF) && !CAST_AUDIO_LATE()) {
-            draw_splash();                        /* ((Vallée) no intro after all (a failed start before): the splash) */
+            char b[12];                           /* ((Vallée) no intro after all (a failed start before): the splash, */
+            draw_splash();                        /* the reset's bits and the count under it, small (to tell us why) */
+            hexs(b, ((uint32_t)fm1_boot.p3_rst << 8) | (bootguard.failed & 0xFFu));
+            draw_text_line(0, 226, 240, &AF_S, b + 4, T_DIM, T_BG, 1);
         }
         while ((now = fm1_ms - t0) < len) {
             fm1_delay_ms(10);
@@ -293,7 +296,8 @@ static void fm1_main(void)
                 last = now / 33u;
                 intro_frame(now);
             }
-            if (len == INTRO_MS && now > 300u && fm1_in.buttons) {
+            held &= fm1_in.buttons;               /* ((Vallée) a button held from power-on (the power key) never skips */
+            if (len == INTRO_MS && now > 300u && (fm1_in.buttons & ~held)) {
                 chime.on = 0;                     /* (skipped: the chime too) */
                 break;
             }
@@ -451,7 +455,9 @@ void fm1_cstart(void)
     clk320.state = clk320.state == CLK_ARMED || clk320.state == CLK_TRIPPED ? CLK_TRIPPED : CLK_NONE;
     clk320.why = 0;
     clk320.loop_mhz = 0;
-    if (bootguard.pending)
+    if (bootguard.pending && (p3 & 0x44u))     /* ((Vallée) a failed start: a watchdog (bit 2) or a soft reset (bit 6, a
+                                                 * crash's reboot). A power-on, the power key's long press (bit 4), a
+                                                 * supply dip: not (the FM-1's power key held at power-on reset it) */
         bootguard.failed++;
     bootguard.pending = 1;
     if (bootguard.failed >= 2u) {
