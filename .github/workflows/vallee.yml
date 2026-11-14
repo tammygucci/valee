@@ -43,8 +43,11 @@ jobs:
       - name: JieLi toolchain and AC79 SDK
         run: |
           tools/get_toolchain.sh "$(dirname "$JIELI_TOOLCHAIN")"
-          git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 \
-            https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$AC79_SDK"
+          for try in 1 2 3 4; do   # (gitee.com from GitHub's runners: now and then a timeout; try again)
+            git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 \
+              https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$AC79_SDK" && break
+            rm -rf "$AC79_SDK"; [ "$try" = 4 ] && exit 1; sleep $((try * 20))
+          done
 
       - name: Samples (CC0)
         run: '[ -d assets/samples-cc0 ] || python3 tools/fetch_cc0.py'
