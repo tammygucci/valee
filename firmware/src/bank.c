@@ -1763,6 +1763,40 @@ static void pool_clear_unused(void)
 }
 static uint32_t bank_gen(void) { return bk.gen; }
 
+/* ---- (Vallée) GEN's SONG (vgen.c gen_song): each part of each track kept as a pattern of its own ---- */
+static uint32_t gen_pool_free(void)                /* the patterns free (none waiting either) */
+{
+    uint32_t id, n = 0;
+    for (id = 0; id < BK_POOL; id++)
+        n += !pool_used(id) && pend_at(id) == PEND_N;
+    return n;
+}
+static int gen_keep_trk(uint32_t k, uint8_t *id)   /* track k's pattern as it is now, a new pattern: 0, its id in id */
+{
+    uint32_t n = pool_alloc();
+    if (n == NPAT || !bk_pack(bk_rec, &trk[k % NTRK]) || pat_keep_now(n, bk_rec))
+        return 1;
+    *id = (uint8_t)n;
+    return 0;
+}
+static int gen_flush(void)                         /* every waiting pattern written (stopped): 0 */
+{
+    while (pend_free() < PEND_N)
+        if (pat_flush_one())
+            return 2;
+    bk.gen++;
+    return 0;
+}
+static int gen_load(uint32_t k, uint32_t id) { return pat_load(&trk[k % NTRK], id % BK_POOL); }
+static void gen_unkeep(uint32_t id)                /* pattern id cleared, nothing naming it (stopped): GEN's undo */
+{
+    id %= BK_POOL;
+    if (!BK_ON || transport_busy() || pool_refs(id) || !pool_used(id))
+        return;
+    memset(bk_rec, 0, BK_REC);
+    (void)pat_keep_now(id, bk_rec);
+}
+
 /* ---- (phase 5) SEQ > SONG (ui.c sg; ui_input.c sends OCT+ OCT- EDIT here): the selected track's entry picked ---- */
 /* "T2 C" (b: 8 bytes) */
 static void song_tag(char *b, uint32_t k, uint32_t e)

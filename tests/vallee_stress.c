@@ -118,6 +118,17 @@ static void vs_gen_fuzz(uint32_t rounds)
             gen_back();
             vs_check_tracks(r);
         }
+        if (vs_n(16) == 0u) {                               /* (PART SONG: the parts as patterns, the lists) */
+            gen.v[GK_PART] = GP_SONG;
+            gen_oct();
+            vs_check_tracks(r);
+            if (vs_n(2) == 0u)
+                vs_play(r, 40u + vs_n(200));
+            if (vs_n(2) == 0u) {
+                gen_back();
+                vs_check_tracks(r);
+            }
+        }
         if (vs_n(6) == 0u)
             vs_play(r, 40u + vs_n(200));
         if (vs_n(8) == 0u) {                                /* drawn: GEN's windows, HOME with the creature box */

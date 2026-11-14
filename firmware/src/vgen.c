@@ -26,8 +26,8 @@ static const char *const GEN_STYLE[GS_N] = {"AETHER", "LOTUS", "ZETA", "ORACLE",
                                             "ASTRAL", "HEX", "OBELISK", "SERAPH", "WRAITH"};
 enum { GV_DARK, GV_HAZY, GV_WARM, GV_BRIGHT, GV_WEIRD, GV_N };
 static const char *const GEN_VIBE[GV_N] = {"DARK", "HAZY", "WARM", "BRIGHT", "WEIRD"};
-enum { GP_LOOP, GP_INTRO, GP_VERSE, GP_CHORUS, GP_BRIDGE, GP_OUTRO, GP_N };
-static const char *const GEN_PART[GP_N] = {"LOOP", "INTRO", "VERSE", "CHORUS", "BRIDGE", "OUTRO"};
+enum { GP_LOOP, GP_INTRO, GP_VERSE, GP_CHORUS, GP_BRIDGE, GP_OUTRO, GP_SONG, GP_N };   /* ((Vallée) SONG: gen_song */
+static const char *const GEN_PART[GP_N] = {"LOOP", "INTRO", "VERSE", "CHORUS", "BRIDGE", "OUTRO", "SONG"};
 static const char *const GEN_AMT[4] = {"OFF", "LITE", "ON", "BUSY"};
 static const char *const GEN_NOTE[12] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 enum { GR_BASS, GR_KEYS, GR_LEAD, GR_DRUMS, GR_COLOR, GR_PERC, GR_NROLE };   /* the tracks, T1 .. T6 */
@@ -45,7 +45,8 @@ static struct {
     uint8_t nseq;                /* the undo copies GEN took (useq), the newest */
     uint16_t useq[NTRK];
     int16_t g_was[8];            /* the globals as they were (OCT-: back) */
-} gen = {{0, 0, GV_HAZY, 60, GP_LOOP, 0, 0, 0, 2, 2, 2, 2, 2, 40, 0, 35}, 1, 0, 0, 0, 0, {0}, {0}};
+    uint8_t song;                /* (Vallée) the last write a SONG (gen_song): its patterns gen_sid, the lists gen_lwas */
+} gen = {{0, 0, GV_HAZY, 60, GP_LOOP, 0, 0, 0, 2, 2, 2, 2, 2, 40, 0, 35}, 1, 0, 0, 0, 0, {0}, {0}, 0};
 static const uint8_t GEN_MAX[GK_N] = {GS_N - 1, 0, GV_N - 1, 100, GP_N - 1, 12, 121, 1, 3, 3, 3, 3, 3, 100, 101, 100};
 static const uint8_t GEN_DEF[GK_N] = {0, 0, GV_HAZY, 60, GP_LOOP, 0, 0, 0, 2, 2, 2, 2, 2, 40, 0, 35};
 static void gen_reset(void)                            /* the knobs as at power-on (TEMPO, KEY, SWING: AUTO) */
@@ -1216,11 +1217,123 @@ static void gen_write(void)
 }
 
 /* OCT+: write (again: the next seed, when nothing was turned) */
+/* ---- (Vallée) PART SONG: the five parts written one after another, each track's kept as a pattern of its own
+ * (bank.c), and each track's list made the song: INTRO VERSE CHORUS VERSE CHORUS BRIDGE CHORUS OUTRO, SONG ONCE. A
+ * track whose role is OFF keeps its list and its pattern. OCT- puts the lists, the tracks and the pool back ---- */
+static uint32_t gen_pool_free(void);                    /* (bank.c) */
+static int gen_keep_trk(uint32_t k, uint8_t *id);
+static int gen_flush(void);
+static int gen_load(uint32_t k, uint32_t id);
+static void gen_unkeep(uint32_t id);
+#define GEN_NPART 5u                                    /* INTRO .. OUTRO */
+#define GEN_NOID 0xFFu                                  /* (no pattern) */
+static const uint8_t GEN_ARR[8] = {GP_INTRO, GP_VERSE, GP_CHORUS, GP_VERSE, GP_CHORUS, GP_BRIDGE, GP_CHORUS, GP_OUTRO};
+static uint8_t gen_sid[GR_NROLE][GEN_NPART];            /* each part's pattern a track (.bss: the pool is full) */
+static uint8_t gen_lwas[sizeof lists];                  /* the lists as they were */
+static void gen_pid_back(void)                          /* each track's pattern id as GEN's copy of it has it */
+{
+    uint32_t j;
+    for (j = 0; j < gen.nseq; j++) {
+        int32_t i = undo_find(gen.useq[j]);
+        if (i >= 0 && (undo_ring[i].what & UNDO_PAT))
+            trk_pid[(undo_ring[i].trk - 1u) % NTRK] = undo_ring[i].pid;
+    }
+}
+static void gen_song_drop(void)                         /* the song's lists and patterns gone (its copies stay) */
+{
+    uint32_t k, p;
+    fm1_irq_off();
+    memcpy(&lists, gen_lwas, sizeof lists);
+    fm1_irq_on();
+    gen_pid_back();
+    for (k = 0; k < GR_NROLE; k++)
+        for (p = 0; p < GEN_NPART; p++)
+            if (gen_sid[k][p] != GEN_NOID)
+                gen_unkeep(gen_sid[k][p]);
+    memset(gen_sid, GEN_NOID, sizeof gen_sid);
+    (void)gen_flush();
+    gen.song = 0;
+}
+static int gen_song(void)                               /* 0 written; 1 not (said) */
+{
+    uint32_t k, p, e, n = 0;
+    char b[24];
+    for (k = 0; k < GR_NROLE; k++)
+        n += gen_role_on(k) != 0;
+    if (!n) {
+        ui_say("NOTHING ", "TO WRITE");
+        return 1;
+    }
+    if (transport_busy())
+        transport_stop_now();
+    bank_poll();
+    if (gen.song && gen.made && gen_copies_top())
+        gen_song_drop();                                /* (OCT+ again: the last song's patterns given back first) */
+    else {
+        gen.song = 0;
+        memcpy(gen_lwas, &lists, sizeof lists);
+        memset(gen_sid, GEN_NOID, sizeof gen_sid);
+    }
+    if (gen_pool_free() < GEN_NPART * n) {
+        str_cpy(b, "NEED ", sizeof b);
+        fmt_int(b + 5, (int32_t)(GEN_NPART * n));
+        str_cpy(b + str_len(b), " FREE", sizeof b - str_len(b));
+        ui_way("PATTERNS FULL", b);
+        return 1;
+    }
+    gen.song = 1;                                       /* (from here OCT- gives back what was made) */
+    for (p = 0; p < GEN_NPART; p++) {
+        gen.v[GK_PART] = (uint8_t)(GP_INTRO + p);
+        gen_write();
+        for (k = 0; k < GR_NROLE; k++)
+            if (gen_role_on(k) && gen_keep_trk(k, &gen_sid[k][p])) {
+                gen.v[GK_PART] = GP_SONG;
+                ui_way("PATTERNS FULL", WAY_PATTERNS);
+                return 1;
+            }
+    }
+    gen.v[GK_PART] = GP_SONG;
+    if (gen_flush()) {
+        ui_way("STORAGE ERROR", "");
+        return 1;
+    }
+    fm1_irq_off();
+    for (k = 0; k < GR_NROLE; k++) {
+        if (!gen_role_on(k))
+            continue;
+        for (e = 0; e < NENT; e++) {
+            lists.ent[k][e][0] = (uint8_t)(e < NELEM(GEN_ARR) ? gen_sid[k][GEN_ARR[e] - GP_INTRO] + 1u : 0u);
+            lists.ent[k][e][1] = 0;
+            lists.snd[k][e][0] = lists.snd[k][e][1] = 0;
+        }
+        lists.cur[k] = 0;
+    }
+    lists.song = SONG_ONCE;
+    fm1_irq_on();
+    for (k = 0; k < GR_NROLE; k++)
+        if (gen_role_on(k))
+            (void)gen_load(k, gen_sid[k][0]);           /* (the tracks on the INTRO) */
+    ui.force = 1;
+    return 0;
+}
+
 static void gen_oct(void)
 {
     char b[24];
     if (gen.made && !gen.dirty)
         gen.seed = (uint16_t)(gen.seed % 999u + 1u);
+    if (gen.v[GK_PART] % GP_N == GP_SONG) {
+        if (!gen_song()) {
+            str_cpy(b, GEN_STYLE[gen.v[GK_STYLE] % GS_N], sizeof b);
+            str_cpy(b + str_len(b), " SONG #", sizeof b - str_len(b));
+            fmt_int(b + str_len(b), gen.seed);
+            ui_say(b, "  PLAY");
+        }
+        return;
+    }
+    if (gen.song && gen.made && gen_copies_top())
+        gen_song_drop();                                /* (a part again after a SONG: the song's patterns back) */
+    gen.song = 0;
     gen_write();
     str_cpy(b, GEN_STYLE[gen.v[GK_STYLE] % GS_N], sizeof b);
     str_cpy(b + str_len(b), " #", sizeof b - str_len(b));
@@ -1233,6 +1346,14 @@ static int gen_back(void)
     uint32_t i;
     if (!gen.made || !gen_copies_top())
         return 0;
+    if (gen.song) {                                     /* ((Vallée) a SONG: its lists, its patterns back first) */
+        if (transport_busy())
+            transport_stop_now();
+        fm1_irq_off();
+        memcpy(&lists, gen_lwas, sizeof lists);
+        fm1_irq_on();
+        gen_pid_back();
+    }
     for (i = 0; i < gen.nseq; i++) {
         undo_t *c = &undo_ring[(undo_top + UNDO_N - undo_back) % UNDO_N];
         if (!undo_swap(c))
@@ -1241,6 +1362,15 @@ static int gen_back(void)
     }
     for (i = 0; i < NELEM(GEN_G); i++)
         song.g[GEN_G[i]] = gen.g_was[i];
+    if (gen.song) {
+        uint32_t k, p;
+        for (k = 0; k < GR_NROLE; k++)
+            for (p = 0; p < GEN_NPART; p++)
+                if (gen_sid[k][p] != GEN_NOID)
+                    gen_unkeep(gen_sid[k][p]);
+        (void)gen_flush();
+        gen.song = 0;
+    }
     gen.made = 0;
     gen.nseq = 0;
     ui_say("PUT BACK ", "AS BEFORE GEN");

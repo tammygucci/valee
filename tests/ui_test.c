@@ -10402,9 +10402,49 @@ static int test_gen(void)
         ui_prefs |= PREF_BPM_LOCK;
         bad += check("(Vallée) GEN: BPM LOCK OFF: SHIFT + SELECT on HOME opens it (SELECT alone: the tempo)", ok);
     }
+    {   /* (Vallée) PART SONG: five parts, each track's its own patterns, the lists the song; again: none more taken;
+         * OCT-: the lists, the tracks and the pool as before */
+        uint8_t l0[sizeof lists];
+        uint32_t f0, e, j, sd;
+        ui_power_on();
+        ui_prefs |= PREF_BPM_LOCK;
+        go_home();
+        gen.made = 0; gen.nseq = 0; gen.song = 0; gen.win = 0;
+        for (k = 0; k < GK_N; k++) gen.v[k] = GEN_DEF[k];
+        trk[0].step[5] = mine;
+        memcpy(l0, &lists, sizeof lists);
+        f0 = gen_pool_free();
+        turn(EN_SELECT, 1);
+        gen.v[GK_PART] = GP_SONG;
+        press(B_OCTUP);
+        ok = gen.song && lists.song == SONG_ONCE && gen_pool_free() + 30u == f0 && !song.playing;
+        for (k = 0; k < NTRK; k++) {
+            for (e = 0; e < 8u; e++)
+                ok &= lists.ent[k][e][0] != 0 && lists.ent[k][e][1] == 0;
+            ok &= !lists.ent[k][8][0] && lists.cur[k] == 0;
+            ok &= lists.ent[k][1][0] == lists.ent[k][3][0] && lists.ent[k][2][0] == lists.ent[k][4][0] &&
+                  lists.ent[k][2][0] == lists.ent[k][6][0];
+            for (e = 0; e < 8u; e++)                      /* (five patterns, all different ids) */
+                for (j = 0; j < 8u; j++)
+                    if (GEN_ARR[e] != GEN_ARR[j]) ok &= lists.ent[k][e][0] != lists.ent[k][j][0];
+            ok &= trk_pid[k] == lists.ent[k][0][0];
+        }
+        bad += check("(Vallée) GEN SONG: 30 patterns, each track's list INTRO VERSE CHORUS VERSE CHORUS BRIDGE CHORUS "
+                     "OUTRO, SONG ONCE, the tracks on the INTRO", ok);
+        sd = gen.seed;
+        press(B_OCTUP);
+        bad += check("(Vallée) GEN SONG: OCT+ again: the next seed, the last song's patterns given back (30 taken, no more)",
+                     gen.seed == sd % 999u + 1u && gen_pool_free() + 30u == f0 && gen.song);
+        song.playing = 0;
+        press(B_OCTDN);
+        bad += check("(Vallée) GEN SONG: OCT-: the lists, the tracks and the pool as before",
+                     !gen.song && !memcmp(l0, &lists, sizeof lists) && gen_pool_free() == f0 &&
+                     trk[0].step[5].note[0] == 41u);
+        gen.v[GK_PART] = GP_LOOP;
+    }
     ok = 1;                                               /* every style, part and vibe, a few seeds and amounts */
     for (st = 0; st < GS_N && ok; st++)
-        for (part = 0; part < GP_N && ok; part++)
+        for (part = 0; part < GP_SONG && ok; part++)
             for (vibe = 0; vibe < GV_N && ok; vibe++)
                 for (seed = 1; seed <= 3u && ok; seed++) {
                     ui_power_on();

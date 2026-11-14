@@ -52,7 +52,7 @@ HOME.
 | Page | KNOB 1 | KNOB 2 | KNOB 3 | KNOB 4 |
 |---|---|---|---|---|
 | 1 | STYLE | SEED (1–999) | VIBE (DARK HAZY WARM BRIGHT WEIRD) | ENERGY |
-| 2 | PART (LOOP INTRO VERSE CHORUS BRIDGE OUTRO) | KEY (AUTO, C … B) | TEMPO (AUTO, 60–180) | SOUNDS (NEW / KEEP) |
+| 2 | PART (LOOP INTRO VERSE CHORUS BRIDGE OUTRO SONG) | KEY (AUTO, C … B) | TEMPO (AUTO, 60–180) | SOUNDS (NEW / KEEP) |
 | 3 | DRUMS | BASS | KEYS | LEAD |
 | 4 | COLOR | COMPLEX | SWING (AUTO, 0–100) | HUMAN |
 
@@ -84,7 +84,14 @@ key, scale, tempo and its chords, for example `Am9 Dm9 Cmaj9 Bm7b5 E9`.
 Each part is four bars (64 steps). Everything is ordinary steps and ordinary sounds, so open SEQ and NOTES and make it
 your own.
 
-**Making a whole song.** Keep the seed and the style, step through PART (INTRO, VERSE, CHORUS, BRIDGE, OUTRO), and
+**A whole song in one press.** Set PART to **SONG** and press OCT+. GEN writes all five parts (INTRO, VERSE, CHORUS,
+BRIDGE, OUTRO), keeps each track's part as a pattern of its own (30 patterns: SAVE > PATTERNS needs that many free),
+and makes every track's list the song: INTRO, VERSE, CHORUS, VERSE, CHORUS, BRIDGE, CHORUS, OUTRO, with SONG set to
+ONCE. Press PLAY: it plays through once (32 bars) and stops at the top. OCT+ again writes the next seed's song in
+place of it (its patterns given back first); OCT− puts the lists, the tracks and the patterns back as they were. A
+track whose role is OFF keeps its own list and pattern. Edit any part afterwards on SEQ > SONG and NOTES.
+
+**Making a song part by part.** Keep the seed and the style, step through PART (INTRO, VERSE, CHORUS, BRIDGE, OUTRO), and
 write each one. A seed keeps its key, tempo, sounds and hook across parts.
 
 GEN writes into each track's current pattern, so keep a part before writing the next. Skiff's song mode works track
