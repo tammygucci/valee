@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* (Skiff XENO) THEME XENO: the void between the stars. HOME is a tape machine (after the OP-1's tape, as ORBIT's and
- * KARMA's HOMEs are): two reels whose hubs are turning hexagrams, the tape running from the left reel to the right one
+ * KARMA's HOMEs are): two reels whose hubs are turning pentagrams, the tape running from the left reel to the right one
  * as the pattern plays (the left pack shrinks, the right one grows), a head at the middle, and on the head the
  * selected track's alien, twice its size, singing on its notes. Under the deck a lane per track (DESIGN.md rule 10:
  * its number, never the colour alone), each with its engine's alien, its sound's name, and its steps on a strip of
@@ -98,10 +98,11 @@ static void xe_dots(int32_t cx, int32_t cy, int32_t r, uint32_t n, uint32_t ph, 
     }
 }
 
-/* a reel: its rim, the tape wound on it (pack px from the middle), the hub a hexagram turned by ph, a ring of twelve */
+/* a reel: its rim, the tape wound on it (pack px from the middle), the hub ((Vallée) a pentagram in its circle, a
+ * sigil) turned by ph, a ring of twelve */
 static void xe_reel(int32_t cx, int32_t cy, int32_t r, int32_t pack, uint32_t ph, uint16_t tape)
 {
-    int32_t hr = r / 2, px[6], py[6];
+    int32_t hr = r / 2, px[5], py[5];
     uint32_t k;
     xe_disc(cx, cy, r, T_SURF);
     if (pack > hr)
@@ -110,13 +111,14 @@ static void xe_reel(int32_t cx, int32_t cy, int32_t r, int32_t pack, uint32_t ph
     xe_ring(cx, cy, r, T_MID);
     xe_dots(cx, cy, r - 2, 12u, ph / 3u, T_DIM);           /* (the zodiac's twelve, slower than the hub) */
     xe_disc(cx, cy, hr, T_BG);
-    for (k = 0; k < 6u; k++) {
-        uint32_t a = ph + k * 0x2AAAAAABu;
-        px[k] = cx + (hr - 1) * QK_COS(a) / 32767;
-        py[k] = cy + (hr - 1) * QK_SIN(a) / 32767;
+    xe_ring(cx, cy, hr - 1, ux_mix(T_BG, T_THEME, 55));    /* (the sigil's circle) */
+    for (k = 0; k < 5u; k++) {
+        uint32_t a = ph + k * 858993459u;                  /* (a fifth of a turn) */
+        px[k] = cx + (hr - 2) * QK_COS(a) / 32767;
+        py[k] = cy + (hr - 2) * QK_SIN(a) / 32767;
     }
-    for (k = 0; k < 6u; k++)                               /* the two triangles: 0 2 4, 1 3 5 */
-        xe_line(px[k], py[k], px[(k + 2u) % 6u], py[(k + 2u) % 6u], k & 1u ? T_THEME : ux_mix(T_THEME, T_TEXT, 50));
+    for (k = 0; k < 5u; k++)                               /* the pentagram: each point to the one two on */
+        xe_line(px[k], py[k], px[(k + 2u) % 5u], py[(k + 2u) % 5u], k & 1u ? T_THEME : ux_mix(T_THEME, T_TEXT, 50));
     cv_pset(cx, cy, T_TEXT);
 }
 
