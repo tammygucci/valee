@@ -80,6 +80,21 @@ static void hexs(char *b, uint32_t v)
     b[8] = 0;
 }
 
+/* (Vallée) under a splash shown in the intro's place, small: "A" ANIM OFF, "C" a cast's restart, "F" bootguard's
+ * failed starts, "R" the reset's bits (P33 RST_SRC), "P" CPU CLOCK's state: what the boot read */
+static void boot_why(void)
+{
+    char b[24], *q = b;
+    uint32_t r = fm1_boot.p3_rst;
+    *q++ = 'A'; *q++ = (char)('0' + ((ui_prefs & PREF_ANIM_OFF) != 0u)); *q++ = ' ';
+    *q++ = 'C'; *q++ = (char)('0' + (CAST_AUDIO_LATE() != 0)); *q++ = ' ';
+    *q++ = 'F'; *q++ = (char)('0' + (bootguard.failed % 10u)); *q++ = ' ';
+    *q++ = 'R'; *q++ = "0123456789ABCDEF"[(r >> 4) & 15u]; *q++ = "0123456789ABCDEF"[r & 15u]; *q++ = ' ';
+    *q++ = 'P'; *q++ = (char)('0' + clk320.state % 10u);
+    *q = 0;
+    draw_text_line(0, 226, 240, &AF_S, b, T_INK, T_BG, 1);
+}
+
 static void fm1_fault(const fm1_crash_t *c)
 {
     char b[12];
@@ -182,8 +197,10 @@ static void fm1_main(void)
     lcd_init();
     if (!(ui_prefs & PREF_ANIM_OFF) && !CAST_AUDIO_LATE())   /* ((Vallée) the intro will play: its first frame (the */
         intro_frame(0);                                 /* void), not the splash card flashing before it) */
-    else
+    else {
         draw_splash();                                  /* ui_draw.c (1.1.5) */
+        boot_why();                                     /* ((Vallée) why, small) */
+    }
     if (felucca_dbg.magic != DBG_MAGIC) {
         memset(&felucca_dbg, 0, sizeof felucca_dbg);
         felucca_dbg.magic = DBG_MAGIC;
@@ -283,10 +300,8 @@ static void fm1_main(void)
                                                    * on its battery) can still read WDT from an update long after */
             chime_start();
         } else if (!(ui_prefs & PREF_ANIM_OFF) && !CAST_AUDIO_LATE()) {
-            char b[12];                           /* ((Vallée) no intro after all (a failed start before): the splash, */
-            draw_splash();                        /* the reset's bits and the count under it, small (to tell us why) */
-            hexs(b, ((uint32_t)fm1_boot.p3_rst << 8) | (bootguard.failed & 0xFFu));
-            draw_text_line(0, 226, 240, &AF_S, b + 4, T_DIM, T_BG, 1);
+            draw_splash();                        /* ((Vallée) no intro after all (a failed start before): the splash, */
+            boot_why();                           /* why under it, small */
         }
         while ((now = fm1_ms - t0) < len) {
             fm1_delay_ms(10);
