@@ -1,0 +1,97 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# (Vallée) Build everything on GitHub: the FM-1 firmware package (.fwsc), the browser emulator and the site
+# (installer, editor, Learn, Try) on GitHub Pages. Run it from the Actions tab (Run workflow), or push a tag v*.
+# Settings > Pages > Source: GitHub Actions, once, for the deploy step.
+name: Vallée build
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "release version (X.Y-suffix, one digit each)"
+        default: "2.6-vallee"
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: vallee-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      REL: ${{ github.event.inputs.release || '2.6-vallee' }}
+      JIELI_TOOLCHAIN: ${{ github.workspace }}/../jieli/toolchain
+      AC79_SDK: ${{ github.workspace }}/../fw-AC79_AIoT_SDK
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld xz-utils
+          pip3 install --break-system-packages Pillow fonttools || pip3 install Pillow fonttools
+
+      - name: JieLi toolchain and AC79 SDK
+        run: |
+          tools/get_toolchain.sh "$(dirname "$JIELI_TOOLCHAIN")"
+          git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 \
+            https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$AC79_SDK"
+
+      - name: Samples (CC0)
+        run: '[ -d assets/samples-cc0 ] || python3 tools/fetch_cc0.py'
+
+      - name: Firmware (the development build the tests read)
+        run: ./build.sh
+
+      - name: Tests (host, UI, web)
+        run: sh tests/run_tests.sh
+
+      - name: Firmware (release)
+        run: ./build.sh --release "$REL"
+
+      - name: Browser emulator (clang, no Emscripten), its tests, the one-file page
+        run: |
+          EMU_PREVIEW=0 EMU_VERSION="v$REL" web/emu/build_clang.sh
+          node web/emu/emu_test.mjs build/emu/felucca.wasm
+          python3 web/emu/bundle_single.py build/vallee-web.html
+
+      - name: Site
+        run: python3 web/make_site.py "build/vallee-$REL.fwsc" "$REL" site
+
+      - name: Keep the release files
+        uses: actions/upload-artifact@v4
+        with:
+          name: vallee-${{ env.REL }}
+          path: |
+            build/release-${{ env.REL }}/
+            build/vallee-web.html
+
+      - name: Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: GitHub release (tags)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/release-${{ env.REL }}/*
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
+"""Target-side cost estimate of the hot DSP code, from the pi32v2 objdump listing tools/build.py writes
+(build/felucca.dis). For each engine's render function and the audio ISR: the instructions
+inside loops (every address range closed by a backward branch: the per-sample loops and what they
+contain), and the hardware divides and calls in them. cost = the loop instructions, each weighted 4 per
+level of nesting (an inner loop runs several times per sample) and 1 + 8 for a divide (many cycles). A static count, not a cycle count: it changes only when the compiled code changes,
+so it is exact run to run, and it catches a render loop that grew (more work per sample, a new divide,
+something not inlined any more). Compared with tests/target_budget.txt at +10 %. The host
+CPU check (regress.c) is the primary one; this one sees the target compiler's code.
+  tests/target_budget.py [DIS [BUDGET]]      BUDGET_UPDATE=1 rewrites BUDGET"""
+import os
+import re
+import sys
+
+FUNCS = ["analog_render", "digital_render", "digital_render_legacy", "digital_render_custom", "phase_render", "lofi_render", "sample_render", "formant_render",
+         "trio_render", "trio_pass", "wheel_render", "wheel_block",
+         "grain_render", "grain_block", "phys_render", "drum_render", "drumx_render", "dx_run",   # (Skiff) DRUM-X: eng_drumx.c, drumx_voice.c
+         "noise_render", "fm6_render", "fm6_op_run", "fm6_op_fb", "px_modal_block", "px_modal_run", "px_memb_block",
+         "px_string_excite", "px_string_run", "px_symp_run",
+         "dv_metal_run", "dv_kick_run", "dv_snare_run", "dv_clap_run", "dv_hat_run", "dv_tom_run",   # drum_voice.c
+         "dv_rim_run", "dv_bell_run", "dv_cym_run", "dv_out", "dv_metal_mix",
+         # ((2.5) slicer_track: inlined into mix_part, which runs from RAM (fx.c AUDIO_RAM, flatten): counted there)
+         "slice_render", "slc_rev",                          # SLICE (eng_slice.c): the render, the reverse windows
+         "fm1_alnk0_irq", "fm1_timer5_irq",               # the audio ISR; TIMER5: the key / LED scan (hal/fm1_input.h)
+         "events_block", "keyboard_block",                 # ((2.2) a block's events, the keys' changes: out of the audio
+                                                           # ISR's own (seq.c), measured here
+         "ep1_tx",                                         # ((2.2) MIDI OUT's sender (usb.c): TIMER5, two callers now
+         "uac_tap48",                                       # the USB audio input at 48 kHz: the 44.1 -> 48 resampler (usb.c)
+         "click_render",                                    # the metronome's click (click.c), while it sounds
+         "mod_begin", "mod_voice", "mod_end",                 # the modulation matrix (mod.c), called when active
+         "perf_begin", "perf_mute", "perf_pre", "perf_block", "perf_master",   # the FX layer (perform.c), when busy
+         "perf_gate", "perf_dub",                         # (Skiff phase 9) its GATE, DUB (FLANGE / VINYL: perf_mdl, a
+                                                          # sample a call, no loop: as perf_harm, not here)
+         "duck_block", "duck_apply",                       # (Skiff) ducking (duck.c): each block; a ducked track
+         "launch_step", "launch_swap",                     # (Skiff) live switching (launch.c): a staged pattern
+         "throw_on", "throw_off",                         # (Skiff) throws (throw.c): while one is out
+         "rev_room", "rev_spring",                # the reverb bus (fx.c): REVERB TYPE ROOM / SPRING
+         "dist_hard", "dist_fold", "dist_crush",  # (Skiff phase 9) FX > DRIVE's TYPEs (fx.c), on a track that uses one
+         "dist_fuzz",                             # ((2.0) INSERT's shapers; CRUSH was dist_bits)
+         "rev_hall", "rev_side_mix", "cho_mode",  # REVERB TYPE HALL ((Skiff #19) Felucca's) and its stereo; (Skiff
+                                                  # phase 9) CHORUS MODE / FEEDBACK (fx.c)
+         "mix_part", "mix_split",                 # (Skiff 1.3) a track's block (fx.c), on either core; the split
+         "track_insert", "ins_drive", "ins_swept",   # (Skiff 1.3) FX > INSERT (fx.c), on a track that uses one
+         "ins_filter",                               # ((2.5) its FILTR)
+         "strum_tick", "strum_flush",                # ((2.5) SCL > CHORD's STRUM, voice.c: each block's start and end)
+         "mix_spread", "esync_coef", "mod_depth",   # (Skiff 1.3) SPREAD (fx.c), ENV SYNC (voice.c), MOD DEPTH (mod.c)
+         "smx_render",                           # (Skiff, #21) a user sample's sound with its own sends (fx.c)
+         "smx_right", "dly_mono", "dly_stereo", "cho_st", "perf_pre_st",   # ((2.5) the DELAY MODE: a user sample's right
+                                                 # send, MONO's line, STEREO / PING's, the stereo chorus, THROW / DUB in stereo)
+         "lpan_render", "lpan_mix",              # (2.0, #36) a kit's lane panned: its voice, the mix (voice.c, fx.c)
+         "drum_smp"]                             # (2.0, #35) a user kit's lane (eng_drum.c)
+# built only with FELUCCA_FM4=1 (DIGITAL, src/eng_digital.c; not in the default build, so not in BUDGET): absent,
+# they are skipped; present, checked against these (their budget lines until the engine was retired in 1.0)
+OPTIONAL = {"digital_render": 12, "digital_render_legacy": 333, "digital_render_custom": 558,
+            "uac_tap48": 504}           # (absent from a FELUCCA_UAC_48K=0 or FELUCCA_UAC=0 build)
+TOL = 0.10                      # exact (no noise): small edits pass, a grown render loop does not
+DIV_W = 8                       # a divide weighs 1 + 8 instructions
+NEST = 4                        # an instruction in a loop inside a loop weighs 4, two deep 16, ...
+MAXD = 4
+
+dis = sys.argv[1] if len(sys.argv) > 1 else "build/felucca.dis"
+budget = sys.argv[2] if len(sys.argv) > 2 else "tests/target_budget.txt"
+LABEL = re.compile(r"^([A-Za-z_][A-Za-z_0-9.]*):$")
+INSN = re.compile(r"^\s*([0-9a-f]+):\s+((?:[0-9a-f]{2} )+)\s*(.*)$")
+TARGET = re.compile(r"goto -?\d+ <[^>]*: ([0-9a-f]+) >")
+
+
+def functions(path):
+    """{name: [(addr, text)]}: a function runs to the next label not starting with '.' (the compiler's
+    jump-table labels are inside functions); jump-table data ('< n : 0x.. >') is left out"""
+    out, cur = {}, None
+    with open(path) as f:
+        for line in f:
+            m = LABEL.match(line.strip())
+            if m:
+                name = m.group(1)
+                if not name.startswith("."):
+                    cur = out.setdefault(name, []) if name in FUNCS else None
+                continue
+            m = INSN.match(line)
+            if cur is not None and m and not m.group(3).lstrip().startswith("<"):
+                cur.append((int(m.group(1), 16), m.group(3).strip()))
+    return out
+
+
+def cost(insns):
+    """loops: one span per loop head (the farthest backward branch to it); an instruction inside d
+    spans weighs NEST ** (d - 1) (an inner loop runs several times per pass of the outer one)"""
+    lo = insns[0][0]
+    heads = {}
+    for a, t in insns:
+        m = TARGET.search(t)
+        if m and lo <= int(m.group(1), 16) < a:
+            h = int(m.group(1), 16)
+            heads[h] = max(heads.get(h, a), a)
+    n = divs = calls = 0
+    w = 0
+    for a, t in insns:
+        d = min(sum(1 for h, e in heads.items() if h <= a <= e), MAXD)
+        if not d:
+            continue
+        k = NEST ** (d - 1)
+        n += 1
+        if re.search(r"= r\d+ / r\d+", t):
+            divs += 1
+            k *= 1 + DIV_W
+        calls += t.startswith("call")
+        w += k
+    return {"insns": len(insns), "loop": n, "div": divs, "call": calls, "cost": w}
+
+
+def main():
+    if not os.path.exists(dis):
+        print(f"target: skip ({dis} missing: run ./build.sh)")
+        return 0
+    fns = functions(dis)
+    res = {n: cost(fns[n]) for n in FUNCS if fns.get(n)}
+    missing = [n for n in FUNCS if n not in res and n not in OPTIONAL]
+    base = {}
+    if os.path.exists(budget):
+        for line in open(budget):
+            p = line.split()
+            if len(p) >= 2 and not line.startswith("#"):
+                base[p[0]] = int(p[1])
+    if os.environ.get("BUDGET_UPDATE"):
+        with open(budget, "w") as f:
+            f.write("# FELUCCA target cost budget (tests/target_budget.py): instructions in the loops of each\n"
+                    f"# function in build/felucca.dis, x{NEST} per nesting level, divides x{1 + DIV_W}. The check allows "
+                    f"+{TOL * 100:.0f} %.\n# Rewritten by BUDGET_UPDATE=1.\n")
+            for n, r in res.items():
+                if n not in OPTIONAL:
+                    f.write(f"{n} {r['cost']}\n")
+        print(f"target: budget {budget} rewritten ({len(res)} functions)")
+    fail = 0
+    for n in missing:
+        print(f"target: FAIL {n} not found in {dis} (renamed? inlined? update FUNCS)")
+        fail += 1
+    for n, r in res.items():
+        b = base.get(n, OPTIONAL.get(n))
+        state = "no budget (BUDGET_UPDATE=1 adds it)" if b is None else "ok"
+        if b is not None and not os.environ.get("BUDGET_UPDATE"):
+            if r["cost"] > b * (1 + TOL):
+                state = f"OVER BUDGET (+{(r['cost'] / b - 1) * 100:.0f} %, limit +{TOL * 100:.0f} %)"
+                fail += 1
+            elif r["cost"] < b * (1 - TOL):
+                state = f"note: {(r['cost'] / b - 1) * 100:.0f} % (BUDGET_UPDATE=1 to keep it)"
+        print(f"target: {n:15s} {r['insns']:5d} instructions, {r['loop']:4d} in loops, {r['div']} divides, "
+              f"{r['call']:2d} calls there: cost {r['cost']:5d} (budget {b if b is not None else '-'}) {state}")
+    return 1 if fail else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

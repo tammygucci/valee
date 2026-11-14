@@ -1,0 +1,124 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-only
+"""(Skiff 2.0) The themes' sprites (CRYPT's, NEON's, FM6 LAB's flame), packed for src/ui_crypt.c ui_sprite (run by
+tools/build.py generate()). Each is drawn here as rows of characters; a character of its keys is a pixel of that
+colour (the caller's cols[], in the keys' order), a space nothing. In the header each is
+    SPR_x[] = {w, h, bits, the pixels ...}
+bits a pixel (1 to 4: as few as its keys need), the key's number (1..) or 0, MSB first, rows back to back, a byte
+spare at the end (ui_sprite reads two at a time). (2.5) MIRRORED: only the left half (w = its width), w's top bit set.
+  gen_sprites.py OUT.h"""
+import sys
+from pathlib import Path
+
+CR_KEYS = ".:-=+*#%@EF"
+XE_KEYS = "#o.+"                                      # (Skiff XENO) body, eye, dark, glint                                  # (cr_creature: the ramp's nine, an eye, the flame)
+# name: (keys, rows): where it is drawn
+SPRITES = {
+    # ui_crypt.c: cr_skull (a peak, a mute's crossed eyes), the splash's and LFO DEST's big ones (cr_spritez)
+    "SKULL": ("#.", ["  #####  ", " ####### ", "#########", "#..###..#", "#..###..#", "####.####", " ####### ",
+                     "  #.#.#  ", "  #####  "]),
+    "SKULL_X": ("#.", ["  #####  ", " ####### ", "#########", "#.#####.#", "##.###.##", "####.####", " ####### ",
+                       "  #.#.#  ", "  #####  "]),
+    # cr_torch: the flame's two frames (gold, flame, amber, ember), its head and stick (dim)
+    "TORCH0": ("YFORB", ["  Y  ", " YYY ", " YFY ", "YFFFY", "YORFY", " ORO ", " BBB ", "  B  ", "  B  ", " BBB ",
+                         "  B  ", "  B  "]),
+    "TORCH1": ("YFORB", ["   Y ", "  YY ", " YYY ", "YFFFY", "YOFRY", " ORO ", " BBB ", "  B  ", "  B  ", " BBB ",
+                         "  B  ", "  B  "]),
+    "SWORD": ("#", ["  #       ", " ### ##   ", "########  ", " ### ##   ", "  #       "]),   # cr_sword's hilt
+    "FLAME": ("#.", ["  ##  ", " #..# ", " #..# ", "#....#", "#....#", " #### "]),      # cr_meter's flame
+    "DROP": ("#", ["   #   ", "  ###  ", "  ###  ", " ##### ", "#######", "#######", "#######", " ##### ",
+                   "  ###  "]),                                                         # cr_drop: REC, armed
+    "DROP_O": ("#", ["   #   ", "  # #  ", "  # #  ", " #   # ", "#     #", "#     #", "#     #", " #   # ",
+                     "  ###  "]),                                                       # .. another track armed
+    "HEAD": ("#.", ["  ####  ", " ###### ", "########", "##.#####", "########", " ###### "]),   # cr_head: the snake's
+    "DAGGER": ("#", ["  #  ", "  #  ", "#####", "  #  ", "  #  ", "  #  ", "  #  "]),   # cr_dagger: FLT's cutoff
+    # ui_neon.c: the car (body, glass, tail light, headlight, wheels; ne_car finds the tail light's row), NE_CAR 18 x 6
+    # (the splash), CAR24 24 x 8 (HOME)
+    "CAR": ("#.THO", ["      ######      ", "    ##.. ...##    ", "  ##############  ", "T################H",
+                      " ###OO######OO### ", "    OO      OO    "]),
+    "CAR24": ("#.THO", ["         #######        ", "      ###.. ....##      ", "    #################   ",
+                        "  ######################", "T######################H", " #####OO########OO##### ",
+                        "     OOOO      OOOO     ", "      OO        OO      "]),
+    "PALM": ("#", ["      ##  ##      ", "    ##########    ", "  ####  ##  ####  ", " ##    ####    ## ",
+                   "##    ## # ##   ##", "#    ##  #  ##   #", "    ##   #   ##   ", "    #    #    #   ",
+                   "         ##       ", "         ##       ", "        ##        ", "        ##        ",
+                   "        ##        ", "       ##         ", "       ##         ", "       ##         ",
+                   "       ##         ", "      ####        "]),
+    "SPARK": ("#W", ["   #   ", "   #   ", "  #W#  ", "##WWW##", "  #W#  ", "   #   ", "   #   "]),   # ne_spark
+    # ui_fm6.c: FM6 LAB's flame under the carrier that bites most (CRYPT)
+    "FM_FLAME": ("#.", ["  #  ", " ##  ", " #.# ", "##.##", "#...#", " ### "]),
+    # (2.5) ui_crypt.c cr_creature: HOME's scope creatures, a track's each (after the user's Ossuary synth): a ramp
+    # glyph a cell (keys 1..9, light to dense), E an eye, F the flame
+    "CR_DEMON": (CR_KEYS, ["  .   .  ", " =%   %= ", ".@:   :@.", "=@. . .@=", ":@@###@@:", " %@@@@@% ", "*@EE@EE@*",
+                           "#@@@@@@@#", "%@@*=*@@%", " %@@@@@% ", " :%.:.%: ", "  %@:@%  ", "   #@#   ", "    =    "]),
+    "CR_GHOST": (CR_KEYS, ["  .:=:.  ", " :*%@%*: ", ".*@@@@@*.", ":%@@@@@%:", "=@EE@EE@=", "=@EE@EE@=", "*@@@@@@@*",
+                           "*@@@ @@@*", "#@@   @@#", "#@@@ @@@#", "%@@@@@@@%", "%@@@@@@@%", "#@%@@@%@#", "*%.#@#.%*",
+                           ": .:%:. :"]),
+    "CR_CANDLE": (CR_KEYS, ["    .    ", "    F    ", "   FF    ", "   FFF   ", "  FFFFF  ", "   FFF   ", "    :    ",
+                            "  .=+=.  ", "  %@@@%  ", "  %@@@#. ", "  #@@@%: ", "  %@@@%. ", "  #@@@#  ", "  %@@@%  ",
+                            "  #@@@#  ", " :*%@%*: ", "-*#%%%#*-"]),
+    "CR_WITCH": (CR_KEYS, ["      .: ", "     =%. ", "    =@=  ", "   .%@:  ", "   =@@*  ", "   %@@@. ", "  =@@@@= ",
+                           "  %@@@@% ", ":=*%#%*=:", "%#%@@@%#%", " .#E@E#. ", " :%@@@%: ", " :%@*@%: ", " =#=-=#= ",
+                           "%#.:#:.#%", "#: .#. :#", ":   .   :"]),
+    "CR_MONK": (CR_KEYS, ["   .=.   ", "  =%@%=  ", " =@@@@@= ", " %@#=#@% ", "=@#   #@=", "*@ E E @*", "#@     @#",
+                          "%@:   :@%", "%@%. .%@%", "%@@%=%@@%", "#@@@@@@@#", "%@@#@#@@%", "%@@:@:@@%", "#@@:@:@@#",
+                          "%@@:@:@@%", "#@@#@#@@#", "=%#*%*#%="]),
+    "CR_SKULL": (CR_KEYS, ["  .=*=.  ", " =%@@@%= ", "=@@@@@@@=", "%@@@@@@@%", "%@EE@EE@%", "@@EE@EE@@", "*@@@ @@@*",
+                           " #@@.@@# ", " :%@@@%: ", "  #:#:#  ", "  =#=#=  ", "  .=*=.  "]),
+    # (Skiff XENO) ui_xeno.c xe_alien: the opening card's grey and saucer, 12 x 12, our own drawings (Vallée: a sound's
+    # creature is put together in ui_beast.c). Keys: # its body (the track's
+    # colour), o its eyes (lit; ACCENT while it sings, its body while it blinks), . the dark (pupils, mouths), + a glint
+    "XE_GREY": (XE_KEYS, ["   ######   ", " ########## ", "#+##########", "############", "#ooo####ooo#",
+                          "#.ooo##ooo.#", " #.oo##oo.# ", "  ##.##.##  ", "   ######   ", "    #..#    ",
+                          "    ####    ", "     ##     "]),                                   # ANALOG: a grey
+    "XE_SAUCER": (XE_KEYS, ["            ", "    ++++    ", "   +o##o+   ", "   +####+   ", "  ########  ",
+                            " ########## ", "############", "#o##o##o##o#", " ########## ", "   ######   ",
+                            "   + ++ +   ", "  +  ++  +  "]),                                 # LOFI: a saucer, its pilot
+    # (Vallée) the intro's head (ui_draw.c intro_frame), after the Gateway report's "consciousness energy grid":
+    # # its skin, + the shade, . its closed eyes and mouth, o the third eye
+    "VL_HEAD": ("#+.o", ["        ######        ", "      ##########      ", "     ############+    ", "    #############++   ", "   ##############++   ", "   ##############+++  ", "   #######oo#####+++  ", "   #######oo#####+++  ", "   ##...####...##+++  ", "  +##############+++  ", " ++##...####...##+++++", " ++###############++++", " ++#######+######+++++", "  +#######+######+++  ", "   ######++######++   ", "   #####+++######++   ", "   ##############++   ", "   ####......####+    ", "    #############+    ", "    ############++    ", "     ##########+      ", "      ########+       ", "       ######         ", "        ####          ", "        ####+         ", "      ########+       "]),
+}
+
+
+def pack(keys, rows):
+    w, h = len(rows[0]), len(rows)
+    assert all(len(r) == w for r in rows) and w < 256 and h < 256
+    bits = max(1, (len(keys)).bit_length())
+    acc = n = 0
+    out = bytearray([w, h, bits])
+    for r in rows:
+        for ch in r:
+            assert ch == " " or ch in keys, ch
+            acc = acc << bits | (keys.index(ch) + 1 if ch != " " else 0)
+            n += bits
+            while n >= 8:
+                out.append(acc >> (n - 8) & 255)
+                n -= 8
+    if n:
+        out.append(acc << (8 - n) & 255)
+    out.append(0)                                        # (the spare byte)
+    return out
+
+
+MIRRORED = {"CR_SKULL", "CR_GHOST", "CR_MONK", "CR_DEMON"}   # (cr_creature: alike left and right, the left half kept,
+                                                              # the width's top bit set: drawn 2 w - 1 wide)
+
+
+def main():
+    lines = ["/* generated by tools/gen_sprites.py: the themes' sprites (src/ui_crypt.c ui_sprite) */", "#pragma once", ""]
+    total = 0
+    for name, (keys, rows) in SPRITES.items():
+        if name in MIRRORED:
+            assert all(r == r[::-1] for r in rows), name
+            rows = [r[:(len(r) + 1) // 2] for r in rows]
+        b = pack(keys, rows)
+        b[0] |= 0x80 if name in MIRRORED else 0
+        total += len(b)
+        lines.append(f"static const uint8_t SPR_{name}[{len(b)}] = {{" + ", ".join(str(v) for v in b) + "};   /* "
+                     f"{len(rows[0])} x {len(rows)}, keys {keys} */")
+    Path(sys.argv[1]).write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    print(f"sprites: {len(SPRITES)}, {total} bytes")
+
+
+if __name__ == "__main__":
+    main()
