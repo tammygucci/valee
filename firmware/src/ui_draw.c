@@ -1291,7 +1291,7 @@ static void draw_splash(void)
  * Drawn in two halves of 120 rows (the canvas holds 138), in the palette's colours */
 #define INTRO_MS 6800u                     /* (chime.c CH_END_MS: the screen waits for the last note) */
 #define IN_CX 120
-#define IN_CY 104
+#define IN_CY 122                               /* ((Vallée) lower: the title on two lines above */
 /* a point of the planes, turned (yaw a, pitch p: phases, a turn 2^32) and seen in perspective */
 static void in_proj(int32_t x, int32_t y, int32_t z, uint32_t a, uint32_t p, int32_t *sx, int32_t *sy, int32_t *sz)
 {
@@ -1354,7 +1354,8 @@ static void intro_frame(uint32_t t)
     static const char TITLE[] = "CONSCIOUSNESS ENERGY GRID";
     uint32_t half, k, a = t * 0x000A0000u + 0x18000000u, p = 0x0E000000u + (uint32_t)(t * 0x00018000u);
     int32_t grow = t < 300u ? 0 : t > 1400u ? 1000 : (int32_t)(t - 300u) * 1000 / 1100;
-    int32_t S = 66 * grow / 1000, eye = t < 1600u ? 0 : t > 2100u ? 1000 : (int32_t)(t - 1600u) * 1000 / 500;
+    int32_t S = 50 * grow / 1000,                  /* ((Vallée) the grid a little smaller (was 66, 50 now) */
+            eye = t < 1600u ? 0 : t > 2100u ? 1000 : (int32_t)(t - 1600u) * 1000 / 500;
     int pulse = t > 1600u && t < 3300u && (t / 180u) % 2u == 0u;   /* (with the bells: 180 ms apart) */
     for (half = 0; half < 2u; half++) {
         int32_t top = (int32_t)half * 120;
@@ -1422,10 +1423,30 @@ static void intro_frame(uint32_t t)
             int32_t w;
             memcpy(b, TITLE, n);
             b[n] = 0;
-            w = text_w(&AF_M, TITLE);                   /* ((Vallée) in M: larger, still one line */
-            cv_text_on((240 - w) / 2, 6 - AF_M_CAP_Y, &AF_M, b, T_TEXT, T_BG);
-            if (n < sizeof TITLE - 1u && (t / 120u) % 2u)
-                cv_rect((240 - w) / 2 + text_w(&AF_M, b) + 1, 6, 6, AF_M_CAP_H, T_ACCENT);
+            {   /* ((Vallée) in L, on two lines: CONSCIOUSNESS, then ENERGY GRID; the caret after the last letter */
+                uint32_t L1 = 13u, ln, cx = 0, cy = 0;          /* ("CONSCIOUSNESS": its 13 letters, then a space) */
+                for (ln = 0; ln < 2u; ln++) {
+                    const char *src = TITLE + (ln ? L1 + 1u : 0u);
+                    uint32_t len = ln ? sizeof TITLE - 1u - L1 - 1u : L1, done = ln ? (n > L1 + 1u ? n - L1 - 1u : 0u)
+                                                                                   : (n < L1 ? n : L1);
+                    char part[sizeof TITLE];
+                    int32_t y = 6 + (int32_t)ln * 26, x;
+                    memcpy(part, src, len);
+                    part[len] = 0;
+                    w = text_w(&AF_L, part);
+                    x = (240 - w) / 2;
+                    part[done] = 0;
+                    cv_text_on(x, y - AF_L_CAP_Y, &AF_L, part, T_TEXT, T_BG);
+                    if (done < len || ln == 0u) {
+                        cx = (uint32_t)(x + text_w(&AF_L, part) + 2);
+                        cy = (uint32_t)y;
+                    }
+                    if (done < len)
+                        break;
+                }
+                if (n < sizeof TITLE - 1u && (t / 120u) % 2u)
+                    cv_rect((int32_t)cx, (int32_t)cy, 7, AF_L_CAP_H, T_ACCENT);
+            }
         }
         if (half == 1u && t >= 2600u) {                 /* the name, the version */
             static const char NAME[] = "VALL\xC9" "E";   /* ((Vallée) the name large, in AF_L's capitals, as ABOUT */
