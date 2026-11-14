@@ -206,7 +206,7 @@ Nothing Vallée adds touches how the FM-1 is updated or recovered: the update lo
 script, the update and USB code, and the save formats are Skiff 2.6's, byte for byte. So Skiff's ways back all work
 as they do for Skiff (README.md, "If the FM-1 does not start"), and one more is in the firmware itself: if it
 crashes or hangs within 30 seconds of switching on twice in a row, the next start goes into the chip's own boot mode
-(a USB disk named WL82 UBOOT1.00) where it can be written again. After a crash or a hang the intro is skipped.
+(a USB disk named WL82 UBOOT1.00) where it can be written again. After a start that failed (a crash or hang in its first 30 seconds) the next start skips the intro.
 
 What the tests run before a release (tests/run_tests.sh):
 

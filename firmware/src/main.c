@@ -276,11 +276,14 @@ static void fm1_main(void)
     {   /* the splash; the pot followed (MIDI IN plays under it). (Vallée) the intro over it with its chime (ui_draw.c
          * intro_frame, chime.c), INTRO_MS; a button ends it. ANIM OFF, a crash recovered, a cast's restart: 400 ms */
         uint32_t t0 = fm1_ms, len = 400u, last = 0xFFFFFFFFu, now;
-        if (boot_clean && !(ui_prefs & PREF_ANIM_OFF) && !CAST_AUDIO_LATE()) {
-            len = INTRO_MS;
+        if (!bootguard.failed && !(ui_prefs & PREF_ANIM_OFF) && !CAST_AUDIO_LATE()) {
+            len = INTRO_MS;                       /* ((Vallée) the intro unless the last start failed (bootguard: it
+                                                   * died within its first 30 s, the intro's own included): not
+                                                   * boot_clean, whose reset bits (P33 RST_SRC, never cleared, the FM-1
+                                                   * on its battery) can still read WDT from an update long after */
             chime_start();
         } else if (!(ui_prefs & PREF_ANIM_OFF) && !CAST_AUDIO_LATE()) {
-            draw_splash();                        /* ((Vallée) no intro after all (a crash recovered): the splash) */
+            draw_splash();                        /* ((Vallée) no intro after all (a failed start before): the splash) */
         }
         while ((now = fm1_ms - t0) < len) {
             fm1_delay_ms(10);
