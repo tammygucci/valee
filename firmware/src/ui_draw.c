@@ -1423,29 +1423,29 @@ static void intro_frame(uint32_t t)
             int32_t w;
             memcpy(b, TITLE, n);
             b[n] = 0;
-            {   /* ((Vallée) in V, on two lines: CONSCIOUSNESS, then ENERGY GRID; the caret after the last letter */
+            {   /* ((Vallée) in M, on two lines: CONSCIOUSNESS, then ENERGY GRID; the caret after the last letter */
                 uint32_t L1 = 13u, ln, cx = 0, cy = 0;          /* ("CONSCIOUSNESS": its 13 letters, then a space) */
                 for (ln = 0; ln < 2u; ln++) {
                     const char *src = TITLE + (ln ? L1 + 1u : 0u);
                     uint32_t len = ln ? sizeof TITLE - 1u - L1 - 1u : L1, done = ln ? (n > L1 + 1u ? n - L1 - 1u : 0u)
                                                                                    : (n < L1 ? n : L1);
                     char part[sizeof TITLE];
-                    int32_t y = 7 + (int32_t)ln * 22, x;
+                    int32_t y = 8 + (int32_t)ln * 17, x;
                     memcpy(part, src, len);
                     part[len] = 0;
-                    w = text_w(&AF_V, part);
+                    w = text_w(&AF_M, part);
                     x = (240 - w) / 2;
                     part[done] = 0;
-                    cv_text_on(x, y - AF_V_CAP_Y, &AF_V, part, T_TEXT, T_BG);
+                    cv_text_on(x, y - AF_M_CAP_Y, &AF_M, part, T_TEXT, T_BG);
                     if (done < len || ln == 0u) {
-                        cx = (uint32_t)(x + text_w(&AF_V, part) + 2);
+                        cx = (uint32_t)(x + text_w(&AF_M, part) + 2);
                         cy = (uint32_t)y;
                     }
                     if (done < len)
                         break;
                 }
                 if (n < sizeof TITLE - 1u && (t / 120u) % 2u)
-                    cv_rect((int32_t)cx, (int32_t)cy, 6, AF_V_CAP_H, T_ACCENT);
+                    cv_rect((int32_t)cx, (int32_t)cy, 5, AF_M_CAP_H, T_ACCENT);
             }
         }
         if (half == 1u && t >= 2600u) {                 /* the name, the version */
