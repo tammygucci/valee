@@ -100,6 +100,7 @@ static uint32_t up_gen;                      /* bumped on every user bank change
  * saved with the settings; 0 in older ones = every setting's default (append-only: a new setting takes a new bit,
  * its default is 0) */
 #define ui_prefs (favorites.factory[15][30])
+static char boot_code[24];                     /* ((Vallée) main.c boot_why_at: how this start went, MENU > ABOUT */
 #define PREF_LATCH 1u                          /* (MENU > FX LATCH ON, #40: (Skiff U2) retired, a locked FX layer latches;
                                                 * the bit is left as saved) */
 #define PREF_ANIM_OFF 2u                       /* MENU > ANIM OFF (#46): values snap (no rolling digits, no glide) */

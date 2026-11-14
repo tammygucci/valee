@@ -82,17 +82,19 @@ static void hexs(char *b, uint32_t v)
 
 /* (Vallée) under a splash shown in the intro's place, small: "A" ANIM OFF, "C" a cast's restart, "F" bootguard's
  * failed starts, "R" the reset's bits (P33 RST_SRC), "P" CPU CLOCK's state: what the boot read */
-static void boot_why(void)
+static void boot_why_at(char way, int draw)
 {
-    char b[24], *q = b;
+    char *b = boot_code, *q = b;
     uint32_t r = fm1_boot.p3_rst;
     *q++ = 'A'; *q++ = (char)('0' + ((ui_prefs & PREF_ANIM_OFF) != 0u)); *q++ = ' ';
     *q++ = 'C'; *q++ = (char)('0' + (CAST_AUDIO_LATE() != 0)); *q++ = ' ';
     *q++ = 'F'; *q++ = (char)('0' + (bootguard.failed % 10u)); *q++ = ' ';
     *q++ = 'R'; *q++ = "0123456789ABCDEF"[(r >> 4) & 15u]; *q++ = "0123456789ABCDEF"[r & 15u]; *q++ = ' ';
-    *q++ = 'P'; *q++ = (char)('0' + clk320.state % 10u);
+    *q++ = 'P'; *q++ = (char)('0' + clk320.state % 10u); *q++ = ' ';
+    *q++ = way;                                 /* (I the intro, S the splash (ANIM OFF / a cast), F the splash (failed)) */
     *q = 0;
-    draw_text_line(0, 226, 240, &AF_S, b, T_INK, T_BG, 1);
+    if (draw)
+        draw_text_line(0, 210, 240, &AF_M, b, T_INK, T_BG, 1);
 }
 
 static void fm1_fault(const fm1_crash_t *c)
@@ -199,7 +201,7 @@ static void fm1_main(void)
         intro_frame(0);                                 /* void), not the splash card flashing before it) */
     else {
         draw_splash();                                  /* ui_draw.c (1.1.5) */
-        boot_why();                                     /* ((Vallée) why, small) */
+        boot_why_at('S', 1);                            /* ((Vallée) why; MENU > ABOUT keeps it too) */
     }
     if (felucca_dbg.magic != DBG_MAGIC) {
         memset(&felucca_dbg, 0, sizeof felucca_dbg);
@@ -294,6 +296,7 @@ static void fm1_main(void)
          * intro_frame, chime.c), INTRO_MS; a button ends it. ANIM OFF, a crash recovered, a cast's restart: 400 ms */
         uint32_t t0 = fm1_ms, len = 400u, last = 0xFFFFFFFFu, now, held = fm1_in.buttons;
         if (!bootguard.failed && !(ui_prefs & PREF_ANIM_OFF) && !CAST_AUDIO_LATE()) {
+            boot_why_at('I', 0);
             len = INTRO_MS;                       /* ((Vallée) the intro unless the last start failed (bootguard: it
                                                    * died within its first 30 s, the intro's own included): not
                                                    * boot_clean, whose reset bits (P33 RST_SRC, never cleared, the FM-1
@@ -301,8 +304,10 @@ static void fm1_main(void)
             chime_start();
         } else if (!(ui_prefs & PREF_ANIM_OFF) && !CAST_AUDIO_LATE()) {
             draw_splash();                        /* ((Vallée) no intro after all (a failed start before): the splash, */
-            boot_why();                           /* why under it, small */
-        }
+            boot_why_at('F', 1);                  /* why under it (MENU > ABOUT keeps it too) */
+            len = 3000u;                          /* (long enough to read) */
+        } else
+            len = 3000u;                          /* ((Vallée) ANIM OFF or a cast: the splash and why, readable */
         while ((now = fm1_ms - t0) < len) {
             fm1_delay_ms(10);
             master_poll();

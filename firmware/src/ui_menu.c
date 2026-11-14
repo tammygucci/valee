@@ -144,6 +144,8 @@ static int32_t menu_document(int32_t y, int draw)
         }
         cv_text(6, y + 82, &AF_S, "Skiff: illuminus5", T_TEXT);   /* (Skiff 1.0) its source (the QR), Felucca's */
         cv_text(6, y + 100, &AF_S, "Felucca (C) 2026", T_TEXT);      /* credit; GPL-3.0-only */
+        if (boot_code[0])                                    /* ((Vallée) how this start went: main.c boot_why_at */
+            cv_text_r(232, y + 100, &AF_S, boot_code, T_MID, T_BG);
         cv_text(6, y + 118, &AF_S, "Leo Kuroshita, H\xFCgelton", T_TEXT);
         cv_text(6, y + 138, &AF_S, "GPL-3.0-only", T_TEXT);
         cv_text(6, y + 160, &AF_S, "github.com/illuminus5", T_MID);
