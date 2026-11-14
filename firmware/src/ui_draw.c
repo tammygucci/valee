@@ -1428,9 +1428,10 @@ static void intro_frame(uint32_t t)
                 cv_rect((240 - w) / 2 + text_w(&AF_S, b) + 1, 7, 5, 9, T_ACCENT);
         }
         if (half == 1u && t >= 2600u) {                 /* the name, the version */
-            int32_t w = text_w(&AF_M, SPLASH_LINES[0]);
+            static const char NAME[] = "VALL\xC9" "E";   /* ((Vallée) the name large, in AF_L's capitals, as ABOUT */
+            int32_t w = text_w(&AF_L, NAME);
             uint16_t c = t > 2900u ? T_TEXT : ux_mix(T_BG, T_TEXT, (int32_t)(t - 2600u) / 3);
-            cv_text_on((240 - w) / 2, 200 - AF_M_CAP_Y, &AF_M, SPLASH_LINES[0], c, T_BG);
+            cv_text_on((240 - w) / 2, 214 - AF_L_CAP_H - AF_L_CAP_Y, &AF_L, NAME, c, T_BG);
             w = text_w(&AF_S, SPLASH_LINES[1]);
             cv_text_on((240 - w) / 2, 222 - AF_S_CAP_Y, &AF_S, SPLASH_LINES[1], ux_mix(T_BG, T_THEME, 85), T_BG);
         }
