@@ -1422,10 +1422,10 @@ static void intro_frame(uint32_t t)
             int32_t w;
             memcpy(b, TITLE, n);
             b[n] = 0;
-            w = text_w(&AF_S, TITLE);
-            cv_text_on((240 - w) / 2, 4, &AF_S, b, T_TEXT, T_BG);
+            w = text_w(&AF_M, TITLE);                   /* ((Vallée) in M: larger, still one line */
+            cv_text_on((240 - w) / 2, 6 - AF_M_CAP_Y, &AF_M, b, T_TEXT, T_BG);
             if (n < sizeof TITLE - 1u && (t / 120u) % 2u)
-                cv_rect((240 - w) / 2 + text_w(&AF_S, b) + 1, 7, 5, 9, T_ACCENT);
+                cv_rect((240 - w) / 2 + text_w(&AF_M, b) + 1, 6, 6, AF_M_CAP_H, T_ACCENT);
         }
         if (half == 1u && t >= 2600u) {                 /* the name, the version */
             static const char NAME[] = "VALL\xC9" "E";   /* ((Vallée) the name large, in AF_L's capitals, as ABOUT */
