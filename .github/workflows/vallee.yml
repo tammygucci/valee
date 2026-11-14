@@ -67,6 +67,14 @@ jobs:
           node web/emu/emu_test.mjs build/emu/felucca.wasm
           python3 web/emu/bundle_single.py build/vallee-web.html
 
+      - name: The backup converter (Emscripten; the installer's backup and restore use it)
+        run: |
+          git clone --depth 1 https://github.com/emscripten-core/emsdk.git "$GITHUB_WORKSPACE/../emsdk"
+          "$GITHUB_WORKSPACE/../emsdk/emsdk" install 3.1.74
+          "$GITHUB_WORKSPACE/../emsdk/emsdk" activate 3.1.74
+          . "$GITHUB_WORKSPACE/../emsdk/emsdk_env.sh"
+          sh web/conv/build.sh
+
       - name: Site
         run: python3 web/make_site.py "build/vallee-$REL.fwsc" "$REL" site
 
