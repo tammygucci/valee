@@ -76,7 +76,8 @@ track_insert 3
 ins_drive 280
 ins_swept 228
 ins_filter 74
-strum_tick 139
+# (Vallée) strum_tick: voice.c unchanged; one more instruction in its inner loop on pi32v2 (16): the data layout
+strum_tick 155
 strum_flush 531
 mix_spread 143
 esync_coef 0
