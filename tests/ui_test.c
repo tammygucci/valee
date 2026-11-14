@@ -6250,16 +6250,16 @@ static int test_layer_lock(void)
     ui_power_on();
     go_title("ENV"); frame();
     shift_lock(B_FX); frames(100);
-    key_down(white(4)); frame();                        /* C4: LPF latched ((U2) a locked FX layer latches) */
-    ok = (perf_latched & PF_BIT(PF_LPF)) && !gates();
+    key_down(white(4)); frame();                        /* C4: LPF while held ((Vallée) a locked FX layer plays as held) */
+    ok = (perf_held & PF_BIT(PF_LPF)) && !perf_latched && !gates();
     key_up(white(4)); frame();
-    ok &= (perf_latched & PF_BIT(PF_LPF)) != 0u;
+    ok &= !perf_held && !perf_latched;                  /* let go: off */
     turn(EN_K2, 20);
     ok &= perf_k[1] == 20;
     press(B_FX); frames(16);
     ok &= !ui.lock && perf_k[1] > 0 && !perf_latched;  /* (closed: the latched effects off, (2.0, D 2A) the macros on */
     a_bar();                                            /* their way back over RETURN: a bar) */
-    bad += check("  FX locked: a key latches its effect, KNOB 2 CRUSH; closed: the effects off, the macros back over a bar",
+    bad += check("  FX locked: a key's effect while it is held, KNOB 2 CRUSH; closed: the effects off, the macros back over a bar",
                  ok && !perf_k[1]);
     ui_power_on();
     go_title("ENV"); frame();
@@ -6614,24 +6614,24 @@ static int test_fx_latch(void)
     bad += check("(U2) FX held: a key's effect ends when it is let go; no MENU > FX LATCH", ok);
     ui_power_on();
     shift_lock(B_FX);
-    key_down(lpf); frame(); key_up(lpf); frame();
+    key_down(lpf); frame();
     turn(EN_K2, 30);
-    ok = perf_latch_on && perf_latched == PF_BIT(PF_LPF) && !perf_held && ui.layer == LAYER_FX &&
-         str_eq(layer_head(), "[FX] LATCH") && (layer_leds(0) >> lpf) & 1u && perf_k[1] == 30;
-    ok &= perf_begin(CTL) && (perf_act & PF_BIT(PF_LPF));                 /* it runs with nothing held */
-    bad += check("(U2) SHIFT + FX: locked, it latches: C4 latches LPF, CRUSH stays at 30, nothing held", ok);
+    ok = perf_latch_on && perf_held == PF_BIT(PF_LPF) && !perf_latched && ui.layer == LAYER_FX &&
+         str_eq(layer_head(), "[FX] LOCK") && perf_k[1] == 30;
+    ok &= perf_begin(CTL) && (perf_act & PF_BIT(PF_LPF));                 /* it runs while C4 is held, FX not */
+    key_up(lpf); frame();
+    ok &= !perf_held && !perf_latched && perf_k[1] == 30;                 /* let go: off; CRUSH stays */
+    bad += check("(Vallée) SHIFT + FX: locked, keys play as held: C4 LPF while held, off when let go, CRUSH stays at 30", ok);
     key_down(m1); frame(); key_up(m1); frame();                   /* ((2.0, D 1A) a black key's tap: T1's MUTE, */
-    ok = perf_latched == PF_BIT(PF_LPF) && trk[0].p[P_MUTE] == 1; /* not a cut latched) */
-    key_down(lpf); frame(); key_up(lpf); frame();                 /* C4 again: LPF off */
-    ok &= !perf_latched;
+    ok = !perf_latched && trk[0].p[P_MUTE] == 1;                  /* not a cut latched) */
     turn(EN_K1, -40);
     btn_down(B_OCTDN); frame(); btn_up(B_OCTDN); frame();
     ok &= !perf_latched && !perf_k[0] && !perf_k[1] && song.octave == 0 && msg_is("FX ALL OFF") && ui.lock == LAYER_FX &&
           trk[0].p[P_MUTE] == 1;
-    bad += check("  a black key's tap: T1's MUTE (no cut latched); C4 again: LPF off; OCT-: every latched effect and macro "
+    bad += check("  a black key's tap: T1's MUTE (no cut latched); OCT-: every latched effect and macro "
                  "off (no octave), the MUTE stays", ok);
     trk[0].p[P_MUTE] = 0;
-    key_down(lpf); frame(); key_up(lpf); frame(); turn(EN_K2, 20);
+    turn(EN_K2, 20);
     press(B_FX); frame();                                         /* its tap: closed, the effects off ((2.0, D 2A) */
     ok = !ui.lock && !ui.layer && !perf_latched && perf_k[1] > 0 && !perf_latch_on;   /* the macros on their way back) */
     a_bar();
@@ -6646,17 +6646,15 @@ static int test_fx_latch(void)
     btn_down(B_FX); frame(); key_down(lpf); frame();              /* C4, HOME (#13), C4 let go: it was held for good) */
     press(B_HOME);
     key_up(lpf); frame();
-    ok = ui.lock == LAYER_FX && perf_latch_on && perf_latched == PF_BIT(PF_LPF) && !perf_held;
+    ok = ui.lock == LAYER_FX && perf_latch_on && !perf_latched && !perf_held;   /* ((Vallée) let go: off */
     btn_up(B_FX); frame();
-    ok &= ui.layer == LAYER_FX && perf_begin(CTL) && (perf_act & PF_BIT(PF_LPF));
-    key_down(lpf); frame(); key_up(lpf); frame();                 /* its next press: off */
-    ok &= !perf_latched && !perf_held;
+    ok &= ui.layer == LAYER_FX && !perf_latched && !perf_held;
     ui_power_on();
     btn_down(B_FX); frame(); key_down(lpf); frame(); press(B_HOME); key_up(lpf); frame(); btn_up(B_FX); frame();
     press(B_FX); frame();                                         /* the layer closed: off with it */
     ok &= !ui.lock && !ui.layer && !perf_latched && !perf_held;
-    bad += check("#57 a key held as FX locks (FX held, then HOME): let go, it stays on, latched; its next press turns "
-                 "it off, so does closing the layer", ok);
+    bad += check("#57 (Vallée) a key held as FX locks (FX held, then HOME): let go, it is off; closing the layer "
+                 "leaves nothing on", ok);
     ui_power_on();                                                /* ((2.0.3, #69) FX let go, C4 still held: */
     btn_down(B_FX); frame(); key_down(lpf); frame();              /* CRUSH stays while it is, its effect playing) */
     turn(EN_K2, 30);

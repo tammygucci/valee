@@ -130,12 +130,16 @@ static uint32_t perf_avail(void)
     return m;
 }
 
+#ifndef PERF_KEYS_LATCH
+#define PERF_KEYS_LATCH 0
+#endif
 /* seq.c keyboard_block: a layer key down / up (e: PF_*, PF_N = no effect) */
 static void perf_press(uint32_t e, int down)
 {
     if (e >= PF_N)
         return;
-    if (perf_latch_on && e < PF_M1) {     /* FX LATCH: a press turns it on or off, letting go does nothing ((2.0, D 1A)
+    if (PERF_KEYS_LATCH && perf_latch_on && e < PF_M1) {   /* ((Vallée) off: a locked FX layer's keys play as held, an
+                                           * effect ends when its key is let go; its knobs' macros still stay) FX LATCH: a press turns it on or off, letting go does nothing ((2.0, D 1A)
                                            * not a black key: its tap is the track's MUTE, held a cut, as unlatched) */
         if (down) {
             perf_latched ^= PF_BIT(e);
