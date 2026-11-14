@@ -78,16 +78,19 @@ static __attribute__((noinline)) void chime_render(int32_t *out, uint32_t n)
             if (a + d - ms < outm)
                 gain = gain * (int32_t)(a + d - ms) / (int32_t)outm;
             if (kind == CK_GLIDE)
-                inc = CHIME[v].inc - (uint32_t)((uint64_t)(CHIME[v].inc - CHIME[v].inc2) * (e < 900u ? e : 900u) / 900u);
+                inc = CHIME[v].inc - (((CHIME[v].inc - CHIME[v].inc2) >> 10) * (e < 900u ? e : 900u) / 900u << 10);   /* (32-bit
+                                                         * only: the FM-1's toolchain has no 64-bit divide, __divdi3) */
             if (kind == CK_SURF) {                      /* two swells: the gain and the brightness rise and fall */
-                int32_t sw = 16384 - sine_i(0x40000000u + (uint32_t)((uint64_t)e * 0x100000000ull / 1950u)) / 2;
+                int32_t sw = 16384 - sine_i(0x40000000u + e * 2202556u) / 2;   /* (2^32 / 1950: one swell 1.95 s) */
                 gain = (int32_t)((int64_t)gain * (6000 + sw) >> 15);
             }
         }
         if (kind == CK_BELL) {                          /* (its end: a 0.3 s tail, no click; the last bell 1 s) */
             uint32_t tl = v == CH_LAST ? 1000u : 300u;
-            if (a + d - ms < tl)
-                gain = (int32_t)((int64_t)gain * (int32_t)(a + d - ms) * (int32_t)(a + d - ms) / (int32_t)(tl * tl));
+            if (a + d - ms < tl) {
+                int32_t f = (int32_t)((a + d - ms) * 1024u / tl);   /* (0 .. 1024; squared: the fade) */
+                gain = gain * f / 1024 * f / 1024;
+            }
         }
         idx = kind == CK_BELL ? (int32_t)(((int64_t)52000 * chime.env[v]) >> 16) + 6000 : 0;
         for (i = 0; i < n; i++) {
@@ -113,7 +116,8 @@ static __attribute__((noinline)) void chime_render(int32_t *out, uint32_t n)
                 continue;
             }
             if (kind == CK_GLIDE)                       /* (the vibrato: 5.5 Hz) */
-                vi = inc + (uint32_t)((int64_t)inc * sine_i(chime.vib + i * CH_HZ(5.5f)) / 1200000);
+                vi = inc + (uint32_t)((int32_t)(inc >> 12) * (sine_i(chime.vib + i * CH_HZ(5.5f)) >> 3) / 37);   /* (~ inc x
+                                                         * sine / 1200000, in 32 bits: no 64-bit divide on the FM-1) */
             chime.ph[v] += vi;
             chime.ph2[v] += kind == CK_BELL ? vi / 2u * 7u : vi * 2u;   /* (the bells' ratio 3.5: no octaves) */
             m = kind == CK_BELL ? sine_i(chime.ph2[v]) : 0;
