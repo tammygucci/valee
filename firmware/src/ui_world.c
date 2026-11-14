@@ -78,7 +78,7 @@ static void wl_spot(uint32_t k, int32_t H, int32_t *x, int32_t *y)
 /* the head's place this frame (its sprite's top left, 2x: 44 x 52); its third eye's middle at +22, +14 */
 static void wl_head_at(uint32_t now, int anim, int32_t *hx, int32_t *hy)
 {
-    *hx = 120 - 22 + (anim ? QK_SIN(now * 0x00040000u) * 3 / 32767 : 0);
+    *hx = 120 - 22 + (anim ? QK_SIN(now * 262144u) * 3 / 32767 : 0);
     *hy = 2 + (anim ? QK_SIN(now * 0x00070000u) * 2 / 32767 : 0);
 }
 
@@ -125,7 +125,7 @@ static void wl_strike(uint32_t k, const step_t *s, int32_t H, int32_t hz, uint32
 static void wl_dance(uint32_t k, uint32_t p, int32_t *dx, int32_t *dy)
 {
     uint32_t move = wl_h(wl.beats / 4u / (1u + k % 2u) * 7919u + k * 131u + trk[k].eng_req) % 6u;
-    uint32_t half = p * 0x7FFFu / 1000u * 0x10000u;     /* (0 .. pi through the beat) */
+    uint32_t half = p * 0x7FFFu / 1000u * 65536u;     /* (0 .. pi through the beat) */
     int32_t up = QK_SIN(half) * 5 / 32767, odd = (int32_t)(wl.beats & 1u);
     *dx = 0;
     *dy = 0;
@@ -276,7 +276,7 @@ static void wl_world(void)
             if (song.playing)
                 wl_dance((uint32_t)k, p, &dx, &dy);
             else
-                dy = QK_SIN(now * 0x00050000u + (uint32_t)k * 0x2A000000u) / 32767;   /* (stopped: breathing) */
+                dy = QK_SIN(now * 327680u + (uint32_t)k * 0x2A000000u) / 32767;   /* (stopped: breathing) */
             dy -= (int32_t)wl.jump[k] / 2 + scd.lv[k] * 2 / 1000;
             if (wl.jump[k])
                 wl.jump[k] = (uint8_t)(wl.jump[k] > 2u ? wl.jump[k] - 2u : 0u);
