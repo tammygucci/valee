@@ -598,6 +598,126 @@ static void wl_visit(int32_t H, uint32_t now, uint16_t sky)
     }
 }
 
+/* (Vallée) THEME TEEN's HOME on HOME under the map: on black, a wire shape of thin lines (as the intro's grid), turning.
+ * Rings of points round an axis, each pushed out towards the side its tracks pull: every track a direction, its hits
+ * a pull that dies away, so the shape bulges where the song plays and the lines near flash in that track's colour.
+ * Its build (how many rings, how many points, the twist) is new at every PLAY, the directions new at every part of the
+ * song, the shape easing to them: never the same twice. ANIM OFF: still */
+static struct {
+    uint32_t sig, a, p, seed;
+    int32_t en[NTRK];                                  /* each track's pull, 0..1000 */
+    int32_t lob[NTRK][3], to[NTRK][3];                 /* its direction (Q15), the one it eases to */
+    uint16_t idx[NTRK];
+    uint8_t nr, np, tw, was;
+} tg;
+static void tg_dirs(uint32_t s)
+{
+    uint32_t k;
+    for (k = 0; k < NTRK; k++) {
+        uint32_t h = wl_h(s + k * 7919u), lo = h, la = (h >> 4) % 1610612736u - 805306368u;   /* (within 67 deg) */
+        int32_t cl = QK_COS(la);
+        tg.to[k][0] = cl * QK_COS(lo) / 32767;
+        tg.to[k][1] = QK_SIN(la);
+        tg.to[k][2] = cl * QK_SIN(lo) / 32767;
+    }
+}
+static void wl_geo(int32_t H)
+{
+    enum { NR = 6, NP = 10 };
+    const int anim = xe_anim();
+    const uint32_t now = anim ? fm1_ms : 0u;
+    int32_t sx[NR + 2][NP], sy[NR + 2][NP], sz[NR + 2][NP], kk[NR + 2][NP], R = H * 31 / 100, cx = 120, cy = H / 2 + 2;
+    uint32_t i, j, k, kb, pos, sig;
+    cv_rect(0, 0, 240, H, T_BG);
+    if (song.playing && (!tg.was || !tg.nr)) {          /* PLAY: a new build */
+        tg.seed = wl_h(fm1_ms ^ ui.frame ^ wl.seed);
+        tg.nr = (uint8_t)(2u + tg.seed % 2u);           /* (few lines: 2 or 3 rings of 5 .. 7) */
+        tg.np = (uint8_t)(5u + (tg.seed >> 3) % 3u);
+        tg.tw = (uint8_t)((tg.seed >> 7) % 4u);
+        tg_dirs(tg.seed ^ 77u);
+        memcpy(tg.lob, tg.to, sizeof tg.lob);
+    }
+    if (!tg.nr) {
+        tg.nr = 2;
+        tg.np = 6;
+        tg_dirs(12345u);
+        memcpy(tg.lob, tg.to, sizeof tg.lob);
+    }
+    tg.was = song.playing;
+    (void)song_at(&kb, &pos);                           /* a new part of the song: new directions */
+    sig = song.playing ? lists.cur[kb % NTRK] + 1u + (uint32_t)lists.ent[kb % NTRK][lists.cur[kb % NTRK] % NENT][0] * 64u : 0u;
+    if (sig != tg.sig) {
+        tg.sig = sig;
+        tg.seed = wl_h(tg.seed ^ sig ^ fm1_ms);
+        tg_dirs(tg.seed);
+        for (k = 0; k < NTRK; k++)
+            tg.en[k] += 400;
+    }
+    for (k = 0; k < NTRK; k++) {                         /* the pulls: a hit, then dying away; easing to the new ways */
+        const track_t *t = &trk[k];
+        uint32_t len = t->p[P_SLEN] > 0 ? (uint32_t)t->p[P_SLEN] : 16u, cur = t->seq_idx % len;
+        if (song.playing && cur != tg.idx[k] && !t->p[P_MUTE] && step_on(&t->step[cur]))
+            tg.en[k] = 1000;
+        tg.idx[k] = (uint16_t)cur;
+        tg.en[k] = tg.en[k] > 1000 ? 1000 : tg.en[k] * 9 / 10;
+        for (i = 0; i < 3u; i++)
+            tg.lob[k][i] += (tg.to[k][i] - tg.lob[k][i]) / 12;
+    }
+    if (anim) {
+        int32_t e = 0;
+        for (k = 0; k < NTRK; k++)
+            e += tg.en[k];
+        tg.a += 0x00500000u + (uint32_t)e * 0x00000C00u;   /* (the more it plays, the faster it turns) */
+        tg.p = 0x14000000u + (uint32_t)(QK_SIN(now * 65536u) * 0x0C00);
+    }
+    for (i = 0; i < (uint32_t)tg.nr + 2u; i++)           /* the points: the poles (rows 0 and nr + 1), the rings */
+        for (j = 0; j < tg.np; j++) {
+            uint32_t la = i == 0 ? 3221225472u : i == tg.nr + 1u ? 1073741824u
+                                 : 3221225472u + i * (2147483648u / (tg.nr + 1u));
+            uint32_t lo = j * (4294967295u / tg.np) + i * (uint32_t)tg.tw * 0x08000000u;
+            int32_t v[3], cl = QK_COS(la), sum = 0, best = 0, r, x, y, z, ca, sa, cp, sp, x1, z1;
+            v[0] = cl * QK_COS(lo) / 32767;
+            v[1] = QK_SIN(la);
+            v[2] = cl * QK_SIN(lo) / 32767;
+            kk[i][j] = -1;
+            for (k = 0; k < NTRK; k++) {
+                int32_t d = (v[0] * tg.lob[k][0] + v[1] * tg.lob[k][1] + v[2] * tg.lob[k][2]) / 32767, c;
+                if (d <= 0)
+                    continue;
+                c = tg.en[k] * d / 32767 * d / 32767;     /* (a narrow pull: squared) */
+                sum += c;
+                if (c > best && c > 220)
+                    best = c, kk[i][j] = (int32_t)k;
+            }
+            r = R * (1000 + (sum > 1200 ? 1200 : sum) * 40 / 100 + (anim ? QK_SIN(now * 196608u + i * 0x2345678u + j * 0x9876543u) * 40 / 32767 : 0)) / 1000;
+            x = r * v[0] / 32767;
+            y = r * v[1] / 32767;
+            z = r * v[2] / 32767;
+            ca = QK_COS(tg.a), sa = QK_SIN(tg.a), cp = QK_COS(tg.p), sp = QK_SIN(tg.p);
+            x1 = (x * ca + z * sa) / 32767;
+            z1 = (-x * sa + z * ca) / 32767;
+            sz[i][j] = (y * sp + z1 * cp) / 32767;
+            sx[i][j] = cx + x1 * 260 / (260 + sz[i][j]);
+            sy[i][j] = cy + ((y * cp - z1 * sp) / 32767) * 260 / (260 + sz[i][j]);
+        }
+    for (i = 0; i < (uint32_t)tg.nr + 2u; i++)           /* the lines: round each ring, and down to the next */
+        for (j = 0; j < tg.np; j++) {
+            uint32_t n2 = (j + 1u) % tg.np, m;
+            for (m = 0; m < 2u; m++) {
+                uint32_t bi = m ? i + 1u : i, bj = m ? j : n2;
+                int32_t z, kc;
+                uint16_t c;
+                if (bi > (uint32_t)tg.nr + 1u || (!m && (i == 0 || i == tg.nr + 1u)))
+                    continue;
+                z = (sz[i][j] + sz[bi][bj]) / 2;
+                kc = kk[i][j] >= 0 ? kk[i][j] : kk[bi][bj];
+                c = kc >= 0 ? T_TRK((uint32_t)kc) : T_THEME;
+                c = z > 0 ? ux_mix(c, T_BG, 30 + (z * 40 / (R + 1) > 40 ? 40 : z * 40 / (R + 1))) : c;
+                xe_line(sx[i][j], sy[i][j], sx[bi][bj], sy[bi][bj], c);
+            }
+        }
+}
+
 static void wl_world(void)
 {
     const int32_t H = (int32_t)cv_h, cx = 120, cyc = H - 27;       /* (the circle's middle) */
@@ -605,6 +725,10 @@ static void wl_world(void)
     const uint32_t now = anim ? fm1_ms : 0u;
     const uint16_t sky = WL_RGB(14, 10, 28), floor = WL_RGB(24, 18, 40);
     int32_t lvl = 0, k, i, hx, hy;
+    if (UX_TEEN) {                                     /* (TEEN: the wire shape, no spell) */
+        wl_geo(H);
+        return;
+    }
     scope_levels();
     for (k = 0; k < (int32_t)NTRK; k++)
         if (scd.lv[k] > lvl)

@@ -165,11 +165,14 @@ back for DEMARCO).
 
 ## THEME XENO
 
-Vallée has two themes, both with XENO's screens (the tape deck, the creatures, THE SPELL): **XENO** (the default) and
-**TEEN**, the same screens in teenage engineering's colours, as on an OP-1's display: black and graphite, off-white
-text, TE orange for values, TE blue for the selected thing, and the six tracks in their primaries (red, orange, yellow,
-blue, light grey, green). The creatures and THE SPELL's elements take the theme's track colours: XENO's are the
-elements' own (green aliens, blue cryptids ..), TEEN's its primaries (a red alien, an orange cryptid ..). Pick one on MENU > DISPLAY > THEME.
+Vallée has two themes. **XENO** (the default): the esoteric one, the tape deck with its pentagram reels, a creature
+for every sound, THE SPELL. **TEEN**: plain, in an OP-1's colours (black, white lines and text, TE blue for values, red
+for the selected thing; the tracks red, blue, white, violet, green, orange). Its HOME is an OP-1-style tape machine: two
+line-drawn reels with turning spokes, the tape round a row of rollers to the head, the counter, the track, PLAY and the
+tempo between the reels; the tracks under it, no creatures (and no preset box). HOME on HOME has the same song map and
+section keys, and under it, on black, a wire shape of a few thin lines that turns and bulges towards each track as it
+plays, its lines flashing in that track's colour; it takes a new build at every PLAY and new directions at every part,
+never the same twice. Pick one on MENU > DISPLAY > THEME.
 Skiff's other six (SKIFF, HI-CON, PAPER, CRYPT, NEON, QUARK) and their widgets and pixel font are gone, which freed
 about 36 KB of the FM-1's flash; a unit on one of them comes up in XENO. THEME CUSTOM (your own colours, from the web
 editor) still works, over either.

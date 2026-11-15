@@ -537,7 +537,7 @@ const F = { INT: 0, PCT: 1, BIPCT: 2, TIME: 3, LFOHZ: 4, CUTOFF: 5, DB: 6, SEMI:
 const PAL_ROLES = ["BG", "SURF", "TEXT", "THEME", "ACCENT", "T1", "T2", "T3", "T4", "T5", "T6"];
 const PAL_BUILTIN = [   /* ((Vallée) THEME XENO and TEEN on the unit) */
   ["XENO", 0x0022, 0x1065, 0xe7fd, 0x7ff2, 0xfbdd, 0x5fed, 0x551f, 0xff28, 0xfb79, 0xb37f, 0xfca6],
-  ["TEEN", 0x0000, 0x2104, 0xef7d, 0xfb42, 0x447f, 0xf9e5, 0xfc60, 0xfea0, 0x2bdf, 0xce58, 0x05ec],
+  ["TEEN", 0x0000, 0x18e3, 0xef5d, 0x5d1f, 0xfa28, 0xfa28, 0x54bf, 0xe71c, 0xabdf, 0x3eaf, 0xfca5],
 ].map(([name, ...c]) => ({ name, c }));
 const rgb8 = (c) => [(c >> 11) * 255 / 31 | 0, ((c >> 5) & 63) * 255 / 63 | 0, (c & 31) * 255 / 31 | 0];   /* (as the generator's) */
 const hex565 = (c) => "#" + rgb8(c).map((x) => x.toString(16).padStart(2, "0")).join("");

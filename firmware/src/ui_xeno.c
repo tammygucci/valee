@@ -11,6 +11,10 @@
  * Included by ui_graph.c after ui_quark.c (QK_COS, QK_SIN), ui_crypt.c (ui_sprite, cr_stroke). */
 
 static void sound_name(const track_t *t, char *b);   /* (ui_draw.c) */
+/* (Vallée) THEME TEEN (its colours, CUSTOM's over it too): XENO's screens plain, no esoterica: a tape machine with
+ * plain reels, no stars, no creatures (on the head, in the lanes, the preset box); HOME on HOME the song's map over a
+ * wire shape that the song moves (ui_world.c wl_geo) */
+#define UX_TEEN (ux.teen != 0)
 #define XE_LANE_H 13                                  /* a lane, 1 between them: the deck gets what is left (39 or more) */
 #define XE_HEAD_X 120                                 /* the head: the deck's middle and the lanes' window */
 #define XE_TAPE_X0 92                                 /* the lanes' tape: x 92 .. 236 */
@@ -110,6 +114,16 @@ static void xe_reel(int32_t cx, int32_t cy, int32_t r, int32_t pack, uint32_t ph
     xe_ring(cx, cy, r, T_MID);
     xe_dots(cx, cy, r - 2, 12u, ph / 3u, T_DIM);           /* (the zodiac's twelve, slower than the hub) */
     xe_disc(cx, cy, hr, T_BG);
+    if (UX_TEEN) {                                         /* (TEEN: a reel's own hub, three spokes) */
+        xe_ring(cx, cy, hr - 1, T_MID);
+        for (k = 0; k < 3u; k++) {
+            uint32_t a = ph + k * 1431655765u;
+            xe_line(cx + 2 * QK_COS(a) / 32767, cy + 2 * QK_SIN(a) / 32767, cx + (hr - 2) * QK_COS(a) / 32767,
+                    cy + (hr - 2) * QK_SIN(a) / 32767, T_TEXT);
+        }
+        xe_disc(cx, cy, 2, T_THEME);
+        return;
+    }
     xe_ring(cx, cy, hr - 1, ux_mix(T_BG, T_THEME, 55));    /* (the sigil's circle) */
     for (k = 0; k < 5u; k++) {
         uint32_t a = ph + k * 858993459u;                  /* (a fifth of a turn) */
@@ -143,9 +157,89 @@ static int xe_sings(const track_t *t)
     return song.playing && !t->p[P_MUTE] && step_on(&t->step[cur]);
 }
 
+/* (Vallée) TEEN's deck, as an OP-1's tape: on black, two reels drawn in thin lines (the rim, a hub of two rings, three
+ * short spokes turning), the tape from under each reel down round a row of rollers to the head (a square, the lanes'
+ * window under it); between the reels the counter, the track in its box, PLAY's triangle and the tempo */
+static void xe_deck_teen(int32_t D)
+{
+    const track_t *t = TSEL;
+    uint32_t len, cur = xe_pos(t, &len), k;
+    int32_t r = (D - 13) / 2, cy = r + 2, lcx = 6 + r, rcx = 234 - r, ry = D - 6, b[4], i;
+    int32_t rx[5] = {lcx - r / 3, lcx + r * 2 / 3 + 4, XE_HEAD_X, rcx - r * 2 / 3 - 4, rcx + r / 3};
+    uint32_t ph = song.playing && xe_anim() ? ui.frame * 0x03000000u : 0x08000000u;
+    char d[8];
+    cv_rect(0, 0, 240, D, T_BG);
+    for (i = 0; i < 2; i++) {                          /* the reels */
+        int32_t c = i ? rcx : lcx;
+        xe_ring(c, cy, r, T_TEXT);
+        xe_ring(c, cy, r / 4 + 2, T_TEXT);
+        xe_ring(c, cy, r / 4 - 1 > 1 ? r / 4 - 1 : 1, T_MID);
+        cv_pset(c, cy, T_TEXT);
+        for (k = 0; k < 3u; k++) {
+            uint32_t a = ph + (uint32_t)i * 0x15555555u + k * 1431655765u;
+            xe_line(c + r * 45 / 100 * QK_COS(a) / 32767, cy + r * 45 / 100 * QK_SIN(a) / 32767,
+                    c + r * 78 / 100 * QK_COS(a) / 32767, cy + r * 78 / 100 * QK_SIN(a) / 32767, T_TEXT);
+        }
+    }
+    /* the tape: off each reel's foot to the rollers and the head, thin */
+    xe_line(lcx - r * 7 / 10, cy + r * 7 / 10, rx[0] - 3, ry, T_MID);
+    xe_line(rcx + r * 7 / 10, cy + r * 7 / 10, rx[4] + 3, ry, T_MID);
+    for (k = 0; k < 4u; k++)
+        xe_line(rx[k], ry + 3, rx[k + 1], ry + 3, T_MID);
+    for (k = 0; k < 5u; k++) {
+        if (k == 2u) {                                 /* the head: a square, the lanes' window under it */
+            cv_rect(rx[k] - 4, ry - 4, 9, 1, T_TEXT);
+            cv_rect(rx[k] - 4, ry - 4, 1, 8, T_TEXT);
+            cv_rect(rx[k] + 4, ry - 4, 1, 8, T_TEXT);
+            cv_rect(rx[k] - 4, ry + 3, 9, 1, T_BG);
+            cv_rect(XE_HEAD_X - 4, ry + 4, 1, D - ry - 4, T_ACCENT);
+            cv_rect(XE_HEAD_X + 4, ry + 4, 1, D - ry - 4, T_ACCENT);
+            continue;
+        }
+        xe_disc(rx[k], ry, 3, T_BG);
+        xe_ring(rx[k], ry, 3, T_TEXT);
+        if (k == 1u || k == 3u)
+            cv_pset(rx[k], ry, T_TEXT);
+    }
+    {   /* between the reels: the counter, then the track's box, PLAY, the tempo */
+        int32_t x0 = lcx + r + 4, x1 = rcx - r - 4, mid = (x0 + x1) / 2, yy = cy - 4;
+        uint32_t n = cur + 1u, bpm = (uint32_t)song.g[G_BPM];
+        d[0] = (char)('0' + n / 100u % 10u);
+        d[1] = (char)('0' + n / 10u % 10u);
+        d[2] = (char)('0' + n % 10u);
+        d[3] = 0;
+        text_ink(&AF_M, d, b);
+        cv_text(mid - b[2] / 2 - b[0], 2, &AF_M, d, T_TEXT);
+        cv_rect(x0 + 2, yy, 11, 1, T_TEXT);            /* the track in a box */
+        cv_rect(x0 + 2, yy + 12, 11, 1, T_TEXT);
+        cv_rect(x0 + 2, yy, 1, 13, T_TEXT);
+        cv_rect(x0 + 12, yy, 1, 13, T_TEXT);
+        d[0] = (char)('1' + song.sel % NTRK);
+        d[1] = 0;
+        text_ink(&AF_S, d, b);
+        cv_text(x0 + 8 - b[2] / 2 - b[0], yy + CAP_IN(S, 13), &AF_S, d, t->p[P_MUTE] ? T_DIM : T_TRK(song.sel % NTRK));
+        for (i = 0; i < 11; i++) {                     /* PLAY: an outline, filled while it plays */
+            int32_t h = i < 6 ? i : 10 - i;
+            if (song.playing)
+                cv_rect(mid - 4, yy + 1 + i, h + 1, 1, T_TEXT);
+            else {
+                cv_pset(mid - 4, yy + 1 + i, T_TEXT);
+                cv_pset(mid - 4 + h, yy + 1 + i, T_TEXT);
+            }
+        }
+        fmt_int(d, (int32_t)bpm);
+        text_ink(&AF_M, d, b);
+        cv_text(x1 - 2 - b[2] - b[0], yy + CAP_IN(M, 13), &AF_M, d, T_THEME);
+    }
+}
+
 /* the deck: D px tall at the canvas's top */
 static void xe_deck(int32_t D)
 {
+    if (UX_TEEN) {
+        xe_deck_teen(D);
+        return;
+    }
     const track_t *t = TSEL;
     uint32_t len, cur = xe_pos(t, &len), k;
     int32_t r = D / 2 - 3, cy = D / 2 - 1, ty = D - 4, lcx = 4 + r, rcx = 236 - r;
@@ -157,7 +251,8 @@ static void xe_deck(int32_t D)
     char d[8];
     cv_rect(0, 0, 240, D, T_BG);
     cv_rect(3, 0, 234, D - 1, ux_mix(T_BG, T_SURF, 45));
-    xe_stars(240, D);
+    if (!UX_TEEN)
+        xe_stars(240, D);
     /* the tape: from under the left pack round a roller, along past the head, round a roller up to the right pack */
     cr_stroke(lcx, cy + lp, lcx + r / 2 + 6, ty, tape);
     cr_stroke(rcx, cy + rp, rcx - r / 2 - 6, ty, tape);
@@ -170,8 +265,8 @@ static void xe_deck(int32_t D)
     cv_rect(XE_HEAD_X - 6, ty - 5, 13, 5, T_RAISE);
     cv_rect(XE_HEAD_X - 4, ty - 4, 1, D - (ty - 4), T_ACCENT);
     cv_rect(XE_HEAD_X + 4, ty - 4, 1, D - (ty - 4), T_ACCENT);
-    /* on the head the selected track's alien, twice its size: a halo while it sings */
-    {
+    /* on the head the selected track's alien, twice its size: a halo while it sings (TEEN: the head alone) */
+    if (!UX_TEEN) {
         int32_t ax = XE_HEAD_X - 12, ay = ty - 6 - 24 - (sing ? 1 : 0);
         if (ay < 1)
             ay = 1;
@@ -232,12 +327,14 @@ static void xe_lanes(int32_t y, int32_t lh)
         cv_text_on(8, y + CAP_IN(S, lh), &AF_S, d, sel ? T_TEXT : col, lane);
         if (midi_mark(k))                             /* (MIDI IN playing it: a mark after the number) */
             cv_rect(15, y + lh / 2 - 1, 2, 2, T_THEME);
-        uint8_t art[XB_ART_N];
-        xe_track_art(t, art);
-        xe_alien(18, y + (lh - 12) / 2, art, muted ? T_DIM : T_TRK((k) % NTRK), strip, muted ? 2 : sing ? 1 : xe_blink(k) ? 3 : 0, 1);
+        if (!UX_TEEN) {                               /* (TEEN: no creatures, the name from 18) */
+            uint8_t art[XB_ART_N];
+            xe_track_art(t, art);
+            xe_alien(18, y + (lh - 12) / 2, art, muted ? T_DIM : T_TRK((k) % NTRK), strip, muted ? 2 : sing ? 1 : xe_blink(k) ? 3 : 0, 1);
+        }
         sound_name(t, name);
-        cv_free_text(33, y + CAP_IN(S, lh), &AF_S, name[0] ? name : "--", muted ? T_DIM : sel ? T_TEXT : T_MID, lane,
-                     XE_TAPE_X0 - 4 - 33);
+        cv_free_text(UX_TEEN ? 19 : 33, y + CAP_IN(S, lh), &AF_S, name[0] ? name : "--", muted ? T_DIM : sel ? T_TEXT : T_MID,
+                     lane, XE_TAPE_X0 - 4 - (UX_TEEN ? 19 : 33));
         /* the tape: its strip, edged */
         cv_rect(XE_TAPE_X0, y + 1, XE_TAPE_X1 - XE_TAPE_X0, lh - 2, strip);
         cv_rect(XE_TAPE_X0, y + 1, XE_TAPE_X1 - XE_TAPE_X0, 1, ux_mix(strip, T_TEXT, 10));
@@ -300,7 +397,7 @@ static void xe_splash(int32_t w, int32_t pad)
  * colour, the sound's creature as large as the panel lets it (6 times), its name under it and its engine's. Drawn by
  * draw_graph (ui_graph.c) after the page; ui_draw.c counts ui.beast_t down, PRESETS again starts it over */
 #define BEAST_T 80u                                   /* (~1.3 s after the last detent) */
-static int beast_box_fits(void) { return ui.home && !ui.home_scope && !ui.layer && large_kind() != LK_TALL; }
+static int beast_box_fits(void) { return ui.home && !ui.home_scope && !ui.layer && large_kind() != LK_TALL && !UX_TEEN; }
 static uint32_t beast_sig(void)
 {
     const track_t *t = TSEL;

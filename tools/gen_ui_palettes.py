@@ -50,9 +50,9 @@ PALETTES = [
     # active thing (the tape head); the tracks acid, ecto, sigil gold, plasma, nebula, ember. HOME a tape machine, each
     # engine its own alien (src/ui_xeno.c)
     ("XENO",   (6, 4, 16),      (22, 14, 42),    (226, 255, 236), (124, 255, 150), (255, 120, 236)),
-    # (Vallée) TEEN: teenage engineering's colours, an OP-1's screen: black, graphite, off-white text, their orange for
-    # values, their blue for the one active thing; the tracks their primaries (XENO's widgets: HOME a tape machine)
-    ("TEEN",   (6, 6, 6),       (34, 34, 36),    (238, 238, 232), (255, 106, 20),  (70, 140, 255)),
+    # (Vallée) TEEN: an OP-1's screen, teenage engineering's: black, white lines and text, their blue for values, their red
+    # for the one active thing; the tracks red, blue, white, violet, green, orange (XENO's screens, plain: ui_xeno.c)
+    ("TEEN",   (0, 0, 0),       (28, 28, 30),    (238, 238, 238), (90, 160, 255),  (255, 70, 70)),
 ]
 SKIFF, CRYPT, NEON, QUARK, XENO, TEEN = "SKIFF", "CRYPT", "NEON", "QUARK", "XENO", "TEEN"
 # (Vallée) THEME XENO and TEEN (TEEN: XENO's widgets in TE's colours; the others' palettes, widgets and fonts gone:
@@ -70,8 +70,8 @@ TRACKS = {"SKIFF": [(255, 90, 54), (34, 195, 180), (255, 191, 0), (149, 128, 255
                     (230, 96, 230), (250, 220, 80)],
           "XENO": [(90, 255, 110), (80, 160, 255), (255, 230, 70), (255, 110, 200),   # (Vallée) the elements: alien
                    (180, 110, 255), (255, 150, 50)],
-          "TEEN": [(255, 60, 40), (255, 140, 0), (255, 215, 0), (40, 120, 255),       # (Vallée) TE: red orange yellow
-                   (200, 200, 196), (0, 190, 100)]}                                   # blue, light grey, green                                # cryptid orb crystal sigil herb                                  # nebula ember                                  # magenta yellow
+          "TEEN": [(255, 70, 70), (80, 150, 255), (225, 225, 225), (170, 120, 255),   # (Vallée) OP-1: red blue white
+                   (60, 215, 120), (255, 150, 40)]}                                  # violet, green, orange
 NTRACKS = 6
 # the eleven palettes before THEME (index order: their ids PAL_TAG + index) and Felucca's oldest twenty (ids below 20)
 OLD11 = ["GREY", "GREEN", "AMBER", "ICE", "VIOLET", "ROSE", "PAPER", "HI-CON", "NIGHT", "MONO", "SKIFF"]

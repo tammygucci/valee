@@ -126,6 +126,7 @@ static struct {
     uint16_t mid, dim, line, sel, tint, ink, rec, raise, key, lane, grid;
     uint16_t trk[UI_NTRK];       /* the tracks' colours (UI_TRACKS; a palette without its own: THEME) */
     uint8_t light;
+    uint8_t teen;                /* ((Vallée) THEME TEEN's look: ui_xeno.c UX_TEEN) */
     uint32_t gen;                /* bumped by palette_set (the text ramps follow) */
 } ux;
 /* (Vallée) THEME XENO alone: Skiff's font, HOME a tape deck, a creature a sound (ui_xeno.c). The other themes' looks
@@ -181,6 +182,7 @@ static void palette_set(uint32_t i)
     const ui_pal_t *p = &UI_PALETTES[i % NPALETTES];
     uint32_t k;
     i %= NPALETTES;
+    ux.teen = i == UI_TEEN_INDEX;
     uf.f = UF_FACE[UX_CRYPT || UX_NEON];         /* (CRYPT, NEON: the pixel faces) */
     uf.cap = UF_CAP[UX_CRYPT || UX_NEON];
     ux.bg = p->bg; ux.surf = p->surf; ux.text = p->text; ux.theme = p->theme;

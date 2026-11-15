@@ -1516,7 +1516,7 @@ static int test_display_preferences(void)
     bad += check("(Vallée) THEME: XENO and TEEN (the others gone); KNOB 1 to TEEN, in TE's colours, XENO's widgets",
                  str_eq(MI_NAME[MI_COLOR], "THEME") && NPALETTES == 2u && str_eq(UI_PALETTES[0].name, "XENO") &&
                  str_eq(UI_PALETTES[1].name, "TEEN") && settings.palette == UI_TEEN_INDEX &&
-                 T_BG == UI_PALETTES[UI_TEEN_INDEX].bg && UX_XENO && &AF_S != &AF_S_PX && ui.menu == 1 &&
+                 T_BG == UI_PALETTES[UI_TEEN_INDEX].bg && UX_XENO && UX_TEEN && &AF_S != &AF_S_PX && ui.menu == 1 &&
                  memcmp(before, host_screen, sizeof before) && !memcmp(sounds, trk, sizeof sounds));
     press(B_OCTUP);
     bad += check("(Vallée) THEME: OCT+ round to XENO; old themes' ids are XENO",
