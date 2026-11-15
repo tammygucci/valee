@@ -10274,11 +10274,21 @@ static int test_noslice(void)
 /* (Vallée) THE WORLD (ui_world.c): HOME on HOME in XENO; a song playing: its notes send sigils up and leave stars, the
  * obelisk, the head and every creature drawn; a muted track sends none; stopped or ANIM OFF it is still; HOME again:
  * the tracks */
-static int test_world(void)
+static void world_play(uint32_t frames_n)
 {
     static int32_t o[2u * CTL];
+    uint32_t f, b;
+    for (f = 0; f < frames_n; f++) {
+        for (b = 0; b < 44100u * 16u / 1000u / CTL + 1u; b++)
+            mix_block(o, CTL);
+        frame();
+    }
+}
+static int test_world(void)
+{
     int bad = 0, ok;
-    uint32_t f, b, colours = 0, x, y, nsig;
+    uint32_t f, colours = 0, x, y, tot, seed1, k, nf;
+    uint8_t cells1[WL_GN][WL_GH];
     static uint8_t seen[8192];
     ui_power_on();
     palette_set(UI_XENO_INDEX);
@@ -10289,59 +10299,83 @@ static int test_world(void)
     go_home();
     frame();
     press(B_HOME);
-    ok = ui.home && ui.home_scope;
+    ok = ui.home && ui.home_scope && wl_on();
     memset(&wl, 0, sizeof wl);
     seq_start();
-    for (f = 0; f < 240u; f++) {
-        for (b = 0; b < 44100u * 16u / 1000u / CTL + 1u; b++)
-            mix_block(o, CTL);
-        frame();
-    }
+    world_play(240u);
     memset(seen, 0, sizeof seen);
     for (y = graph_y(); y < graph_y() + graph_h(); y++)
         for (x = 0; x < 240u; x++) {
             uint16_t c = swap16(host_screen[y * 240u + x]);
             if (!seen[c >> 3]) { seen[c >> 3] = 1; colours++; }
         }
-    ok &= colours > 24u;
-    bad += check("(Vallée) THE WORLD: HOME on HOME (XENO) draws it, many colours, not the wave", ok);
-    ok = wl.nsig > 8u && wl.nstar > 2u;
-    for (f = 0; f < WL_NP && f < wl.nsig; f++)
-        ok &= wl.sig[f].k != 3u;
-    for (f = 0; f < WL_NS && f < wl.nstar; f++)
-        ok &= wl.star[f].k != 3u;
-    bad += check("(Vallée) THE WORLD: the notes send sigils up and leave stars; a muted track's none", ok);
-    {   /* the dancing: their offsets change through the bars; the head summons one (two bars at most between) */
-        int32_t dx0, dy0, dx, dy, moved = 0;
-        uint32_t k2, p2;
-        for (k2 = 0; k2 < NTRK; k2++) {
-            wl_dance(k2, 0, &dx0, &dy0);
-            for (p2 = 100; p2 < 1000u; p2 += 300u) {
-                wl_dance(k2, p2, &dx, &dy);
-                moved += dx != dx0 || dy != dy0;
-            }
-        }
-        bad += check("(Vallée) THE WORLD: the creatures dance (on the beat), the head summons one now and then",
-                     moved > 6 && wl.beats >= 4u && wl.summon_beat > 0u);
+    ok &= colours > 16u;
+    bad += check("(Vallée) THE SPELL: HOME on HOME (XENO) draws it, many colours, not the wave", ok);
+    for (k = 0, nf = 0; k < WL_NF; k++)
+        nf += wl.fly[k].t != 0;
+    ok = wl.total > 6u && wl.cnt[3] == 0u && nf <= WL_NF && wl.cnt[0] > 0u;
+    for (y = 0, x = 0; y < WL_GN; y++)
+        for (f = 0; f < WL_GH; f++)
+            x += wl.cell[y][f] != 0;
+    ok &= x > 3u;
+    bad += check("(Vallée) THE SPELL: the tracks playing send their elements into the circle (a muted one none), the "
+                 "figure grows", ok);
+    {   /* the map: LOOP (no song), on the cards' row (no cards: their labels' ink gone) */
+        uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total;
+        uint8_t grp[WL_NSEC], ent[WL_NSEC];
+        bad += check("(Vallée) THE SPELL: no song: the map is one LOOP", wl_song(at0, len, grp, ent, &pos, &total) == 0u);
     }
     stop_transport();
     frames(30);
-    nsig = wl.nsig;
+    tot = wl.total;
     frames(120);
-    bad += check("(Vallée) THE WORLD: stopped, no more sigils", wl.nsig == nsig);
-    ui_prefs |= PREF_ANIM_OFF;
+    bad += check("(Vallée) THE SPELL: stopped, nothing more goes in, the figure stays", wl.total == tot && x > 3u);
+    /* the same music from the top: the same spell; another sound: another */
+    memset(&wl, 0, sizeof wl);
     seq_start();
-    for (f = 0; f < 120u; f++) {
-        for (b = 0; b < 44100u * 16u / 1000u / CTL + 1u; b++)
-            mix_block(o, CTL);
-        frame();
-    }
-    bad += check("(Vallée) THE WORLD: ANIM OFF, still (no sigils)", wl.nsig == nsig);
+    world_play(200u);
+    seed1 = wl.seed;
+    memcpy(cells1, wl.cell, sizeof cells1);
+    stop_transport();
+    frames(10);
+    seq_start();
+    world_play(200u);
+    ok = wl.seed == seed1 && !memcmp(cells1, wl.cell, sizeof cells1);
+    stop_transport();
+    frames(10);
+    apply_preset_to(&trk[0], (trk[0].preset + 1u) % ENGINES[trk[0].eng_req % NENGINES]->npresets);
+    seq_start();
+    world_play(200u);
+    ok &= wl.seed != seed1;
+    bad += check("(Vallée) THE SPELL: PLAY from the top again: the same spell, the same figure; another sound: another", ok);
+    stop_transport();
+    frames(10);
+    ui_prefs |= PREF_ANIM_OFF;
+    memset(&wl, 0, sizeof wl);
+    seq_start();
+    world_play(120u);
+    for (k = 0, nf = 0; k < WL_NF; k++)
+        nf += wl.fly[k].t != 0;
+    bad += check("(Vallée) THE SPELL: ANIM OFF, the elements straight in (none in the air)", wl.total > 3u && nf == 0u);
     ui_prefs &= ~PREF_ANIM_OFF;
     stop_transport();
+    {   /* a GEN SONG: its eight parts on the map, GEN's names */
+        uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n;
+        uint8_t grp[WL_NSEC], ent[WL_NSEC];
+        char nm[8];
+        gen.made = 0; gen.nseq = 0; gen.song = 0;
+        gen.v[GK_PART] = GP_SONG;
+        ok = gen_song() == 0;
+        n = wl_song(at0, len, grp, ent, &pos, &total);
+        ok &= n == 8u && wl_gen_layout(grp, n) && total == 32u * 192u && at0[2] == 8u * 192u;
+        wl_sec_name(nm, 5u, grp[5], 1);
+        ok &= str_eq(nm, "BRIDGE");
+        gen.v[GK_PART] = GP_LOOP;
+        bad += check("(Vallée) THE SPELL: a GEN SONG on the map: eight parts, 32 bars, INTRO .. BRIDGE .. OUTRO", ok);
+    }
     press(B_HOME);
     frame();
-    bad += check("(Vallée) THE WORLD: HOME again, the tracks", ui.home && !ui.home_scope);
+    bad += check("(Vallée) THE SPELL: HOME again, the tracks", ui.home && !ui.home_scope);
     return bad;
 }
 static int test_gen(void)

@@ -857,6 +857,10 @@ static void draw_columns(void)
         fr_columns();
         return;
     }
+    if (wl_on()) {                                     /* ((Vallée) THE SPELL: the song's map where the cards are) */
+        wl_strip();
+        return;
+    }
     if (ui.home) {
         for (c = 0; c < 4u; c++) {
             int16_t *vp;

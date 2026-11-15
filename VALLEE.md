@@ -6,8 +6,8 @@ SLICE engine is left out** (see [Room on the FM-1](#room-on-the-fm-1)). On top o
 
 - **An opening**: an animated intro with its own chime when you switch on.
 - **THEME XENO**: a tape-machine HOME screen, and a creature for every sound.
-- **THE WORLD**: tap HOME on HOME and your tracks' creatures dance for the intro's head in an alien land, everything
-  moving to the song, the song drawing sigils and constellations on it.
+- **THE SPELL**: tap HOME on HOME: the song's map on top, and the Alchemist (the intro's head) conjuring with your six
+  tracks' elements a figure the song summons, different for every song.
 - **GEN**: a song generator in twelve styles, which writes ordinary steps you then edit in the sequencer.
 
 Vallée's first start sets the look it is made for, once, on a new unit and over Skiff's settings alike: THEME XENO,
@@ -186,40 +186,42 @@ one from its name. They blink, sing on their track's notes, and sleep while mute
 creature six times its size, the sound's name and its engine. It closes by itself about a second after the last
 detent.
 
-## THE WORLD
+## THE SPELL
 
-Tap **HOME** while on HOME (where Skiff showed the sound's wave) and you're in THE WORLD: an alien land at dusk where
-the creatures of the sounds on your six tracks dance for the head from the opening, which looms huge and ghostly in
-the sky over them. Tap HOME again for the tracks.
+Tap **HOME** while on HOME and you're in THE SPELL. Tap HOME again for the tracks.
 
-- **The creatures dance.** Each has its own move, and picks a new one every bar or two from the song: a hop, a sway,
-  a shuffle, an orbit, a bow to the head, a leap, all on the beat. Each note its track plays makes it jump, and the
-  louder the track the higher it bobs. A muted track's creature sleeps.
-- **The head watches.** Its eyes follow whoever just played. Its third eye flashes on the beat and beams down on each
-  creature as it plays. Every bar or two it summons one, lifting it up on a twin beam for a moment before letting it
-  float back down. When the song gets loud its mouth glows: it's singing along. Behind it a ring of dots turns, pulsing
-  on the beat.
-- **The land**: the stars twinkle more the louder it gets, and the ground's grid runs toward you with the playhead, a
-  ripple spreading over it on each beat.
+**At the top, the song's map** (where HOME's knob cards are): the song as SEQ > SONG has it, each part a block as long
+as its bars, the same music in the same colour, named as GEN named them (INTRO, VERSE, CHORUS, BRIDGE, OUTRO) or A, B,
+C... in the order they first come. The playhead runs across it, the part it's in lights up, and its name and the bar
+(BAR 9 / 32) are above. With SONG off, or no lists, it's one LOOP block.
 
-And the music makes its own art on it, different every time:
+**Below, the Alchemist** (the head from the intro) conjures with your six tracks, each its own element:
 
-- **Sigils.** Every note sends a glowing sigil up from the creature that played it: the sun, the moon, the eye in the
-  pyramid, a star, an eye, an ankh, a cross or a spiral, chosen by the note's pitch. They drift to the head's third
-  eye, which flares as it takes them in.
-- **Constellations.** Notes leave stars in the sky (left to right by pitch, higher or lower by where they fall in the
-  bar), each joined to the last star its track left. Over a song they build up into its own star map; the oldest
-  fade, the last 32 stay.
+| Track | Element |
+|---|---|
+| 1 | green aliens |
+| 2 | blue cryptids |
+| 3 | yellow psi orbs |
+| 4 | pink crystals |
+| 5 | purple sigils |
+| 6 | orange mythic herbs |
 
-With ANIM OFF (MENU) it's a still picture. The themes that already have their own scene there keep it: SKIFF's sea,
-CRYPT's creatures, QUARK's detector.
+When a track plays (a note on its step, not muted) one of its element leaves its jar on the shelf and arcs into the
+summoning circle, at most one a track a beat. The shelf counts what each track has given.
+
+**What the spell summons** rises in the circle as the song goes on, and is whole when the song ends. Its shape comes from
+the six sounds you chose; each part of it takes the colour of an element, in the proportions the song used them; and
+once a track has given enough of itself its trait appears: aliens give it eyes, cryptids horns, psi orbs a halo,
+crystals a crown, sigils a rune ring, herbs vines. Other sounds, other parts, another mix: another figure. The same
+song from the top: the same one. Every PLAY starts a new spell; stopped, the figure stays. With ANIM OFF nothing flies:
+the elements go straight in.
 
 ## Room on the FM-1
 
 The FM-1's firmware has to fit a fixed slot of 581,564 bytes. Skiff 2.6 already filled all but about 4.5 KB of it
 (its released file: an image of about 577,000 bytes), and Vallée's additions need about 34 KB. So Vallée is built
 without Skiff's SLICE engine and its two built-in drum loops (`FELUCCA_SLICE=0`, a build switch Skiff already had),
-which frees about 50 KB: with everything (THE WORLD included) the image comes to roughly 565 KB, about 11-16 KB
+which frees about 50 KB: with everything (THE SPELL included) the image comes to roughly 565 KB, about 11-16 KB
 under the limit (an estimate from
 compiling Skiff 2.6 and Vallée the same way for a similar 32-bit chip, scaled by Skiff 2.6's real size; the build
 itself measures the real one).
@@ -298,8 +300,8 @@ ABOUT page still points at Skiff's repo: change `ui_menu.c`'s two lines to your 
 | `firmware/src/ui_draw.c` `intro_frame` | the opening animation |
 | `firmware/src/ui_xeno.c` | XENO's deck and lanes; the creature box |
 | `firmware/src/ui_beast.c` | the creatures: their parts and how a sound picks them |
-| `firmware/src/ui_world.c` | THE WORLD |
-| `tests/ui_test.c` `test_gen`, `test_beasts`, `test_world` | GEN's tests; the creatures (all different) and the box; THE WORLD |
+| `firmware/src/ui_world.c` | THE SPELL: the song's map, the Alchemist, the figure |
+| `tests/ui_test.c` `test_gen`, `test_beasts`, `test_world` | GEN's tests; the creatures (all different) and the box; THE SPELL |
 | `tests/vallee_stress.c` | the stress test: GEN fuzzed, a monkey on the whole UI, the creatures (ASan + UBSan) |
 | `web/emu/emu_test.mjs` | the intro's test |
 
