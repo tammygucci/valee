@@ -198,8 +198,8 @@ static void ui_power_on(void)
     ui.home = 1;
     ui.force = 1;
     panel = PANEL_DEFAULT;
-    settings.palette = UI_SKIFF_INDEX;
-    palette_set(UI_SKIFF_INDEX);
+    settings.palette = UI_XENO_INDEX;
+    palette_set(UI_XENO_INDEX);
     transport_req = 0;
     panic_req = 0;
     mi_r = mi_w = midi_in_overflow = 0;

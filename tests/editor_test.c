@@ -998,8 +998,8 @@ static int menu_protocol(void)
     /* MENU_SET: each setting, applied as the menu applies it; RAM only here (no flash: rc 3) */
     reset();
     ui.force = 0;
-    ok = menu_set(0, 2) == 3 && host_wire[6] == 0 && ed_rv(host_wire + 7) == 0 && settings.palette == 0u &&   /* (clamped: XENO) */
-         T_BG == UI_PALETTES[0].bg && ui.force;
+    ok = menu_set(0, 2) == 3 && host_wire[6] == 0 && ed_rv(host_wire + 7) == 1 && settings.palette == 1u &&   /* (clamped: TEEN) */
+         T_BG == UI_PALETTES[1].bg && ui.force;
     ok &= menu_set(1, 1) == 1u;                        /* ((Skiff U2) id 1, STYLE: retired, no such setting) */
     ok &= menu_set(2, 1) == 3 && (ui_prefs & PREF_LARGE);
     ok &= menu_set(3, 1) == 3 && (ui_prefs & PREF_ANIM_OFF);
@@ -1022,7 +1022,7 @@ static int menu_protocol(void)
     ok &= menu_set(20, 0) == 3 && ret_mode() == RET_SNAP;   /* boot; SNAP) */
     ok &= menu_set(21, 1) == 3 && (MIDI_BYTE & 32u);   /* ((2.5) KEEP SENDS ON: [15][17] bit 5) */
     for (i = 0; i < MENU_NI; i++) {                     /* MENU_DESC reads them back */
-        static const int32_t SET[19] = {0, 1, 1, 1, 3, 1, 1, 2, 1, 0, 2, 0, 2, 1, 1, 2, 1, 0, 1};
+        static const int32_t SET[19] = {1, 1, 1, 1, 3, 1, 1, 2, 1, 0, 2, 0, 2, 1, 1, 2, 1, 0, 1};
         menu_desc(i, &it);
         ok &= it.value == SET[MENU_I(i)];
     }
@@ -1594,11 +1594,11 @@ static int custom_colors(void)
          menu_n(MI_COLOR) == NPALETTES + 1u;
     a[1] = NPALETTES; request(ED_UI_SET, a, 2);             /* CUSTOM again: in its look */
     ok &= host_wire[5] == 3 && settings.palette == UI_XENO_INDEX && cpal_on() && tokens_are(CC) && UX_XENO;
-    menu_put(MI_COLOR, UI_XENO_INDEX);                      /* the MENU's THEME: XENO (the last), then a step on is CUSTOM */
-    ok &= settings.palette == UI_XENO_INDEX && tokens_builtin(UI_XENO_INDEX) && menu_step(MI_COLOR, 1) == NPALETTES;
+    menu_put(MI_COLOR, UI_TEEN_INDEX);                      /* the MENU's THEME: TEEN (the last), then a step on is CUSTOM */
+    ok &= settings.palette == UI_TEEN_INDEX && tokens_builtin(UI_TEEN_INDEX) && menu_step(MI_COLOR, 1) == NPALETTES;
     menu_put(MI_COLOR, menu_step(MI_COLOR, 1));
     ok &= cpal_on() && settings.palette == UI_XENO_INDEX && tokens_are(CC) && menu_step(MI_COLOR, 1) == 0u &&
-          menu_step(MI_COLOR, -1) == UI_XENO_INDEX;
+          menu_step(MI_COLOR, -1) == UI_TEEN_INDEX;
     bad += check("(#27) THEME: CUSTOM and back by UI_SET and the MENU (it wraps round eight), the set kept, CUSTOM in its look", ok);
 
     for (i = 0; i < CPAL_N; i++) bad_c[i] = (uint16_t)~CC[i];

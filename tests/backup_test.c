@@ -213,9 +213,9 @@ int main(void)
     memset(&ps, 0, sizeof ps);
     settings_export(&ps);
     ps.lowcut = 2;                                       /* SPEAKER BASS+ */
-    ps.palette = palette_to_stored(3);
+    ps.palette = palette_to_stored(UI_TEEN_INDEX);       /* ((Vallée) TEEN) */
     bad += check("settings with SPEAKER BASS+ restore", put_all(1, &ps, sizeof ps, st_crc32(&ps, sizeof ps)) == 0 &&
-                 settings.lowcut == 2u && fx_lowcut == 2u && settings.palette == UI_XENO_INDEX);   /* ((Vallée) XENO alone) */
+                 settings.lowcut == 2u && fx_lowcut == 2u && settings.palette == UI_TEEN_INDEX);
     ps.palette = 13;                                     /* an older backup: its PAPER (old id 13): ((Vallée) XENO) */
     bad += check("settings of an older backup restore with the palette migrated",
                  put_all(1, &ps, sizeof ps, st_crc32(&ps, sizeof ps)) == 0 && settings.palette == UI_XENO_INDEX);

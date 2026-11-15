@@ -2145,7 +2145,7 @@ static void roll_frames(const char *dir)
             }
             for (k = 0; k < 8u; k++) ui_draw();
         }
-        if (p == UI_XENO_INDEX) {
+        if (p == UI_XENO_INDEX || p == UI_TEEN_INDEX) {
             ug_add(UI_PALETTES[p].name, "bpm_roll", bimg, sizeof bimg);
             ug_add(UI_PALETTES[p].name, "card_roll", cimg, sizeof cimg);
             if (dir) {
@@ -2370,7 +2370,7 @@ int main(int argc, char **argv)
     const char *out = argc > 1 ? argv[1] : "build/ui_new";
     char path[600];
     uint32_t p, s;
-    static const char *const SHOW[] = {"SKIFF", "HI-CON", "PAPER", "CRYPT", "NEON", "QUARK", "XENO"};   /* ((Skiff, R1) THEME's) */
+    static const char *const SHOW[] = {"SKIFF", "HI-CON", "PAPER", "CRYPT", "NEON", "QUARK", "XENO", "TEEN"};   /* ((Skiff, R1) THEME's) */
     snprintf(path, sizeof path, "%s/report.txt", out);
     rep = fopen(path, "w");
     if (!rep) { fprintf(stderr, "cannot write %s\n", path); return 1; }
@@ -2439,9 +2439,9 @@ int main(int argc, char **argv)
         static const uint16_t CC[11] = {RGB(16, 24, 32), RGB(28, 40, 54), RGB(242, 232, 216), RGB(255, 154, 60),
                                         RGB(127, 224, 200), RGB(255, 107, 107), RGB(255, 209, 102), RGB(6, 214, 160),
                                         RGB(76, 201, 240), RGB(199, 125, 255), RGB(244, 162, 97)};
-        static const uint8_t LOOKS[1] = {UI_XENO_INDEX};   /* ((Vallée) XENO alone) */
+        static const uint8_t LOOKS[2] = {UI_XENO_INDEX, UI_TEEN_INDEX};   /* ((Vallée) XENO, TEEN) */
         uint32_t n0 = nfind, k, l;
-        for (l = 0; l < 1u; l++)
+        for (l = 0; l < 2u; l++)
             for (s = 0; s < S_COUNT; s++) {
                 char name[64], tag[24];
                 if (!FELUCCA_FM4 && (s == S_OP_ENV || (s >= S_ALG1 && s <= S_OP_LEVEL)))
@@ -2501,7 +2501,7 @@ int main(int argc, char **argv)
                     draw((int)s);
                     ntall += !ui.menu && !ui.confirm && !name_on() && large_kind() == LK_TALL;
                     lint();
-                    if (p == UI_XENO_INDEX)
+                    if (p == UI_XENO_INDEX || p == UI_TEEN_INDEX)
                         write_ppm(out, tag, S_NAME[s]);
                 }
         }

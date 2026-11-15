@@ -535,8 +535,9 @@ const F = { INT: 0, PCT: 1, BIPCT: 2, TIME: 3, LFOHZ: 4, CUTOFF: 5, DB: 6, SEMI:
    tokens the editor wears while CUSTOM is in use, and the contrast it warns by (WCAG; below the generator's minimums, so
    no theme of the device's warns). After Felucca 1.6's custom palette (palette.js, Leo Kuroshita) */
 const PAL_ROLES = ["BG", "SURF", "TEXT", "THEME", "ACCENT", "T1", "T2", "T3", "T4", "T5", "T6"];
-const PAL_BUILTIN = [   /* ((Vallée) THEME XENO alone on the unit) */
+const PAL_BUILTIN = [   /* ((Vallée) THEME XENO and TEEN on the unit) */
   ["XENO", 0x0022, 0x1065, 0xe7fd, 0x7ff2, 0xfbdd, 0x5fed, 0x551f, 0xff28, 0xfb79, 0xb37f, 0xfca6],
+  ["TEEN", 0x0000, 0x2104, 0xef7d, 0xfb42, 0x447f, 0xf9e5, 0xfc60, 0xfea0, 0x2bdf, 0xce58, 0x05ec],
 ].map(([name, ...c]) => ({ name, c }));
 const rgb8 = (c) => [(c >> 11) * 255 / 31 | 0, ((c >> 5) & 63) * 255 / 63 | 0, (c & 31) * 255 / 31 | 0];   /* (as the generator's) */
 const hex565 = (c) => "#" + rgb8(c).map((x) => x.toString(16).padStart(2, "0")).join("");
@@ -2540,7 +2541,7 @@ function makeMockDevice(opt = {}) {
     uiCaps: opt.legacy || opt.v3 || opt.v5 ? 0 : opt.uiCaps ?? 25,   /* ((Skiff #27) 16: COLORS) */
     custom: { flags: 0, look: 0, c: new Array(11).fill(0), preview: null },   /* ((Skiff #27) THEME CUSTOM's set) */
     palette: 0, font: 0, monitor: 0, filter: 0, bankSig: 0,
-    palettes: ["XENO"],   // ((Vallée) THEME: the device's list, XENO alone (tools/gen_ui_palettes.py))
+    palettes: ["XENO", "TEEN"],   // ((Vallée) THEME: the device's list (tools/gen_ui_palettes.py))
     favorites: Array.from({ length: ENG.length + 1 }, () => []),
     watch: false, v4: false, lastReq: 0,
   };
@@ -6154,7 +6155,7 @@ function applyCustom(c) {
 }
 function renderPreferences(force = false) {
   const d = dev, p = d && d.preferences;
-  const LOOK = { SKIFF: "dark", "HI-CON": "dark", PAPER: "light", CRYPT: "crypt", NEON: "neon", QUARK: "quark", XENO: "dark" };   /* (Skiff 1.0; (Vallée) XENO) */
+  const LOOK = { SKIFF: "dark", "HI-CON": "dark", PAPER: "light", CRYPT: "crypt", NEON: "neon", QUARK: "quark", XENO: "dark", TEEN: "dark" };   /* (Skiff 1.0; (Vallée) XENO) */
   const cu = p && p.palettes[p.state.palette] === "CUSTOM" && p.colors && p.colors.stored ? p.colors : null;
   const lk = cu && LOOK[(PAL_BUILTIN[cu.look] || {}).name];
   const look = !p ? null : cu ? (["crypt", "neon", "quark"].includes(lk) ? lk : luma565(cu.c[0]) > 128 ? "light" : "dark") :

@@ -50,11 +50,14 @@ PALETTES = [
     # active thing (the tape head); the tracks acid, ecto, sigil gold, plasma, nebula, ember. HOME a tape machine, each
     # engine its own alien (src/ui_xeno.c)
     ("XENO",   (6, 4, 16),      (22, 14, 42),    (226, 255, 236), (124, 255, 150), (255, 120, 236)),
+    # (Vallée) TEEN: teenage engineering's colours, an OP-1's screen: black, graphite, off-white text, their orange for
+    # values, their blue for the one active thing; the tracks their primaries (XENO's widgets: HOME a tape machine)
+    ("TEEN",   (6, 6, 6),       (34, 34, 36),    (238, 238, 232), (255, 106, 20),  (70, 140, 255)),
 ]
-SKIFF, CRYPT, NEON, QUARK, XENO = "SKIFF", "CRYPT", "NEON", "QUARK", "XENO"
-# (Vallée) THEME XENO alone (the others' palettes, widgets and fonts gone: src/gfx.c UX_*); every saved id, old or not, is
-# XENO. CUSTOM's colours still go over it
-PALETTES = [p for p in PALETTES if p[0] == XENO]
+SKIFF, CRYPT, NEON, QUARK, XENO, TEEN = "SKIFF", "CRYPT", "NEON", "QUARK", "XENO", "TEEN"
+# (Vallée) THEME XENO and TEEN (TEEN: XENO's widgets in TE's colours; the others' palettes, widgets and fonts gone:
+# src/gfx.c UX_*); every other saved id, old or not, is XENO. CUSTOM's colours still go over either
+PALETTES = [p for p in PALETTES if p[0] == XENO] + [p for p in PALETTES if p[0] == TEEN]
 # the six tracks' colours (src/gfx.c T_TRK; (Skiff phase 6) T5, T6 too): a palette not named here gives every track
 # its THEME. Told apart by lightness as well as hue, and always drawn with the track's number (never the colour alone)
 TRACKS = {"SKIFF": [(255, 90, 54), (34, 195, 180), (255, 191, 0), (149, 128, 255),    # vermilion teal amber violet
@@ -66,7 +69,9 @@ TRACKS = {"SKIFF": [(255, 90, 54), (34, 195, 180), (255, 191, 0), (149, 128, 255
           "QUARK": [(255, 84, 96), (70, 220, 130), (90, 140, 255), (60, 220, 240),    # red green blue, anti: cyan
                     (230, 96, 230), (250, 220, 80)],
           "XENO": [(90, 255, 110), (80, 160, 255), (255, 230, 70), (255, 110, 200),   # (Vallée) the elements: alien
-                   (180, 110, 255), (255, 150, 50)]}                                # cryptid orb crystal sigil herb                                  # nebula ember                                  # magenta yellow
+                   (180, 110, 255), (255, 150, 50)],
+          "TEEN": [(255, 60, 40), (255, 140, 0), (255, 215, 0), (40, 120, 255),       # (Vallée) TE: red orange yellow
+                   (200, 200, 196), (0, 190, 100)]}                                   # blue, light grey, green                                # cryptid orb crystal sigil herb                                  # nebula ember                                  # magenta yellow
 NTRACKS = 6
 # the eleven palettes before THEME (index order: their ids PAL_TAG + index) and Felucca's oldest twenty (ids below 20)
 OLD11 = ["GREY", "GREEN", "AMBER", "ICE", "VIOLET", "ROSE", "PAPER", "HI-CON", "NIGHT", "MONO", "SKIFF"]
@@ -201,6 +206,7 @@ def main():
                 f"#define UI_NEON_INDEX {ix(NEON)}          /* NEON: CRYPT's font, its own widgets */",
                 f"#define UI_QUARK_INDEX {ix(QUARK)}          /* QUARK: Skiff's font, its own widgets */",
                 f"#define UI_XENO_INDEX {names.index(XENO)}u          /* XENO: Skiff's font, the tape deck, the aliens */",
+                f"#define UI_TEEN_INDEX {ix(TEEN)}          /* (Vallée) TEEN: XENO's widgets in teenage engineering's colours */",
                 f"#define UI_DEFAULT_INDEX {names.index(XENO)}u          /* (Skiff XENO) a new unit's THEME, RESET SETTINGS' */",
                 f"#define UI_FALLBACK_INDEX {names.index(XENO)}u          /* (Vallée) an id no palette has: XENO */",
                 f"#define UI_THEME_TAG {THEME_TAG}u          /* stored id = UI_THEME_TAG + index */",

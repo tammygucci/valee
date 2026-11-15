@@ -44,11 +44,12 @@ int main(void)
     {   /* ((Vallée) THEME: XENO alone. Every old id, of the eleven, the twenty or the themes before (THEME_TAG + 0 .. 15),
          * is read and is XENO; XENO's round trips; anything else is XENO too */
         persist_t q = original;
-        assert(NPALETTES == 1u && !strcmp(UI_PALETTES[0].name, "XENO"));
+        assert(NPALETTES == 2u && !strcmp(UI_PALETTES[0].name, "XENO") && !strcmp(UI_PALETTES[1].name, "TEEN"));
         for (uint32_t i = 0; i < 20u; i++) assert(palette_from_stored(i) == UI_XENO_INDEX);
         for (uint32_t i = 0; i < 11u; i++) assert(palette_from_stored(UI_PAL_TAG + i) == UI_XENO_INDEX && palette_stored_ok(UI_PAL_TAG + i));
-        for (uint32_t i = 0; i < 16u; i++) assert(palette_from_stored(UI_THEME_TAG + i) == UI_XENO_INDEX && palette_stored_ok(UI_THEME_TAG + i));
-        assert(palette_from_stored(palette_to_stored(0)) == 0u);
+        for (uint32_t i = 0; i < 16u; i++)             /* ((Vallée) TEEN: its own, 1) */
+            assert(palette_from_stored(UI_THEME_TAG + i) == (i == 1u ? UI_TEEN_INDEX : UI_XENO_INDEX) && palette_stored_ok(UI_THEME_TAG + i));
+        assert(palette_from_stored(palette_to_stored(0)) == 0u && palette_from_stored(palette_to_stored(1)) == 1u);
         assert(palette_from_stored(40) == UI_XENO_INDEX && !palette_stored_ok(40) && palette_stored_ok(3) &&
                !palette_stored_ok(UI_THEME_TAG + 16u));
         q.palette = UI_THEME_TAG + 3u;                  /* (CRYPT, before) */

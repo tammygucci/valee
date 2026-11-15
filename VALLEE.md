@@ -5,8 +5,8 @@ does, Vallée does the same way: the pages, the sequencer, the sounds, projects 
 SLICE engine is left out** (see [Room on the FM-1](#room-on-the-fm-1)). On top of that it adds:
 
 - **An opening**: an animated intro with its own chime when you switch on.
-- **THEME XENO**, the only theme (Skiff's others, SKIFF HI-CON PAPER CRYPT NEON QUARK, are gone, ~36 KB freed): a
-  tape-machine HOME screen, and a creature for every sound.
+- **THEME XENO**, and **TEEN** (the same screens in teenage engineering's colours): a tape-machine HOME screen, and a
+  creature for every sound. Skiff's other themes are gone (~36 KB freed).
 - **THE SPELL**: tap HOME on HOME: the song's map on top, and the Alchemist (the intro's head) conjuring with your six
   tracks' elements a figure the song summons, different for every song.
 - **GEN**: a song generator in twelve styles, which writes ordinary steps you then edit in the sequencer.
@@ -165,9 +165,13 @@ back for DEMARCO).
 
 ## THEME XENO
 
-XENO is Vallée's only theme: Skiff's other six (SKIFF, HI-CON, PAPER, CRYPT, NEON, QUARK) and their widgets and pixel
-font are gone, which freed about 36 KB of the FM-1's flash. A unit on one of them comes up in XENO. THEME CUSTOM (your own
-colours, from the web editor) still works, over XENO.
+Vallée has two themes, both with XENO's screens (the tape deck, the creatures, THE SPELL): **XENO** (the default) and
+**TEEN**, the same screens in teenage engineering's colours, as on an OP-1's display: black and graphite, off-white
+text, TE orange for values, TE blue for the selected thing, and the six tracks in their primaries (red, orange, yellow,
+blue, light grey, green). The creatures keep their elements' colours in both. Pick one on MENU > DISPLAY > THEME.
+Skiff's other six (SKIFF, HI-CON, PAPER, CRYPT, NEON, QUARK) and their widgets and pixel font are gone, which freed
+about 36 KB of the FM-1's flash; a unit on one of them comes up in XENO. THEME CUSTOM (your own colours, from the web
+editor) still works, over either.
 
 **HOME is a tape machine**, after the OP-1's tape (like the ORBIT and KARMA home screens). Two reels with turning
 hexagram hubs wind the tape from left to right as the pattern plays. The selected track's creature stands on the head and

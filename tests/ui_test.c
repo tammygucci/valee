@@ -189,8 +189,8 @@ static void ui_power_on(void)
     ui.home = 1;
     ui.force = 1;
     panel = PANEL_DEFAULT;
-    settings.palette = UI_SKIFF_INDEX;
-    palette_set(UI_SKIFF_INDEX);
+    settings.palette = UI_XENO_INDEX;
+    palette_set(UI_XENO_INDEX);
     transport_req = 0;
     panic_req = 0;
     mi_r = mi_w = midi_in_overflow = 0;
@@ -1512,13 +1512,17 @@ static int test_display_preferences(void)
     ui.menu_sel = MI_COLOR;
     ui.force = 1; ui_draw();
     memcpy(before, host_screen, sizeof before);
-    press(B_OCTUP);                                     /* ((Vallée) XENO alone: nothing to step to) */
-    bad += check("(Vallée) THEME: XENO alone (the others gone), OCT+ and KNOB 1 keep it, the menu stays",
-                 str_eq(MI_NAME[MI_COLOR], "THEME") && NPALETTES == 1u && str_eq(UI_PALETTES[0].name, "XENO") &&
-                 settings.palette == UI_XENO_INDEX && UX_XENO && &AF_S != &AF_S_PX && ui.menu == 1 &&
-                 !memcmp(sounds, trk, sizeof sounds) && (turn(EN_K1, 1), settings.palette == UI_XENO_INDEX) &&
+    turn(EN_K1, 1);                                     /* ((Vallée) XENO, TEEN: KNOB 1 to TEEN, at once) */
+    bad += check("(Vallée) THEME: XENO and TEEN (the others gone); KNOB 1 to TEEN, in TE's colours, XENO's widgets",
+                 str_eq(MI_NAME[MI_COLOR], "THEME") && NPALETTES == 2u && str_eq(UI_PALETTES[0].name, "XENO") &&
+                 str_eq(UI_PALETTES[1].name, "TEEN") && settings.palette == UI_TEEN_INDEX &&
+                 T_BG == UI_PALETTES[UI_TEEN_INDEX].bg && UX_XENO && &AF_S != &AF_S_PX && ui.menu == 1 &&
+                 memcmp(before, host_screen, sizeof before) && !memcmp(sounds, trk, sizeof sounds));
+    press(B_OCTUP);
+    bad += check("(Vallée) THEME: OCT+ round to XENO; old themes' ids are XENO",
+                 settings.palette == UI_XENO_INDEX && T_BG == UI_PALETTES[UI_XENO_INDEX].bg &&
                  palette_from_stored(UI_THEME_TAG + 3u) == UI_XENO_INDEX && palette_from_stored(5u) == UI_XENO_INDEX &&
-                 palette_stored_ok(UI_THEME_TAG + 8u));
+                 palette_from_stored(UI_THEME_TAG + 1u) == UI_TEEN_INDEX && palette_stored_ok(UI_THEME_TAG + 8u));
     (void)before;
     settings.lowcut = 2;
     ui.menu_sel = MI_LOWCUT;
@@ -1664,7 +1668,7 @@ static int test_menu_tabs(void)
         turn(EN_K3, -1); ok &= menu_get(i) == want && ui.menu == 1;
     }
     ui_prefs = 0; settings_hold = HOLD_DEF; settings_leds = LEDS_DIM;
-    settings.lowcut = 0; fx_lowcut = 0; menu_put(MI_COLOR, UI_SKIFF_INDEX);
+    settings.lowcut = 0; fx_lowcut = 0; menu_put(MI_COLOR, UI_XENO_INDEX);
     song.g[G_CLOCK] = song.g[G_ROUTE] = 0;
     menu_put(MI_PREVIEW, 0);
     memset(&favorites.factory[15][6], 0, 6);            /* ((1.3) T1..T6 on channels 1..6 again) */
@@ -9002,7 +9006,7 @@ static int test_blocks(void)
     int bad = 0, ok;
     int32_t x, y, rows = 0;
     ui_power_on();
-    settings.palette = UI_SKIFF_INDEX; palette_set(UI_SKIFF_INDEX);
+    settings.palette = UI_XENO_INDEX; palette_set(UI_XENO_INDEX);
     ui.force = 1; frame();
     turn(EN_K1, 1);                                    /* HOME: CUT just turned */
     ok = ui.home && ui.hot_t && ui.hot_col == 0u;
@@ -10054,7 +10058,7 @@ static int test_playhead_line(void)
         if (!ok) { printf("  PLAYHEAD LINE on %s: %s\n", UI_PALETTES[p].name, figure ? "the same" : "changed"); break; }
     }
     menu_put(MI_PHEAD, 0);
-    menu_put(MI_COLOR, UI_SKIFF_INDEX);
+    menu_put(MI_COLOR, UI_XENO_INDEX);
     song.playing = 0;
     bad += check("(#27) PLAYHEAD LINE: HOME without the torch, the car, the collision; SKIFF, HI-CON, PAPER as they were", ok);
     return bad;

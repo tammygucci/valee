@@ -44,8 +44,9 @@ int main(int argc, char **argv)
     const aafont_t probe = {1, 1, 'A', 'A', 0, 0, pg, pd, 0, 0, 0};
     double worst = 100;
     /* ((Vallée) THEME: XENO alone, the others gone) */
-    assert(NPALETTES == 1u && !strcmp(UI_PALETTES[0].name, "XENO") && UI_XENO_INDEX == 0u && UI_DEFAULT_INDEX == 0u &&
-           UX_XENO && !UX_CRYPT && !UX_NEON && !UX_QUARK && !UX_SKIFF);
+    assert(NPALETTES == 2u && !strcmp(UI_PALETTES[0].name, "XENO") && UI_XENO_INDEX == 0u && UI_DEFAULT_INDEX == 0u &&
+           !strcmp(UI_PALETTES[1].name, "TEEN") && UI_TEEN_INDEX == 1u &&
+           UX_XENO && !UX_CRYPT && !UX_NEON && !UX_QUARK && !UX_SKIFF);   /* ((Vallée) XENO and TEEN, its colours) */
     for (unsigned p = 0; p < NPALETTES; p++) {
         uint16_t *tok = &ux.bg;
         palette_set(p);
