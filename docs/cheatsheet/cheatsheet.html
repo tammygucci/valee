@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Vallée cheat sheet</title>
+<!-- The source of web/brand/vallee_cheatsheet.pdf: open in Chrome and print to PDF (Letter, background graphics on, no margins). -->
+<style>
+@font-face { font-family: Barlow; src: url(../../web/fonts/BarlowCondensed-Bold.ttf); font-weight: 700; }
+@font-face { font-family: Barlow; src: url(../../web/fonts/BarlowCondensed-Medium.ttf); font-weight: 500; }
+@font-face { font-family: Inter; src: url(../../web/fonts/InterTight-Latin.woff2); }
+@page { size: letter; margin: 0; }
+:root { --t1:#5dff8a; --t2:#50a0ff; --t3:#ffe646; --t4:#ff5fc0; --t5:#b46bff; --t6:#ff9a3c; --ink:#16131f; --mid:#5c5870; --rule:#dcd8e6; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 9.3pt/1.36 Inter, sans-serif; color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.page { width: 8.5in; height: 11in; padding: 0.38in 0.42in 0.3in; position: relative; overflow: hidden; page-break-after: always; }
+.page:last-child { page-break-after: auto; }
+header { background: #0b0812; color: #eafff0; margin: -0.38in -0.42in 0.16in; padding: 0.22in 0.42in 0.16in; display: flex; align-items: center; gap: 16px; }
+header img.logo { width: 74px; height: 74px; image-rendering: pixelated; }
+header .k { font: 500 8pt Barlow, sans-serif; letter-spacing: .3em; color: #9d97b5; }
+header h1 { font: 700 40pt/0.95 Barlow, sans-serif; margin: 0; letter-spacing: .02em; text-shadow: 0 0 12px #5dff8a55; }
+header .tags span { font: 700 8pt Barlow, sans-serif; letter-spacing: .14em; border: 1px solid; padding: 1px 6px; margin-right: 6px; }
+header .tags span:first-child { color: var(--t1); } header .tags span:last-child { color: var(--t4); }
+header .shots { margin-left: auto; display: flex; gap: 6px; }
+header .shots img { width: 78px; height: 78px; border: 1px solid #2c2640; image-rendering: pixelated; }
+.bar { display: flex; height: 4px; margin: -0.16in -0.42in 0.16in; } .bar i { flex: 1; }
+.cols { columns: 2; column-gap: 0.28in; }
+section { break-inside: avoid; margin: 0 0 11px; }
+h2 { font: 700 13pt/1 Barlow, sans-serif; letter-spacing: .06em; text-transform: uppercase; margin: 0 0 4px; padding-bottom: 3px; border-bottom: 2px solid var(--c, var(--ink)); }
+h2 small { font: 500 8.5pt Barlow, sans-serif; letter-spacing: .04em; color: var(--mid); text-transform: none; margin-left: 4px; }
+.e { display: grid; grid-template-columns: 1.42in 1fr; gap: 0 8px; padding: 2.4px 0; border-bottom: 1px solid var(--rule); }
+.e:last-child { border-bottom: 0; }
+kbd { font: 700 8.8pt Barlow, sans-serif; letter-spacing: .04em; background: #efecf6; border: 1px solid #cfc9de; border-radius: 3px; padding: 0 4px; white-space: normal; display: inline-block; margin: 0 2px 2px 0; }
+.e > b { font-weight: normal; }
+table { border-collapse: collapse; width: 100%; font-size: 8.8pt; }
+td, th { border: 1px solid var(--rule); padding: 2px 4px; text-align: left; vertical-align: top; }
+th { font: 700 8.3pt Barlow, sans-serif; letter-spacing: .05em; background: #f3f1f8; }
+.note { font-size: 8.4pt; color: var(--mid); margin-top: 3px; }
+.keys { display: flex; gap: 3px; margin: 4px 0 3px; }
+.keys div { flex: 1; text-align: center; border: 1px solid #bdb6cf; border-radius: 0 0 4px 4px; padding: 13px 0 3px; font: 700 8pt Barlow, sans-serif; }
+.keys div i { display: block; font: 500 7pt Barlow, sans-serif; color: var(--mid); font-style: normal; }
+.styles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px 8px; font-size: 8.5pt; }
+.styles b { font: 700 8.4pt Barlow, sans-serif; letter-spacing: .04em; }
+.warn { border: 1.5px solid var(--t2); background: #eef5ff; padding: 5px 7px; font-size: 8.8pt; }
+footer { position: absolute; left: 0.42in; right: 0.42in; bottom: 0.18in; font-size: 6.8pt; color: var(--mid); display: flex; justify-content: space-between; }
+.h2c1 { --c: var(--t1); } .h2c2 { --c: var(--t2); } .h2c3 { --c: #e6c800; } .h2c4 { --c: var(--t4); } .h2c5 { --c: var(--t5); } .h2c6 { --c: var(--t6); }
+.page:first-child .e { padding: 1.6px 0; } .page:first-child { font-size: 9pt; }
+.mini .e { padding: 1.7px 0; } .mini section { margin-bottom: 9px; }
+.mini header { padding: 0.12in 0.42in; } .mini header h1 { font-size: 22pt; } .mini header img.logo { width: 40px; height: 40px; }
+</style></head><body>
+
+<div class="page">
+  <header>
+    <img class="logo" src="../../web/brand/logo.png" alt="">
+    <div>
+      <div class="k">CONSCIOUSNESS ENERGY GRID</div>
+      <h1>VALLÉE</h1>
+      <div class="tags"><span>CHEAT SHEET</span><span>M-VAVE FM-1 · 2.6-VALLEE</span></div>
+    </div>
+    <div class="shots"><img src="../../web/brand/xeno_home.png" alt=""><img src="../../web/brand/xeno_spell.png" alt=""><img src="../../web/brand/teen_scope.png" alt=""></div>
+  </header>
+  <div class="bar"><i style="background:var(--t1)"></i><i style="background:var(--t2)"></i><i style="background:var(--t3)"></i><i style="background:var(--t4)"></i><i style="background:var(--t5)"></i><i style="background:var(--t6)"></i></div>
+
+  <div class="cols">
+    <section class="h2c1"><h2>Getting around</h2>
+      <div class="e"><span class="l"><kbd>tap HOME</kbd></span><b>HOME: the tape deck and the six tracks.</b></div>
+      <div class="e"><span class="l"><kbd>tap HOME on HOME</kbd></span><b>THE SPELL: the song's map and the Alchemist. Tap again for the tracks.</b></div>
+      <div class="e"><span class="l"><kbd>hold HOME</kbd></span><b>SHIFT. Its map shows what every control does on this page.</b></div>
+      <div class="e"><span class="l"><kbd>hold + release HOME</kbd></span><b>MENU. ALGORITHM picks the tab, PRESETS the row, any knob the value.</b></div>
+      <div class="e"><span class="l"><kbd>turn ALGORITHM</kbd></span><b>Picks the track (1–6) on every page.</b></div>
+      <div class="e"><span class="l"><kbd>tap a page button</kbd></span><b>Opens its pages; again (or SELECT) for the next one.</b></div>
+      <div class="e"><span class="l"><kbd>OCT+</kbd> / <kbd>OCT−</kbd></span><b>On action pages and dialogs: do it / go back.</b></div>
+      <div class="e"><span class="l"><kbd>any button</kbd></span><b>Skips the intro at power-on (MENU › DISPLAY › ANIM OFF: no intro).</b></div>
+    </section>
+
+    <section class="h2c3"><h2>GEN <small>the song generator</small></h2>
+      <div class="e"><span class="l"><kbd>turn SELECT → on HOME</kbd></span><b>Opens GEN. (BPM LOCK off: SHIFT + SELECT.)</b></div>
+      <div class="e"><span class="l"><kbd>SELECT</kbd></span><b>Its four knob pages. Back past page 1: HOME.</b></div>
+      <div class="e"><span class="l"><kbd>PRESETS</kbd></span><b>STYLE, always.</b></div>
+      <div class="e"><span class="l"><kbd>OCT+</kbd></span><b>Writes it into the tracks.</b></div>
+      <div class="e"><span class="l"><kbd>OCT+ again</kbd></span><b>Untouched: the next seed. Turn one knob first: the same piece with only that changed.</b></div>
+      <div class="e"><span class="l"><kbd>OCT−</kbd></span><b>Puts back what the tracks held before (steps, sounds, tempo).</b></div>
+      <div class="e"><span class="l"><kbd>hold SAVE</kbd></span><b>Later: undoes GEN a track at a time.</b></div>
+      <table style="margin-top:4px">
+        <tr><th></th><th>KNOB 1</th><th>KNOB 2</th><th>KNOB 3</th><th>KNOB 4</th></tr>
+        <tr><th>1</th><td>STYLE</td><td>SEED</td><td>VIBE</td><td>ENERGY</td></tr>
+        <tr><th>2</th><td>PART</td><td>KEY</td><td>TEMPO</td><td>SOUNDS</td></tr>
+        <tr><th>3</th><td>DRUMS</td><td>BASS</td><td>KEYS</td><td>LEAD</td></tr>
+        <tr><th>4</th><td>COLOR</td><td>COMPLEX</td><td>SWING</td><td>HUMAN</td></tr>
+      </table>
+      <div class="note"><b>PART › SONG</b>: one press writes INTRO, VERSE, CHORUS, BRIDGE, OUTRO as a whole song (uses 30 patterns). <b>SOUNDS › KEEP</b>: notes only, your sounds stay. Roles OFF leave a track as it is. Tracks: T1 bass · T2 keys · T3 lead · T4 drums · T5 color · T6 perc.</div>
+      <div class="styles" style="margin-top:4px">
+        <div><b>AETHER</b> psych pop</div><div><b>LOTUS</b> slacker jazz-pop</div><div><b>ZETA</b> French house</div>
+        <div><b>ORACLE</b> glitch electronics</div><div><b>AKASHA</b> ambient</div><div><b>SIGIL</b> jazz-funk</div>
+        <div><b>LEMURIA</b> yacht rock</div><div><b>ASTRAL</b> sad synth-pop</div><div><b>HEX</b> garage rock</div>
+        <div><b>OBELISK</b> motorik</div><div><b>SERAPH</b> 80s soul</div><div><b>WRAITH</b> warped 80s</div>
+      </div>
+      <div class="note">VIBE: DARK · HAZY · WARM · BRIGHT · WEIRD. ENERGY sets tempo, drum density and fills.</div>
+    </section>
+
+    <section class="h2c4"><h2>THE SPELL <small>play the song live</small></h2>
+      <div class="note" style="margin:0 0 2px;color:var(--ink)">On THE SPELL the white keys are the song's parts, from the leftmost key, in every octave:</div>
+      <div class="keys"><div>F<i>INTRO</i></div><div>G<i>VERSE</i></div><div>A<i>CHORUS</i></div><div>B<i>BRIDGE</i></div><div>C<i>OUTRO</i></div><div>D<i>6th</i></div><div>E<i>7th</i></div></div>
+      <div class="e"><span class="l"><kbd>white key</kbd></span><b>Every track jumps to that part on the next bar line, so it lands on the 1. Press it any time in the bar before.</b></div>
+      <div class="e"><span class="l"><kbd>black key</kbd></span><b>Cancels a jump that hasn't come in yet.</b></div>
+      <div class="e"><span class="l"><kbd>stopped + key</kbd></span><b>Moves the song there; PLAY starts from it.</b></div>
+      <div class="note">The blinking outline on the map is the part waiting to come in (e.g. VERSE &gt; CHORUS). SONG ON carries on from the new part; SONG OFF loops it.</div>
+    </section>
+
+    <section class="h2c2"><h2>Looks</h2>
+      <div class="e"><span class="l"><kbd>MENU › DISPLAY › THEME</kbd></span><b><b>XENO</b>: tape deck, a creature for every sound, THE SPELL. <b>TEEN</b>: an OP-1 style tape machine, big track names, a wire shape on HOME on HOME.</b></div>
+      <div class="e"><span class="l"><kbd>turn PRESETS on HOME</kbd></span><b>A box shows the new sound: its creature (XENO) or its name big (TEEN).</b></div>
+      <div class="note">Creature families by track: 1 green aliens · 2 blue cryptids · 3 yellow psi orbs · 4 pink crystals · 5 purple sigils · 6 orange herbs.</div>
+    </section>
+
+
+    <section class="h2c5"><h2>Patterns full?</h2>
+      <div class="note" style="color:var(--ink);margin:0">The 64 patterns are shared by the whole unit, and saved projects keep theirs. The message's second line says who holds them (SAVED SLOT 1:30 = slot 1 holds 30). Delete a saved project you don't need on <kbd>SAVE › PROJECT</kbd> <kbd>KNOB 2</kbd> DELETE, then press GEN again.</div>
+    </section>
+  </div>
+  <footer><span>Vallée by tammygucci · a fork of Skiff by illuminus5 · built on Felucca by Leo Kuroshita</span><span>tammygucci.github.io/valee · 1 / 2</span></footer>
+</div>
+
+<div class="page mini">
+  <header>
+    <img class="logo" src="../../web/brand/logo.png" alt="">
+    <h1>VALLÉE</h1>
+    <div class="tags" style="margin-left:6px"><span>CHEAT SHEET</span><span>THE BASICS</span></div>
+  </header>
+  <div class="bar"><i style="background:var(--t1)"></i><i style="background:var(--t2)"></i><i style="background:var(--t3)"></i><i style="background:var(--t4)"></i><i style="background:var(--t5)"></i><i style="background:var(--t6)"></i></div>
+
+  <div class="cols">
+    <section class="h2c1"><h2>Playing</h2>
+      <div class="e"><span class="l"><kbd>turn PRESETS</kbd></span><b>Changes the track's sound; its steps stay.</b></div>
+      <div class="e"><span class="l"><kbd>SAVE › PRESETS › LIST</kbd></span><b>Pick a type (BASS, PAD…) and PRESETS steps through that type only.</b></div>
+      <div class="e"><span class="l"><kbd>KNOB 1–4</kbd></span><b>The page's four values; every page draws what they do.</b></div>
+      <div class="e"><span class="l"><kbd>hold LFO + knobs</kbd></span><b>MOMENTARY: let go and the values come back (OCT+ keeps them).</b></div>
+      <div class="e"><span class="l"><kbd>EDIT</kbd> <kbd>ENV</kbd> <kbd>LFO</kbd></span><b>The sound's pages. MOD page: where the LFO and envelopes go.</b></div>
+      <div class="e"><span class="l"><kbd>SEL</kbd> / <kbd>ARP</kbd></span><b>Scales and chord keys / the arpeggiator (14 modes, HOLD).</b></div>
+    </section>
+
+    <section class="h2c2"><h2>Sequencer</h2>
+      <div class="e"><span class="l"><kbd>PLAY</kbd></span><b>Starts and stops.</b></div>
+      <div class="e"><span class="l"><kbd>REC</kbd></span><b>Arms the selected track; on an armed track, disarms all.</b></div>
+      <div class="e"><span class="l"><kbd>SHIFT + REC</kbd></span><b>REC layer: hold F3 to clear the track; CLICK, COUNT-IN, CLICK LEVEL, FEEL.</b></div>
+      <div class="e"><span class="l"><kbd>SEQ</kbd></span><b>The sequencer's pages: NOTES, PATTERN, AUTOMATION, SONG…</b></div>
+      <div class="e"><span class="l"><kbd>hold SEQ</kbd></span><b>TOOLS: CLEAR, REVERSE, SHIFT, RANDOM, COOK, EUCLID, DOUBLE, HALF.</b></div>
+      <div class="e"><span class="l"><kbd>hold step + knob</kbd></span><b>Locks that value on that step.</b></div>
+      <div class="e"><span class="l"><kbd>SHIFT + SAVE</kbd></span><b>TAKE: keeps the last loop you played. Stopped: FREE TAKE finds the tempo and the 1.</b></div>
+      <div class="e"><span class="l"><kbd>hold ARP</kbd></span><b>PERFORM: launch entries, stage mutes, scenes, throws.</b></div>
+      <div class="e"><span class="l"><kbd>SHIFT + PLAY</kbd></span><b>On SEQ › SONG: plays from the entry KNOB 1 is on.</b></div>
+    </section>
+
+    <section class="h2c5"><h2>Layers</h2>
+      <div class="e"><span class="l"><kbd>hold a layer button</kbd></span><b>FX, GLO, SEL, EDIT, ARP or SEQ: its layer on the keys and knobs while held.</b></div>
+      <div class="e"><span class="l"><kbd>SHIFT + the button</kbd></span><b>Locks the layer open; the button closes it.</b></div>
+      <div class="e"><span class="l"><kbd>black keys F#3–F#4</kbd></span><b>In GLO, FX and PERFORM: tracks 1–6's mutes. Tap: mute; hold: cut while held.</b></div>
+      <div class="e"><span class="l"><kbd>GLO layer</kbd></span><b>Levels, solos, mutes, FILL, tap tempo.</b></div>
+      <div class="e"><span class="l"><kbd>GLO + SELECT</kbd></span><b>Tempo (with BPM LOCK on, the Vallée default).</b></div>
+    </section>
+
+    <section class="h2c4"><h2>FX layer <small>hold FX + a key</small></h2>
+      <table>
+        <tr><th>F3</th><td>REPEAT 1/8</td><th>F4</th><td>FREEZE</td></tr>
+        <tr><th>G3</th><td>REPEAT 1/16</td><th>G4</th><td>OCT UP</td></tr>
+        <tr><th>A3</th><td>REPEAT 1/32</td><th>A4</th><td>OCT DN</td></tr>
+        <tr><th>B3</th><td>REVERSE</td><th>B4</th><td>GATE</td></tr>
+        <tr><th>C4</th><td>LPF sweep</td><th>C5</th><td>DUB</td></tr>
+        <tr><th>D4</th><td>HPF sweep</td><th>D5</th><td>FLANGE</td></tr>
+        <tr><th>E4</th><td>TAPE STOP</td><th>E5</th><td>VINYL</td></tr>
+      </table>
+      <div class="note">KNOB 1–4: FILTER · CRUSH · THROW · DEPTH. SHIFT + FX locks the layer and keys latch. Let go of FX and the knobs glide back (OCT+ keeps them).</div>
+    </section>
+
+    <section class="h2c3"><h2>Saving</h2>
+      <div class="e"><span class="l"><kbd>tap SAVE</kbd></span><b>Its pages: PRESETS, USER, PATTERNS, PROJECT.</b></div>
+      <div class="e"><span class="l"><kbd>hold SAVE</kbd></span><b>Undo (6 levels); OCT− / OCT+ step through them.</b></div>
+      <div class="e"><span class="l"><kbd>SAVE › USER</kbd></span><b>Save a sound: stop, KNOB 1 picks the slot, OCT+, name it with the keys, OCT+.</b></div>
+      <div class="e"><span class="l"><kbd>SAVE › PROJECT</kbd></span><b>4 project slots; KNOB 2 DELETE frees a slot's patterns.</b></div>
+      <div class="note">The music comes back at power-on (MENU › RESTORE LAST).</div>
+    </section>
+
+    <section class="h2c6"><h2>MIDI</h2>
+      <div class="e"><span class="l"><kbd>MENU › MIDI › AUTO CHANNEL</kbd></span><b>Set it to your keyboard's channel: it plays whichever track is selected.</b></div>
+      <div class="e"><span class="l"><kbd>MENU › MIDI › MIDI IN</kbd></span><b>CH1-6: channels 1–6 play tracks 1–6. SEL: every channel plays the selected track.</b></div>
+      <div class="e"><span class="l"><kbd>MENU › MIDI</kbd></span><b>Also CLOCK (INT, USB, TRS), CLOCK OUT, NOTES OUT, THRU, MIDI LEARN.</b></div>
+    </section>
+
+    <section class="h2c6"><h2>Sounds Vallée adds</h2>
+      <div class="e"><span class="l"><kbd>EDIT › FILTER</kbd></span><b>On an ANALOG track: CLASSIC, MOOG, OBERHEIM or JUNO filter.</b></div>
+      <div class="e"><span class="l"><kbd>PRESETS</kbd></span><b>21 presets named MOOG…, OBERHEIM…, JUNO… on ANALOG.</b></div>
+      <div class="e"><span class="l"><kbd>DEAD DRUMS</kbd></span><b>A towel-muted 70s kit on the DRUM engine (KIT DEAD).</b></div>
+    </section>
+    <section class="h2c2"><h2>Installing safely</h2>
+      <div class="warn"><b>Before any custom firmware</b>, we highly recommend installing <b>m-bootloader</b> with <b>M-Flasher</b> (github.com/jvitkauskas/m-flasher). If an install goes wrong, hold REC while switching on and the FM-1 waits in download mode.</div>
+      <div class="e" style="margin-top:3px"><span class="l"><kbd>Installer</kbd></span><b>tammygucci.github.io/valee in Chrome or Edge, USB straight to the computer.</b></div>
+      <div class="e"><span class="l"><kbd>hold OCT− + OCT+ 5 s</kbd></span><b>The chip's boot mode, for recovery.</b></div>
+    </section>
+  </div>
+  <footer><span>Community cheat sheet. The Vallée guide (VALLEE.md) and Skiff's manual are the full story.</span><span>tammygucci.github.io/valee · 2 / 2</span></footer>
+</div>
+</body></html>

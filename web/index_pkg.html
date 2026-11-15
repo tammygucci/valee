@@ -73,7 +73,10 @@
   .shots figure { margin: 0; }
   .shots img { width: 100%; image-rendering: pixelated; display: block; border: 1px solid var(--line); }
   .shots figcaption { color: var(--dim); font-size: 13px; margin-top: 6px; }
-  .links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .links { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .csbtn { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 9px 16px; border: 1px solid var(--t3); color: var(--t3); text-decoration: none;
+    font: 700 16px "Barlow Condensed", sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+  .csbtn:hover { background: #ffe64618; }
   .links a { display: block; background: var(--surf); border: 1px solid var(--line); padding: 14px 16px; text-decoration: none; color: var(--fg); }
   .links a b { display: block; font: 700 19px "Barlow Condensed", sans-serif; letter-spacing: .06em; text-transform: uppercase; color: var(--acid); }
   .links a span { color: var(--dim); font-size: 14px; }
@@ -97,6 +100,7 @@
       <h1>VALLÉE</h1>
       <span class="tag">INSTALLER</span><span class="tag" style="color:var(--plasma);border-color:var(--plasma)">M-VAVE FM-1</span>
       <p class="sub" data-t="tagline"></p>
+      <a class="csbtn" href="brand/vallee_cheatsheet.pdf" target="_blank" rel="noopener">&#8595; <span data-t="csBtn"></span></a>
     </div>
   </header>
   <div class="bar"><span></span><span></span><span></span><span></span><span></span><span></span></div>
@@ -160,6 +164,7 @@
   <div class="links">
     <a href="../editor/"><b data-t="lEditor"></b><span data-t="editor"></span></a>
     <a href="https://github.com/tammygucci/valee/blob/main/VALLEE.md" target="_blank" rel="noopener"><b data-t="lGuide"></b><span data-t="guide"></span></a>
+    <a href="brand/vallee_cheatsheet.pdf" target="_blank" rel="noopener"><b data-t="lCs"></b><span data-t="cs"></span></a>
     <a href="../../learn/"><b data-t="lLearn"></b><span data-t="learn"></span></a>
   </div>
 
@@ -190,7 +195,8 @@ const TEXT = {
     xenoSub: "標準", teenSub: "OP-1 風",
     cXeno1: "HOME: テープデッキ、音色ごとのクリーチャー", cXeno2: "PRESETS を回す: 音色のクリーチャー", cXeno3: "HOME をもう一度: THE SPELL、上に曲マップ",
     cTeen1: "HOME: 線のリール、ローラー、大きなトラック名", cTeen2: "PRESETS を回す: 名前を大きく", cTeen3: "HOME をもう一度: 曲で動くワイヤーの形",
-    lEditor: "エディタ", lGuide: "Vallée ガイド", lLearn: "Skiff マニュアル",
+    lEditor: "エディタ", lGuide: "Vallée ガイド", lLearn: "Skiff マニュアル", lCs: "チートシート", csBtn: "チートシート (PDF)",
+    cs: "操作が一目でわかる 2 ページの PDF（英語）。印刷して FM-1 の横に",
     guide: "Vallée で増えたこと: GEN、THE SPELL、鍵盤、テーマ、音色（英語）",
     intro: "FM-1 を USB でパソコンにつなぎ、インストールを押してください。（パソコンの Chrome か Edge で使えます）",
     warn: "書き込み中は USB を抜かず、電源も切らないでください。途中で切れても書き込みモードのまま残るので、挿し直す（電源を入れる）と続きから再開します。",
@@ -256,7 +262,8 @@ const TEXT = {
     xenoSub: "THE DEFAULT", teenSub: "OP-1 STYLE",
     cXeno1: "HOME: the tape deck, a creature for every sound", cXeno2: "Turn PRESETS: the sound's creature", cXeno3: "HOME on HOME: THE SPELL, the song's map above",
     cTeen1: "HOME: line reels, rollers, the tracks big", cTeen2: "Turn PRESETS: the name, big", cTeen3: "HOME on HOME: a wire shape the song moves",
-    lEditor: "Editor", lGuide: "Vallée guide", lLearn: "Skiff manual",
+    lEditor: "Editor", lGuide: "Vallée guide", lLearn: "Skiff manual", lCs: "Cheat sheet", csBtn: "Cheat sheet (PDF)",
+    cs: "Every control on two pages: print it and keep it by the FM-1",
     guide: "Everything Vallée adds: GEN, THE SPELL, the keys, the themes, the sounds",
     intro: "Connect the FM-1 to the computer by USB and press Install. (Works in Chrome or Edge on a computer.)",
     warn: "Keep it plugged in and switched on while it writes. If the cable or the power is cut, it stays in update mode: plug it back in (or switch it on) and the install carries on.",

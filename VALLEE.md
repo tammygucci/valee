@@ -324,8 +324,8 @@ build log's last lines give the image's size and the RAM's ("image N B; RAM .dat
 
 Installing is at your own risk, as with every FM-1 firmware. The installer can take the unit back to official V15.
 
-**Source.** Vallée is GPL-3.0. If you share the firmware, share this source with it (your GitHub repo does that). The
-ABOUT page still points at Skiff's repo: change `ui_menu.c`'s two lines to your own.
+**Source.** Vallée is GPL-3.0. If you share the firmware, share this source with it (your GitHub repo does that).
+The ABOUT page and its QR point at this repo (`ui_menu.c`); a fork of your own: change them to yours.
 
 ## Code
 
