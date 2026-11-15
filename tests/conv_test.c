@@ -400,7 +400,7 @@ int main(int argc, char **argv)
              up_used(2) && up_rec(2)->engine == ENGI_FM6 && !upf_get(2, pk);
         bad += check("  presets: the v2 FM6 sound keeps its patch, the DIGITAL one has its own", ok);
     }
-    ok = settings.palette == 2u && settings.lowcut == 1u;
+    ok = settings.palette == UI_XENO_INDEX && settings.lowcut == 1u;   /* ((Vallée) XENO alone: any palette is XENO) */
     bad += check("  settings: the PER4's palette and low cut", ok);
 
     /* 4. Felucca 1.6's archive (felucca.c): FUNA projects (the music, slots 1 and 2), user presets of Felucca 1.2+ */

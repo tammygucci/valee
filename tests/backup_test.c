@@ -215,10 +215,10 @@ int main(void)
     ps.lowcut = 2;                                       /* SPEAKER BASS+ */
     ps.palette = palette_to_stored(3);
     bad += check("settings with SPEAKER BASS+ restore", put_all(1, &ps, sizeof ps, st_crc32(&ps, sizeof ps)) == 0 &&
-                 settings.lowcut == 2u && fx_lowcut == 2u && settings.palette == 3u);
-    ps.palette = 13;                                     /* an older backup: its PAPER (old id 13) */
+                 settings.lowcut == 2u && fx_lowcut == 2u && settings.palette == UI_XENO_INDEX);   /* ((Vallée) XENO alone) */
+    ps.palette = 13;                                     /* an older backup: its PAPER (old id 13): ((Vallée) XENO) */
     bad += check("settings of an older backup restore with the palette migrated",
-                 put_all(1, &ps, sizeof ps, st_crc32(&ps, sizeof ps)) == 0 && settings.palette == 2u);
+                 put_all(1, &ps, sizeof ps, st_crc32(&ps, sizeof ps)) == 0 && settings.palette == UI_XENO_INDEX);
     ps.palette = palette_to_stored(3);
     before = erases;
     ps.lowcut = 3;
@@ -263,7 +263,7 @@ int main(void)
         po.favorites.factory[15][26] = LAUNCH_BEAT;
         po.favorites.factory[9][0] = 4;                  /* (PHYS's third preset starred) */
         bad += check("(2.0) settings of a PER4 archive restore, stored as SKS1",
-                     put_all(1, &po, sizeof po, st_crc32(&po, sizeof po)) == 0 && settings.palette == 2u &&
+                     put_all(1, &po, sizeof po, st_crc32(&po, sizeof po)) == 0 && settings.palette == UI_XENO_INDEX &&
                      settings.lowcut == 1u && launch_mode() == LAUNCH_BEAT && favorites.factory[9][0] == 4u &&
                      st_load(OBJ_SETTINGS, &got, sizeof got) == (int)sizeof got && got.magic == SKS_MAGIC &&
                      got.s.launch == LAUNCH_BEAT && got.fav[9][0] == 4u && !memcmp(&got, &persist_saved, sizeof got));
