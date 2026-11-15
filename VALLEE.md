@@ -14,6 +14,23 @@ Vallée's first start sets the look it is made for, once, on a new unit and over
 LARGE OFF (its big cards hide the deck and the creatures), ANIM ON, PLAYHEAD THEME, BPM LOCK ON (SELECT on HOME opens
 GEN) and HINTS ON. Everything else you set under Skiff is kept, and the MENU can change any of these afterwards.
 
+## Vintage synths: MOOG, OBERHEIM, JUNO
+
+ANALOG has a **FILTER** of four kinds (EDIT > FILTER, on an ANALOG track: FILTER, then CUTOFF RES DRIVE again):
+
+| FILTER | What it is |
+|---|---|
+| CLASSIC | ANALOG's own 12 dB low-pass, as always |
+| MOOG | a 24 dB low-pass; the input driven warm into it, the low end giving way as RES rises |
+| OBERHEIM | a 12 dB state-variable low-pass, its resonance gentle (it sings, it does not whistle), a little warmth after |
+| JUNO | a 24 dB low-pass, clean, its resonance up to self-oscillation (with the CHORUS send up: the Juno's shimmer) |
+
+WAVE SYNC keeps CLASSIC's filter. Twenty-one presets use them (PRESETS on an ANALOG track): MOOG BASS, MOOG LEAD, MOOG
+SUB, MOOG FUNK, MOOG TAURUS, MOOG SWEEP, MOOG FLUTE; OBERHEIM, OBERHEIM PAD, OBERHEIM STR, OBERHEIM BASS, OBERHEIM
+LEAD, OBERHEIM KEY; JUNO PAD, JUNO STRINGS, JUNO BASS, JUNO HOOVER, JUNO BRASS, JUNO KEYS, JUNO ARP, JUNO SWEEP. Voiced
+after those instruments by ear; no circuit or sample of theirs is in here, and Vallée is not affiliated with Moog,
+Oberheim or Roland.
+
 ## DEAD DRUMS
 
 A new kit for the DRUM engine: **KIT DEAD**, and the preset **DEAD DRUMS** (SAVE > PRESETS, or PRESETS on a DRUM
@@ -146,7 +163,7 @@ hexagram hubs wind the tape from left to right as the pattern plays. The selecte
 sings (pink eyes, a halo) on its notes. There's a tape counter and one meter per track. Below the deck, each track is a
 lane of tape running past the head.
 
-**Every sound has its own creature** (original pixel art, 12 x 12): each of the 142 factory presets gets one of its
+**Every sound has its own creature** (original pixel art, 12 x 12): each of the 163 factory presets gets one of its
 own, and no two are alike. The engine decides the family, from the head, and every member carries the family's mark:
 
 | Engine | Family |

@@ -135,6 +135,8 @@ enum {                          /* per-track parameters */
                                                 * by which of their notes; stored ids 143..145 */
     P_STRUM, P_SDIR,                           /* (2.5, the user's 7B) SCL > CHORD's STRUM (ms) and DIR (DOWN UP ALT,
                                                 * voice.c strum_*); stored ids 146, 147 */
+    P_AFLT,                                    /* (Vallée) ANALOG's FILTER: CLASSIC MOOG OBERHEIM JUNO (eng_analog.c); stored
+                                                * id 148 */
     P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7,
     P_COUNT
 };
@@ -251,6 +253,7 @@ static uint32_t gsid_get(int16_t *g, const uint8_t *b, uint32_t max)
 #define ENGI_GRAIN 8u
 #define ENGI_PHYS 9u
 #define ENGI_DRUM 10u
+#define ENGI_ANALOG 0u                 /* ((Vallée) eng_analog.c: EDIT > FILTER) */
 #define ENGI_DRUMX 14u           /* (Skiff) DRUM-X (eng_drumx.c): a drum track as DRUM's (seq.c drum_track) */
 #define NHEAVY 4u                /* (Skiff phase 6) the tracks that play every engine; the ones after them are light: no
                                   * PHYS, no GRAIN (engines.c eng_allowed: their state is the big one) */

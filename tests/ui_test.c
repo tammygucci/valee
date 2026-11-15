@@ -2904,6 +2904,7 @@ static int engine_cycle(const char *const *want, uint32_t n)   /* EDIT tapped fr
         press(B_EDIT);
         frames(320);                                  /* (taps further apart than a double tap: #83 locks) */
         ok &= str_eq(cur_page()->title, want[i]);
+        if (getenv("CYC_DBG")) printf("  cyc %u: %s (want %s)\n", i, cur_page()->title, want[i]);
     }
     return ok;
 }
@@ -3029,7 +3030,7 @@ static int test_fm6_lab(void)
 
 static int test_edit_cycle(void)
 {
-    static const char *const CYC_A[] = {"EDIT 1", "EDIT 2", "VOICE", "VOICE 2", "EDIT 1"};
+    static const char *const CYC_A[] = {"EDIT 1", "EDIT 2", "FILTER", "VOICE", "VOICE 2", "EDIT 1"};   /* ((Vallée) FILTER) */
     static const char *const CYC_F[] = {"EDIT 1", "EDIT 2", "OPERATOR", "ALL OPS", "VOICE", "VOICE 2", "EDIT 1"};
     static const char *const CYC_D[] = {"EDIT 1", "EDIT 2", "OP1 ENV", "OP2 ENV", "OP3 ENV", "OP4 ENV",
                                         "OP LEVEL", "VOICE", "VOICE 2", "EDIT 1"};
@@ -3045,7 +3046,7 @@ static int test_edit_cycle(void)
         ok &= !str_eq(PAGES[i].title, "ENGINE");
     bad += check("no ENGINE page (engines are the EDIT layer's)", ok);
     set_engine_of(TSEL, 0);
-    bad += check("EDIT cycle (ANALOG): EDIT 1 EDIT 2 VOICE VOICE 2 EDIT 1", engine_cycle(CYC_A, NELEM(CYC_A)));
+    bad += check("EDIT cycle (ANALOG): EDIT 1 EDIT 2 FILTER VOICE VOICE 2 EDIT 1", engine_cycle(CYC_A, NELEM(CYC_A)));
 #if FELUCCA_FM4
     set_engine_of(TSEL, 1);
     bad += check("EDIT cycle (DIGITAL): EDIT 1 EDIT 2 OP1..OP4 ENV OP LEVEL VOICE VOICE 2 EDIT 1",
@@ -8336,10 +8337,10 @@ static int test_u4(void)
         ui_power_on();
         go_title("EDIT 1"); frame();
         page_pos(ti);
-        ok = str_eq(page_head(), "OSC") && str_eq(ti, "1/4");
+        ok = str_eq(page_head(), "OSC") && str_eq(ti, "1/5");
         go_title("ENV"); frame();
         page_pos(ti);
-        bad += check("U4 L5: the header names the page (EDIT 1 on ANALOG: OSC), the footer only where (1/4, ENV 1/2)",
+        bad += check("U4 L5: the header names the page (EDIT 1 on ANALOG: OSC), the footer only where (1/5: (Vallée) FILTER; ENV 1/2)",
                      ok && str_eq(page_head(), "ENV") && str_eq(ti, "1/2"));   /* ((2.0) ENV ENV 2: ENV DEST is MOD's) */
         set_engine_of(TSEL, ENGI_FM6);                  /* (#7) a sheet counts as any page (was SELECT: ROWS) */
         TSEL->engine = TSEL->eng_req;

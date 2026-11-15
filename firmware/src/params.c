@@ -30,7 +30,8 @@ _Static_assert(sizeof N_DKSRC / sizeof N_DKSRC[0] == NTRK + 1u, "DUCK's BY: OFF 
 /* (2.1) chord follow (follow.c): P_FOLLOW names the track as DUCK's BY does; P_FMODE FM_*, P_FNOTE FN_* (append-only) */
 static const char *const N_FMODE[] = {"KEY", "SCALE", "FIT"};
 static const char *const N_FNOTE[] = {"ROOT", "LOW", "HIGH", "LAST"};
-static const char *const N_SDIR[] = {"DOWN", "UP", "ALT"};   /* (2.5) STRUM's DIR (voice.c strum_flush; append-only) */
+static const char *const N_SDIR[] = {"DOWN", "UP", "ALT"};
+static const char *const N_AFLT[] = {"CLASSIC", "MOOG", "OBERHEIM", "JUNO"};   /* ((Vallée) ANALOG's FILTER; append-only) */   /* (2.5) STRUM's DIR (voice.c strum_flush; append-only) */
 static const char *const N_DTYPE[] = {"SOFT", "HARD", "FOLD", "CRUSH", "FUZZ"};   /* (Skiff phase 9) P_DTYPE: DT_* (fx.c) */
 #define TRK_STR_(n) #n
 #define TRK_STR(n) TRK_STR_(n)
@@ -201,6 +202,7 @@ static const param_desc_t TP[P_COUNT] = {
     [P_FNOTE] = PE("NOTE", N_FNOTE, 0),
     [P_STRUM] = {"STRUM", 0, 0, 100, 0, F_INT, U_MS},   /* (2.5, the user's 7B) ms, 0 OFF: the chord at once */
     [P_SDIR] = PE("DIR", N_SDIR, 0),
+    [P_AFLT] = PE("FILTER", N_AFLT, 0),                 /* ((Vallée) ANALOG only: its EDIT > FILTER page) */
 };
 
 static const param_desc_t GP[G_COUNT] = {
@@ -562,6 +564,8 @@ static const page_t PAGES[] = {
     {"FOLLOW", FAM_SCL, SC_TRACK, GR_FOLLOW, {P_FOLLOW, P_FMODE, P_FNOTE, 0xFF}},   /* (2.1) again: the chord follow */
     {"EDIT 1", FAM_EDIT, SC_ENGINE, GR_NONE, {P_E0, P_E1, P_E2, P_E3}},
     {"EDIT 2", FAM_EDIT, SC_ENGINE, GR_NONE, {P_E4, P_E5, P_E6, P_E7}},
+    {"FILTER", FAM_EDIT, SC_TRACK, GR_NONE, {P_AFLT, P_E4, P_E5, P_E6}},   /* ((Vallée) ANALOG only: its FILTER, then CUTOFF
+                                                                         * RES DRIVE again */
     {"OPERATOR", FAM_EDIT, SC_TRACK, GR_FMOP, {0xFF, 0xFF, 0xFF, 0xFF}},   /* (FM6 LAB) FM6 only: an operator's values */
     {"ALL OPS", FAM_EDIT, SC_TRACK, GR_FMALL, {0xFF, 0xFF, 0xFF, 0xFF}},   /* (FM6 LAB) FM6 only: the voice's (ui_fm6.c) */
     {"LANES", FAM_EDIT, SC_TRACK, GR_LANES, {0xFF, 0xFF, 0xFF, 0xFF}},   /* DRUM only: LANE, its LEVEL TUNE DECAY

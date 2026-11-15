@@ -33,6 +33,7 @@ static void analog_note_on(track_t *t, voice_t *v)
     if (!v->s[2])
         v->s[2] = 0x1234567 + (int32_t)v->age;        /* noise state */
     v->s[3] = 0;                                      /* SYNC: no restart pending */
+    v->s[4] = v->s[5] = 0;                            /* ((Vallée) FILTER MOOG JUNO: the second stage) */
 }
 
 /* WAVE SYNC / SUB: OSC 1 a saw, OSC 2 the synced saw / the sub square; then noise, drive and the filter as
@@ -164,9 +165,77 @@ static inline __attribute__((always_inline)) void analog_osc(track_t *t, voice_t
     v->s[1] = ic2;
     v->s[2] = nst;
 }
+/* (Vallée) FILTER MOOG OBERHEIM JUNO (P_AFLT, EDIT > FILTER): the oscillators as above (SYNC plays CLASSIC's filter),
+ * then the model's filter, voiced after the classic circuits (no circuit copied, the shape of each by ear):
+ *   MOOG      a 24 dB low-pass: two 12 dB stages (the first flat, the second carries RES), the input driven into a soft
+ *             clip first (the transistor ladder's warmth) and the pass band giving way as RES rises (its bass loss)
+ *   OBERHEIM  a 12 dB state-variable low-pass, RES gentler (it sings, it does not whistle), a little warmth after
+ *   JUNO      a 24 dB low-pass as MOOG's, clean (no drive before it, no bass loss), RES up to self-oscillation
+ * The second stage's state in s[4] s[5] (engine_t.keep) */
+static __attribute__((noinline)) void analog_render_m(track_t *t, voice_t *v, int32_t *out, uint32_t n, const vmod_t *m)
+{
+    const int16_t *p = t->p;
+    uint32_t wave = (uint32_t)p[P_E0], model = (uint32_t)p[P_AFLT], i;
+    int32_t det = p[P_E1], mix = p[P_E2], noise = p[P_E3], res = p[P_E5];
+    int32_t cut = (p[P_E4] << 8) + m->cutoff + (p[P_E7] * (v->pitch16 - 60 * 16) >> 4);
+    tsvf_t f1, f2;
+    int32_t drive = 32768 + p[P_E6] * 512, drv = p[P_E6];
+    uint32_t inc1 = m->inc, inc2;
+    uint32_t pw = 0x80000000u + (uint32_t)((m->shape - (64 << 8)) << 15);
+    int32_t m2 = mix * 258, m1 = 32767 - m2, nz = noise * 200;
+    int32_t loss = model == 1u ? 32767 - res * 110 : 32767;      /* (MOOG: -3 dB at full RES) */
+    uint32_t ph0 = v->ph[0], ph1 = v->ph[1];
+    int32_t ic1 = v->s[0], ic2 = v->s[1], nst = v->s[2], jc1 = v->s[4], jc2 = v->s[5];
+    if (wave == AW_SUB)
+        inc2 = (det ? cents_inc(m->pitch16, det, 0) : inc1) >> 1;
+    else
+        inc2 = det ? cents_inc(m->pitch16, det, 0) : inc1;
+    if (model == 2u) {                                        /* OBERHEIM: one stage, RES held to damping >= 0.55 */
+        tsvf_coef_k(&f1, cut, 8192 - res * 5900 / 127);
+    } else {                                                  /* MOOG, JUNO: flat, then the resonant stage */
+        tsvf_coef_k(&f1, cut, 5793);
+        tsvf_coef_k(&f2, cut, (model == 3u ? 8192 - res * 7900 / 127 : 8192 - res * 7600 / 127));
+    }
+    for (i = 0; i < n; i++) {
+        int32_t a, b, s, y;
+        switch (wave) {
+        case 1: a = osc_pulse(ph0, inc1, 0x80000000u); b = osc_pulse(ph1, inc2, 0x80000000u); break;
+        case 2: a = osc_tri(ph0); b = osc_tri(ph1); break;
+        case 3: a = osc_sine(ph0); b = osc_sine(ph1); break;
+        case 4: a = osc_pulse(ph0, inc1, pw); b = osc_pulse(ph1, inc2, pw); break;
+        case AW_SUB: a = osc_saw(ph0, inc1); b = osc_pulse(ph1, inc2, 0x80000000u); break;
+        default: a = osc_saw(ph0, inc1); b = osc_saw(ph1, inc2); break;
+        }
+        ph0 += inc1;
+        ph1 += inc2;
+        s = mulq15(a, m1) + mulq15(b, m2);
+        if (nz)
+            s += mulq15((int32_t)(noise32(&nst) >> 17) - 16384, nz);
+        if (drv)
+            s = softclip(((s >> 2) * (drive >> 2)) >> 11);
+        if (model == 1u)                                      /* MOOG: the ladder's input, warm */
+            s = softclip(s + (s >> 1));
+        y = tsvf_lp(&f1, s >> 1, &ic1, &ic2);
+        if (model == 2u)
+            y = softclip(y + (y >> 2)) - (y >> 3);            /* (OBERHEIM: a little warmth, level kept) */
+        else
+            y = mulq15(tsvf_lp(&f2, y, &jc1, &jc2), loss);
+        s = soft_knee(y, 16000) << 1;
+        out[i] += voice_amp2(s, m, i);
+    }
+    v->ph[0] = ph0;
+    v->ph[1] = ph1;
+    v->s[0] = ic1;
+    v->s[1] = ic2;
+    v->s[2] = nst;
+    v->s[4] = jc1;
+    v->s[5] = jc2;
+}
 static void analog_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const vmod_t *m)
 {
-    if (t->p[P_E0] >= AW_SYNC)
+    if (t->p[P_AFLT] > 0 && t->p[P_E0] != AW_SYNC)
+        analog_render_m(t, v, out, n, m);
+    else if (t->p[P_E0] >= AW_SYNC)
         analog_render_x(t, v, out, n, m);
     else
         analog_osc(t, v, out, n, m);
@@ -202,6 +271,28 @@ static const preset_t ANALOG_PRESETS[] = {
     /* (1.3) WAVE SYNC: the envelope sweeps the synced saw (ENV DEST SHAPE); SUB: a saw on its square an octave down */
     {"HARD SYNC", {5, 36, 96, 0, 88, 24, 12, 64}, {2, 70, 96, 40}, 16, 1, FX(0, 15, 40, 30), MORE({P_ED_SHP, 44}, {P_GLIDE, 20}), TAG(PT_LEAD)},
     {"SUB SAW", {6, 0, 80, 0, 70, 22, 6, 64}, {0, 60, 110, 22}, 20, 1, FX(0, 0, 5, 10), TAG(PT_BASS)},
+    /* (Vallée) the vintage polys and monos, on FILTER MOOG (1), OBERHEIM (2), JUNO (3): voiced after them, by ear */
+    {"MOOG BASS", {0, 6, 64, 0, 40, 30, 20, 64}, {0, 60, 70, 25}, 40, 1, FX(0, 0, 5, 8), MORE({P_AFLT, 1}), TAG(PT_BASS)},
+    {"MOOG LEAD", {0, 10, 64, 0, 70, 35, 30, 64}, {2, 70, 100, 40}, 30, 1, FX(0, 10, 35, 25), MORE({P_AFLT, 1}, {P_GLIDE, 30}, {P_LRATE, 84}, {P_LD_PIT, 6}), TAG(PT_LEAD)},
+    {"MOOG SUB", {6, 0, 90, 0, 45, 20, 20, 64}, {0, 64, 110, 20}, 20, 1, FX(0, 0, 0, 6), MORE({P_AFLT, 1}), TAG(PT_BASS)},
+    {"MOOG FUNK", {1, 0, 0, 0, 30, 50, 30, 64}, {0, 50, 0, 25}, 55, 1, FX(0, 0, 10, 8), MORE({P_AFLT, 1}), TAG(PT_BASS)},
+    {"MOOG TAURUS", {0, 8, 64, 0, 35, 25, 15, 32}, {6, 80, 110, 60}, 20, 1, FX(0, 0, 0, 20), MORE({P_AFLT, 1}, {P_GLIDE, 24}), TAG(PT_BASS)},
+    {"MOOG SWEEP", {0, 12, 64, 0, 25, 70, 25, 64}, {2, 90, 60, 50}, 63, 1, FX(0, 0, 40, 25), MORE({P_AFLT, 1}, {P_GLIDE, 16}), TAG(PT_LEAD)},
+    {"MOOG FLUTE", {2, 4, 40, 10, 60, 20, 0, 64}, {30, 70, 110, 50}, 10, 1, FX(0, 0, 30, 45), MORE({P_AFLT, 1}, {P_LRATE, 84}, {P_LD_PIT, 8}, {P_LFADE, 90}), TAG(PT_LEAD)},
+    {"OBERHEIM", {0, 14, 64, 0, 55, 20, 10, 64}, {20, 75, 100, 45}, 45, 0, FX(0, 20, 15, 40), MORE({P_AFLT, 2}), TAG(PT_PAD)},
+    {"OBERHEIM PAD", {0, 18, 64, 0, 60, 25, 0, 48}, {70, 90, 110, 85}, 15, 0, FX(0, 40, 20, 70), MORE({P_AFLT, 2}, {P_LRATE, 30}, {P_LD_FLT, 6}), TAG(PT_PAD)},
+    {"OBERHEIM STR", {4, 10, 64, 0, 72, 15, 0, 48}, {55, 90, 115, 80}, 8, 0, FX(0, 60, 15, 60), MORE({P_AFLT, 2}, {P_LD_SHP, 24}, {P_LRATE, 60}), TAG(PT_PAD)},
+    {"OBERHEIM BASS", {0, 10, 64, 0, 45, 30, 15, 64}, {0, 62, 80, 25}, 40, 1, FX(0, 10, 5, 10), MORE({P_AFLT, 2}), TAG(PT_BASS)},
+    {"OBERHEIM LEAD", {0, 16, 64, 0, 75, 30, 20, 64}, {4, 70, 105, 45}, 30, 1, FX(0, 20, 40, 30), MORE({P_AFLT, 2}, {P_GLIDE, 20}), TAG(PT_LEAD)},
+    {"OBERHEIM KEY", {1, 8, 64, 0, 50, 25, 0, 64}, {0, 78, 40, 55}, 40, 0, FX(0, 30, 20, 40), MORE({P_AFLT, 2}), TAG(PT_KEYS)},
+    {"JUNO PAD", {4, 4, 64, 0, 70, 15, 0, 48}, {60, 90, 110, 80}, 10, 0, FX(0, 100, 15, 50), MORE({P_AFLT, 3}, {P_LD_SHP, 30}, {P_LRATE, 40}), TAG(PT_PAD)},
+    {"JUNO STRINGS", {4, 0, 64, 0, 85, 5, 0, 48}, {50, 90, 115, 85}, 6, 0, FX(0, 110, 10, 55), MORE({P_AFLT, 3}, {P_LD_SHP, 22}, {P_LRATE, 56}), TAG(PT_PAD)},
+    {"JUNO BASS", {6, 0, 96, 0, 45, 25, 10, 64}, {0, 55, 80, 20}, 35, 1, FX(0, 40, 0, 8), MORE({P_AFLT, 3}), TAG(PT_BASS)},
+    {"JUNO HOOVER", {4, 30, 64, 0, 80, 10, 30, 48}, {10, 80, 110, 50}, 10, 1, FX(0, 90, 20, 40), MORE({P_AFLT, 3}, {P_GLIDE, 60}, {P_LD_SHP, 40}, {P_LRATE, 70}), TAG(PT_LEAD)},
+    {"JUNO BRASS", {0, 6, 64, 0, 50, 20, 0, 64}, {25, 70, 100, 45}, 40, 0, FX(0, 70, 15, 40), MORE({P_AFLT, 3}), TAG(PT_PAD)},
+    {"JUNO KEYS", {4, 0, 64, 0, 45, 25, 0, 64}, {0, 75, 30, 55}, 45, 0, FX(0, 80, 25, 40), MORE({P_AFLT, 3}), TAG(PT_KEYS)},
+    {"JUNO ARP", {6, 0, 70, 0, 40, 35, 0, 64}, {0, 60, 0, 40}, 50, 0, FX(0, 70, 45, 30), MORE({P_AFLT, 3}), TAG(PT_PLUCK)},
+    {"JUNO SWEEP", {4, 6, 64, 0, 40, 45, 0, 48}, {70, 90, 110, 90}, 10, 0, FX(0, 100, 20, 70), MORE({P_AFLT, 3}, {P_LD_FLT, 20}, {P_LRATE, 24}), TAG(PT_PAD)},
 };
 
 static const engine_t ENG_ANALOG = {
@@ -223,5 +314,5 @@ static const engine_t ENG_ANALOG = {
     .render = analog_render,
     .desc = analog_desc,
     .knob = {P_E4, P_E5, P_ATK, P_REL},
-    .keep = 0x03,                /* the filter */
+    .keep = 0x33,                /* the filter ((Vallée) and FILTER's second stage) */
 };

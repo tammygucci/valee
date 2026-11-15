@@ -1683,7 +1683,7 @@ static void graph_names(void)
 /* (Skiff U5) an EDIT page of ANALOG (its own graphs: ui_pgraph.c graph_osc, graph_flt) */
 static int analog_page(const page_t *pg, const track_t *t)
 {
-    return pg->scope == SC_ENGINE && ENGINES[t->eng_req % NENGINES] == &ENG_ANALOG;
+    return (pg->scope == SC_ENGINE || pg->id[0] == P_AFLT) && ENGINES[t->eng_req % NENGINES] == &ENG_ANALOG;   /* ((Vallée) FILTER: FLT's */
 }
 
 static uint32_t graph_signature(void)

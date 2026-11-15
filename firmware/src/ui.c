@@ -658,6 +658,8 @@ static int page_visible(uint32_t i)
         return sh->eng == 0xFFu || TSEL->eng_req % NENGINES == sh->eng;   /* ((Vallée) GEN: 0xFF, every one) */
     if (PAGES[i].graph == GR_LANES)
         return TSEL->eng_req % NENGINES == ENGI_DRUM;
+    if (id == P_AFLT)                                   /* ((Vallée) EDIT > FILTER: ANALOG's) */
+        return TSEL->eng_req % NENGINES == ENGI_ANALOG;
     if (PAGES[i].graph == GR_LMIX)                      /* ((2.0, #36) a kit's: DRUM, DRUM-X) */
         return drum_engine(TSEL->eng_req % NENGINES);
     if (PAGES[i].graph == GR_SMIX)                     /* ((#21) a SAMPLE track's on a USR set with samples) */

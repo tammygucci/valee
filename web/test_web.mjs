@@ -52,23 +52,23 @@ async function editorMock() {
   const rq = async (r, o) => link.request(r, o);
   const info = E.parse[E.CMD.INFO](await rq(E.req.info()));
   ok(info.nengines === 15 && info.engines[1] === "-" && info.engines[12] === "FM6" && info.engines[13] === "-" && info.engines[14] === "DRUM-X"
- && info.engines[5] === "VOICE" && info.engines[6] === "TRIO" && info.engines[7] === "WHEEL" && info.engines[8] === "GRAIN" && info.engines[9] === "PHYS" && info.engines[10] === "DRUM" && info.engines[11] === "NOISE" && info.pcount === 148 && info.pe0 === 140 && info.engines[4] === "SAMPLE",
-    "editor: INFO ((2.5) P_COUNT 148, P_E0 140 from its wide-ids tag)");
+ && info.engines[5] === "VOICE" && info.engines[6] === "TRIO" && info.engines[7] === "WHEEL" && info.engines[8] === "GRAIN" && info.engines[9] === "PHYS" && info.engines[10] === "DRUM" && info.engines[11] === "NOISE" && info.pcount === 149 && info.pe0 === 141 && info.engines[4] === "SAMPLE",
+    "editor: INFO ((Vallée) P_COUNT 149, P_E0 141 from its wide-ids tag)");
   {
     /* (Skiff 1.3) wide ids: a track id from 128 on ((2.0) E0..E7 since P_E0 135, after the lane pans 127..134; (2.1) P_E0
        138, after the chord follow 135..137; (2.5) P_E0 140, after STRUM DIR 138, 139) goes as scope 2 and comes back whole
        (GET, SET, DESC), in TRACK_PARAM's track byte (bit 6) and in a MOTION record's step byte (bit 6); 127 (a lane's PAN)
        is still scope 0. The ids: E3 (SET / GET), E7 (DESC: ANALOG's KEYTRK), E2 (TRACK_PARAM), E4 (MOTION) */
-    const v0 = E.parse[E.CMD.GET](await rq(E.req.get(0, 143))).value;
-    const a = E.req.set(0, 143, 10), s = E.parse[E.CMD.SET](await rq(a)), g = E.parse[E.CMD.GET](await rq(E.req.get(0, 143)));
-    const d = E.parse[E.CMD.DESC](await rq(E.req.desc(0, 147)));
-    const tp = E.parse[E.CMD.TRACK_PARAM](await rq(E.req.trackParam(3, 142)));
+    const v0 = E.parse[E.CMD.GET](await rq(E.req.get(0, 144))).value;
+    const a = E.req.set(0, 144, 10), s = E.parse[E.CMD.SET](await rq(a)), g = E.parse[E.CMD.GET](await rq(E.req.get(0, 144)));
+    const d = E.parse[E.CMD.DESC](await rq(E.req.desc(0, 148)));
+    const tp = E.parse[E.CMD.TRACK_PARAM](await rq(E.req.trackParam(3, 143)));
     const e0 = E.req.get(0, 127);
-    const mo = E.parse[E.CMD.MOTION](await rq(E.req.motion(0, 3, { step: 5, param: 144, value: 9 }, info.ntrk)));
-    ok(a[1][0] === 2 && a[1][1] === 15 && s.scope === 0 && s.id === 143 && s.value === 10 && g.id === 143 && g.value === 10 &&
-       d.scope === 0 && d.id === 147 && d.label === "KEYTRK" && tp.track === 3 && tp.id === 142 && e0[1][0] === 0 && e0[1][1] === 127 &&
-       mo.events.some((e) => e.step === 5 && e.param === 144 && e.value === 9),
-       "editor: wide ids: SET / GET 143 and DESC 147 as scope 2, TRACK_PARAM 142 (bit 6), a motion record of 144; 127 scope 0");
+    const mo = E.parse[E.CMD.MOTION](await rq(E.req.motion(0, 3, { step: 5, param: 145, value: 9 }, info.ntrk)));
+    ok(a[1][0] === 2 && a[1][1] === 16 && s.scope === 0 && s.id === 144 && s.value === 10 && g.id === 144 && g.value === 10 &&
+       d.scope === 0 && d.id === 148 && d.label === "KEYTRK" && tp.track === 3 && tp.id === 143 && e0[1][0] === 0 && e0[1][1] === 127 &&
+       mo.events.some((e) => e.step === 5 && e.param === 145 && e.value === 9),
+       "editor: wide ids ((Vallée) P_E0 141): SET / GET 144 and DESC 148 as scope 2, TRACK_PARAM 143 (bit 6), a motion record of 145; 127 scope 0");
     await rq(E.req.motion(0, 2, {}, info.ntrk));
     await rq(E.req.set(0, 143, v0));
   }
@@ -1281,7 +1281,7 @@ async function editorLive() {
   const dump = E.parse[C.DUMP](await pend, info);
   const ch = ev.pushes.find((f) => f.cmd === C.CHANGED);
   const cv = ch && E.parse[C.CHANGED](ch.a);
-  ok(dump.p.length === 148 && ch && ch.pending === C.DUMP && cv.scope === 0 && cv.id === 9 && cv.value === kn.value && !ev.unknown.length,
+  ok(dump.p.length === 149 && ch && ch.pending === C.DUMP && cv.scope === 0 && cv.id === 9 && cv.value === kn.value && !ev.unknown.length,
     "live: CHANGED while DUMP waits -> push handler, reply still matched");
   const rl = m.sim.reload();
   m.sim.step(3);
