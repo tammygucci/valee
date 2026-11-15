@@ -10507,6 +10507,19 @@ static int test_gen(void)
         bad += check("(Vallée) GEN SONG: OCT-: the lists, the tracks and the pool as before",
                      !gen.song && !memcmp(l0, &lists, sizeof lists) && gen_pool_free() == f0 &&
                      trk[0].step[5].note[0] == 41u);
+        {   /* the pool nearly full of patterns nothing uses (a project left behind): GEN clears them first */
+            uint8_t id;
+            while (gen_pool_free() > 20u && !gen_keep_trk(1, &id))
+                ;
+            (void)gen_flush();
+            ok = gen_pool_free() <= 20u && pool_unused() > 10u;
+            gen.v[GK_PART] = GP_SONG;
+            press(B_OCTUP);
+            ok &= gen.song && pool_unused() == 0u && lists.ent[0][0][0] != 0;
+            bad += check("(Vallée) GEN SONG: the patterns full of ones nothing uses: cleared first, the song made", ok);
+            song.playing = 0;
+            press(B_OCTDN);
+        }
         gen.v[GK_PART] = GP_LOOP;
     }
     ok = 1;                                               /* every style, part and vibe, a few seeds and amounts */

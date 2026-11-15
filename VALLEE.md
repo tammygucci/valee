@@ -118,6 +118,10 @@ ONCE. Press PLAY: it plays through once (32 bars) and stops at the top. OCT+ aga
 place of it (its patterns given back first); OCT− puts the lists, the tracks and the patterns back as they were. A
 track whose role is OFF keeps its own list and pattern. Edit any part afterwards on SEQ > SONG and NOTES.
 
+The 64 patterns are shared by the whole unit, not per project: a new project doesn't free its old one's, and a saved
+project keeps its own. Short of room, GEN first clears the patterns nothing uses any more (as SAVE > PATTERNS' CLEAR
+UNUSED). If it still says PATTERNS FULL, your saved projects hold them: delete one you don't need on SAVE > PROJECT (KNOB 2: DELETE).
+
 **Making a song part by part.** Keep the seed and the style, step through PART (INTRO, VERSE, CHORUS, BRIDGE, OUTRO), and
 write each one. A seed keeps its key, tempo, sounds and hook across parts.
 

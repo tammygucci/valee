@@ -1274,6 +1274,9 @@ static int gen_song(void)                               /* 0 written; 1 not (sai
         memcpy(gen_lwas, &lists, sizeof lists);
         memset(gen_sid, GEN_NOID, sizeof gen_sid);
     }
+    if (gen_pool_free() < GEN_NPART * n && pool_unused())
+        pool_clear_unused();                            /* (short: first the patterns nothing uses, as SAVE > PATTERNS'
+                                                         * CLEAR UNUSED: a project left, an old song; saved ones stay) */
     if (gen_pool_free() < GEN_NPART * n) {
         str_cpy(b, "NEED ", sizeof b);
         fmt_int(b + 5, (int32_t)(GEN_NPART * n));
