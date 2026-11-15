@@ -89,6 +89,8 @@ def main(pkg, version, out, *more):
     for old in fw.glob("vallee-*.fwsc"):          # the current packages only
         old.unlink()
     (inst / "index.html").write_text(html, encoding="utf-8")
+    if (HERE / "brand").is_dir():                    # ((Vallée) the page's logo, screenshots and demo)
+        shutil.copytree(HERE / "brand", inst / "brand", dirs_exist_ok=True)
     for _, data, n in pkgs:
         (fw / n).write_bytes(data)
     lic = HERE.parent / "LICENSES"                  # the package holds JieLi SDK files (Apache-2.0): their
@@ -130,7 +132,7 @@ def main(pkg, version, out, *more):
     (out / "index.html").write_text(
         '<!doctype html><meta charset="utf-8"><title>Vallée</title>'
         '<meta http-equiv="refresh" content="0; url=webapp/installer/">'
-        '<a href="webapp/installer/">Skiff installer</a>\n', encoding="utf-8")
+        '<a href="webapp/installer/">Vallée installer</a>\n', encoding="utf-8")
     print(f"site: {out}: webapp/installer ({len(html)} B), webapp/editor, learn, try, "
           + ", ".join(f"firmware/{n} ({len(d)} B, {p})" for p, d, n in pkgs))
 
