@@ -183,11 +183,11 @@ async function editorMock() {
   const names = [];
   for (let e = 0; e < info.nengines; e++) names.push(E.parse[E.CMD.NAMES](await rq(E.req.names(e))).names);
   let prefs = await E.readDevicePreferences(rq, info, names);
-  ok(info.uiCaps === 25 && prefs.palettes.length === 7 && prefs.palettes[6] === "XENO" && prefs.palettes[0] === "SKIFF" && prefs.palettes[1] === "HI-CON" && prefs.palettes[2] === "PAPER" && prefs.palettes[3] === "CRYPT" && prefs.palettes[4] === "NEON" && prefs.palettes[5] === "QUARK",
+  ok(info.uiCaps === 25 && prefs.palettes.length === 1 && prefs.palettes[0] === "XENO",   /* ((Vallée) XENO alone) */
      "editor: preference capabilities (palette, favorites, (#27) COLORS) and palette names");
-  const pal = E.parse[E.CMD.UI_SET](await rq(E.req.uiSet(0, 2)));
-  ok(pal.rc === 0 && pal.palette === 2, "editor: display preference 0 (palette) round trip");
-  ok(E.parse[E.CMD.UI_SET](await rq(E.req.uiSet(0, 7))).rc === 1, "editor: out-of-range palette refused");   /* (6: XENO) */
+  const pal = E.parse[E.CMD.UI_SET](await rq(E.req.uiSet(0, 0)));
+  ok(pal.rc === 0 && pal.palette === 0, "editor: display preference 0 (palette) round trip");
+  ok(E.parse[E.CMD.UI_SET](await rq(E.req.uiSet(0, 1))).rc === 1, "editor: out-of-range palette refused");   /* (0: XENO) */
   ok(E.parse[E.CMD.UI_SET](await rq(E.req.uiSet(1, 1))).rc === 2, "editor: the retired font weight answers not supported");
   ok(E.parse[E.CMD.FAV_SET](await rq(E.req.favSet(info.nengines, 31, true))).rc === 1, "editor: empty user slot cannot be favorited");
   await rq(E.req.favSet(0, 0, true));
@@ -224,37 +224,37 @@ async function editorMock() {
   const none = await E.readDevicePreferences(() => { throw new Error("unexpected request"); }, { uiCaps: 0 }, []);
   ok(none === null, "editor: old firmware receives no unsupported preference requests");
   {   /* (Skiff #27) COLORS (39): THEME CUSTOM on the mock as the firmware has it (tests/editor_test.c custom_colors) */
-    const set = E.PAL_BUILTIN[5].c.map((x, i) => (i === 0 ? 0x0841 : x));
+    const set = E.PAL_BUILTIN[0].c.map((x, i) => (i === 0 ? 0x0841 : x));
     let c = E.parse[E.CMD.COLORS](await rq(E.req.colors()));
     ok(E.CMD.COLORS === 39 && c.rc === 0 && !c.stored && !c.active && c.c.length === 11,
        "editor: COLORS (#27): none stored, eleven colours (22 bytes in pack7)");
-    c = E.parse[E.CMD.COLORS](await rq(E.req.colors(0, 5, set)));
-    ok(c.rc === 0 && !c.stored && m.state.custom.preview && m.state.custom.preview.look === 5 && m.state.palette === prefs.state.palette,
+    c = E.parse[E.CMD.COLORS](await rq(E.req.colors(0, 0, set)));
+    ok(c.rc === 0 && !c.stored && m.state.custom.preview && m.state.custom.preview.look === 0 && m.state.palette === prefs.state.palette,
        "editor: COLORS op 0 shows a set in a look, stores nothing");
-    c = E.parse[E.CMD.COLORS](await rq(E.req.colors(1, 4, set)));
-    ok(c.rc === 0 && c.stored && c.active && c.look === 4 && c.c.join() === set.join() && m.state.palette === 4,
-       "editor: COLORS op 1 stores the set and uses it, in its look (NEON)");
+    c = E.parse[E.CMD.COLORS](await rq(E.req.colors(1, 0, set)));
+    ok(c.rc === 0 && c.stored && c.active && c.look === 0 && c.c.join() === set.join() && m.state.palette === 0,
+       "editor: COLORS op 1 stores the set and uses it, in its look (XENO)");
     let pr = await E.readDevicePreferences(rq, info, names, prefs, true);
-    ok(pr.palettes.length === 8 && pr.palettes[7] === "CUSTOM" && pr.state.palette === 7 && pr.colors.stored && pr.colors.look === 4,
+    ok(pr.palettes.length === 2 && pr.palettes[1] === "CUSTOM" && pr.state.palette === 1 && pr.colors.stored && pr.colors.look === 0,
        "editor: THEME CUSTOM listed last, in use after a store");
-    await rq(E.req.uiSet(0, 1));
+    await rq(E.req.uiSet(0, 0));
     pr = await E.readDevicePreferences(rq, info, names, pr);
-    ok(pr.state.palette === 1 && pr.palettes.length === 8 && pr.colors.stored && !pr.colors.active,
+    ok(pr.state.palette === 0 && pr.palettes.length === 2 && pr.colors.stored && !pr.colors.active,
        "editor: another THEME keeps the set (CUSTOM still listed)");
-    ok(E.parse[E.CMD.UI_SET](await rq(E.req.uiSet(0, 7))).palette === 7 && m.state.palette === 4,
-       "editor: UI_SET 7 is CUSTOM again, in its look");
+    ok(E.parse[E.CMD.UI_SET](await rq(E.req.uiSet(0, 1))).palette === 1 && m.state.palette === 0,
+       "editor: UI_SET 1 is CUSTOM again, in its look");
     const long = E.req.colors(1, 0, set);
     long[1].push(0);                                        /* (a byte more) */
     ok(E.req.colors(1, 0, set)[1].length === 28 && E.parse[E.CMD.COLORS](await rq([E.CMD.COLORS, [1, 0, 3]])).rc === 1 &&
-       E.parse[E.CMD.COLORS](await rq(E.req.colors(1, 7, set))).rc === 1 &&
+       E.parse[E.CMD.COLORS](await rq(E.req.colors(1, 1, set))).rc === 1 &&
        E.parse[E.CMD.COLORS](await rq(long)).rc === 1 &&
        E.parse[E.CMD.COLORS](await rq([E.CMD.COLORS, [2, 0]])).rc === 1 && m.state.custom.flags === 3,
        "editor: a short or long COLORS, a look past the themes, op 2 with a byte more: rc 1, the set kept");
     c = E.parse[E.CMD.COLORS](await rq(E.req.colors(2)));
     pr = await E.readDevicePreferences(rq, info, names, pr, true);
-    ok(c.rc === 0 && !c.stored && pr.palettes.length === 7 && pr.state.palette === 4,
+    ok(c.rc === 0 && !c.stored && pr.palettes.length === 1 && pr.state.palette === 0,
        "editor: COLORS op 2 removes the set: CUSTOM gone, THEME the look's own");
-    ok(E.parse[E.CMD.UI_SET](await rq(E.req.uiSet(0, 7))).rc === 1, "editor: no set, no CUSTOM (UI_SET 7: rc 1)");
+    ok(E.parse[E.CMD.UI_SET](await rq(E.req.uiSet(0, 1))).rc === 1, "editor: no set, no CUSTOM (UI_SET 1: rc 1)");
     await rq(E.req.uiSet(0, prefs.state.palette));
     /* each theme's colours to start from == the firmware's: tools/gen_ui_palettes.py's own output, made here (a build/gen is only
        as new as the last build in its tree; an old one failed this check on a clean checkout) */
@@ -273,9 +273,9 @@ async function editorMock() {
     ok(E.PAL_BUILTIN.every((b) => !E.colorWarnings(b.c).length) &&
        E.colorWarnings([0x0841, 0x18c3, 0x0861, ...E.PAL_BUILTIN[0].c.slice(3)]).some((x) => x.a === "TEXT" && x.b === "BG"),
        "editor: no theme of the device's gets a warning; TEXT on BG unreadable does");
-    const tk = E.customTokens(E.PAL_BUILTIN[2].c);
+    const tk = E.customTokens([0xf77c, 0xe6d9, 0x20e3, 0x0aa8, 0xa9c1, 0x0aa8, 0x0aa8, 0x0aa8, 0x0aa8, 0x0aa8, 0x0aa8]);   /* (a light set) */
     ok(tk["--bg"] === E.hex565(0xf77c) && tk["--t6"] === E.hex565(0x0aa8) && tk["--head"] === E.hex565(0x0aa8) &&
-       tk["color-scheme"] === "light" && E.customTokens(E.PAL_BUILTIN[5].c)["color-scheme"] === "dark" &&
+       tk["color-scheme"] === "light" && E.customTokens(E.PAL_BUILTIN[0].c)["color-scheme"] === "dark" &&
        [0, 0x0841, 0xffff, 0x4e9f, 0xf77c].every((x) => E.from565hex(E.hex565(x)) === x) && E.luma565(0xf77c) > 128 &&
        E.mix565(0x0000, 0xffff, 50) === 0x8410,
        "editor: CUSTOM's tokens (BG, the tracks, THEME for headings, light or dark), RGB565 <-> #rrggbb, gfx.c's mix and luma");
@@ -301,8 +301,8 @@ async function editorMock() {
        "editor: MENU_SET round trip (LEDS INV)");
     const pal = m.state.palette;
     r = E.parse[E.CMD.MENU_SET](await rq(E.req.menuSet(0, 50)));
-    ok(r.rc === 0 && r.value === 6 && E.parse[E.CMD.UI_STATE](await rq(E.req.uiState())).palette === 6,
-       "editor: MENU_SET clamps (THEME 50 -> 6, XENO), the same setting as UI_SET 0");
+    ok(r.rc === 0 && r.value === 0 && E.parse[E.CMD.UI_STATE](await rq(E.req.uiState())).palette === 0,
+       "editor: MENU_SET clamps (THEME 50 -> 0, XENO), the same setting as UI_SET 0");
     r = E.parse[E.CMD.MENU_SET](await rq(E.req.menuSet(17, 9)));
     ok(r.rc === 0 && r.id === 17 && r.value === 4, "editor: MENU_SET clamps (SCREEN OFF 9 -> 60 MIN)");
     await rq(E.req.menuSet(17, 3));

@@ -287,17 +287,17 @@ static void menu_tabs(void)                            /* (in screen rows: cv_oy
     for (k = 0; k < MTAB_COUNT; k++) {
         int on = k == (uint32_t)((mt.pos + MT_ONE / 2) / MT_ONE);   /* (half way, the shown look moves over) */
         uint16_t bg = on ? T_ACCENT : T_SURF;
-        if (on && ux.neon) {                           /* ((Skiff N3) NEON: lit pink into violet) */
+        if (on && UX_NEON) {                           /* ((Skiff N3) NEON: lit pink into violet) */
             uint16_t st[2] = {T_THEME, NE_VIOLET};
             ne_hgrad(x[k], MT_Y, w[k], MT_H, st, 2);
-        } else if (ux.quark) {                         /* ((Skiff Q2) QUARK: lit cyan; the others in corners) */
+        } else if (UX_QUARK) {                         /* ((Skiff Q2) QUARK: lit cyan; the others in corners) */
             cv_rect(x[k], MT_Y, w[k], MT_H, on ? T_THEME : T_BG);
             if (!on)
                 qk_corners(x[k], MT_Y, w[k], MT_H, T_DIM, 3);
         } else
-        cv_rrect(x[k], MT_Y, w[k], MT_H, ux.crypt ? 0 : -8, bg, T_BG);   /* ((Skiff) CRYPT: square) */
+        cv_rrect(x[k], MT_Y, w[k], MT_H, UX_CRYPT ? 0 : -8, bg, T_BG);   /* ((Skiff) CRYPT: square) */
         GFX_HOOK_ALIGN(x[k], MT_Y, x[k] + MT_IW, MT_Y + MT_H, AL_HV, "menu tab icon centred in its cushion");
-        if (ux.quark)
+        if (UX_QUARK)
             bg = on ? T_THEME : T_BG;
         cv_icon_in(x[k], MT_Y, MT_IW, MT_H, 16, MTAB_ICON[k], on ? T_INK : T_MID, bg);
         if (a[k] == MT_ONE) {                          /* (settled: its name) */
@@ -324,22 +324,22 @@ static void menu_row(uint32_t k, uint32_t row)
     int32_t y = mr_y(k), h = mr_h(), large = menu_large(), x0;
     int32_t ny = y + (large ? CAP_IN(M, h) : CAP_IN(S, h)), vy = y + CAP_IN(M, h);
     int sel = row == ui.menu_sel;
-    uint16_t bg = sel ? (ux.quark ? ux_mix(T_BG, T_THEME, 18) : T_THEME) : T_SURF;   /* ((Skiff Q2) QUARK: the row
+    uint16_t bg = sel ? (UX_QUARK ? ux_mix(T_BG, T_THEME, 18) : T_THEME) : T_SURF;   /* ((Skiff Q2) QUARK: the row
                                                        * a cyan tint in corners, its value gold) */
-    uint16_t fg = sel && !ux.quark ? T_INK : T_TEXT, val = sel ? (ux.quark ? T_ACCENT : T_INK) : ux.neon ? T_ACCENT : T_THEME;
-    uint16_t sk = sel && !ux.quark ? T_INK : T_MID;    /* (the chevron, a unit) */
-    int lead = ux.crypt || ux.neon ? !sel : ux.quark;  /* (the dotted leaders: QUARK's every row) */
+    uint16_t fg = sel && !UX_QUARK ? T_INK : T_TEXT, val = sel ? (UX_QUARK ? T_ACCENT : T_INK) : UX_NEON ? T_ACCENT : T_THEME;
+    uint16_t sk = sel && !UX_QUARK ? T_INK : T_MID;    /* (the chevron, a unit) */
+    int lead = UX_CRYPT || UX_NEON ? !sel : UX_QUARK;  /* (the dotted leaders: QUARK's every row) */
     const char *v = row < MI_VALUES ? menu_vname(row, menu_get(row)) : "";   /* ((1.3) LEARN CLEAR: its count) */
     int32_t nx, ly = y + h / 2 + 3;                    /* (Skiff) CRYPT: the leader's row, by the capitals' foot */
-    if (sel && ux.neon) {                              /* (Skiff N3) NEON: a sunset bar */
+    if (sel && UX_NEON) {                              /* (Skiff N3) NEON: a sunset bar */
         uint16_t st[3] = {T_THEME, NE_VIOLET, ux_mix(NE_VIOLET, T_ACCENT, 50)};
         ne_hgrad(MR_X, y, MR_W, h, st, 3);
-    } else if (sel && ux.quark) {
+    } else if (sel && UX_QUARK) {
         cv_rect(MR_X, y, MR_W, h, bg);
         qk_corners(MR_X, y, MR_W, h, T_THEME, 5);
     } else if (sel)
-        cv_rrect(MR_X, y, MR_W, h, ux.crypt ? 0 : 6, T_THEME, T_SURF);   /* ((Skiff) no rules between the rows, as the mockup) */
-    if (ux.neon) {                                     /* (Skiff N3) NEON: an arcade's high score table: the rank, slanted,
+        cv_rrect(MR_X, y, MR_W, h, UX_CRYPT ? 0 : 6, T_THEME, T_SURF);   /* ((Skiff) no rules between the rows, as the mockup) */
+    if (UX_NEON) {                                     /* (Skiff N3) NEON: an arcade's high score table: the rank, slanted,
                                                         * in the tracks' colours, before the name */
         static const char RANK[6][4] = {"1ST", "2ND", "3RD", "4TH", "5TH", "6TH"};
         const aafont_t *f = large ? &AF_M : &AF_S;
@@ -379,7 +379,7 @@ static void menu_row(uint32_t k, uint32_t row)
     GFX_HOOK_ALIGN(0, y, 0, y + h, AL_V, "menu row value centred up/down");
     if (row != MI_COLOR) {
         uint16_t vc = !sel && str_eq(v, "OFF") ? T_DIM : val;
-        if (ux.quark) {                                /* ((Skiff Q2) QUARK: a readout in brackets) */
+        if (UX_QUARK) {                                /* ((Skiff Q2) QUARK: a readout in brackets) */
             x0 = cv_text_r(MR_VR, vy, &AF_M, "]", vc, bg);
             x0 = cv_text_r(x0, vy, &AF_M, v, vc, bg);
             x0 = cv_text_r(x0, vy, &AF_M, "[", vc, bg);
@@ -473,7 +473,7 @@ static void draw_menu(void)
         cv_oy = -top_y;                               /* drawn in screen rows */
         if (!pass)
             menu_tabs();
-        if (ux.crypt) {                               /* (Skiff) CRYPT: the rows' panel stone, a double frame */
+        if (UX_CRYPT) {                               /* (Skiff) CRYPT: the rows' panel stone, a double frame */
             cr_stone(4, MP_Y, 232, mr_y(n) - mr_gap() + MP_PAD - MP_Y, T_SURF);
             cr_frame2(4, MP_Y, 232, mr_y(n) - mr_gap() + MP_PAD - MP_Y, T_LINE);
         } else

@@ -260,7 +260,7 @@ static uint32_t fm_sig(void)
 #define FM_HEAT (10 << 16)                              /* a modulator's 60 dB of heat */
 #define FM_TAU 7056u                                    /* the log time axis' knee: 20 ms in 1/256 blocks */
 #define FM_NBP 12                                       /* an envelope's breakpoints at most: start, stages, key up, end */
-#define FM_GUIDE (ux.crypt ? T_DIM : T_LINE)            /* (CRYPT's stone eats LINE) */
+#define FM_GUIDE (UX_CRYPT ? T_DIM : T_LINE)            /* (CRYPT's stone eats LINE) */
 typedef struct {
     int32_t i[FM_NBP], v[FM_NBP];                      /* the block it is reached at; the level (Q16 log2 / semitone Q16) */
     int16_t x[FM_NBP];                                  /* its column */
@@ -459,11 +459,11 @@ static void fm_ramp(uint16_t *r)
 {
     uint16_t st[5];
     uint32_t n = 2, i;
-    if (ux.crypt) {
+    if (UX_CRYPT) {
         st[0] = T_DIM, st[1] = CR_BLOOD, st[2] = CR_EMBER, st[3] = CR_GOLD, st[4] = CR_FLAME, n = 5;
-    } else if (ux.neon) {
+    } else if (UX_NEON) {
         st[0] = T_ACCENT, st[1] = NE_VIOLET, st[2] = T_THEME, st[3] = NE_ORANGE, st[4] = NE_YELLOW, n = 5;
-    } else if (ux.quark) {
+    } else if (UX_QUARK) {
         st[0] = ux_mix(T_SURF, T_THEME, 40), st[1] = T_THEME, st[2] = T_TEXT, st[3] = T_ACCENT, n = 4;
     } else {
         st[0] = ux_mix(T_SURF, RGB(40, 92, 232), 80), st[1] = T_REC;
@@ -475,7 +475,7 @@ static void fm_ramp(uint16_t *r)
 static void fm_brush(int32_t x, int32_t y, int32_t w, uint16_t c)
 {
     int32_t a = -(w / 2);
-    if (w > 3 && !ux.crypt) {
+    if (w > 3 && !UX_CRYPT) {
         cv_rect(x + a, y + a + 1, w, w - 2, c);
         cv_rect(x + a + 1, y + a, w - 2, w, c);
     } else
@@ -502,7 +502,7 @@ static void fm_seg(int32_t xa, int32_t ya, int32_t xb, int32_t yb, int32_t w, ui
 /* a line in c over its shadow ((FM6 LAB T) NEON: over its glow, a tube's) */
 static void fm_seg2(int32_t xa, int32_t ya, int32_t xb, int32_t yb, int32_t w, uint16_t c)
 {
-    if (ux.neon)
+    if (UX_NEON)
         fm_seg(xa, ya, xb, yb, w + 2, ux_mix(c, T_SURF, 62), 0, 0);
     else
         fm_seg(xa, ya + 1, xb, yb + 1, w, T_BG, 0, 0);
@@ -513,7 +513,7 @@ static void fm_seg2(int32_t xa, int32_t ya, int32_t xb, int32_t yb, int32_t w, u
  * fill */
 static void fm_under(int32_t x, int32_t y, int32_t foot)
 {
-    if (ux.crypt) {
+    if (UX_CRYPT) {
         if ((x - FM_X0) % 6 == 0)
             for (y = (y + 4) & ~3; y < foot; y += 4)
                 cv_pset(x, y, T_DIM);
@@ -532,17 +532,17 @@ static void fm_line(const fm_env_line_t *l, int32_t dy, int32_t w, uint16_t c, c
 static void fm_ring(int32_t x, int32_t y, int filled)
 {
     int32_t dx, dy;
-    if (ux.crypt) {
+    if (UX_CRYPT) {
         for (dx = 0; dx < 4; dx++)                      /* (in a dark outline: on the lines) */
             cr_skull(x - 4 + (dx == 0) - (dx == 1), y - 4 + (dx == 2) - (dx == 3), T_BG, T_BG, 0);
         cr_skull(x - 4, y - 4, filled ? CR_FLAME : T_TEXT, filled ? CR_BLOOD : T_BG, 0);
         return;
     }
-    if (ux.neon) {
+    if (UX_NEON) {
         ne_spark(x, y, filled ? T_ACCENT : T_THEME, filled ? 2 : 1);
         return;
     }
-    if (ux.quark) {
+    if (UX_QUARK) {
         qk_disc(x, y, 3, T_SURF);
         qk_nucleus(x, y, filled ? T_ACCENT : T_THEME, filled ? 9 : 7);
         return;
@@ -595,13 +595,13 @@ static void fm_tabs(const fm_sim_t *s, const uint16_t *sh, int ratios)
         int on = k == sel, live = s->live >> k & 1u;
         uint16_t ink = on ? T_TEXT : live ? T_MID : T_DIM;
         char b[8];
-        if (ux.crypt || ux.neon) {                      /* ((FM6 LAB T) stone or glass; the one picked: a gold frame, */
+        if (UX_CRYPT || UX_NEON) {                      /* ((FM6 LAB T) stone or glass; the one picked: a gold frame, */
             cv_rrect(x, 4, 34, 17, 3, T_SURF, T_SURF);  /* a laser; QUARK: a cell's brackets, the one picked gold) */
-            if (on && ux.crypt)
+            if (on && UX_CRYPT)
                 cr_frame2(x - 2, 2, 38, 21, CR_GOLD);
             else if (on)
                 ne_laser(x, 4, 34, 17, T_SURF);
-        } else if (ux.quark) {
+        } else if (UX_QUARK) {
             qk_corners(x, 4, 34, 17, on ? T_ACCENT : T_DIM, 5);
         } else {
             cv_frame(x, 4, 34, 17, on ? T_TEXT : T_DIM);
@@ -620,7 +620,7 @@ static void fm_tabs(const fm_sim_t *s, const uint16_t *sh, int ratios)
                 str_cpy(b, ".5", sizeof b);
             str_cpy(b + str_len(b), op[FP_MODE] ? "" : "x", sizeof b - str_len(b));
             cv_text_r(x + 30, 4 + CAP_IN(S, 17), &AF_S, b, live ? T_MID : T_DIM, T_SURF);
-            if (ux.crypt || ux.neon)                    /* ((FM6 LAB T) the pixel letters run together: a divider) */
+            if (UX_CRYPT || UX_NEON)                    /* ((FM6 LAB T) the pixel letters run together: a divider) */
                 cv_rect(x + 12, 8, 1, 9, T_DIM);
         } else {
             b[0] = 'O', b[1] = 'P', b[2] = (char)('1' + k), b[3] = 0;
@@ -677,17 +677,17 @@ static void fm_lines(const fm_sim_t *s, const uint16_t *sh, uint32_t w)
                 if ((h = fm_heat(s, k, fed, x)) > best)
                     best = h, bx = x, bk = k;
         }
-    if (ux.neon) {                                      /* ((FM6 LAB T) NEON: the sun and the grid floor behind; */
+    if (UX_NEON) {                                      /* ((FM6 LAB T) NEON: the sun and the grid floor behind; */
         ne_sun(FM_X0 + 172, FM_GY + FM_GH - 28, 24, 62);   /* the brightest moment a laser) */
         ne_grid(FM_X0, FM_X0 + FM_XW, FM_GY + FM_GH - 28, FM_GY + FM_GH, NE_VIOLET, T_SURF);
         if (best) {
             cv_rect(FM_X0 + bx - 1, FM_GY, 3, FM_GH, ux_mix(T_ACCENT, T_SURF, 70));
             cv_rect(FM_X0 + bx, FM_GY, 1, FM_GH, T_ACCENT);
         }
-    } else if (ux.crypt || ux.quark) {                  /* (CRYPT's shade, QUARK's energy under the sound) */
+    } else if (UX_CRYPT || UX_QUARK) {                  /* (CRYPT's shade, QUARK's energy under the sound) */
         for (x = 0; x < FM_XW; x++)
             fm_under(FM_X0 + x, fm_lvy(fm_loud(s, x)), FM_GY + FM_GH);
-        if (ux.quark && best)                           /* (QUARK: a collision where it bites most) */
+        if (UX_QUARK && best)                           /* (QUARK: a collision where it bites most) */
             qk_burst(FM_X0 + bx, fm_lvy(fm_at_x(&s->op[bk], bx)), 5, 0x9E3779B9u, 18, T_SURF);
     }
     for (x = FM_GY; x < FM_GY + FM_GH; x += 2)          /* the key up: dotted */
@@ -705,9 +705,9 @@ static void fm_lines(const fm_sim_t *s, const uint16_t *sh, uint32_t w)
                 uint16_t c = k == sel ? T_TRK(k) : ux_mix(T_SURF, T_TRK(k), 70);
                 for (j = 0; j < l.n; j++)
                     l.v[j] += s->modlvl;
-                if (ux.neon)                            /* (NEON: a tube's glow; QUARK: a bubble chamber's dots) */
+                if (UX_NEON)                            /* (NEON: a tube's glow; QUARK: a bubble chamber's dots) */
                     fm_line(&l, 0, wd + 2, ux_mix(c, T_SURF, 62), 0, 0);
-                fm_line(&l, 0, ux.quark ? -wd : wd, c, 0, 0);
+                fm_line(&l, 0, UX_QUARK ? -wd : wd, c, 0, 0);
                 continue;
             }
             {
@@ -715,7 +715,7 @@ static void fm_lines(const fm_sim_t *s, const uint16_t *sh, uint32_t w)
                 for (x = 0; x < FM_XW; x++)
                     shade[x] = (uint8_t)fm_heat(s, k, fed, x);
             }
-            if (ux.neon)
+            if (UX_NEON)
                 fm_line(&s->op[k], 0, 7, 0, shade, glow);   /* (its glow) */
             else
                 fm_line(&s->op[k], 1, 5, T_BG, 0, 0);       /* a shadow under it */
@@ -731,9 +731,9 @@ static void fm_lines(const fm_sim_t *s, const uint16_t *sh, uint32_t w)
     }
     if (best) {                                         /* where it bites most: a mark under it, the caption */
         int32_t r, lo = 0, hi = s->n;                   /* (the block at that column: the axis rises) */
-        if (ux.crypt) {                                 /* ((FM6 LAB T) CRYPT: a flame; NEON, QUARK: theirs behind) */
+        if (UX_CRYPT) {                                 /* ((FM6 LAB T) CRYPT: a flame; NEON, QUARK: theirs behind) */
             cr_sprite(FM_X0 + bx - 2, FM_GY + FM_GH - 3, SPR_FM_FLAME, CR_EMBER, CR_FLAME);
-        } else if (!ux.neon && !ux.quark)
+        } else if (!UX_NEON && !UX_QUARK)
             for (r = 0; r < 4; r++)
                 cv_rect(FM_X0 + bx - r, FM_GY + FM_GH + 1 + r, 2 * r + 1, 1, T_TEXT);
         while (lo < hi) {
@@ -780,10 +780,10 @@ static void fm_keys(uint16_t c)
         }
     }
     bx = FM_X0 + clamp((int32_t)op[FP_BP] * (FM_XW - 1) / 87, 0, FM_XW - 1);   /* BREAK: MIDI BP + 21 */
-    if (ux.crypt || ux.neon || ux.quark)               /* ((FM6 LAB T) the theme's fill under the curve) */
+    if (UX_CRYPT || UX_NEON || UX_QUARK)               /* ((FM6 LAB T) the theme's fill under the curve) */
         for (x = 0; x < FM_XW; x++)
             fm_under(FM_X0 + x, fm_keys_y(op, 21u + (uint32_t)x * 87u / (FM_XW - 1), zy, rng), kb);
-    if (ux.neon) {                                      /* (NEON: BREAK a laser) */
+    if (UX_NEON) {                                      /* (NEON: BREAK a laser) */
         cv_rect(bx - 1, FM_GY + 4, 3, kb - 6 - FM_GY, ux_mix(T_ACCENT, T_SURF, 70));
         cv_rect(bx, FM_GY + 4, 1, kb - 6 - FM_GY, T_ACCENT);
     } else
@@ -796,10 +796,10 @@ static void fm_keys(uint16_t c)
         int32_t xa = FM_X0 + (int32_t)(n - 21u) * (FM_XW - 1) / 87, xn = FM_X0 + (int32_t)(n - 20u) * (FM_XW - 1) / 87;
         fm_seg2(xa, fm_keys_y(op, n, zy, rng), xn, fm_keys_y(op, n + 1u, zy, rng), 2, c);
     }
-    if (ux.crypt)                                       /* (CRYPT: a dagger planted where the curve breaks) */
+    if (UX_CRYPT)                                       /* (CRYPT: a dagger planted where the curve breaks) */
         cr_dagger(bx - 4, fm_keys_y(op, op[FP_BP] + 21u, zy, rng) - 14, CR_GOLD);
     x = FM_X0 + (60 - 21) * (FM_XW - 1) / 87;
-    if (ux.crypt || ux.neon || ux.quark)                /* C4: the theme's handle (a skull, a sparkle, a nucleus) */
+    if (UX_CRYPT || UX_NEON || UX_QUARK)                /* C4: the theme's handle (a skull, a sparkle, a nucleus) */
         fm_ring(x, fm_keys_y(op, 60, zy, rng), 0);
     else
         cv_rect(x - 2, fm_keys_y(op, 60, zy, rng) - 2, 5, 5, T_TEXT);
@@ -931,7 +931,7 @@ static void fm_lfo(const fm_sim_t *s, uint16_t c)
     for (b = 1; b < x; b++)
         if (amd)
             cv_rect(FM_X0 + b, FM_GY + FM_GH - 3 - trem[b], 1, 2, T_MID);
-    if (ux.crypt && x > 24) {                           /* ((FM6 LAB T) CRYPT: the vibrato a snake, as the LFO's: its */
+    if (UX_CRYPT && x > 24) {                           /* ((FM6 LAB T) CRYPT: the vibrato a snake, as the LFO's: its */
         int32_t e = x - 12;                             /* belly under it, gold scales, its head at the end) */
         for (b = 1; b < e; b++)
             fm_seg(FM_X0 + b - 1, fm_pitch_y(vib[b - 1] * 65536 / 100) + 2, FM_X0 + b,

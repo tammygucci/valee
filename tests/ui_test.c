@@ -1512,23 +1512,14 @@ static int test_display_preferences(void)
     ui.menu_sel = MI_COLOR;
     ui.force = 1; ui_draw();
     memcpy(before, host_screen, sizeof before);
-    settings.palette = 1; palette_set(1);
-    press(B_OCTUP);
-    bad += check("THEME OCT+ previews the next palette (PAPER, light) without closing the menu",
-                 settings.palette == 2 && T_BG == UI_PALETTES[2].bg && ux.light && ui.menu == 1 && !song.octave &&
-                 memcmp(before, host_screen, sizeof before) && !memcmp(sounds, trk, sizeof sounds));
-    bad += check("THEME KNOB 1 steps on to CRYPT, NEON (both the pixel faces), QUARK (Barlow), XENO (Barlow), then wraps to "
-                 "SKIFF (R1: SKIFF HI-CON PAPER CRYPT NEON QUARK XENO)",
-                 str_eq(MI_NAME[MI_COLOR], "THEME") && (turn(EN_K1, 1), settings.palette == UI_CRYPT_INDEX) && ux.crypt &&
-                 str_eq(UI_PALETTES[UI_CRYPT_INDEX].name, "CRYPT") && &AF_S == &AF_S_PX &&
-                 (turn(EN_K1, 1), settings.palette == UI_NEON_INDEX) && ux.neon && !ux.crypt && &AF_S == &AF_S_PX &&
-                 str_eq(UI_PALETTES[UI_NEON_INDEX].name, "NEON") &&
-                 (turn(EN_K1, 1), settings.palette == UI_QUARK_INDEX) && ux.quark && !ux.neon && &AF_S != &AF_S_PX &&
-                 str_eq(UI_PALETTES[UI_QUARK_INDEX].name, "QUARK") &&
-                 (turn(EN_K1, 1), settings.palette == UI_XENO_INDEX) && ux.xeno && !ux.quark && &AF_S != &AF_S_PX &&
-                 str_eq(UI_PALETTES[UI_XENO_INDEX].name, "XENO") &&
-                 (turn(EN_K1, 1), settings.palette == UI_SKIFF_INDEX) && !ux.xeno && !ux.quark && !ux.crypt && !ux.neon && &AF_S != &AF_S_PX &&
-                 str_eq(UI_PALETTES[UI_SKIFF_INDEX].name, "SKIFF"));
+    press(B_OCTUP);                                     /* ((Vallée) XENO alone: nothing to step to) */
+    bad += check("(Vallée) THEME: XENO alone (the others gone), OCT+ and KNOB 1 keep it, the menu stays",
+                 str_eq(MI_NAME[MI_COLOR], "THEME") && NPALETTES == 1u && str_eq(UI_PALETTES[0].name, "XENO") &&
+                 settings.palette == UI_XENO_INDEX && UX_XENO && &AF_S != &AF_S_PX && ui.menu == 1 &&
+                 !memcmp(sounds, trk, sizeof sounds) && (turn(EN_K1, 1), settings.palette == UI_XENO_INDEX) &&
+                 palette_from_stored(UI_THEME_TAG + 3u) == UI_XENO_INDEX && palette_from_stored(5u) == UI_XENO_INDEX &&
+                 palette_stored_ok(UI_THEME_TAG + 8u));
+    (void)before;
     settings.lowcut = 2;
     ui.menu_sel = MI_LOWCUT;
     press(B_OCTUP);
@@ -1551,7 +1542,7 @@ static int test_display_preferences(void)
     k = ui.menu == 1 && settings.lowcut == 0u;         /* (OCT- at the first value: nothing, the menu stays) */
     press(B_HOME);
     bad += check("HOME leaves display preferences without changing musical state (OCT- no longer closes)",
-                 k && !ui.menu && settings.palette == UI_SKIFF_INDEX && !memcmp(sounds, trk, sizeof sounds));
+                 k && !ui.menu && settings.palette == UI_XENO_INDEX && !memcmp(sounds, trk, sizeof sounds));
     return bad;
 }
 
@@ -8597,14 +8588,7 @@ static int test_u3(void)
     set_engine_of(TSEL, ENGI_FM6);
     ok &= throw_id(TSEL, 0) == ENGINES[ENGI_FM6]->knob[0];
     bad += check("U3 V2: PERFORM's KNOB 1 throws SAMPLE's CUT, LOFI's TONE; FM6 its HOME KNOB 1 (MLVL) as before", ok);
-    ui_power_on();                                      /* N1: HOME, every track; the selected one's lane the band */
-    go_home(); ui.force = 1; frame();
-    ok = swap16(host_screen[(Y_GRAPH + 16u) * 240u + 234u]) == T_TRK(0) &&
-         swap16(host_screen[(Y_GRAPH + 128u) * 240u + 234u]) == T_SURF;
-    track_select(NTRK - 1u); ui.force = 1; frame();
-    ok &= swap16(host_screen[(Y_GRAPH + 16u) * 240u + 234u]) == T_SURF &&
-          swap16(host_screen[(Y_GRAPH + 128u) * 240u + 234u]) == T_TRK(NTRK - 1u);
-    bad += check("U3 N1: HOME shows all six, the selected one's lane the band (T1 at the top; T6 at the foot)", ok);
+    /* (N1, HOME's lanes as the themes before XENO drew them: (Vallée) gone with them; XENO's: test_beasts) */
     ui_power_on();
     return bad;
 }

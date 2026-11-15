@@ -2002,7 +2002,7 @@ static void sweep_columns(void)
             continue;                                    /* (DIGITAL without FELUCCA_FM4: no track has it) */
         for (i = 0; i < NPAGES; i++) {
             state();
-            pal(UI_SKIFF_INDEX);
+            pal(UI_XENO_INDEX);
             eng(e);
             ui.home = 0; ui.page = (uint8_t)i; page_entered();
             if (!page_visible(i)) continue;
@@ -2049,7 +2049,7 @@ static void sweep_columns(void)
             lint();
             sweep_motion();
         }
-        state(); pal(UI_SKIFF_INDEX); eng(e); go_home();   /* HOME's four knobs of this engine */
+        state(); pal(UI_XENO_INDEX); eng(e); go_home();   /* HOME's four knobs of this engine */
         snprintf(name, sizeof name, "%s%s/HOME", large_on ? "LARGE " : "", ENGINES[e]->name);
         cur_name = name;
         draw(-1);
@@ -2058,7 +2058,7 @@ static void sweep_columns(void)
     }
     for (e = 0; e < 4u; e++) {                           /* the MOD page: every source and destination */
         int32_t v;
-        state(); pal(UI_SKIFF_INDEX); go_title("MOD");
+        state(); pal(UI_XENO_INDEX); go_title("MOD");
         cur_name = large_on ? "LARGE MOD sweep" : "MOD sweep";
         for (v = 0; v < MD_N; v++) {
             TSEL->p[P_M1SRC] = (int16_t)(v % MS_N); TSEL->p[P_M1DST] = (int16_t)v; TSEL->p[P_M1AMT] = (int16_t)(e * 40 - 64);
@@ -2145,7 +2145,7 @@ static void roll_frames(const char *dir)
             }
             for (k = 0; k < 8u; k++) ui_draw();
         }
-        if (p == UI_SKIFF_INDEX || p == UI_CRYPT_INDEX || p == UI_NEON_INDEX || p == UI_QUARK_INDEX || p == UI_XENO_INDEX) {
+        if (p == UI_XENO_INDEX) {
             ug_add(UI_PALETTES[p].name, "bpm_roll", bimg, sizeof bimg);
             ug_add(UI_PALETTES[p].name, "card_roll", cimg, sizeof cimg);
             if (dir) {
@@ -2201,7 +2201,7 @@ static void align_sweeps(void)
     int32_t v;
     if (nul) rep = nul;                              /* (not lint scenes: their draws pile up) */
     {                                                   /* ((Skiff U2) BLOCKS, the only look) */
-        state(); pal(UI_SKIFF_INDEX);
+        state(); pal(UI_XENO_INDEX);
         cur_name = "sweep: cushions";
         for (k = 0; k < NTRK; k++)
             for (i = 0; i < 3u; i++) {
@@ -2267,7 +2267,7 @@ static void align_sweeps(void)
                 draw_countin();
             }
         cin_total = cin_left = 0;
-        state(); pal(UI_SKIFF_INDEX);
+        state(); pal(UI_XENO_INDEX);
         cur_name = "sweep: NAME";
         song.playing = 0; go_page(GR_USER); name_open(NK_USER_SAVE, 6);
         for (k = 0; k < 2u; k++) {                       /* ABC, 123: every key cycling, every letter typed next */
@@ -2294,7 +2294,7 @@ static void align_sweeps(void)
             cv_begin(240, H_GRAPH, T_SURF);
             graph_roll(TSEL, T_THEME);
         }
-        state(); pal(UI_SKIFF_INDEX);
+        state(); pal(UI_XENO_INDEX);
         cur_name = "sweep: drum kits";
         for (k = 0; k < 4u; k++) {
             drum(k);
@@ -2304,7 +2304,7 @@ static void align_sweeps(void)
                 graph_grid(TSEL, T_THEME);
             }
         }
-        state(); pal(UI_SKIFF_INDEX);
+        state(); pal(UI_XENO_INDEX);
         cur_name = "sweep: mixer";
         go_page(GR_TRK);
         for (v = 0; v < 256; v++) {                    /* (then with LARGE: the strip) */
@@ -2425,10 +2425,10 @@ int main(int argc, char **argv)
             cur_name = name;
             setup((int)s);
             pal(p);
-            if (p == UI_SKIFF_INDEX) aud = audf;
+            if (p == UI_XENO_INDEX) aud = audf;
             draw((int)s);
             lint();
-            if (p == UI_SKIFF_INDEX) { audit_scene(S_NAME[s]); aud = 0; }
+            if (p == UI_XENO_INDEX) { audit_scene(S_NAME[s]); aud = 0; }
             for (k = 0; k < sizeof SHOW / sizeof SHOW[0]; k++)
                 if (!strcmp(UI_PALETTES[p].name, SHOW[k])) write_ppm(out, SHOW[k], S_NAME[s]);
         }
@@ -2439,9 +2439,9 @@ int main(int argc, char **argv)
         static const uint16_t CC[11] = {RGB(16, 24, 32), RGB(28, 40, 54), RGB(242, 232, 216), RGB(255, 154, 60),
                                         RGB(127, 224, 200), RGB(255, 107, 107), RGB(255, 209, 102), RGB(6, 214, 160),
                                         RGB(76, 201, 240), RGB(199, 125, 255), RGB(244, 162, 97)};
-        static const uint8_t LOOKS[5] = {UI_SKIFF_INDEX, UI_CRYPT_INDEX, UI_NEON_INDEX, UI_QUARK_INDEX, UI_XENO_INDEX};
+        static const uint8_t LOOKS[1] = {UI_XENO_INDEX};   /* ((Vallée) XENO alone) */
         uint32_t n0 = nfind, k, l;
-        for (l = 0; l < 5u; l++)
+        for (l = 0; l < 1u; l++)
             for (s = 0; s < S_COUNT; s++) {
                 char name[64], tag[24];
                 if (!FELUCCA_FM4 && (s == S_OP_ENV || (s >= S_ALG1 && s <= S_OP_LEVEL)))
@@ -2463,7 +2463,7 @@ int main(int argc, char **argv)
             }
         CPAL_BYTE = 0;
         ux_cpal = 0;
-        for (p = UI_CRYPT_INDEX; p <= UI_XENO_INDEX; p++) {
+        for (p = UI_XENO_INDEX; p <= UI_XENO_INDEX; p++) {
             static const int HOMES[2] = {S_HOME, S_SIX_HOME};
             for (k = 0; k < 2u; k++) {
                 char name[64], tag[24];
@@ -2501,7 +2501,7 @@ int main(int argc, char **argv)
                     draw((int)s);
                     ntall += !ui.menu && !ui.confirm && !name_on() && large_kind() == LK_TALL;
                     lint();
-                    if (p == UI_SKIFF_INDEX || p == UI_CRYPT_INDEX || p == UI_NEON_INDEX || p == UI_QUARK_INDEX || p == UI_XENO_INDEX)
+                    if (p == UI_XENO_INDEX)
                         write_ppm(out, tag, S_NAME[s]);
                 }
         }
@@ -2525,7 +2525,7 @@ int main(int argc, char **argv)
             char name[32];
             snprintf(name, sizeof name, "FM6 ALG %u", a);
             cur_name = name;
-            state(); pal(UI_SKIFF_INDEX); eng(ENGI_FM6); TSEL->p[P_E0] = (int16_t)a; go_title("EDIT 1");
+            state(); pal(UI_XENO_INDEX); eng(ENGI_FM6); TSEL->p[P_E0] = (int16_t)a; go_title("EDIT 1");
             draw(-1);
             lint();
         }

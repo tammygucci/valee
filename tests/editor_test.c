@@ -187,7 +187,7 @@ static int wide_ids(void)
 static int preferences(void)
 {
     int bad = 0;
-    uint8_t a[4] = {0, 3, 0, 0};                          /* (THEME: 3, CRYPT) */
+    uint8_t a[4] = {0, 0, 0, 0};                          /* ((Vallée) THEME: 0, XENO, the only one) */
     reset();
     uint32_t n = request(ED_INFO, a, 0);
     bad += check("INFO (2.0) the song's tag last: 58 01 01 (LIST2, NEW, COPY+, CHAIN, ONCE, EMPTY, CLEAR UNUSED)",
@@ -220,9 +220,9 @@ static int preferences(void)
                                                                                           * COND NUDGE */
     request(ED_UI_SET, a, 2);
     bad += check("UI_SET updates the actual palette and reports RAM-only saving",
-        host_wire[5] == 3 && settings.palette == 3 && T_BG == UI_PALETTES[3].bg && ux.crypt);
+        host_wire[5] == 3 && settings.palette == 0 && T_BG == UI_PALETTES[0].bg && UX_XENO);
     a[1] = NPALETTES; request(ED_UI_SET, a, 2);
-    bad += check("out-of-range palette leaves the display unchanged", host_wire[5] == 1 && settings.palette == 3);
+    bad += check("out-of-range palette leaves the display unchanged", host_wire[5] == 1 && settings.palette == 0);
     a[0] = 1; a[1] = 1; request(ED_UI_SET, a, 2);
     bad += check("the retired font weight is not supported (rc 2), UI_STATE says 127",
         host_wire[5] == 2 && host_wire[8] == 25 && host_wire[10] == 127);
@@ -998,8 +998,8 @@ static int menu_protocol(void)
     /* MENU_SET: each setting, applied as the menu applies it; RAM only here (no flash: rc 3) */
     reset();
     ui.force = 0;
-    ok = menu_set(0, 2) == 3 && host_wire[6] == 0 && ed_rv(host_wire + 7) == 2 && settings.palette == 2u &&
-         T_BG == UI_PALETTES[2].bg && ui.force;
+    ok = menu_set(0, 2) == 3 && host_wire[6] == 0 && ed_rv(host_wire + 7) == 0 && settings.palette == 0u &&   /* (clamped: XENO) */
+         T_BG == UI_PALETTES[0].bg && ui.force;
     ok &= menu_set(1, 1) == 1u;                        /* ((Skiff U2) id 1, STYLE: retired, no such setting) */
     ok &= menu_set(2, 1) == 3 && (ui_prefs & PREF_LARGE);
     ok &= menu_set(3, 1) == 3 && (ui_prefs & PREF_ANIM_OFF);
@@ -1022,7 +1022,7 @@ static int menu_protocol(void)
     ok &= menu_set(20, 0) == 3 && ret_mode() == RET_SNAP;   /* boot; SNAP) */
     ok &= menu_set(21, 1) == 3 && (MIDI_BYTE & 32u);   /* ((2.5) KEEP SENDS ON: [15][17] bit 5) */
     for (i = 0; i < MENU_NI; i++) {                     /* MENU_DESC reads them back */
-        static const int32_t SET[19] = {2, 1, 1, 1, 3, 1, 1, 2, 1, 0, 2, 0, 2, 1, 1, 2, 1, 0, 1};
+        static const int32_t SET[19] = {0, 1, 1, 1, 3, 1, 1, 2, 1, 0, 2, 0, 2, 1, 1, 2, 1, 0, 1};
         menu_desc(i, &it);
         ok &= it.value == SET[MENU_I(i)];
     }
@@ -1548,7 +1548,7 @@ static int tokens_builtin(uint32_t p)                       /* palette p's own *
     c[0] = UI_PALETTES[p].bg; c[1] = UI_PALETTES[p].surf; c[2] = UI_PALETTES[p].text; c[3] = UI_PALETTES[p].theme;
     c[4] = UI_PALETTES[p].accent;
     for (k = 0; k < UI_NTRK; k++) c[5 + k] = UI_TRACKS[p][k];
-    return tokens_are(c) && ux.crypt == (p == UI_CRYPT_INDEX) && ux.neon == (p == UI_NEON_INDEX) && ux.quark == (p == UI_QUARK_INDEX);
+    return tokens_are(c) && UX_CRYPT == (p == UI_CRYPT_INDEX) && UX_NEON == (p == UI_NEON_INDEX) && UX_QUARK == (p == UI_QUARK_INDEX);
 }
 static uint32_t palettes_listed(void)                       /* UI_PALETTES: the count; the last name CUSTOM or not */
 {
@@ -1570,14 +1570,14 @@ static int custom_colors(void)
     ok &= palettes_listed() == NPALETTES && menu_n(MI_COLOR) == NPALETTES && (request(ED_UI_STATE, 0, 0), host_wire[5] & ED_UI_COLORS);
     bad += check("(#27) COLORS: none stored (flags 0), the 22 bytes in pack7; THEME lists its six; UI_STATE's caps say COLORS", ok);
 
-    ok = colors_req(0, UI_QUARK_INDEX, CC, 99) == 0 && tokens_are(CC) && ux.quark && !ux.neon && settings.palette == UI_DEFAULT_INDEX &&
+    ok = colors_req(0, UI_XENO_INDEX, CC, 99) == 0 && tokens_are(CC) && UX_XENO && 1 && settings.palette == UI_DEFAULT_INDEX &&
          host_wire[6] == 0 && !CPAL_BYTE && !favorites.factory[14][8] && ui.force;
     bad += check("(#27) COLORS op 0: shown at once in its look (QUARK's widgets, the colours as sent), nothing stored", ok);
     ok = colors_req(3, 0, 0, 1) == 0 && tokens_builtin(UI_DEFAULT_INDEX) && settings.palette == UI_DEFAULT_INDEX;
     bad += check("(#27) COLORS op 3: the preview dropped, the default THEME (XENO) again", ok);
 
-    ok = colors_req(1, UI_NEON_INDEX, CC, 99) == 3 && host_wire[6] == 3 && host_wire[7] == UI_NEON_INDEX && colors_are(CC) &&
-         tokens_are(CC) && ux.neon && settings.palette == UI_NEON_INDEX && CPAL_BYTE == (3u | UI_NEON_INDEX << 2) &&
+    ok = colors_req(1, UI_XENO_INDEX, CC, 99) == 3 && host_wire[6] == 3 && host_wire[7] == UI_XENO_INDEX && colors_are(CC) &&
+         tokens_are(CC) && UX_XENO && settings.palette == UI_XENO_INDEX && CPAL_BYTE == (3u | UI_XENO_INDEX << 2) &&
          favorites.factory[14][8] == (CC[0] & 255u) && favorites.factory[14][9] == CC[0] >> 8 &&
          favorites.factory[14][28] == (CC[10] & 255u) && favorites.factory[14][29] == CC[10] >> 8 &&
          !favorites.factory[14][30] && !favorites.factory[14][7];
@@ -1588,16 +1588,16 @@ static int custom_colors(void)
           menu_get(MI_COLOR) == NPALETTES && !strcmp(menu_vname(MI_COLOR, NPALETTES), "CUSTOM");
     bad += check("(#27) THEME CUSTOM, last while stored: UI_PALETTES 7 names, UI_STATE and MENU_DESC say it is in use", ok);
 
-    a[0] = 0; a[1] = 1; request(ED_UI_SET, a, 2);           /* HI-CON */
-    ok = host_wire[5] == 3 && settings.palette == 1u && tokens_builtin(1) && cpal_stored() && !cpal_on() &&
-         colors_req(255, 0, 0, 0) == 0 && host_wire[6] == 1 && host_wire[7] == UI_NEON_INDEX && colors_are(CC) &&
+    a[0] = 0; a[1] = 0; request(ED_UI_SET, a, 2);           /* XENO's own */
+    ok = host_wire[5] == 3 && settings.palette == 0u && tokens_builtin(0) && cpal_stored() && !cpal_on() &&
+         colors_req(255, 0, 0, 0) == 0 && host_wire[6] == 1 && host_wire[7] == UI_XENO_INDEX && colors_are(CC) &&
          menu_n(MI_COLOR) == NPALETTES + 1u;
     a[1] = NPALETTES; request(ED_UI_SET, a, 2);             /* CUSTOM again: in its look */
-    ok &= host_wire[5] == 3 && settings.palette == UI_NEON_INDEX && cpal_on() && tokens_are(CC) && ux.neon;
+    ok &= host_wire[5] == 3 && settings.palette == UI_XENO_INDEX && cpal_on() && tokens_are(CC) && UX_XENO;
     menu_put(MI_COLOR, UI_XENO_INDEX);                      /* the MENU's THEME: XENO (the last), then a step on is CUSTOM */
     ok &= settings.palette == UI_XENO_INDEX && tokens_builtin(UI_XENO_INDEX) && menu_step(MI_COLOR, 1) == NPALETTES;
     menu_put(MI_COLOR, menu_step(MI_COLOR, 1));
-    ok &= cpal_on() && settings.palette == UI_NEON_INDEX && tokens_are(CC) && menu_step(MI_COLOR, 1) == 0u &&
+    ok &= cpal_on() && settings.palette == UI_XENO_INDEX && tokens_are(CC) && menu_step(MI_COLOR, 1) == 0u &&
           menu_step(MI_COLOR, -1) == UI_XENO_INDEX;
     bad += check("(#27) THEME: CUSTOM and back by UI_SET and the MENU (it wraps round eight), the set kept, CUSTOM in its look", ok);
 
@@ -1613,24 +1613,24 @@ static int custom_colors(void)
         big[2 + 24] = 0x7F;
         ok &= request(ED_COLORS, big, 2 + 26) && host_wire[5] == 1;
     }
-    ok &= colors_are(CC) && cpal_on() && tokens_are(CC) && CPAL_BYTE == (3u | UI_NEON_INDEX << 2);
+    ok &= colors_are(CC) && cpal_on() && tokens_are(CC) && CPAL_BYTE == (3u | UI_XENO_INDEX << 2);
     bad += check("(#27) COLORS: a wrong length, look, op or pack7 answers rc 1, nothing changed", ok);
 
     settings_export(&p);                                    /* the settings record a unit keeps */
-    ok = p.palette == palette_to_stored(UI_NEON_INDEX) && p.s.cpal == CPAL_BYTE &&
+    ok = p.palette == palette_to_stored(UI_XENO_INDEX) && p.s.cpal == CPAL_BYTE &&
          !memcmp(p.cpal_cols, &favorites.factory[14][8], 22);   /* ((2.0) SKS1: CPAL_BYTE and the colours by name) */
     memset(&favorites, 0, sizeof favorites); memset(&settings, 0, sizeof settings); settings_init();
     ok &= tokens_builtin(UI_DEFAULT_INDEX) && settings_import(&p, sizeof p) == 1 && settings_init() == 0 && cpal_on() && tokens_are(CC) &&
-          ux.neon;
+          UX_XENO;
     bad += check("(#27) the set kept with the settings: its THEME field the look, read back in use", ok);
 
-    ok = colors_req(2, 0, 0, 1) == 3 && host_wire[6] == 0 && !CPAL_BYTE && settings.palette == UI_NEON_INDEX &&
-         tokens_builtin(UI_NEON_INDEX) && palettes_listed() == NPALETTES && menu_n(MI_COLOR) == NPALETTES;
+    ok = colors_req(2, 0, 0, 1) == 3 && host_wire[6] == 0 && !CPAL_BYTE && settings.palette == UI_XENO_INDEX &&
+         tokens_builtin(UI_XENO_INDEX) && palettes_listed() == NPALETTES && menu_n(MI_COLOR) == NPALETTES;
     a[1] = NPALETTES; request(ED_UI_SET, a, 2);
-    ok &= host_wire[5] == 1 && settings.palette == UI_NEON_INDEX;
+    ok &= host_wire[5] == 1 && settings.palette == UI_XENO_INDEX;
     bad += check("(#27) COLORS op 2: removed, the look's own colours; CUSTOM gone from THEME (UI_SET 6: rc 1)", ok);
 
-    colors_req(1, UI_CRYPT_INDEX, CC, 99);
+    colors_req(1, UI_XENO_INDEX, CC, 99);
     ui_ph_line = 1;
     settings_reset();
     ok = settings.palette == UI_DEFAULT_INDEX && tokens_builtin(UI_DEFAULT_INDEX) && cpal_stored() && !cpal_on() && !ui_ph_line;
@@ -1639,12 +1639,12 @@ static int custom_colors(void)
     {   /* ((2.0) another firmware's settings: its bytes where the set lives are no set; settings_persist.c clears them) */
         static persist_t f;
         memset(&f, 0, sizeof f);
-        f.magic = PERSIST_MAGIC; f.palette = palette_to_stored(UI_QUARK_INDEX); f.panel = panel;
-        f.favorites.factory[15][14] = 3u | UI_QUARK_INDEX << 2;   /* (no Skiff mark at [15][24]) */
+        f.magic = PERSIST_MAGIC; f.palette = palette_to_stored(UI_XENO_INDEX); f.panel = panel;
+        f.favorites.factory[15][14] = 3u | UI_XENO_INDEX << 2;   /* (no Skiff mark at [15][24]) */
         memset(&f.favorites.factory[14][8], 0x5A, 22);
         settings_import(&f, (int)sizeof f);
         theme_apply();
-        ok = !cpal_stored() && !CPAL_COLS[0] && tokens_builtin(UI_QUARK_INDEX) && menu_n(MI_COLOR) == NPALETTES &&
+        ok = !cpal_stored() && !CPAL_COLS[0] && tokens_builtin(UI_XENO_INDEX) && menu_n(MI_COLOR) == NPALETTES &&
              colors_req(255, 0, 0, 0) == 0 && host_wire[6] == 0;
     }
     bad += check("(#27) another firmware's settings: no set read from its bytes", ok);

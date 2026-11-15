@@ -2,7 +2,7 @@
 /* (Skiff N3) THEME NEON's widgets (design/mock_neon.py, A SUNSET, the user's pick): glass where BLOCKS lays a flat
  * tile (gfx.c ne_glass), a sunset on the hot card, the cards' gauges an 80s dash bargraph, neon lines; the motifs: the
  * striped sun, the grid floor, palms, the car and its light trails, sparkles, VHS snow. Our own pixel drawings, drawn on
- * the canvas (cv_*) when ux.neon; with any other THEME BLOCKS draws as before. Included by ui_graph.c. */
+ * the canvas (cv_*) when UX_NEON; with any other THEME BLOCKS draws as before. Included by ui_graph.c. */
 
 #define NE_YELLOW RGB(255, 222, 90)
 #define NE_ORANGE RGB(255, 128, 56)

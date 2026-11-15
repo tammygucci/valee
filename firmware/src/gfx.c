@@ -125,13 +125,16 @@ static struct {
     uint16_t bg, surf, text, theme, accent;
     uint16_t mid, dim, line, sel, tint, ink, rec, raise, key, lane, grid;
     uint16_t trk[UI_NTRK];       /* the tracks' colours (UI_TRACKS; a palette without its own: THEME) */
-    uint8_t light, crypt, neon;  /* (Skiff) THEME CRYPT, its own font and widgets (C2, C3); NEON, CRYPT's font and its
-                                  * own widgets (design/mock_neon.py) */
-    uint8_t quark;               /* (Skiff) THEME QUARK: Skiff's font, its own widgets (design/mock_quark.py) */
-    uint8_t xeno;                /* (Skiff XENO) THEME XENO: Skiff's font, HOME a tape deck, an alien an engine (ui_xeno.c) */
-    uint8_t skiff;               /* (2.5) THEME SKIFF: its scope the logo's sea (ui_graph.c sk_sea) */
+    uint8_t light;
     uint32_t gen;                /* bumped by palette_set (the text ramps follow) */
 } ux;
+/* (Vallée) THEME XENO alone: Skiff's font, HOME a tape deck, a creature a sound (ui_xeno.c). The other themes' looks
+ * (CRYPT's and NEON's pixel font and widgets, QUARK's, SKIFF's sea) are gone: their code compiled out */
+#define UX_XENO 1
+#define UX_CRYPT 0
+#define UX_NEON 0
+#define UX_QUARK 0
+#define UX_SKIFF 0
 /* The look (Skiff, DESIGN.md: BLOCKS; U2: the only one, FLAT and LINE retired): SURF tiles with square corners on the
  * BG, no dividers; the knob just turned: its label row a band of the accent (ui_draw.c draw_column); track cushions in
  * their tracks' colours; key names as words, no keycaps */
@@ -178,13 +181,8 @@ static void palette_set(uint32_t i)
     const ui_pal_t *p = &UI_PALETTES[i % NPALETTES];
     uint32_t k;
     i %= NPALETTES;
-    ux.crypt = i == UI_CRYPT_INDEX;
-    ux.neon = i == UI_NEON_INDEX;
-    ux.quark = i == UI_QUARK_INDEX;
-    ux.skiff = i == UI_SKIFF_INDEX;
-    ux.xeno = i == UI_XENO_INDEX;
-    uf.f = UF_FACE[ux.crypt || ux.neon];         /* (CRYPT, NEON: the pixel faces) */
-    uf.cap = UF_CAP[ux.crypt || ux.neon];
+    uf.f = UF_FACE[UX_CRYPT || UX_NEON];         /* (CRYPT, NEON: the pixel faces) */
+    uf.cap = UF_CAP[UX_CRYPT || UX_NEON];
     ux.bg = p->bg; ux.surf = p->surf; ux.text = p->text; ux.theme = p->theme;
     ux.accent = p->accent;
     for (k = 0; k < UI_NTRK; k++)
@@ -214,12 +212,12 @@ static uint32_t palette_from_stored(uint32_t v)
 {
     if (v >= UI_THEME_TAG && v - UI_THEME_TAG < NPALETTES) return v - UI_THEME_TAG;
     if (v >= UI_PAL_TAG && v - UI_PAL_TAG < 11u) return UI_PALETTE_MIGRATE11[v - UI_PAL_TAG];
-    return v < 20u ? UI_PALETTE_MIGRATE20[v] : UI_SKIFF_INDEX;
+    return v < 20u ? UI_PALETTE_MIGRATE20[v] : UI_FALLBACK_INDEX;   /* ((Vallée) XENO alone: any other id) */
 }
 static uint32_t palette_to_stored(uint32_t i) { return UI_THEME_TAG + i % NPALETTES; }
 static int palette_stored_ok(uint32_t v)
 {
-    return v < 20u || (v >= UI_PAL_TAG && v - UI_PAL_TAG < 11u) || (v >= UI_THEME_TAG && v - UI_THEME_TAG < NPALETTES);
+    return v < 20u || (v >= UI_PAL_TAG && v - UI_PAL_TAG < 11u) || (v >= UI_THEME_TAG && v - UI_THEME_TAG < 16u);   /* ((Vallée) the themes gone: still read, as XENO) */
 }
 
 static inline uint16_t swap16(uint32_t c) { return (uint16_t)(((c >> 8) & 0xFFu) | ((c & 0xFFu) << 8)); }
@@ -334,7 +332,7 @@ static void cv_line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t c)
 static void cv_line_t(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t c, int32_t thick)
 {
     int32_t t, d;
-    if (ux.neon && thick >= 2) {
+    if (UX_NEON && thick >= 2) {
         uint16_t g = ux_mix(c, cv_bg, 62);
         cv_glow = 1;
         for (t = -1; t <= thick; t++)
@@ -372,9 +370,9 @@ static void cv_rrect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, uint
     (void)r;
     (void)under;
     GFX_HOOK_CELL(x, y + cv_oy, x + w, y + h + cv_oy);   /* (the lint: what is drawn on it stays inside it) */
-    if (ux.crypt && c == ux.surf)                    /* ((Skiff) CRYPT: a SURF cell is stone) */
+    if (UX_CRYPT && c == ux.surf)                    /* ((Skiff) CRYPT: a SURF cell is stone) */
         cr_stone(x, y, w, h, c);
-    else if (ux.neon && c == ux.surf)                /* ((Skiff N3) NEON: glass) */
+    else if (UX_NEON && c == ux.surf)                /* ((Skiff N3) NEON: glass) */
         ne_glass(x, y, w, h, c);
     else
         cv_rect(x, y, w, h, c);

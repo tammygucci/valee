@@ -2,7 +2,7 @@
 /* (Skiff Q2) THEME QUARK's widgets (design/mock_quark.py, A COLLIDER, the user's pick): a detector's event display. The
  * cards the periodic table's cells (bracket corners, an energy-level gauge), dotted rules, nuclei and their orbitals,
  * particle tracks curling in the field, collisions, the radiation sign on what can't be undone; the tracks the colour
- * charges. Our own drawings, on the canvas (cv_*) when ux.quark; Skiff's Barlow faces. Included by ui_graph.c. */
+ * charges. Our own drawings, on the canvas (cv_*) when UX_QUARK; Skiff's Barlow faces. Included by ui_graph.c. */
 
 #define QK_COS(ph) sine_i((uint32_t)(ph) + 0x40000000u)   /* (dsp.c sine_i: a turn is 2^32, +-32767) */
 #define QK_SIN(ph) sine_i((uint32_t)(ph))

@@ -122,27 +122,27 @@ static void draw_head_blocks(void)
         return;
     ui.head_sig = sig;
     cv_begin(240, H_HEAD, T_BG);
-    if (ux.crypt && rec && !seq_counting())           /* (Skiff C3) CRYPT: REC a blood drop */
+    if (UX_CRYPT && rec && !seq_counting())           /* (Skiff C3) CRYPT: REC a blood drop */
         cr_drop(8, (H_HEAD - 9) / 2, rec == 2u);
-    else if (ux.neon && rec && !seq_counting())       /* (Skiff N3) NEON: a red light */
+    else if (UX_NEON && rec && !seq_counting())       /* (Skiff N3) NEON: a red light */
         ne_rec(11, H_HEAD / 2 - 1, rec == 2u);
-    else if (ux.quark && rec && !seq_counting())      /* (Skiff Q2) QUARK: a red nucleus */
+    else if (UX_QUARK && rec && !seq_counting())      /* (Skiff Q2) QUARK: a red nucleus */
         qk_rec(11, H_HEAD / 2 - 1, rec == 2u);
     else
         cv_icon_mid(4, H_HEAD / 2, 16, id, ic, T_BG);
-    if (ux.crypt)                                     /* .. and the castle wall's crenels along the header's foot */
+    if (UX_CRYPT)                                     /* .. and the castle wall's crenels along the header's foot */
         for (x = 0; x < 240; x += 4)
             cv_rect(x, H_HEAD - 1, 2, 1, T_LINE);
-    if (ux.neon)                                      /* (Skiff N3) NEON: a neon rule along it */
+    if (UX_NEON)                                      /* (Skiff N3) NEON: a neon rule along it */
         ne_rule(H_HEAD - 2, 0);
-    if (ux.quark)                                     /* (Skiff Q2) QUARK: a dotted rule */
+    if (UX_QUARK)                                     /* (Skiff Q2) QUARK: a dotted rule */
         qk_rule(H_HEAD - 2);
     GFX_HOOK_ALIGN(0, 0, 0, H_HEAD, AL_V, "header text on its middle");
     cv_text(HB_POS_X, HEAD_MY, &AF_M, pos, song.playing ? T_TEXT : T_MID);
     GFX_HOOK_ALIGN(0, 0, 0, H_HEAD, AL_V, "header text on its middle");
-    if (ux.neon)                                      /* ((Skiff N2) NEON: slanted) */
+    if (UX_NEON)                                      /* ((Skiff N2) NEON: slanted) */
         cv_fx_on(HEAD_MY, &AF_M, 0);
-    x = cv_text(HB_BPM_X, HEAD_MY, &AF_M, b, ui.bpm_t ? T_ACCENT : T_THEME) + (ux.neon ? cv_fx_w(&AF_M) : 0);
+    x = cv_text(HB_BPM_X, HEAD_MY, &AF_M, b, ui.bpm_t ? T_ACCENT : T_THEME) + (UX_NEON ? cv_fx_w(&AF_M) : 0);
     cv_fx_off();
     GFX_HOOK_ALIGN(0, 0, 0, HEAD_MY + AF_M.asc, AL_B, "BPM on its value's baseline");
     x = cv_text(x + 3, HEAD_MY + AF_M.asc - AF_S.asc, &AF_S, "BPM", T_MID);
@@ -237,21 +237,21 @@ static int face_has(const aafont_t *f, const char *s)   /* every glyph of s in a
 static void draw_column_blocks(uint32_t c, const char *label, const char *val, const char *unit, uint16_t vc,
                                int32_t ratio, uint32_t icon, int hot, int mot, int32_t kid, uint32_t kind)
 {
-    uint16_t fill = hot ? (ux.quark ? T_THEME : T_ACCENT) : T_SURF;   /* ((Skiff Q2) QUARK: the hot cell cyan) */
+    uint16_t fill = hot ? (UX_QUARK ? T_THEME : T_ACCENT) : T_SURF;   /* ((Skiff Q2) QUARK: the hot cell cyan) */
     uint32_t tk = icon - ICON_TRK < NTRK ? icon - ICON_TRK : song.sel;   /* whose card: a cushion's track, else the selected */
     int32_t room = COL_W - BK_L - BK_R;
     cv_begin(COL_W, COL_H, T_BG);
-    if (ux.neon && hot) {                             /* (Skiff N3) NEON: the hot card a dusk, framed; the others */
+    if (UX_NEON && hot) {                             /* (Skiff N3) NEON: the hot card a dusk, framed; the others */
         ne_vgrad(0, 0, COL_W, COL_H, NE_HOT, 3);      /* glass on a dark rule */
         cv_frame(0, 0, COL_W, COL_H, T_TEXT);
-    } else if (ux.neon) {
+    } else if (UX_NEON) {
         ne_glass(0, 0, COL_W, COL_H, fill);
         cv_rect(0, COL_H - 1, COL_W, 1, T_LINE);
-    } else if (ux.quark) {                            /* (Skiff Q2) QUARK: the periodic table's cell, its corners */
+    } else if (UX_QUARK) {                            /* (Skiff Q2) QUARK: the periodic table's cell, its corners */
         cv_rect(0, 0, COL_W, COL_H, fill);
         if (!hot)
             qk_corners(0, 0, COL_W, COL_H, T_DIM, 5);
-    } else if (!ux.crypt)
+    } else if (!UX_CRYPT)
         cv_rect(0, 0, COL_W, COL_H, fill);
     else if (hot) {                                   /* (Skiff C3) CRYPT: the hot card lit, a frame inside it; */
         cv_rect(0, 0, COL_W, COL_H, fill);
@@ -278,7 +278,7 @@ static void draw_column_blocks(uint32_t c, const char *label, const char *val, c
             lc = T_THEME;
         }
         cv_text_fit(lx, ly, lf, label, lc, fill, lw);
-        if (ux.quark && !mot && lx == BK_L) {        /* ((Skiff Q2) QUARK: the cell's number, the knob's, where the
+        if (UX_QUARK && !mot && lx == BK_L) {        /* ((Skiff Q2) QUARK: the cell's number, the knob's, where the
                                                        * label leaves room) */
             char ix[2] = {(char)('1' + c % 4u), 0};
             if (text_w(lf, label) + text_w(&AF_S, ix) + 6 <= lw)
@@ -297,16 +297,16 @@ static void draw_column_blocks(uint32_t c, const char *label, const char *val, c
         int32_t ub[4] = {0, 0, 0, 0}, vb[4], vr = room;
         if (unit[0]) {
             text_ink(&AF_S, unit, ub);
-            vr -= ub[2] - ub[0] + BK_GAP - (ux.neon ? cv_fx_w(&AF_S) : 0);   /* ((Skiff N2) NEON: the slanted value's top
+            vr -= ub[2] - ub[0] + BK_GAP - (UX_NEON ? cv_fx_w(&AF_S) : 0);   /* ((Skiff N2) NEON: the slanted value's top
                                                                              * passes over the unit's: its gap at the unit's
                                                                              * height, the foot's wider) */
         }
-        if (!face_has(vf, val) || ink_w(vf, val) + (ux.neon ? cv_fx_w(vf) : 0) > vr)   /* ((Skiff N2) NEON: */
+        if (!face_has(vf, val) || ink_w(vf, val) + (UX_NEON ? cv_fx_w(vf) : 0) > vr)   /* ((Skiff N2) NEON: */
             vf = &AF_M;                                                                 /* slanted, the wider) */
-        if (vf == &AF_M && ink_w(vf, val) + (ux.neon ? cv_fx_w(vf) : 0) > vr)
+        if (vf == &AF_M && ink_w(vf, val) + (UX_NEON ? cv_fx_w(vf) : 0) > vr)
             vf = &AF_S;
         text_ink(vf, val, vb);
-        if (ux.neon)                                  /* (Skiff N2) NEON: the value in chrome, slanted (hot: INK) */
+        if (UX_NEON)                                  /* (Skiff N2) NEON: the value in chrome, slanted (hot: INK) */
             cv_fx_on(BK_BASE - vf->asc, vf, !hot);
         if (vf == &AF_S && vb[2] - vb[0] > vr)        /* (a value always fits: the lint reports one cut) */
             cv_text_fit(BK_L, BK_BASE - vf->asc, vf, val, hot ? T_INK : vc, fill, vr);
@@ -318,11 +318,11 @@ static void draw_column_blocks(uint32_t c, const char *label, const char *val, c
             cv_text_on(COL_W - BK_R - ub[2], BK_BASE - AF_S.asc, &AF_S, unit, hot ? T_INK : T_MID, fill);
         }
     }
-    if (ratio >= 0 && ux.quark)                       /* (Skiff Q2) QUARK: energy levels */
+    if (ratio >= 0 && UX_QUARK)                       /* (Skiff Q2) QUARK: energy levels */
         qk_dots(BK_L, COL_H - 5, COL_W - BK_L - BK_R, ratio, hot);
-    else if (ratio >= 0 && ux.neon)                   /* (Skiff N3) NEON: a dash bargraph */
+    else if (ratio >= 0 && UX_NEON)                   /* (Skiff N3) NEON: a dash bargraph */
         ne_dash(BK_L, COL_H - 6, COL_W - BK_L - BK_R, ratio, hot);
-    else if (ratio >= 0 && ux.crypt)                  /* (Skiff C3) CRYPT: a sword, the blade as long as the value */
+    else if (ratio >= 0 && UX_CRYPT)                  /* (Skiff C3) CRYPT: a sword, the blade as long as the value */
         cr_sword(3, COL_H - 6, COL_W - 6, ratio, hot ? T_INK : vc == T_DIM ? T_DIM : T_TRK(tk), hot ? T_INK : CR_GOLD,
                  hot ? T_INK : T_MID, hot ? T_THEME : T_LINE);
     else if (ratio >= 0) {
@@ -360,7 +360,7 @@ static void confirm_backdrop(void)
     for (i = 0; i < UI_NTRK; i++)                     /* (every track's colour) */
         ux.trk[i] = ux_mix(ux.trk[i], ux.bg, 70);
     ux.gen++;                                         /* (the text ramps: the dimmed ones) */
-    cv_vhs = ux.neon;                                 /* ((Skiff N3) NEON: paused, as a tape) */
+    cv_vhs = UX_NEON;                                 /* ((Skiff N3) NEON: paused, as a tape) */
     draw_frame();
     draw_columns();
     draw_graph();
@@ -401,16 +401,16 @@ static void draw_confirm_blocks(void)
     confirm_backdrop();
     ui.head_sig = ~0u;
     cv_begin(BD_W, BD_H, T_SURF);
-    if (ux.crypt) {                                   /* (Skiff C3) CRYPT: a stone tablet in a double frame */
+    if (UX_CRYPT) {                                   /* (Skiff C3) CRYPT: a stone tablet in a double frame */
         cr_stone(0, 0, BD_W, BD_H, T_SURF);
         cr_frame2(0, 0, BD_W, BD_H, T_LINE);
-    } else if (ux.quark) {                            /* (Skiff Q2) QUARK: an instrument's panel, gold corners; what
+    } else if (UX_QUARK) {                            /* (Skiff Q2) QUARK: an instrument's panel, gold corners; what
                                                        * can't be undone under the radiation sign */
         cv_frame(0, 0, BD_W, BD_H, T_LINE);
         qk_corners(0, 0, BD_W, BD_H, T_ACCENT, 9);
         if (!undoable)
             qk_hazard(BD_W / 2, 10, 8, T_ACCENT);
-    } else if (ux.neon) {                             /* (Skiff N3) NEON: night glass in a double neon frame */
+    } else if (UX_NEON) {                             /* (Skiff N3) NEON: night glass in a double neon frame */
         uint16_t st[2] = {T_INK, T_SURF};
         ne_vgrad(0, 0, BD_W, BD_H, st, 2);
         cv_frame(0, 0, BD_W, BD_H, T_ACCENT);
@@ -450,20 +450,20 @@ static void draw_confirm_blocks(void)
         const aafont_t *wf = text_w(&AF_M, w) <= BD_BW - 8 ? &AF_M : &AF_S;
         if (i)
             cv_frame(x, BD_BY, BD_BW, BD_BH, T_REC);
-        else if (ux.quark)                            /* ((Skiff Q2) QUARK: CANCEL cyan) */
+        else if (UX_QUARK)                            /* ((Skiff Q2) QUARK: CANCEL cyan) */
             cv_rect(x, BD_BY, BD_BW, BD_BH, T_THEME);
-        else if (ux.neon) {                           /* ((Skiff N3) NEON: CANCEL lit cyan) */
+        else if (UX_NEON) {                           /* ((Skiff N3) NEON: CANCEL lit cyan) */
             uint16_t st[2] = {T_ACCENT, ux_mix(T_ACCENT, NE_VIOLET, 55)};
             ne_vgrad(x, BD_BY, BD_BW, BD_BH, st, 2);
         } else
             cv_rect(x, BD_BY, BD_BW, BD_BH, T_TEXT);
-        if (i && ux.quark)                            /* (.. QUARK: the action in red brackets) */
+        if (i && UX_QUARK)                            /* (.. QUARK: the action in red brackets) */
             qk_corners(x - 2, BD_BY - 2, BD_BW + 4, BD_BH + 4, T_REC, 4);
-        if (i && ux.neon)                             /* (.. the action in red neon: its glow) */
+        if (i && UX_NEON)                             /* (.. the action in red neon: its glow) */
             cv_frame(x + 1, BD_BY + 1, BD_BW - 2, BD_BH - 2, ux_mix(T_REC, T_SURF, 65));
         GFX_HOOK_ALIGN(x, BD_BY, x + BD_BW, BD_BY + BD_BH, AL_HV, "dialog button word");
         cv_text_in(x, BD_BY + (wf == &AF_M ? CAP_IN(M, BD_BH) : CAP_IN(S, BD_BH)), BD_BW, wf, w, i ? T_REC : T_INK,
-                   i ? T_SURF : ux.quark ? T_THEME : T_TEXT);
+                   i ? T_SURF : UX_QUARK ? T_THEME : T_TEXT);
         GFX_HOOK_ALIGN(x, 0, x + BD_BW, 0, AL_H, "dialog key under its button");
         cv_keycap(x + ink_in(&AF_S, KC[KEY[i]].label, BD_BW), BD_BY + BD_BH + 3, KEY[i], T_KEY, T_INK, T_SURF);   /* (its
                                                        * ink centred: CRYPT's spacing trails its letters) */

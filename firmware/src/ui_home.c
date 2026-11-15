@@ -42,7 +42,7 @@ static uint32_t home_sig(void)
         for (i = 0; i < n; i++)
             h = (h ^ (s[first + i].n | (uint32_t)s[first + i].hit << 8 | (uint32_t)s[first + i].time << 16)) * 16777619u;
     }
-    if (ux.xeno && !(ui_prefs & PREF_ANIM_OFF))       /* ((Skiff XENO) the reels turn, the aliens blink) */
+    if (UX_XENO && !(ui_prefs & PREF_ANIM_OFF))       /* ((Skiff XENO) the reels turn, the aliens blink) */
         h ^= (ui.frame / (song.playing ? 1u : 3u)) * 2654435761u;
     return h;
 }
@@ -59,7 +59,7 @@ static void graph_tracks(void)
     int32_t qx = -1, qy = 0;                          /* (Skiff Q3) QUARK: the collision's (the same) */
     int six = (int32_t)NTRK * (HL_H + 3) - 3 > (int32_t)graph_h();
     int32_t y = six ? ((int32_t)graph_h() - (HL_H + ((int32_t)NTRK - 1) * (HL_C_H + 3))) / 2 : 0;
-    if (ux.xeno) {                                    /* (Skiff XENO) XENO: a tape machine (ui_xeno.c) */
+    if (UX_XENO) {                                    /* (Skiff XENO) XENO: a tape machine (ui_xeno.c) */
         xe_home();
         return;
     }
@@ -70,27 +70,27 @@ static void graph_tracks(void)
         uint32_t first = hl_bar(t, &n), play = t->seq_idx % 16u;
         int sel = k == song.sel, muted = t->p[P_MUTE] != 0, big = sel || !six;
         int32_t h = big ? HL_H : HL_C_H, ch = big ? HL_CELL_H : HL_C_CELL_H, b[4];
-        int ib = sel && !ux.quark;                    /* (the selected lane a band, INK on it; (Skiff Q3) QUARK: a beam,
+        int ib = sel && !UX_QUARK;                    /* (the selected lane a band, INK on it; (Skiff Q3) QUARK: a beam,
                                                        * its colour faint, the colours as on the others) */
-        uint16_t col = muted ? T_DIM : T_TRK(k), lane = sel ? (ux.quark ? ux_mix(col, T_BG, 80) : col) : ux.quark ? T_BG : T_SURF;
+        uint16_t col = muted ? T_DIM : T_TRK(k), lane = sel ? (UX_QUARK ? ux_mix(col, T_BG, 80) : col) : UX_QUARK ? T_BG : T_SURF;
         uint16_t ink = ib ? T_INK : T_TEXT, on = ib ? T_INK : col, off = ib ? ux_mix(col, T_INK, 55) : T_LINE;
         char name[20], d[2] = {(char)('1' + k), 0};
-        if (ux.crypt && !sel)                         /* (Skiff C3) CRYPT: the lanes stone */
+        if (UX_CRYPT && !sel)                         /* (Skiff C3) CRYPT: the lanes stone */
             cr_stone(3, y, 234, h, lane);
-        else if (ux.neon && sel) {                    /* (Skiff N3) NEON: the selected lane a neon sign (its colour into
+        else if (UX_NEON && sel) {                    /* (Skiff N3) NEON: the selected lane a neon sign (its colour into
                                                        * violet), the others asphalt, the lane's paint between them */
             uint16_t st[2] = {col, ux_mix(col, NE_VIOLET, 70)};
             ne_hgrad(3, y, 234, h, st, 2);
         } else
             cv_rect(3, y, 234, h, lane);
-        if (ux.quark && sel) {                        /* (Skiff Q3) QUARK: the beam's walls lit; the others two rails */
+        if (UX_QUARK && sel) {                        /* (Skiff Q3) QUARK: the beam's walls lit; the others two rails */
             cv_rect(3, y, 234, 1, col);
             cv_rect(3, y + h - 1, 234, 1, col);
-        } else if (ux.quark) {
+        } else if (UX_QUARK) {
             cv_rect(HL_STEP_X - 2, y + h / 2 - 3, 236 - HL_STEP_X + 2, 1, T_LINE);
             cv_rect(HL_STEP_X - 2, y + h / 2 + 3, 236 - HL_STEP_X + 2, 1, T_LINE);
         }
-        if (ux.neon && k + 1u < NTRK)
+        if (UX_NEON && k + 1u < NTRK)
             for (i = 6; i < 234u; i += 10u)
                 cv_rect((int32_t)i, y + h + 1, 5, 1, ux_mix(NE_YELLOW, T_BG, 65));
         text_ink(big ? &AF_V : &AF_M, d, b);             /* the number itself: the colour on SURF, INK on the band */
@@ -113,7 +113,7 @@ static void graph_tracks(void)
         for (i = 0; i < n; i++) {                     /* (past the track's length: nothing) */
             const step_t *st = &s[first + i];
             int32_t x = hl_cell_x(i), cy = y + (h - ch) / 2;
-            if (ux.quark) {                           /* (Skiff Q3) QUARK: a note a bunch of particles in the pipe (played
+            if (UX_QUARK) {                           /* (Skiff Q3) QUARK: a note a bunch of particles in the pipe (played
                                                        * this bar: spent, a ring), a tie its trail, nothing a dot */
                 int32_t bx = x + HL_CELL_W / 2, by = y + h / 2;
                 int past = song.playing && t->seq_idx / 16u * 16u == first && i < play;
@@ -128,7 +128,7 @@ static void graph_tracks(void)
                     cv_rect(x - 1, by, HL_CELL_W + 2, 1, ux_mix(col, T_BG, 40));
                 else
                     cv_rect(bx, by, 1, 1, T_DIM);
-            } else if (ux.crypt) {                    /* (Skiff) CRYPT: the steps in ASCII, # a note, - a tie, . nothing */
+            } else if (UX_CRYPT) {                    /* (Skiff) CRYPT: the steps in ASCII, # a note, - a tie, . nothing */
                 int32_t base = cy + ch / 2 + 4;       /* (S's capitals centred on the cell) */
                 if (step_on(st) || st->hit)
                     cr_ch(x, base, &AF_S, '#', on);
@@ -136,11 +136,11 @@ static void graph_tracks(void)
                     cr_ch(x + 1, base, &AF_S, '-', on);
                 else
                     cr_ch(x + 2, base, &AF_S, '.', sel ? off : T_DIM);
-            } else if (ux.neon && !sel && (step_on(st) || st->hit)) {   /* (Skiff N3) NEON: a lit */
+            } else if (UX_NEON && !sel && (step_on(st) || st->hit)) {   /* (Skiff N3) NEON: a lit */
                 cv_rect(x - 1, cy - 1, HL_CELL_W + 2, ch + 2, ux_mix(on, lane, 65));      /* tube: its glow, its hot top */
                 cv_rect(x, cy, HL_CELL_W, ch, on);
                 cv_rect(x + 1, cy + 1, HL_CELL_W - 2, 1, ux_mix(on, T_TEXT, 60));
-            } else if (ux.neon && !sel && !step_tie(st)) {
+            } else if (UX_NEON && !sel && !step_tie(st)) {
                 cv_rect(x + HL_CELL_W / 2 - 1, cy + ch / 2, 2, 1, off);   /* (nothing: a dim dash) */
             } else if (step_on(st) || st->hit) {
                 cv_rect(x, cy, HL_CELL_W, ch, on);
@@ -150,9 +150,9 @@ static void graph_tracks(void)
                     cv_rect(x, cy + ch / 4, HL_CELL_W, ch / 2, on);
             }
             if (song.playing && i == play && t->seq_idx / 16u * 16u == first) {   /* the step playing: a line before it */
-                if (ux.neon)                          /* ((Skiff N3) NEON: a laser, its glow) */
+                if (UX_NEON)                          /* ((Skiff N3) NEON: a laser, its glow) */
                     cv_rect(x - 3, y + 2, 3, h - 4, ux_mix(T_ACCENT, lane, 60));
-                if (ux.quark) {                       /* ((Skiff Q3) QUARK: the beam line, dotted gold; on the selected
+                if (UX_QUARK) {                       /* ((Skiff Q3) QUARK: the beam line, dotted gold; on the selected
                                                        * lane a collision) */
                     int32_t yy;
                     for (yy = y; yy < y + h; yy += 2)
@@ -162,7 +162,7 @@ static void graph_tracks(void)
                         qy = y + h / 2;
                     }
                 } else
-                cv_rect(x - 2, y + 2, 1, h - 4, ux.neon ? T_ACCENT : sel ? T_INK : ux.crypt ? CR_GOLD : T_TEXT);
+                cv_rect(x - 2, y + 2, 1, h - 4, UX_NEON ? T_ACCENT : sel ? T_INK : UX_CRYPT ? CR_GOLD : T_TEXT);
                 if (sel && !ui_ph_line) {         /* ((Skiff #27) PLAYHEAD LINE: no torch, no car) */
                     tx = x - 7;
                     ty = y + (h - 24) / 2;
@@ -171,11 +171,11 @@ static void graph_tracks(void)
         }
         y += h + 3;
     }
-    if (ux.crypt && tx >= 0)                          /* (Skiff C3) CRYPT: a torch on it, flickering a step to the next */
+    if (UX_CRYPT && tx >= 0)                          /* (Skiff C3) CRYPT: a torch on it, flickering a step to the next */
         cr_torch(tx, ty, ui.frame / 6u, 2);
-    if (ux.quark && qx >= 0)                          /* (Skiff Q3) QUARK: its tracks a new way each step */
+    if (UX_QUARK && qx >= 0)                          /* (Skiff Q3) QUARK: its tracks a new way each step */
         qk_burst(qx, qy, 8, TSEL->seq_idx * 2654435761u + 7u, 24, T_BG);
-    if (ux.neon && tx >= 0) {                         /* (Skiff N3) NEON: the car, its nose at the playhead (on the steps
+    if (UX_NEON && tx >= 0) {                         /* (Skiff N3) NEON: the car, its nose at the playhead (on the steps
                                                        * just played), its light trails back to the lane's first step */
         int32_t cx = tx + 7 - 24;
         if (cx < HL_STEP_X - 6)

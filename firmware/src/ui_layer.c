@@ -904,8 +904,8 @@ static uint16_t lc_box(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t fill
 {
     if (fill == T_RAISE)
         fill = T_SURF;
-    cv_rrect(x, y, w, h, ux.crypt ? 0 : 4, fill, cv_bg);
-    if (ux.crypt && fill == T_SURF) {                    /* (Skiff C3) CRYPT: an idle cell stone, framed */
+    cv_rrect(x, y, w, h, UX_CRYPT ? 0 : 4, fill, cv_bg);
+    if (UX_CRYPT && fill == T_SURF) {                    /* (Skiff C3) CRYPT: an idle cell stone, framed */
         cr_stone(x, y, w, h, fill);
         cv_frame(x, y, w, h, T_LINE);
     }
@@ -1096,16 +1096,16 @@ static void layer_perf(void)
         uint16_t tile = cb ? T_INK : muted ? T_DIM : col;   /* (on the band: the M says it) */
         uint32_t cur = bank_cur(k), nx = bank_next(k);
         char d[2] = {(char)('1' + k), 0};
-        if (cb && ux.neon) {                          /* (Skiff N3) NEON: the band its colour into violet; a muted row */
+        if (cb && UX_NEON) {                          /* (Skiff N3) NEON: the band its colour into violet; a muted row */
             uint16_t st[2] = {col, ux_mix(col, NE_VIOLET, 70)};   /* in snow */
             ne_hgrad(3, y, 234, PR_H, st, 2);
         } else if (cb)
             cv_rect(3, y, 234, PR_H, col);
         else if (band)
             cv_rrect(3, y, 234, PR_H, 3, T_RAISE, g0);
-        if (ux.quark && muted)                        /* ((Skiff Q3) QUARK: a muted row dark matter, dotted) */
+        if (UX_QUARK && muted)                        /* ((Skiff Q3) QUARK: a muted row dark matter, dotted) */
             qk_dotframe(16, y, 221, PR_H, cb ? T_INK : T_DIM);
-        if (ux.neon && muted)                         /* ((Skiff N8) the band's too: dark snow on it) */
+        if (UX_NEON && muted)                         /* ((Skiff N8) the band's too: dark snow on it) */
             ne_snow(17, y, 220, PR_H, k * 7u + 11u, cb ? col : T_BG, cb ? T_INK : T_MID);
         GFX_HOOK_ALIGN(0, y, 0, y + PR_H, AL_V, "perform track number on its row's middle");
         cv_text_on(6, y + CAP_IN(M, PR_H), &AF_M, d, cb ? T_INK : col, g);
@@ -1490,7 +1490,7 @@ static void draw_shift(void)
     for (i = 0; i < 12u; i++) {
         int32_t x = 4 + 78 * (int32_t)(i % 3u), y = 2 + 34 * (int32_t)(i / 3u);
         uint16_t bg = m[i].kind == 2u ? T_TEXT : T_SURF;
-        if (ux.crypt && m[i].kind != 2u) {               /* (Skiff C3) CRYPT: stone, framed */
+        if (UX_CRYPT && m[i].kind != 2u) {               /* (Skiff C3) CRYPT: stone, framed */
             cr_stone(x, y, 74, 31, bg);
             cv_frame(x, y, 74, 31, T_LINE);
         } else

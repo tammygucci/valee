@@ -146,7 +146,7 @@ static void wl_letter(int32_t x, int32_t y, uint32_t g, uint16_t c)
         if ((L[g % 7u] >> (14u - i)) & 1u)
             cv_pset(x + (int32_t)(i % 3u), y + (int32_t)(i / 3u), c);
 }
-static int wl_on(void) { return ui.home && ui.home_scope && large_kind() != LK_TALL && !ux.quark && !ux.crypt && !ux.skiff; }
+static int wl_on(void) { return ui.home && ui.home_scope && large_kind() != LK_TALL && !UX_QUARK && !UX_CRYPT && !UX_SKIFF; }
 /* the cards' row (y 28, 240 x 46): the map */
 static void wl_strip(void)
 {

@@ -43,15 +43,12 @@ int main(int argc, char **argv)
     static const uint8_t pd[] = {0x08, 0xf0};
     const aafont_t probe = {1, 1, 'A', 'A', 0, 0, pg, pd, 0, 0, 0};
     double worst = 100;
-    /* (Skiff, R1) THEME: SKIFF the default, HI-CON and PAPER, CRYPT, NEON and QUARK (their own widgets too) */
-    assert(NPALETTES == 7u && !strcmp(UI_PALETTES[6].name, "XENO") && UI_XENO_INDEX == 6u && !strcmp(UI_PALETTES[5].name, "QUARK") && UI_QUARK_INDEX == 5u && !strcmp(UI_PALETTES[0].name, "SKIFF") && UI_SKIFF_INDEX == 0u &&
-           !strcmp(UI_PALETTES[1].name, "HI-CON") && !strcmp(UI_PALETTES[2].name, "PAPER") &&
-           !strcmp(UI_PALETTES[3].name, "CRYPT") && UI_CRYPT_INDEX == 3u &&
-           !strcmp(UI_PALETTES[4].name, "NEON") && UI_NEON_INDEX == 4u);
+    /* ((Vallée) THEME: XENO alone, the others gone) */
+    assert(NPALETTES == 1u && !strcmp(UI_PALETTES[0].name, "XENO") && UI_XENO_INDEX == 0u && UI_DEFAULT_INDEX == 0u &&
+           UX_XENO && !UX_CRYPT && !UX_NEON && !UX_QUARK && !UX_SKIFF);
     for (unsigned p = 0; p < NPALETTES; p++) {
         uint16_t *tok = &ux.bg;
         palette_set(p);
-        assert(ux.crypt == (p == UI_CRYPT_INDEX));
         /* text and the things read on the screen; the generator checks the same (tools/gen_ui_palettes.py) */
         struct { uint16_t fg, bg; double min; } c[] = {
             {T_TEXT, T_BG, 12.0}, {T_TEXT, T_SURF, 9.0}, {T_MID, T_BG, 5.0}, {T_MID, T_SURF, 4.0},
@@ -69,7 +66,7 @@ int main(int argc, char **argv)
         if (min < worst) worst = min;
         printf("%-7s text %.1f:1, labels %.1f:1, values %.1f:1, selection %.1f:1\n", UI_PALETTES[p].name,
                contrast(T_TEXT, T_BG), contrast(T_MID, T_BG), contrast(T_THEME, T_BG), contrast(T_INK, T_SEL));
-        assert((p == 2u) == ux.light);                         /* PAPER is the light one */
+        assert(!ux.light);                                     /* (XENO: dark) */
         assert(T_REC == (ux.light ? UI_REC_LIGHT : UI_REC_DARK));
         /* the blend: transparent, solid and an edge between the two, on two backgrounds */
         for (unsigned b = 0; b < 2; b++) {
@@ -120,17 +117,22 @@ int main(int argc, char **argv)
             assert(T_MID == ux_mix(T_BG, T_TEXT, UI_MID_PCT) && T_DIM == ux_mix(T_BG, T_TEXT, UI_DIM_PCT) &&
                    T_SEL == ux_mix(T_BG, T_THEME, UI_SEL_PCT) && T_RAISE == ux_mix(T_SURF, T_TEXT, UI_RAISE_PCT) &&
                    T_LANE == ux_mix(T_SURF, T_THEME, 10) && T_INK == T_BG && ux.light && T_REC == UI_REC_LIGHT);
-            assert(ux.crypt == (p == UI_CRYPT_INDEX) && ux.neon == (p == UI_NEON_INDEX) && ux.quark == (p == UI_QUARK_INDEX));
         }
         ux_cpal = 0;
-        palette_set(UI_NEON_INDEX);
-        assert(T_BG == UI_PALETTES[UI_NEON_INDEX].bg && T_TRK(5) == UI_TRACKS[UI_NEON_INDEX][5] && !ux.light && ux.neon);
+        palette_set(UI_XENO_INDEX);
+        assert(T_BG == UI_PALETTES[UI_XENO_INDEX].bg && T_TRK(5) == UI_TRACKS[UI_XENO_INDEX][5] && !ux.light);
     }
     /* the ramp cache follows the palette (a stale ramp would blend toward the old background) */
-    palette_set(1);
+    {   /* (CUSTOM's colours, then XENO's own: the ramps follow) */
+        static const uint8_t cc[22] = {0xf8, 0xf7, 0xc0, 0xe6, 0x41, 0x08, 0x08, 0x51, 0x02, 0xa9, 0x00,
+                                       0xf8, 0xe0, 0x07, 0x1f, 0x00, 0x1f, 0xf8, 0xe0, 0xff, 0x10, 0x84};
+        ux_cpal = cc;
+        palette_set(0);
+    }
     cv_begin(3, 1, T_BG); cv_text(0, 0, &probe, "A", T_THEME);
     uint16_t hicon = swap16(cv_px[1]);
-    palette_set(2);
+    ux_cpal = 0;
+    palette_set(0);
     cv_begin(3, 1, T_BG); cv_text(0, 0, &probe, "A", T_THEME);
     assert(swap16(cv_px[1]) != hicon);
     /* fonts (Skiff): Barlow Condensed S 13 px Medium, M 16 px Bold, L 28 px Bold; tabular digits; the ellipsis;

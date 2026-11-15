@@ -241,7 +241,7 @@ static uint32_t span_face(uint32_t c, const card_span_t *sp, uint32_t (*face)(co
     static uint32_t key[4], got[4] = {3u, 3u, 3u, 3u};   /* (3: none yet) */
     uint32_t k = (uint32_t)(uintptr_t)sp->fn * 31u + (uint32_t)(uintptr_t)sp->p * 7u + (uint32_t)sp->lo * 131u +
                  (uint32_t)sp->hi * 8191u + (uint32_t)(uintptr_t)face * 524287u + (uint32_t)(uintptr_t)uf.f * 3u +
-                 song.sel * 977u + TSEL->eng_req * 4u + ux.neon;   /* (MOD DEST: the track's engine; the theme's faces) */
+                 song.sel * 977u + TSEL->eng_req * 4u + UX_NEON;   /* (MOD DEST: the track's engine; the theme's faces) */
     int32_t v;
     char t[16];
     const char *u;
@@ -305,9 +305,9 @@ static void card_mot_of(const int16_t *vp)
 static uint32_t tall_face(const char *s, const char *unit)
 {
     (void)unit;
-    if (large_face_has(s) && ink_w(&AF_L, s) + (ux.neon ? cv_fx_w(&AF_L) : 0) <= COL_W - 6)   /* ((Skiff N2) NEON: */
+    if (large_face_has(s) && ink_w(&AF_L, s) + (UX_NEON ? cv_fx_w(&AF_L) : 0) <= COL_W - 6)   /* ((Skiff N2) NEON: */
         return 0u;                                                                             /* slanted, the wider) */
-    return ink_w(&AF_M, s) + (ux.neon ? cv_fx_w(&AF_M) : 0) <= COL_W - 6 ? 1u : 2u;
+    return ink_w(&AF_M, s) + (UX_NEON ? cv_fx_w(&AF_M) : 0) <= COL_W - 6 ? 1u : 2u;
 }
 static void draw_column_tall(uint32_t c, const char *label, const char *val, const char *unit, uint16_t vc, int32_t ratio,
                              uint32_t icon, int hot, int mot, int32_t kid, const card_span_t *sp)
@@ -369,7 +369,7 @@ static void draw_column_tall(uint32_t c, const char *label, const char *val, con
         LARGE_HOOK(val, why);
         vy = vf == &AF_L ? LG_VB - AF_L_CAP_Y : vf == &AF_M ? LG_VB + HALF_UP(AF_L_CAP_H - AF_M_CAP_H) - AF_M_CAP_Y
                                                           : LG_VB + HALF_UP(AF_L_CAP_H - AF_S_CAP_H) - AF_S_CAP_Y;
-        if (ux.neon)                                    /* (Skiff N2) NEON: the value in chrome, slanted (its ink, the slant in
+        if (UX_NEON)                                    /* (Skiff N2) NEON: the value in chrome, slanted (its ink, the slant in
                                                          * it, centred) */
             cv_fx_on(vy, vf, 1);
         if (vf == &AF_S && ink_w(vf, val) > COL_W - 4) {   /* (a value always fits: the lint reports one cut) */
@@ -384,13 +384,13 @@ static void draw_column_tall(uint32_t c, const char *label, const char *val, con
         GFX_HOOK_ALIGN(0, 0, COL_W, 0, AL_H, "large card unit centred");
         cv_text_in(0, LG_UY, COL_W, &AF_S, unit, T_MID, T_SURF);
     }
-    if (ux.quark)                                     /* (Skiff Q2) QUARK: the cell's corners, its energy levels */
+    if (UX_QUARK)                                     /* (Skiff Q2) QUARK: the cell's corners, its energy levels */
         qk_corners(0, 0, COL_W, LG_CARD_H, T_DIM, 6);
-    if (ratio >= 0 && ux.quark)
+    if (ratio >= 0 && UX_QUARK)
         qk_dots(5, LG_GY, COL_W - 10, ratio, 0);
-    else if (ratio >= 0 && ux.neon)                   /* (Skiff N3) NEON: a dash bargraph, as the cards' */
+    else if (ratio >= 0 && UX_NEON)                   /* (Skiff N3) NEON: a dash bargraph, as the cards' */
         ne_dash(5, LG_GY - 1, COL_W - 10, ratio, 0);
-    else if (ratio >= 0 && ux.crypt)                  /* (Skiff) CRYPT: a sword, as the cards' */
+    else if (ratio >= 0 && UX_CRYPT)                  /* (Skiff) CRYPT: a sword, as the cards' */
         cr_sword(3, LG_GY - 1, COL_W - 6, ratio, hot ? T_ACCENT : vc == T_DIM ? T_DIM : T_THEME, hot ? T_ACCENT : CR_GOLD,
                  T_MID, T_LINE);
     else if (ratio >= 0) {
@@ -639,9 +639,9 @@ static void draw_foot(void)
             return;
         ui.foot_sig = sig;
         cv_begin(240, foot_h(), T_BG);
-        if (ux.neon)
+        if (UX_NEON)
             ne_rule(0, 1);
-        if (ux.quark)
+        if (UX_QUARK)
             qk_rule(0);
         cv_key_row(8, 232, ly - KC_TY, kh, 3, 7u, T_BG);
         cv_blit(0, foot_y());
@@ -690,9 +690,9 @@ static void draw_foot(void)
         return;
     ui.foot_sig = sig;
     cv_begin(240, foot_h(), T_BG);
-    if (ux.neon)                                       /* (Skiff N3) NEON: a neon rule over it */
+    if (UX_NEON)                                       /* (Skiff N3) NEON: a neon rule over it */
         ne_rule(0, 1);
-    if (ux.quark)                                      /* (Skiff Q2) QUARK: a dotted rule */
+    if (UX_QUARK)                                      /* (Skiff Q2) QUARK: a dotted rule */
         qk_rule(0);
     if (ui.ml.on && !act_cols()) {                    /* ((1.3) MIDI LEARN: what is picked and its CC, OCT+ DONE at the
                                                        * right, for the whole line (midi_learn.c ml_line) */
@@ -1232,13 +1232,13 @@ static void draw_splash(void)
                 SPL_PAD + SPL_PITCH + AF_M_CAP_H, "splash name + version SPL_PAD from the top");
     splash_band(SPL_X0 + SPL_SQ - (uint32_t)h, (uint32_t)h, lb - SPL_PITCH, SPLASH_LINES + 2, AL_B, 0, h - SPL_PAD,
                 "splash maker's baseline SPL_PAD from the bottom");
-    if (ux.crypt) {   /* (Skiff) CRYPT: a skull between two torches, between the bands (design/mock_crypt.py splash) */
+    if (UX_CRYPT) {   /* (Skiff) CRYPT: a skull between two torches, between the bands (design/mock_crypt.py splash) */
         cv_begin(SPL_SQ, 40, T_RAISE);
         cr_torch(36, 8, 0, 2);
         cr_spritez(SPL_SQ / 2 - 13, 6, SPR_SKULL, T_TEXT, T_RAISE, 3);
         cr_torch(SPL_SQ - 46, 8, 1, 2);
         cv_blit(SPL_X0, 98);
-    } else if (ux.quark) {   /* (Skiff Q2) QUARK: an atom in a collision's tracks (design/mock_quark.py splash), on the
+    } else if (UX_QUARK) {   /* (Skiff Q2) QUARK: an atom in a collision's tracks (design/mock_quark.py splash), on the
          * card as the other scenes are, whole ((1.0) no band of BG: it read as a squished box of another colour; 72 rows
          * between the bands, not 40: the turned orbits were cut) */
         uint32_t k;
@@ -1258,12 +1258,12 @@ static void draw_splash(void)
         qk_disc(SPL_SQ / 2 + 3, 38, 2, T_TRK(1));
         qk_disc(SPL_SQ / 2 - 3, 38, 2, T_TRK(2));
         cv_blit(SPL_X0, 84);
-    } else if (ux.xeno) {   /* (Skiff XENO) XENO: a saucer, its beam, a grey in it (ui_xeno.c) */
+    } else if (UX_XENO) {   /* (Skiff XENO) XENO: a saucer, its beam, a grey in it (ui_xeno.c) */
         cv_begin(SPL_SQ, 72, T_RAISE);
         cv_cy0 = 0;
         xe_splash(SPL_SQ, SPL_PAD);
         cv_blit(SPL_X0, 84);
-    } else if (ux.neon) {   /* (Skiff N3) NEON: the striped sun on the horizon, palms, the grid floor, the car on it
+    } else if (UX_NEON) {   /* (Skiff N3) NEON: the striped sun on the horizon, palms, the grid floor, the car on it
          * (design/mock_neon.py splash) */
         cv_begin(SPL_SQ, 40, T_RAISE);
         ne_sun(SPL_SQ / 2, 24, 20, 0);

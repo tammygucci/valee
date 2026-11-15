@@ -34,7 +34,7 @@ static int32_t cv_trk(int32_t x, int32_t y, uint32_t size, uint32_t k, uint16_t 
     int32_t in = size > 16u ? 2 : 0, w = (int32_t)size - 2 * in;
     int32_t nud = k == 0u ? 1 : 0;   /* the 1's ink centred looks right of centre (its flag): nudged left 1 px (2 looked left) */
     if (trk_bare(size)) {
-        if (ux.neon) {                                /* ((Skiff N2) NEON: slanted, half its slant left: centred as before) */
+        if (UX_NEON) {                                /* ((Skiff N2) NEON: slanted, half its slant left: centred as before) */
             cv_fx_on(y + TRK_TOP(size) - (size >= 16u ? AF_V_CAP_Y : AF_M_CAP_Y), trk_face(size), 0);
             x -= cv_fx_w(trk_face(size)) / 2;
         }

@@ -2,7 +2,7 @@
 /* (Skiff C3) THEME CRYPT's widgets (design/mock_crypt.py, B TORCHLIT, the user's pick): stone where BLOCKS lays a flat
  * tile, the ASCII double frame, and its sprites, our own pixel drawings: the skull (a muted track's crossed), the
  * torch, a sword's hilt (the cards' gauges are swords), the blood drop (REC). Drawn on the canvas (cv_*) when
- * ux.crypt; with any other THEME BLOCKS draws as before. Included by ui_blocks.c. */
+ * UX_CRYPT; with any other THEME BLOCKS draws as before. Included by ui_blocks.c. */
 
 #define CR_GOLD RGB(255, 214, 96)                    /* a blade's edge, the hot card's frame */
 #define CR_FLAME RGB(255, 238, 150)

@@ -23,9 +23,9 @@ static int16_t eg_lv[217] __attribute__((section(".pool")));
  * else fill */
 static void pg_under(int32_t x, int32_t y, int32_t top, int32_t foot, uint16_t fill)
 {
-    if (ux.neon)
+    if (UX_NEON)
         ne_band_col(x, y, top, foot);
-    else if (ux.quark)
+    else if (UX_QUARK)
         qk_mc(x, y, foot);
     else
         cv_rect(x, y, 1, foot - y, fill);
@@ -129,18 +129,18 @@ static void graph_adsr(const track_t *t, uint16_t c)
     int32_t top = 6 * graph_ht / 100, bot = 88 * graph_ht / 100, sus = t->p[pg->id[2]] * 1000 / 127;   /* 0..1000 */
     int32_t x0 = 12, x1 = x0 + a, x3 = 226 - r, i, px, py;
     int32_t e = 32768;                                                  /* exp(-4.6 u), Q15 */
-    if (ux.crypt) {                                  /* (Skiff C4) CRYPT: its own */
+    if (UX_CRYPT) {                                  /* (Skiff C4) CRYPT: its own */
         cr_adsr(t);
         return;
     }
 #define EGY(lvl) (bot - (lvl) * (bot - top) / 1000)
-    if (ux.neon || ux.quark) {                       /* (Skiff N4) NEON: the sun's bands under the curve; (Q4) QUARK: a
+    if (UX_NEON || UX_QUARK) {                       /* (Skiff N4) NEON: the sun's bands under the curve; (Q4) QUARK: a
                                                       * Monte Carlo fill */
         int32_t xa, xd, xr;
         env_fill4(t->p[pg->id[0]], t->p[pg->id[1]], t->p[pg->id[2]], t->p[pg->id[3]], eg_lv, 214, &xa, &xd, &xr);
         for (i = 0; i <= 214; i++)
             eg_lv[i] = (int16_t)EGY(eg_lv[i]);     /* (the rows) */
-        if (ux.neon)
+        if (UX_NEON)
             ne_bands(x0, eg_lv, 215, top, bot);
         else
             for (i = 0; i <= 214; i++)
@@ -177,14 +177,14 @@ static void graph_adsr(const track_t *t, uint16_t c)
         for (i = 0; i < 3; i++) {                    /* (the peak lit by ATK; the decay's end by DEC, SUS; the release's
                                                       * start by SUS, REL) */
             int hot = hc == i || (i && hc == i + 1);
-            if (ux.quark)                            /* ((Skiff Q4) QUARK: nuclei, the knob just turned's gold) */
+            if (UX_QUARK)                            /* ((Skiff Q4) QUARK: nuclei, the knob just turned's gold) */
                 qk_nucleus(hx[i], hy[i], hot ? T_ACCENT : T_THEME, hot ? 9 : 7);
-            else if (ux.neon)                        /* ((Skiff N4) NEON: sparkles, the knob just turned's big) */
+            else if (UX_NEON)                        /* ((Skiff N4) NEON: sparkles, the knob just turned's big) */
                 ne_spark(hx[i], hy[i], hot ? T_THEME : T_ACCENT, hot ? 2 : 1);
             else
                 cv_rect(hx[i] - 2, hy[i] - 2, 5, 5, hot ? T_ACCENT : c);
         }
-        if (ux.quark) {                              /* ((Skiff Q4) QUARK: DECAY's and RELEASE's half-lives over the
+        if (UX_QUARK) {                              /* ((Skiff Q4) QUARK: DECAY's and RELEASE's half-lives over the
                                                       * sustain (under it near the top) */
             char hb[16];
             int32_t ly = EGY(sus) - 14 < 2 ? EGY(sus) + 6 : EGY(sus) - 14, lx = x1 + d + 10, rx;
@@ -207,12 +207,12 @@ static void graph_adsr(const track_t *t, uint16_t c)
 static void graph_lfo(const track_t *t, uint16_t c)
 {
     int32_t x, cy = graph_ht / 2, a = 38 * graph_ht / 100, py = cy;
-    if (ux.crypt) {                                  /* (Skiff C4) CRYPT: the snake */
+    if (UX_CRYPT) {                                  /* (Skiff C4) CRYPT: the snake */
         cr_lfo(t);
         return;
     }
     int32_t now = lfo_view_now(t, PANEL_W - 1);
-    if (ux.quark) {                                  /* (Skiff Q4) QUARK: the orbit and its projection: the electron's
+    if (UX_QUARK) {                                  /* (Skiff Q4) QUARK: the orbit and its projection: the electron's
                                                       * height drawn out as the wave (its 2 s, lfo_view_at), the electron
                                                       * where the LFO is now, a dashed line to it on the wave */
         int32_t ox = 46, r = 34 * graph_ht / 100, x0 = 92, w = PANEL_X0 + PANEL_W - x0, nx = lfo_view_now(t, w - 1);
@@ -239,12 +239,12 @@ static void graph_lfo(const track_t *t, uint16_t c)
         qk_disc(x0 + nx, ey, 2, T_ACCENT);
         return;
     }
-    if (ux.neon) {                                   /* ((Skiff N4) NEON: the wave up in the panel, a floor under it) */
+    if (UX_NEON) {                                   /* ((Skiff N4) NEON: the wave up in the panel, a floor under it) */
         cy = 40 * graph_ht / 100;
         a = 30 * graph_ht / 100;
     }
     cv_rect(PANEL_X0, cy, PANEL_W, 1, T_RAISE);
-    if (ux.neon) {                                   /* (Skiff N4) NEON: the wave a ridge of vector mountains on a grid */
+    if (UX_NEON) {                                   /* (Skiff N4) NEON: the wave a ridge of vector mountains on a grid */
         int32_t hy = cy + a + 6;                     /* floor (design/mock_neon.py a_lfo) */
         for (x = 0; x < PANEL_W; x += 4) {
             int32_t y = cy - lfo_view_at(t, x, PANEL_W) * a / 32768 + 4;
@@ -257,11 +257,11 @@ static void graph_lfo(const track_t *t, uint16_t c)
     for (x = 0; x < PANEL_W; x++) {                  /* (Skiff) its 2 s as it runs (lfo_view_at): RATE, PHASE, FADE */
         int32_t y = cy - lfo_view_at(t, x, PANEL_W) * a / 32768;
         if (x)
-            cv_line_t(PANEL_X0 + x - 1, py, PANEL_X0 + x, y, ux.neon && x > now ? ux_mix(c, T_SURF, 55) : c, 2);
+            cv_line_t(PANEL_X0 + x - 1, py, PANEL_X0 + x, y, UX_NEON && x > now ? ux_mix(c, T_SURF, 55) : c, 2);
         py = y;
     }
     x = now;                                         /* .. and where it is now */
-    if (ux.neon) {                                   /* (NEON: a white-hot light trail into it, a sparkle) */
+    if (UX_NEON) {                                   /* (NEON: a white-hot light trail into it, a sparkle) */
         int32_t i;
         for (i = 0; i < 36 && x - i > 0; i++)
             cv_rect(PANEL_X0 + x - i, cy - lfo_view_at(t, x - i, PANEL_W) * a / 32768, 1, 2, ux_mix(T_TEXT, c, i * 100 / 36));
@@ -322,7 +322,7 @@ static void graph_steps(const track_t *t, uint16_t c)
             continue;
         if (i % 16u == 0u && i + 16u <= len)
             GFX_HOOK_ALIGN(0, 0, 240, 0, AL_H | AL_CELLS | AL_N(16), "step bars' row centred");
-        if (ux.crypt) {                              /* (Skiff S1) CRYPT: ASCII, # a note, - a tie, . nothing */
+        if (UX_CRYPT) {                              /* (Skiff S1) CRYPT: ASCII, # a note, - a tie, . nothing */
             int32_t base = y + bh / 2 + 4;
             if (step_on(st))
                 cr_ch(x + 2, base, &AF_S, '#', (st->flags & SF_ACCENT) ? T_ACCENT : c);
@@ -330,14 +330,14 @@ static void graph_steps(const track_t *t, uint16_t c)
                 cr_ch(x + 3, base, &AF_S, '-', T_MID);
             else
                 cr_ch(x + 4, base, &AF_S, '.', T_DIM);
-        } else if (ux.quark) {                       /* (Skiff Q4) QUARK: a bunch, a tie its trail, nothing a dot */
+        } else if (UX_QUARK) {                       /* (Skiff Q4) QUARK: a bunch, a tie its trail, nothing a dot */
             if (step_on(st))
                 qk_disc(x + 4, y + bh / 2, bh > 10 ? 4 : 3, (st->flags & SF_ACCENT) ? T_ACCENT : c);
             else if (step_tie(st))
                 cv_rect(x, y + bh / 2, 9, 1, T_MID);
             else
                 cv_rect(x + 4, y + bh / 2, 1, 1, T_DIM);
-        } else if (ux.neon && step_on(st))           /* (Skiff S1) NEON: a lit tube */
+        } else if (UX_NEON && step_on(st))           /* (Skiff S1) NEON: a lit tube */
             ne_tube(x, y, 9, bh, (st->flags & SF_ACCENT) ? T_ACCENT : c, T_SURF);
         else if (step_on(st))
             cv_rrect(x, y, 9, bh, 2, (st->flags & SF_ACCENT) ? T_ACCENT : c, T_SURF);
@@ -345,12 +345,12 @@ static void graph_steps(const track_t *t, uint16_t c)
             cv_rrect(x, y + bh - 6, 9, 6, 1, T_MID, T_SURF);
         else
             cv_rrect(x, y + bh - 3, 9, 3, 1, T_RAISE, T_SURF);
-        if (i == cur && ux.neon)                     /* ((Skiff S1) NEON: the cursor a laser, glowing) */
+        if (i == cur && UX_NEON)                     /* ((Skiff S1) NEON: the cursor a laser, glowing) */
             cv_rect(x - 1, y + bh + 1 - sm, 11, 4, ux_mix(T_ACCENT, T_SURF, 60));
         if (i == cur)
             cv_rect(x, y + bh + 2 - sm, 9, 2, T_ACCENT);
         else if (song.playing && i == t->seq_idx)
-            cv_rect(x, y + bh + 2 - sm, 9, 2, ux.crypt ? CR_GOLD : T_TEXT);
+            cv_rect(x, y + bh + 2 - sm, 9, 2, UX_CRYPT ? CR_GOLD : T_TEXT);
     }
     if (!sm && !fr.on) {                             /* ((Skiff 2.0) the track's DIR, PRESETS': (2.5, 5B) its card, under
                                                       * the rows, right (a short pattern: where the rows' fourth is) */
@@ -498,15 +498,15 @@ static void pr_bars(const step_t *st, int32_t x, int32_t w, uint16_t c, int acc_
             pr_split(x, PR_Y0, w, 1, c, hits);
         else if (y >= ybot)
             pr_split(x, ybot - 1, w, 1, c, hits);
-        else if (ux.quark && hits == 1u) {           /* ((Skiff Q4) QUARK: a bubble track from its vertex, thinning) */
+        else if (UX_QUARK && hits == 1u) {           /* ((Skiff Q4) QUARK: a bubble track from its vertex, thinning) */
             int32_t k2;
             uint16_t cc = acc && c != T_ACCENT ? T_TEXT : c;
             qk_disc(x + 1, y + 2, 1, cc);
             for (k2 = x + 4; k2 < x + w; k2 += 2)
                 cv_rect(k2, y + 2, 1, 1, ux_mix(cc, T_SURF, 50 * (k2 - x) / (w > 1 ? w : 1)));
-        } else if (ux.crypt && hits == 1u)           /* ((Skiff S1) CRYPT: a sword; accented: bone) */
+        } else if (UX_CRYPT && hits == 1u)           /* ((Skiff S1) CRYPT: a sword; accented: bone) */
             cr_blade(x, y + 1, w, PR_RH - 2, acc && c != T_ACCENT ? T_TEXT : c);
-        else if (ux.neon && hits == 1u)              /* ((Skiff N5) NEON: a lit tube; accented: white-hot) */
+        else if (UX_NEON && hits == 1u)              /* ((Skiff N5) NEON: a lit tube; accented: white-hot) */
             ne_tube(x, y + 1, w, PR_RH - 2, acc && c != T_ACCENT ? T_TEXT : c, T_SURF);
         else if (acc)
             pr_split(x, y, w, PR_RH, c == T_ACCENT ? c : T_TEXT, hits);
@@ -541,11 +541,11 @@ static void graph_tiles(const track_t *t, uint16_t c)
         uint16_t fill = cur ? T_TEXT : on ? (st->time == ST_REST ? ux_mix(c, empty, 70) : c) : tie ? ux_mix(c, empty, 50) :
                         empty;
         char nb[8];
-        if (ux.neon && (on || cur))                   /* ((Skiff N5) NEON: a note a lit tube, the edited one white) */
+        if (UX_NEON && (on || cur))                   /* ((Skiff N5) NEON: a note a lit tube, the edited one white) */
             ne_tube(x, y, TL_W, TL_H, fill, g);
         else
         cv_rrect(x, y, TL_W, TL_H, 3, fill, g);
-        if (ux.crypt && (on || cur))                  /* ((Skiff S1) CRYPT: a plaque, its border engraved; the edited
+        if (UX_CRYPT && (on || cur))                  /* ((Skiff S1) CRYPT: a plaque, its border engraved; the edited
                                                        * one's gold) */
             cv_frame(x + 2, y + 2, TL_W - 4, TL_H - 4, cur ? CR_GOLD : ux_mix(fill, T_INK, 45));
         if (on) {
@@ -610,20 +610,20 @@ static void graph_roll(const track_t *t, uint16_t c)
         a = a < 0 ? 0 : a;
         b = b >= (int32_t)ncol ? (int32_t)ncol - 1 : b;
         w = (b - a + 1) * PR_CW + 1;
-        if (a <= b && ux.neon)                        /* ((Skiff N5) NEON: a laser) */
+        if (a <= b && UX_NEON)                        /* ((Skiff N5) NEON: a laser) */
             ne_laser(PR_X0 + a * PR_CW, PR_Y0 - 2, w, ybot - PR_Y0 + 4, T_SURF);
-        else if (a <= b && ux.quark)                  /* ((Skiff Q4) QUARK: gold corners) */
+        else if (a <= b && UX_QUARK)                  /* ((Skiff Q4) QUARK: gold corners) */
             qk_corners(PR_X0 + a * PR_CW, PR_Y0 - 2, w, ybot - PR_Y0 + 4, T_ACCENT, 4);
         else if (a <= b)                              /* ((Skiff S1) CRYPT: a gold frame) */
-            cv_frame(PR_X0 + a * PR_CW, PR_Y0 - 2, w, ybot - PR_Y0 + 4, ux.crypt ? CR_GOLD : T_TEXT);
+            cv_frame(PR_X0 + a * PR_CW, PR_Y0 - 2, w, ybot - PR_Y0 + 4, UX_CRYPT ? CR_GOLD : T_TEXT);
     }
     for (i = 0; i < ncol; i++) {
         uint32_t si = base + i;
         int32_t x = PR_X0 + (int32_t)i * PR_CW;
-        if (song.playing && si == t->seq_idx && ux.neon)   /* ((Skiff S1) NEON: the playhead a laser, glowing) */
+        if (song.playing && si == t->seq_idx && UX_NEON)   /* ((Skiff S1) NEON: the playhead a laser, glowing) */
             cv_rect(x + 5, PR_Y0, 3, ybot - PR_Y0, ux_mix(T_ACCENT, T_SURF, 60));
         if (song.playing && si == t->seq_idx)
-            cv_rect(x + 6, PR_Y0, 1, ybot - PR_Y0, ux.crypt ? CR_GOLD : T_ACCENT);
+            cv_rect(x + 6, PR_Y0, 1, ybot - PR_Y0, UX_CRYPT ? CR_GOLD : T_ACCENT);
         if ((locks >> si) & 1u)                       /* a parameter lock: a mark under the step */
             cv_rect(x + 3, ybot + 3, 7, 2, T_ACCENT);
     }
@@ -714,12 +714,12 @@ static void graph_grid(const track_t *t, uint16_t c)
             int32_t x = 40 + (int32_t)i * 12, hx = clamp(x + st->nudge * 12 / 64, 40, 220);   /* ((Skiff) its NUDGE) */
             if ((step_lanes(st) & b) && step_ratchet(st) > 1u)
                 pr_split(hx, y + 2, 10, 10, (step_accents(st) & b) ? T_ACCENT : c, step_ratchet(st));
-            else if ((step_lanes(st) & b) && ux.crypt)   /* (Skiff) CRYPT: a hit a # */
+            else if ((step_lanes(st) & b) && UX_CRYPT)   /* (Skiff) CRYPT: a hit a # */
                 cr_ch(hx + 2, y + 11, &AF_S, '#', (step_accents(st) & b) ? T_ACCENT : c);
-            else if ((step_lanes(st) & b) && ux.quark) {   /* (Skiff Q4) QUARK: a hit a bunch of particles */
+            else if ((step_lanes(st) & b) && UX_QUARK) {   /* (Skiff Q4) QUARK: a hit a bunch of particles */
                 qk_disc(hx + 5, y + 7, 4, (step_accents(st) & b) ? T_ACCENT : c);
                 cv_rect(hx + 3, y + 5, 1, 1, ux_mix((step_accents(st) & b) ? T_ACCENT : c, T_TEXT, 60));
-            } else if ((step_lanes(st) & b) && ux.neon)  /* (Skiff N5) NEON: a hit a lit tube */
+            } else if ((step_lanes(st) & b) && UX_NEON)  /* (Skiff N5) NEON: a hit a lit tube */
                 ne_tube(hx, y + 2, 10, 10, (step_accents(st) & b) ? T_ACCENT : c, row);
             else if (step_lanes(st) & b)
                 cv_rrect(hx, y + 2, 10, 10, 2, (step_accents(st) & b) ? T_ACCENT : c, row);
@@ -732,7 +732,7 @@ static void graph_grid(const track_t *t, uint16_t c)
             a = a < 0 ? 0 : a;
             b = b > 15 ? 15 : b;
             if (a <= b && base + (uint32_t)a < len)
-                cv_frame(39 + a * 12, y + 1, (b - a) * 12 + 12, 12, ux.neon ? T_ACCENT : ux.crypt ? CR_GOLD : T_TEXT);
+                cv_frame(39 + a * 12, y + 1, (b - a) * 12 + 12, 12, UX_NEON ? T_ACCENT : UX_CRYPT ? CR_GOLD : T_TEXT);
         }
     }
     if (song.playing && t->seq_idx < len && t->seq_idx / 16u == ui.bank)
@@ -785,12 +785,12 @@ static void graph_strum(const track_t *t, uint16_t c, const uint8_t *nn, uint32_
         char nb[8];
         note_name(nb, nn[i]);
         cv_text(12, y + th - 1 - AF_S.asc, &AF_S, nb, T_MID);
-        if (ux.crypt)
+        if (UX_CRYPT)
             for (x = xs; x + 6 <= 226; x += 7)
                 cr_ch(x, y + th, &AF_S, '#', col);
-        else if (ux.neon)
+        else if (UX_NEON)
             ne_tube(xs, y, 226 - xs, th, col, T_SURF);
-        else if (ux.quark) {
+        else if (UX_QUARK) {
             cv_rect(xs + 6, y + th / 2, 226 - xs - 6, 1, ux_mix(col, T_SURF, 45));
             qk_disc(xs + 4, y + th / 2, 4, col);
         } else
@@ -799,7 +799,7 @@ static void graph_strum(const track_t *t, uint16_t c, const uint8_t *nn, uint32_
         sy[o] = y + th / 2;
     }
     for (i = 1; i < (int32_t)n; i++)                 /* (the stroke, in the order played) */
-        cv_line_t(sx[i - 1], sy[i - 1], sx[i], sy[i], ux.crypt ? CR_BLOOD : ux.neon ? T_ACCENT : T_TEXT, 1);
+        cv_line_t(sx[i - 1], sy[i - 1], sx[i], sy[i], UX_CRYPT ? CR_BLOOD : UX_NEON ? T_ACCENT : T_TEXT, 1);
 }
 static void graph_chord(const track_t *t, uint16_t c)
 {
@@ -911,15 +911,15 @@ static void graph_fx(const track_t *t, uint16_t c)
     for (i = 0; i < 4u; i++) {
         int32_t h = t->p[P_DIST + i] * 76 / 127, x = CARD_X(i) + 26;
         cv_rrect(x, 6, 4, 82, 2, T_RAISE, T_SURF);
-        if (ux.crypt) {                              /* (Skiff) CRYPT: the send a torch (the MIXER's) */
+        if (UX_CRYPT) {                              /* (Skiff) CRYPT: the send a torch (the MIXER's) */
             cr_meter(x - 1, 88, h, !h);
             continue;
         }
-        if (ux.quark) {                              /* (Skiff Q4) QUARK: a calorimeter tower (the MIXER's) */
+        if (UX_QUARK) {                              /* (Skiff Q4) QUARK: a calorimeter tower (the MIXER's) */
             qk_tower(x - 3, 88, 10, 80, h, c, T_ACCENT);
             continue;
         }
-        if (ux.neon) {                               /* (Skiff N4) NEON: a VU column (the MIXER's), its cap white */
+        if (UX_NEON) {                               /* (Skiff N4) NEON: a VU column (the MIXER's), its cap white */
             ne_vu(x - 3, 88, 10, 80, h, 0, ux_mix(T_SURF, T_TEXT, 8), T_TEXT);
             continue;
         }
@@ -935,11 +935,11 @@ static void lane_fader(int32_t x, int32_t y1, int32_t len, int32_t h, int sel, u
 {
     uint16_t col = sel ? T_THEME : c;
     cv_rrect(x + 12, y1 - len, 4, len, 2, T_RAISE, T_SURF);
-    if (ux.crypt)                                    /* (Skiff) CRYPT: the level a torch (the MIXER's) */
+    if (UX_CRYPT)                                    /* (Skiff) CRYPT: the level a torch (the MIXER's) */
         cr_meter(x + 11, y1, h, !h);
-    else if (ux.quark)                               /* (Skiff Q4) QUARK: a calorimeter tower, the picked lane's capped */
+    else if (UX_QUARK)                               /* (Skiff Q4) QUARK: a calorimeter tower, the picked lane's capped */
         qk_tower(x + 9, y1, 10, len, h, c, sel ? T_ACCENT : 0);
-    else if (ux.neon)                                /* (Skiff N4) NEON: a VU column, the picked lane's cap the accent */
+    else if (UX_NEON)                                /* (Skiff N4) NEON: a VU column, the picked lane's cap the accent */
         ne_vu(x + 9, y1, 10, len, h, 0, ux_mix(T_SURF, T_TEXT, 8), sel ? T_ACCENT : T_TEXT);
     else {
         if (h > 3)
@@ -997,13 +997,13 @@ static void graph_lmix(const track_t *t, uint16_t c)
         uint16_t col = sel ? T_THEME : c;
         char v[6];
         lane_fader_of(t, i, x, 62, 56, t->p[P_LN0 + i] * 53 / 127, sel, c);   /* (100 %: the cap on the track's top) */
-        if (ux.crypt) {
+        if (UX_CRYPT) {
             cr_leader(x + 4, x + 24, 72);
             cr_skull(px - 4, 68, col, T_SURF, 0);
-        } else if (ux.neon) {
+        } else if (UX_NEON) {
             cv_rect(x + 4, 72, 20, 1, ux_mix(T_SURF, T_TEXT, 25));
             ne_spark(px, 72, col, 1);
-        } else if (ux.quark) {
+        } else if (UX_QUARK) {
             for (k = 0; k < 20; k += 4)
                 cv_rect(x + 4 + k, 72, 2, 2, ux_mix(T_SURF, T_TEXT, 12));
             qk_nucleus(px, 72, col, 5);
@@ -1027,16 +1027,16 @@ static void graph_slicer(const track_t *t, uint16_t c)
     uint16_t col = mode == SL_OFF ? T_DIM : c;
     for (i = 0; i < 16u; i++) {
         int32_t x = bar_x(i), y;
-        if (ux.crypt) {                              /* (Skiff) CRYPT: # columns: an 'x' step full, a GATE step ':' as
+        if (UX_CRYPT) {                              /* (Skiff) CRYPT: # columns: an 'x' step full, a GATE step ':' as
                                                        * high as it stays open, STUT '=' (it repeats the last 'x') */
             int32_t hit = (pat >> i) & 1u, n = hit || mode == SL_STUT ? 8 : (open + 4) / 9, r;
             for (r = 0; r < n; r++)
                 cr_ch(x + 2, 79 - r * 9, &AF_S, hit ? '#' : mode == SL_STUT ? '=' : ':', hit || mode == SL_STUT ? col : T_DIM);
-        } else if (ux.quark && mode != SL_STUT) {    /* (Skiff Q4) QUARK: towers: an 'x' step full, a GATE step as high as
+        } else if (UX_QUARK && mode != SL_STUT) {    /* (Skiff Q4) QUARK: towers: an 'x' step full, a GATE step as high as
                                                       * it stays open, dim */
             qk_tower(x, 80, 9, 72, (pat >> i) & 1u ? 72 : open, (pat >> i) & 1u ? col : T_DIM, 0);
         } else if ((pat >> i) & 1u) {
-            if (ux.neon && mode != SL_OFF)           /* ((Skiff N4) NEON: a lit tube, its glow) */
+            if (UX_NEON && mode != SL_OFF)           /* ((Skiff N4) NEON: a lit tube, its glow) */
                 cv_rect(x - 1, 7, 11, 74, ux_mix(col, T_SURF, 65));
             cv_rrect(x, 8, 9, 72, 2, mode == SL_OFF ? T_RAISE : col, T_SURF);
         } else if (mode == SL_STUT) {
@@ -1061,10 +1061,10 @@ static void graph_duck(const track_t *t, uint16_t c)
     uint32_t bar = 4u * beat_samples(), per, len, nb, rel, hit[NSTEP];
     const track_t *s;
     uint8_t L[37] = {0};                              /* (Skiff) CRYPT: its levels, a 6 px column each */
-    if (!ux.crypt)
+    if (!UX_CRYPT)
         cv_rect(8, 10, 224, 62, T_RAISE);
     if (!src || src > NTRK || src - 1u == k) {
-        if (ux.crypt)                                /* (no ducking: the level full, dim) */
+        if (UX_CRYPT)                                /* (no ducking: the level full, dim) */
             cr_art(10, 11, 6, 10, L, 37, T_DIM);
         return;
     }
@@ -1077,7 +1077,7 @@ static void graph_duck(const track_t *t, uint16_t c)
         uint32_t l = step_lanes(&s->step[i % len]);
         if (drum_track(s) ? l & 1u : l) {
             hit[nh++] = i * per;
-            if (ux.crypt)
+            if (UX_CRYPT)
                 cr_ch(7 + (int32_t)(i * per / (bar / 224u)), 88, &AF_S, '^', T_TRK(src - 1u));
             else
                 cv_rect(8 + (int32_t)(i * per / (bar / 224u)), 78, 3, 8, T_TRK(src - 1u));
@@ -1092,19 +1092,19 @@ static void graph_duck(const track_t *t, uint16_t c)
             if (dt < rel)
                 dip = 62u * (uint32_t)t->p[P_DKAMT] * ((rel - dt) / (rel / 1024u + 1u)) / (127u * 1024u);
         }
-        if (ux.crypt) {
+        if (UX_CRYPT) {
             if (x % 6u == 2u && x / 6u < 37u)
                 L[x / 6u] = (uint8_t)((dip * 6u + 31u) / 62u);
-        } else if (ux.quark) {                       /* ((Skiff Q4) QUARK: a Monte Carlo fill under its level) */
+        } else if (UX_QUARK) {                       /* ((Skiff Q4) QUARK: a Monte Carlo fill under its level) */
             qk_mc(8 + (int32_t)x, 10 + (int32_t)dip, 72);
             cv_rect(8 + (int32_t)x, 10 + (int32_t)dip, 1, 2, c);
-        } else if (ux.neon) {                        /* ((Skiff N4) NEON: the sun's bands under its level, lit on top) */
+        } else if (UX_NEON) {                        /* ((Skiff N4) NEON: the sun's bands under its level, lit on top) */
             ne_band_col(8 + (int32_t)x, 7 + (int32_t)dip, 10, 72);
             cv_rect(8 + (int32_t)x, 10 + (int32_t)dip, 1, 2, c);
         } else
             cv_rect(8 + (int32_t)x, 10 + (int32_t)dip, 1, 62 - (int32_t)dip, c);
     }
-    if (ux.crypt) {                                  /* (Skiff) CRYPT: the level as ASCII art over its ':' shade (ENV's) */
+    if (UX_CRYPT) {                                  /* (Skiff) CRYPT: the level as ASCII art over its ':' shade (ENV's) */
         cr_dots(10, 11, 6, 10, L, 37, 6, T_DIM);
         cr_art(10, 11, 6, 10, L, 37, c);
     }
@@ -1324,11 +1324,11 @@ static void graph_wheel(const track_t *t, uint16_t c)
         if (t->p[P_E4] && k == 8u) level = 0; /* DSP's percussion cancels the 1-foot bar. */
         int hot = ui.hot_t && cur_page()->id[0] == P_E0 &&
                   (ui.hot_col == 0u || ui.hot_col == (k < 2u ? 1u : k < 4u ? 2u : 3u));
-        if (ux.quark)                                /* (Skiff Q4) QUARK: a drawbar a calorimeter tower */
+        if (UX_QUARK)                                /* (Skiff Q4) QUARK: a drawbar a calorimeter tower */
             qk_tower(x + 4, 75, 10, 72, level * 9, hot ? T_ACCENT : c, 0);
-        else if (ux.neon)                            /* (Skiff N4) NEON: a drawbar a VU column as far out as it is */
+        else if (UX_NEON)                            /* (Skiff N4) NEON: a drawbar a VU column as far out as it is */
             ne_vu(x + 4, 75, 10, 72, level * 9, hot ? T_ACCENT : 0, ux_mix(T_SURF, T_TEXT, 8), 0);
-        else if (ux.crypt) {                         /* (Skiff) CRYPT: a drawbar a # column as far out as it is */
+        else if (UX_CRYPT) {                         /* (Skiff) CRYPT: a drawbar a # column as far out as it is */
             int32_t r;
             for (r = 0; r < level; r++)
                 cr_ch(x + 7, 74 - r * 8, &AF_S, '#', hot ? T_ACCENT : c);
@@ -1460,11 +1460,11 @@ static void graph_fm6(const track_t *t, uint16_t c)
     if (sheet_of(cur_page()->graph)) {               /* ((FM6 LAB T) ALL OPS: the theme's mark round the operator picked,
                                                       * under the chart: a gold frame, a laser, a cell's brackets) */
         k = fm_ui[0] % 6u;
-        if (ux.crypt)
+        if (UX_CRYPT)
             cv_frame(x[k] - 12, y[k] - 2, 25, FM_BH + 4, CR_GOLD);
-        else if (ux.neon)
+        else if (UX_NEON)
             ne_laser(x[k] - 12, y[k] - 2, 25, FM_BH + 4, T_SURF);
-        else if (ux.quark)
+        else if (UX_QUARK)
             qk_corners(x[k] - 13, y[k] - 3, 27, FM_BH + 6, T_ACCENT, 4);
     }
     for (k = 0; k < 6u; k++) {                       /* into k: its sources down to its jog row, across, down */
@@ -1658,18 +1658,18 @@ static void graph_names(void)
     cv_rect(0, 0, 240, (int32_t)graph_h(), T_BG);
     for (k = 0; k < NTRK; k++) {
         const track_t *t = &trk[k];
-        int sel = k == song.sel, ib = sel && !ux.quark;
+        int sel = k == song.sel, ib = sel && !UX_QUARK;
         int32_t x = 3 + (int32_t)(k / 3u) * 118, y = 2 + (int32_t)(k % 3u) * (rh + 2);
-        uint16_t col = t->p[P_MUTE] ? T_DIM : T_TRK(k), lane = sel ? (ux.quark ? ux_mix(col, T_BG, 80) : col) :
-                                                                ux.quark ? T_BG : T_SURF;
-        if (ux.crypt && !sel)
+        uint16_t col = t->p[P_MUTE] ? T_DIM : T_TRK(k), lane = sel ? (UX_QUARK ? ux_mix(col, T_BG, 80) : col) :
+                                                                UX_QUARK ? T_BG : T_SURF;
+        if (UX_CRYPT && !sel)
             cr_stone(x, y, 116, rh, lane);
-        else if (ux.neon && sel) {
+        else if (UX_NEON && sel) {
             uint16_t st[2] = {col, ux_mix(col, NE_VIOLET, 70)};
             ne_hgrad(x, y, 116, rh, st, 2);
         } else
             cv_rect(x, y, 116, rh, lane);
-        if (ux.quark && sel) {
+        if (UX_QUARK && sel) {
             cv_rect(x, y, 116, 1, col);
             cv_rect(x, y + rh - 1, 116, 1, col);
         }
@@ -1824,7 +1824,7 @@ static const char *eng_abbr(const char *name)
 /* a list's selected row: a THEME bar ((Skiff S1) NEON: a sunset, as the MENU's) */
 static void list_bar(int32_t y)
 {
-    if (ux.neon) {
+    if (UX_NEON) {
         uint16_t st[3] = {T_THEME, NE_VIOLET, ux_mix(NE_VIOLET, T_ACCENT, 50)};
         ne_hgrad(6, y, 228, 16, st, 3);
     } else
@@ -1983,7 +1983,7 @@ static void graph_bank(void)
             continue;
         }
         n = pool_refs(id);
-        if (ux.neon && pick)                         /* ((Skiff S1) NEON: the pick a dusk; the others glass, CRYPT's */
+        if (UX_NEON && pick)                         /* ((Skiff S1) NEON: the pick a dusk; the others glass, CRYPT's */
             ne_vgrad(x, y, PV_W, th, NE_HOT, 3);     /* stone (cv_rrect)) */
         else
             cv_rrect(x, y, PV_W, th, 0, fill, T_BG);
@@ -2039,7 +2039,7 @@ static void graph_song(void)
             ;                                                      /* these two are rests; (#28) a REST is one too */
         for (last = first < NENT ? NENT - 1u : 0u; last > first && !ent_on(k, last); last--)
             ;
-        if (cb && ux.neon)                           /* ((Skiff S1) NEON: the band its colour into violet) */
+        if (cb && UX_NEON)                           /* ((Skiff S1) NEON: the band its colour into violet) */
             ne_hgrad(0, y, SG_BAND_W, SG_H, st, 2);
         else if (cb)
             cv_rect(0, y, SG_BAND_W, SG_H, col);
@@ -2094,7 +2094,7 @@ static void graph_song(void)
                 fill = ux_mix(col, T_INK, 35), ink = T_INK;
             else
                 fill = T_SURF, ink = T_MID;
-            if (ux.neon && !cb && on)                /* ((Skiff S1) NEON: the entry playing a lit tube; SURF ones glass, */
+            if (UX_NEON && !cb && on)                /* ((Skiff S1) NEON: the entry playing a lit tube; SURF ones glass, */
                 ne_tube(x, ty, SG_W, SG_TH, fill, gi);   /* CRYPT's stone (cv_rrect)) */
             else
                 cv_rrect(x, ty, SG_W, SG_TH, 0, fill, gi);
@@ -2109,7 +2109,7 @@ static void graph_song(void)
                                                       * top right corner cut, a 4 px step, to the ground) */
                 for (r = 0; r < 4u; r++)
                     cv_rect(x + 9 + (int32_t)r, ty, 1, (int32_t)r + 1,
-                            cb && ux.neon && !in ? ne_ramp(st, 2, (x + 9 + (int32_t)r) * 1000 / (SG_BAND_W - 1)) : gi);
+                            cb && UX_NEON && !in ? ne_ramp(st, 2, (x + 9 + (int32_t)r) * 1000 / (SG_BAND_W - 1)) : gi);
             if (p == nx || cpy)                      /* staged: comes in at its launch point; ((2.0) COPY+'s: TEXT) */
                 cv_frame(x - 1, ty - 1, SG_W + 2, SG_TH + 2, cpy ? T_TEXT : mk);
             for (r = 0; r + 1u < reps && r < 3u; r++)
@@ -2172,8 +2172,8 @@ static void graph_events(void)
                 int32_t nx = cv_free_text(80, y + CAP_IN(S, 16), &AF_S, nm, sel ? T_INK : T_TEXT, bg,
                                           226 - text_w(&AF_S, b) - 8 - 80);
                 GFX_HOOK_ALIGN(0, y, 0, y + 16, AL_V, "list row text centred up/down");
-                cv_text_r(226, y + CAP_IN(S, 16), &AF_S, b, sel ? T_INK : ux.neon ? T_ACCENT : T_TEXT, bg);
-                if ((ux.crypt || ux.neon || ux.quark) && !sel)   /* ((Skiff S1) a dotted leader to the value) */
+                cv_text_r(226, y + CAP_IN(S, 16), &AF_S, b, sel ? T_INK : UX_NEON ? T_ACCENT : T_TEXT, bg);
+                if ((UX_CRYPT || UX_NEON || UX_QUARK) && !sel)   /* ((Skiff S1) a dotted leader to the value) */
                     cr_leader(nx + 4, 226 - text_w(&AF_S, b) - 4, y + 11);
             }
         }
@@ -2323,20 +2323,20 @@ static void track_strip(uint32_t c, uint32_t pos, uint32_t sel, uint32_t st, uin
 static void mix_strip(uint32_t c, uint32_t sel, uint32_t st, uint32_t mute, uint32_t hot, uint32_t lvl, int32_t pan,
                       const char *b, int large)
 {
-    int ib = sel && !ux.quark;                       /* (the selected strip a band, INK on it; (Skiff Q3) QUARK: a tint) */
-    uint16_t col = T_TRK(c), g = sel ? (ux.quark ? ux_mix(col, T_BG, 82) : col) : T_SURF, line = ib ? ux_mix(col, T_INK, 55) : T_RAISE;
+    int ib = sel && !UX_QUARK;                       /* (the selected strip a band, INK on it; (Skiff Q3) QUARK: a tint) */
+    uint16_t col = T_TRK(c), g = sel ? (UX_QUARK ? ux_mix(col, T_BG, 82) : col) : T_SURF, line = ib ? ux_mix(col, T_INK, 55) : T_RAISE;
     uint16_t vc = ib ? T_INK : hot == 1u ? T_ACCENT : mute ? T_DIM : T_THEME, nc = ib ? T_INK : mute ? T_DIM : col;
     int32_t h = (int32_t)graph_h(), m = ts.meter[c], i;
     char d[2] = {(char)('1' + c), 0}, nm[8], v[8];
     cv_begin(MS_W, (uint32_t)h, T_BG);
-    if (ux.crypt && !sel)                            /* (Skiff C3) CRYPT: the strips stone */
+    if (UX_CRYPT && !sel)                            /* (Skiff C3) CRYPT: the strips stone */
         cr_stone(0, 0, MS_W, h, g);
-    else if (ux.neon && sel) {                       /* (Skiff N3) NEON: the selected one its colour into violet, the */
+    else if (UX_NEON && sel) {                       /* (Skiff N3) NEON: the selected one its colour into violet, the */
         uint16_t st[2] = {col, ux_mix(col, NE_VIOLET, 75)};   /* others glass */
         ne_vgrad(0, 0, MS_W, h, st, 2);
-    } else if (ux.neon)
+    } else if (UX_NEON)
         ne_glass(0, 0, MS_W, h, g);
-    else if (ux.quark) {                             /* (Skiff Q3) QUARK: the selected one in its colour's corners */
+    else if (UX_QUARK) {                             /* (Skiff Q3) QUARK: the selected one in its colour's corners */
         cv_rect(0, 0, MS_W, h, g);
         if (sel)
             qk_corners(0, 0, MS_W, h, col, 6);
@@ -2348,7 +2348,7 @@ static void mix_strip(uint32_t c, uint32_t sel, uint32_t st, uint32_t mute, uint
         cv_rect(MS_W - 11, 10, 7, 7, ib ? T_INK : T_REC);
     else if (st == 2u)
         cv_frame(MS_W - 11, 10, 7, 7, ib ? T_INK : T_ACCENT);
-    else if (st == 3u && ux.crypt)                   /* (Skiff C3) CRYPT: muted, a crossed skull */
+    else if (st == 3u && UX_CRYPT)                   /* (Skiff C3) CRYPT: muted, a crossed skull */
         cr_skull(MS_W - 12, 10, ib ? T_INK : hot == 4u ? T_ACCENT : T_MID, g, 1);
     else if (st == 3u) {
         GFX_HOOK_ALIGN(0, 3, 0, 27, AL_V, "mixer strip number on its line");
@@ -2370,11 +2370,11 @@ static void mix_strip(uint32_t c, uint32_t sel, uint32_t st, uint32_t mute, uint
     }
     {   /* LEVEL: the fader from its foot, its cap; the meter beside it */
         int32_t fh = (int32_t)lvl * (MS_FY1 - MS_FY0) / 127, mh = m * (MS_FY1 - MS_FY0) / (TS_MH - 2);
-        if (ux.quark && mute) {                       /* (Skiff Q3) QUARK: muted, dark matter: there, nothing shows */
+        if (UX_QUARK && mute) {                       /* (Skiff Q3) QUARK: muted, dark matter: there, nothing shows */
             qk_dotframe(10, MS_FY0, 16, MS_FY1 - MS_FY0, T_DIM);
             GFX_HOOK_ALIGN(0, 0, MS_W, 0, AL_H, "mixer strip value centred across");
             cv_text_in(0, MS_FY0 + 20, MS_W, &AF_S, "DARK", T_DIM, g);
-        } else if (ux.quark) {                        /* (Skiff Q3) QUARK: a calorimeter tower, its cells the energy
+        } else if (UX_QUARK) {                        /* (Skiff Q3) QUARK: a calorimeter tower, its cells the energy
                                                        * deposited (the level), a gold cap; the meter beside it */
             int32_t n = 12, lit = (fh * n + 25) / (MS_FY1 - MS_FY0), s;
             for (s = 0; s < n; s++)
@@ -2382,28 +2382,28 @@ static void mix_strip(uint32_t c, uint32_t sel, uint32_t st, uint32_t mute, uint
             cv_rect(8, MS_FY1 - lit * 4 - 2, 18, 1, hot == 1u ? T_TEXT : T_ACCENT);
             if (mh)
                 cv_rect(27, MS_FY1 - mh, 2, mh, T_THEME);
-        } else if (ux.neon && mute) {                        /* (Skiff N3) NEON: muted, no signal (selected: dark snow on its
+        } else if (UX_NEON && mute) {                        /* (Skiff N3) NEON: muted, no signal (selected: dark snow on its
                                                        * band) */
             ne_snow(3, MS_FY0, MS_W - 6, MS_FY1 - MS_FY0, c * 7u + 3u, sel ? col : T_BG, ib ? T_INK : T_MID);
             GFX_HOOK_ALIGN(0, 0, MS_W, 0, AL_H, "mixer strip value centred across");
             cv_text_in(0, MS_FY0 + 22, MS_W, &AF_S, "MUTE", ib ? T_INK : T_THEME, g);
-        } else if (ux.neon) {                         /* (Skiff N3) NEON: VU columns, LEVEL (its cap white; turned: the
+        } else if (UX_NEON) {                         /* (Skiff N3) NEON: VU columns, LEVEL (its cap white; turned: the
                                                        * accent) and the meter */
             ne_vu(8, MS_FY1, 9, MS_FY1 - MS_FY0, fh, ib ? T_INK : 0, sel ? line : ux_mix(T_SURF, T_TEXT, 10),
                   sel ? 0 : hot == 1u ? T_ACCENT : T_TEXT);
             ne_vu(19, MS_FY1, 9, MS_FY1 - MS_FY0, mh, ib ? T_INK : 0, sel ? line : ux_mix(T_SURF, T_TEXT, 10), 0);
         } else
         cv_rect(13, MS_FY0, 6, MS_FY1 - MS_FY0, line);
-        if (ux.neon || ux.quark)
+        if (UX_NEON || UX_QUARK)
             ;
-        else if (ux.crypt && !sel) {                  /* (Skiff) CRYPT: a torch as tall as the level (muted: out) */
+        else if (UX_CRYPT && !sel) {                  /* (Skiff) CRYPT: a torch as tall as the level (muted: out) */
             cr_meter(13, MS_FY1, fh, mute);
         } else {
         if (fh)
             cv_rect(13, MS_FY1 - fh, 6, fh, vc);
         cv_rect(10, MS_FY1 - fh - 1, 12, 2, ib ? T_INK : T_TEXT);
         }
-        if (!ux.neon && !ux.quark) {
+        if (!UX_NEON && !UX_QUARK) {
         cv_rect(23, MS_FY0, 2, MS_FY1 - MS_FY0, line);
         if (mh)
             cv_rect(23, MS_FY1 - mh, 2, mh, ib ? T_INK : T_MID);
@@ -2678,16 +2678,16 @@ static void graph_scope(uint16_t c)
     int32_t cy = (int32_t)cv_h / 2, py = cy, x, peak = 1500, a = cv_h >= H_GRAPH ? 46 : cy - 6;   /* (LARGE: the strip) */
     CAST_READ();                                     /* (Skiff Studio: the sound read here, the copy's at the same block) */
     w = scope_w;
-    if (ui.home && cv_h >= H_GRAPH && !ux.quark && !ux.crypt && !ux.skiff) {   /* ((Vallée) THE WORLD, ui_world.c: HOME's
+    if (ui.home && cv_h >= H_GRAPH && !UX_QUARK && !UX_CRYPT && !UX_SKIFF) {   /* ((Vallée) THE WORLD, ui_world.c: HOME's
                                                                      * only (the pages' scopes, LARGE's strip: the wave) */
         wl_world();
         return;
     }
-    if (cv_h >= H_GRAPH && (ux.quark || ux.crypt || ux.skiff)) {   /* (2.5) the tracks' levels: their themes' own */
+    if (cv_h >= H_GRAPH && (UX_QUARK || UX_CRYPT || UX_SKIFF)) {   /* (2.5) the tracks' levels: their themes' own */
         scope_levels();
-        if (ux.quark)
+        if (UX_QUARK)
             qk_detector(120, cy);
-        else if (ux.crypt)
+        else if (UX_CRYPT)
             cr_creatures();
         else
             sk_sea();
@@ -2705,7 +2705,7 @@ static void graph_scope(uint16_t c)
             trig = i;
             break;
         }
-    if (ux.crypt) {                                  /* (Skiff N8) CRYPT, MENU > LARGE's strip: the sound burns: fire up
+    if (UX_CRYPT) {                                  /* (Skiff N8) CRYPT, MENU > LARGE's strip: the sound burns: fire up
                                                       * from the foot as tall as the wave there (ember, amber, gold, its
                                                       * tips flame), flickering */
         int32_t foot = (int32_t)cv_h - 3, top = 6, k;
@@ -2721,7 +2721,7 @@ static void graph_scope(uint16_t c)
         }
         return;
     }
-    if (ux.neon && cv_h >= H_GRAPH) {                /* (Skiff N8) NEON: the sound as the skyline: the wave a ridge of
+    if (UX_NEON && cv_h >= H_GRAPH) {                /* (Skiff N8) NEON: the sound as the skyline: the wave a ridge of
                                                       * vector mountains over the horizon, the striped sun behind it
                                                       * swelling with how loud it is, the floor running toward the viewer */
         int32_t hy = (int32_t)cv_h * 64 / 100, my = hy / 2 + 2, ma = hy / 2 - 6;
@@ -2751,7 +2751,7 @@ static void draw_graph(void)
 {
     const page_t *pg = cur_page();
     const track_t *t = TSEL;
-    uint16_t c = ux.quark ? T_THEME : T_TRK(song.sel);   /* Skiff: BLOCKS draws in the track's colour ((Skiff Q5) QUARK:
+    uint16_t c = UX_QUARK ? T_THEME : T_TRK(song.sel);   /* Skiff: BLOCKS draws in the track's colour ((Skiff Q5) QUARK:
                                                       * cyan, an instrument's readouts, as the mockup) */
     uint32_t sig;
     int32_t pad = graph_pad();                       /* (Skiff) BLOCKS: the panel 16 px taller (ui.c foot_less): ADSR and
@@ -2769,12 +2769,12 @@ static void draw_graph(void)
         return;
     ui.graph_sig = sig;
     cv_begin(240, graph_h(), T_BG);
-    if (ux.crypt) {                                  /* (Skiff C3) CRYPT: stone in a double frame */
+    if (UX_CRYPT) {                                  /* (Skiff C3) CRYPT: stone in a double frame */
         cr_stone(3, 0, 234, (int32_t)graph_h(), T_SURF);
         cr_frame2(3, 0, 234, (int32_t)graph_h(), T_LINE);
     } else
         cv_rrect(3, 0, 234, graph_h(), 5, T_SURF, T_BG);   /* the panel (MENU > LARGE: the strip) */
-    if (ux.quark)                                    /* ((Skiff Q2) QUARK: an instrument's bracket corners) */
+    if (UX_QUARK)                                    /* ((Skiff Q2) QUARK: an instrument's bracket corners) */
         qk_corners(3, 0, 234, (int32_t)graph_h(), T_DIM, 7);
     cv_bg = T_SURF;                                  /* (text drawn with cv_text lands on it) */
     cv_oy = GOY + pad;                               /* graphs on a 100 px scale */

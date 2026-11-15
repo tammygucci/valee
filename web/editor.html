@@ -535,13 +535,7 @@ const F = { INT: 0, PCT: 1, BIPCT: 2, TIME: 3, LFOHZ: 4, CUTOFF: 5, DB: 6, SEMI:
    tokens the editor wears while CUSTOM is in use, and the contrast it warns by (WCAG; below the generator's minimums, so
    no theme of the device's warns). After Felucca 1.6's custom palette (palette.js, Leo Kuroshita) */
 const PAL_ROLES = ["BG", "SURF", "TEXT", "THEME", "ACCENT", "T1", "T2", "T3", "T4", "T5", "T6"];
-const PAL_BUILTIN = [
-  ["SKIFF", 0x0841, 0x18c3, 0xffdf, 0xffdf, 0xffdf, 0xfac6, 0x2616, 0xfde0, 0x941f, 0xfb75, 0xa726],
-  ["HI-CON", 0x0000, 0x2945, 0xffdf, 0xff40, 0x073f, 0xff40, 0xff40, 0xff40, 0xff40, 0xff40, 0xff40],
-  ["PAPER", 0xf77c, 0xe6d9, 0x20e3, 0x0aa8, 0xa9c1, 0x0aa8, 0x0aa8, 0x0aa8, 0x0aa8, 0x0aa8, 0x0aa8],
-  ["CRYPT", 0x0820, 0x20c2, 0xeeb5, 0xfd84, 0xfeef, 0xeb66, 0xf5a7, 0xde74, 0xeac8, 0xad6b, 0xcc36],
-  ["NEON", 0x0823, 0x1866, 0xf77f, 0xfad7, 0x371f, 0xfa16, 0x371f, 0xfeeb, 0xfc07, 0xab3f, 0x57f5],
-  ["QUARK", 0x0021, 0x08a4, 0xdf9f, 0x4e9f, 0xff0c, 0xfaac, 0x46f0, 0x5c7f, 0x3efe, 0xe31c, 0xfeea],
+const PAL_BUILTIN = [   /* ((Vallée) THEME XENO alone on the unit) */
   ["XENO", 0x0022, 0x1065, 0xe7fd, 0x7ff2, 0xfbdd, 0x5fed, 0x551f, 0xff28, 0xfb79, 0xb37f, 0xfca6],
 ].map(([name, ...c]) => ({ name, c }));
 const rgb8 = (c) => [(c >> 11) * 255 / 31 | 0, ((c >> 5) & 63) * 255 / 63 | 0, (c & 31) * 255 / 31 | 0];   /* (as the generator's) */
@@ -622,7 +616,7 @@ const hitsEnc = (hit, acc) => [hit & 0x7F, acc & 0x7F, (hit >> 7 & 1) | (acc >> 
    tests/editor_test.c's menu.json): id, name, value names (THEME: the palettes), default, the device's tab */
 const MENU_TABS = ["DISPLAY", "CONTROL", "AUDIO", "SYSTEM"];
 const MENU = [
-  { id: 0, name: "THEME", names: null, def: 6, tab: 0 }, { id: 2, name: "LARGE", names: ["OFF", "ON"], def: 0, tab: 0 },
+  { id: 0, name: "THEME", names: null, def: 0, tab: 0 }, { id: 2, name: "LARGE", names: ["OFF", "ON"], def: 0, tab: 0 },
   { id: 3, name: "ANIM", names: ["ON", "OFF"], def: 0, tab: 0 }, { id: 4, name: "LEDS", names: ["OFF", "DIM LO", "DIM HI", "INV"], def: 2, tab: 0 },
   { id: 5, name: "HOLD", names: ["0.3 s", "0.4 s", "0.5 s", "0.6 s"], def: 1, tab: 1 }, { id: 6, name: "KNOB ACCEL", names: ["OFF", "ON"], def: 0, tab: 1 },
   { id: 8, name: "BPM LOCK", names: ["OFF", "ON"], def: 0, tab: 1 }, { id: 9, name: "SPEAKER EQ", names: ["FLAT", "LOWCUT", "BASS+"], def: 0, tab: 2 },
@@ -2545,8 +2539,8 @@ function makeMockDevice(opt = {}) {
     bank: new Array(opt.slots || 32).fill(null),     /* user presets: {engine, name, p, pattern, grid, fm6 (FM6: its patch)} */
     uiCaps: opt.legacy || opt.v3 || opt.v5 ? 0 : opt.uiCaps ?? 25,   /* ((Skiff #27) 16: COLORS) */
     custom: { flags: 0, look: 0, c: new Array(11).fill(0), preview: null },   /* ((Skiff #27) THEME CUSTOM's set) */
-    palette: 6, font: 0, monitor: 0, filter: 0, bankSig: 0,
-    palettes: ["SKIFF", "HI-CON", "PAPER", "CRYPT", "NEON", "QUARK", "XENO"],   // (Skiff, R1) THEME: the device's list (tools/gen_ui_palettes.py)
+    palette: 0, font: 0, monitor: 0, filter: 0, bankSig: 0,
+    palettes: ["XENO"],   // ((Vallée) THEME: the device's list, XENO alone (tools/gen_ui_palettes.py))
     favorites: Array.from({ length: ENG.length + 1 }, () => []),
     watch: false, v4: false, lastReq: 0,
   };
@@ -6160,7 +6154,7 @@ function applyCustom(c) {
 }
 function renderPreferences(force = false) {
   const d = dev, p = d && d.preferences;
-  const LOOK = { SKIFF: "dark", "HI-CON": "dark", PAPER: "light", CRYPT: "crypt", NEON: "neon", QUARK: "quark" };   /* (Skiff 1.0) */
+  const LOOK = { SKIFF: "dark", "HI-CON": "dark", PAPER: "light", CRYPT: "crypt", NEON: "neon", QUARK: "quark", XENO: "dark" };   /* (Skiff 1.0; (Vallée) XENO) */
   const cu = p && p.palettes[p.state.palette] === "CUSTOM" && p.colors && p.colors.stored ? p.colors : null;
   const lk = cu && LOOK[(PAL_BUILTIN[cu.look] || {}).name];
   const look = !p ? null : cu ? (["crypt", "neon", "quark"].includes(lk) ? lk : luma565(cu.c[0]) > 128 ? "light" : "dark") :

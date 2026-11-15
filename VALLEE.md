@@ -5,7 +5,8 @@ does, Vallée does the same way: the pages, the sequencer, the sounds, projects 
 SLICE engine is left out** (see [Room on the FM-1](#room-on-the-fm-1)). On top of that it adds:
 
 - **An opening**: an animated intro with its own chime when you switch on.
-- **THEME XENO**: a tape-machine HOME screen, and a creature for every sound.
+- **THEME XENO**, the only theme (Skiff's others, SKIFF HI-CON PAPER CRYPT NEON QUARK, are gone, ~36 KB freed): a
+  tape-machine HOME screen, and a creature for every sound.
 - **THE SPELL**: tap HOME on HOME: the song's map on top, and the Alchemist (the intro's head) conjuring with your six
   tracks' elements a figure the song summons, different for every song.
 - **GEN**: a song generator in twelve styles, which writes ordinary steps you then edit in the sequencer.
@@ -162,6 +163,10 @@ back for DEMARCO).
 
 ## THEME XENO
 
+XENO is Vallée's only theme: Skiff's other six (SKIFF, HI-CON, PAPER, CRYPT, NEON, QUARK) and their widgets and pixel
+font are gone, which freed about 36 KB of the FM-1's flash. A unit on one of them comes up in XENO. THEME CUSTOM (your own
+colours, from the web editor) still works, over XENO.
+
 **HOME is a tape machine**, after the OP-1's tape (like the ORBIT and KARMA home screens). Two reels with turning
 hexagram hubs wind the tape from left to right as the pattern plays. The selected track's creature stands on the head and
 sings (pink eyes, a halo) on its notes. There's a tape counter and one meter per track. Below the deck, each track is a
@@ -183,7 +188,7 @@ The sound decides the rest: which body, its eyes, what's on or round it (antenna
 mark: 256 different creatures in each family, and sounds next to each other in a list never share one. A user preset
 gets one from its name. They blink, sing on their track's notes, and sleep while muted.
 
-**Turning PRESETS on HOME** (in any theme) opens a black box with a border in the track's colour: the new sound's
+**Turning PRESETS on HOME** opens a black box with a border in the track's colour: the new sound's
 creature six times its size, the sound's name and its engine. It closes by itself about a second after the last
 detent.
 
