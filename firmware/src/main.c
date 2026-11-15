@@ -287,6 +287,19 @@ static void fm1_main(void)
         ui_set_rev = 1;                       /* off again */
         settings_save();
     }
+    if (ui_set_rev < 4u) {                    /* ((Vallée) its first start, a new unit's or over Skiff's settings: the
+                                               * look it is made for, once (the MENU can change any of it after):
+                                               * THEME XENO (the deck, the creatures), LARGE OFF (its cards hide them),
+                                               * ANIM ON (the intro, the reels), PLAYHEAD THEME, BPM LOCK ON (SELECT on
+                                               * HOME opens GEN), HINTS ON */
+        menu_put(MI_COLOR, UI_DEFAULT_INDEX);
+        ui_prefs = (uint8_t)((ui_prefs & ~(PREF_LARGE | PREF_ANIM_OFF)) | PREF_BPM_LOCK);
+        ui_ph_line = 0;
+        ui_hints_off = 0;
+        theme_apply();
+        ui_set_rev = 4;
+        settings_save();
+    }
 #if FELUCCA_LEGACY
     proj_migrate(boot_clean);                 /* (Skiff phase 5) projects of before: SKF2, their tracks patterns */
 #endif

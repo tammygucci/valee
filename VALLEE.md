@@ -10,8 +10,18 @@ SLICE engine is left out** (see [Room on the FM-1](#room-on-the-fm-1)). On top o
   moving to the song, the song drawing sigils and constellations on it.
 - **GEN**: a song generator in twelve styles, which writes ordinary steps you then edit in the sequencer.
 
-XENO is the theme on a fresh unit. If you install over Skiff your settings are kept, so pick it once in
-**MENU > THEME > XENO** (hold HOME, let go: the MENU).
+Vallée's first start sets the look it is made for, once, on a new unit and over Skiff's settings alike: THEME XENO,
+LARGE OFF (its big cards hide the deck and the creatures), ANIM ON, PLAYHEAD THEME, BPM LOCK ON (SELECT on HOME opens
+GEN) and HINTS ON. Everything else you set under Skiff is kept, and the MENU can change any of these afterwards.
+
+## DEAD DRUMS
+
+A new kit for the DRUM engine: **KIT DEAD**, and the preset **DEAD DRUMS** (SAVE > PRESETS, or PRESETS on a DRUM
+track). A seventies studio kit muted with towels: a short fat kick with no click, a deep snare whose body thumps and
+whose wires stay low and dark, a short clap, hats taped down, a floor tom and (on the BELL lane) a rack tom, both dead,
+and a woody cross-stick on RIM. Synthesized, like Skiff's other kits (no samples: there is no room for them, and the
+sampled packs it is modelled on are not free to copy). EDIT > LANES and LANE MIX set each piece's level, tune, decay
+and pan as on any kit.
 
 ## The opening
 
@@ -136,7 +146,7 @@ hexagram hubs wind the tape from left to right as the pattern plays. The selecte
 sings (pink eyes, a halo) on its notes. There's a tape counter and one meter per track. Below the deck, each track is a
 lane of tape running past the head.
 
-**Every sound has its own creature** (original pixel art, 12 x 12): each of the 141 factory presets gets one of its
+**Every sound has its own creature** (original pixel art, 12 x 12): each of the 142 factory presets gets one of its
 own, and no two are alike. The engine decides the family, from the head, and every member carries the family's mark:
 
 | Engine | Family |

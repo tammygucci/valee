@@ -76,7 +76,7 @@ enum {
 };
 /* a lane of a model kit as a type: the kit (1..DV_NKIT) in the high 4 bits, the lane in the low 3 (Felucca's own
  * types: 0 above). Its run (the DVT_* it plays through) is the kit's (DV_KIT) */
-#define DV_NKIT 8                                        /* (1.5.6, #216: DEEP TIGHT PERC after 77) */
+#define DV_NKIT 9                                        /* (1.5.6, #216: DEEP TIGHT PERC after 77; (Vallée) DEAD) */
 #define DV_KITOF(t) ((uint32_t)(t) >> 4)
 #define DV_KTYPE(kit, lane) ((uint8_t)(((kit) << 4) | (lane)))
 
@@ -187,7 +187,7 @@ typedef struct {
     int16_t v[13];
 } dv_kit_t;
 /* the accent per kit: + (x / 16384) per accent step (75: +4 dB at full, as Felucca's own) */
-static const uint8_t DV_KIT_ACC[DV_NKIT] = {120, 45, 100, 40, 40, 80, 60, 70};
+static const uint8_t DV_KIT_ACC[DV_NKIT] = {120, 45, 100, 40, 40, 80, 60, 70, 50};
 static const dv_kit_t DV_KIT[DV_NKIT][DV_NLANE] = {
     {   /* 80 */
         /* deep sine, a small drop, long decay */
@@ -329,6 +329,24 @@ static const dv_kit_t DV_KIT[DV_NKIT][DV_NLANE] = {
         {DVT_CLAVE, 32, 1568, 149, 2131, {84, 28000, 10000, 6348, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
         /* 66's bell: sines 830 / 613 Hz */
         {DVT_RIM, 40, 1280, 60, 3629, {-84, 30000, 7500, 4096, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+    },
+    {   /* (Vallée) DEAD: a seventies studio kit muted with towels, dry and close: every piece short and dull, the
+         * heads thud, no ring, no sizzle */
+        /* a fat thud: 52 Hz, a small drop, no click, the 2nd harmonic up, tau short */
+        {DVT_PUNCH, 60, 515, 70, 5350, {70, 90, 0, 2600, 500, 0, 0, 5200, 0, 0, 0, 0, 0}},
+        /* a deep shell 160 Hz under the towel: the body loud, the wires low and dark (band 2 kHz), quick */
+        {DVT_SNARE, 40, 825, 62, 3600, {230, 30, 100, 110, 22000, 26000, 1520, 7000, 25, 4000, 15000, 0, 1828}},
+        /* a short dark clap: band 900 Hz, three teeth, little tail */
+        {DVT_CLAP, 48, 1300, 90, 25200, {0, 7000, 1300, 0, 1200, 28000, 30, 380, 3, 0, 0, 0, 0}},
+        /* hats taped down: noise through a band at 5.5 kHz, the high-pass low, tau short */
+        {DVT_HATC, 45, 1810, 70, 12800, {1700, 1600, 1480, 2042, 0, 0, 6500, 3, 6, 0, 0, 0, 0}},
+        {DVT_HATO, 63, 1810, 200, 9500, {1700, 1600, 1480, 2042, 0, 0, 6500, 3, 6, 0, 0, 0, 0}},
+        /* a floor tom 92 Hz, tau short, no bend, a low stick */
+        {DVT_TOM, 53, 670, 150, 4400, {0, 90, 1250, 3500, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+        /* a cross-stick, woody: sines 420 / 560 Hz, short */
+        {DVT_RIM, 40, 1092, 40, 4200, {80, 30000, 9000, 4096, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+        /* a rack tom on BELL: 140 Hz, as dead */
+        {DVT_TOM, 53, 787, 130, 2060, {0, 90, 1250, 3500, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
     },
 };
 

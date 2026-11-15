@@ -339,6 +339,15 @@ static void web_power_on(void)
     unit_g_adopt = ui_set_rev < 2u;       /* main.c: (Skiff U3, R8) the unit's CLOCK MIDI IN TUNE */
     autosave_boot(boot_clean);            /* main.c: the last session's music (1.2, project.c) */
     unit_g_boot();
+    if (ui_set_rev < 4u) {                /* main.c: ((Vallée) its first start: XENO, LARGE OFF, ANIM ON, BPM LOCK ON ..) */
+        menu_put(MI_COLOR, UI_DEFAULT_INDEX);
+        ui_prefs = (uint8_t)((ui_prefs & ~(PREF_LARGE | PREF_ANIM_OFF)) | PREF_BPM_LOCK);
+        ui_ph_line = 0;
+        ui_hints_off = 0;
+        theme_apply();
+        ui_set_rev = 4;
+        settings_save();
+    }
 #ifdef FOLLOW_DEMO
     follow_demo();
 #endif

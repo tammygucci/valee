@@ -972,7 +972,8 @@ static void cost(void)
 }
 
 /* --------------------------------------------------------- the model kits --- */
-static const char *const KITN[DV_NKIT] = {"80", "10", "66", "55", "77", "DEEP", "TIGHT", "PERC"};
+static const char *const KITN[DV_NKIT] = {"80", "10", "66", "55", "77", "DEEP", "TIGHT", "PERC", "DEAD"};
+#define KITV(k) ((k) < 8u ? DK_80 + (k) : DK_DEAD)   /* ((Vallée) a model's KIT value: DEAD after the user kits) */
 static const char *const LANEN[DV_NLANE] = {"KICK", "SNARE", "CLAP", "HATCL", "HATOP", "TOM", "RIM", "BELL"};
 #define KLEN (FS * 6u)
 
@@ -998,6 +999,9 @@ static const float KTGT[DV_NKIT][DV_NLANE][2] = {
      {0.500, 13024}, {0.200, 3480}, {0.010, 2421}, {0.220, 1590}},
     {{0.620, 1863}, {0.120, 4518}, {0.230, 5906}, {0.210, 9473},   /* PERC: 10 77 77 66 66 66 77 66 */
      {0.270, 9422}, {0.110, 1379}, {0.110, 3517}, {0.050, 1274}},
+    /* (Vallée) DEAD: measured (a towel-muted kit: every lane short, the snare and toms dark) */
+    {{0.100, 190}, {0.090, 2176}, {0.040, 5320}, {0.070, 6430},   /* DEAD */
+     {0.290, 6393}, {0.170, 517}, {0.040, 851}, {0.150, 589}},
 };
 static const float KLVL[DV_NLANE] = {-14.5f, -18.2f, -24.2f, -27.4f, -23.8f, -13.6f, -22.5f, -21.0f};
 
@@ -1116,7 +1120,7 @@ static void kit_keys(void)
         int32_t st, pk;
         host_tracks_init();
         host_preset(&trk[0], ENGI_DRUM, 0);
-        trk[0].p[P_E0] = (int16_t)(DK_80 + k);
+        trk[0].p[P_E0] = (int16_t)KITV(k);
         trk[0].p[P_E6] = 1;
         for (n = 0; n < 128u; n++) {
             uint32_t t = drum_gm(trk[0].p, n, &st);
@@ -1124,12 +1128,12 @@ static void kit_keys(void)
         }
         for (i = 0; i < 8u; i++) {
             kit_fresh();
-            trk[0].p[P_E0] = (int16_t)(DK_80 + k);
+            trk[0].p[P_E0] = (int16_t)KITV(k);
             trk_note_on(&trk[0], KIT[i], 110);
             quiet += blocks_peak(8) < 200;
         }
         kit_fresh();
-        trk[0].p[P_E0] = (int16_t)(DK_80 + k);
+        trk[0].p[P_E0] = (int16_t)KITV(k);
         for (i = 0; i < 8u; i++)
             trk_note_on(&trk[0], KIT[i], 110);
         pk = blocks_peak(2);
@@ -1394,12 +1398,12 @@ static void retired(void)
             bad += v != DK_USR1 + i;
             v = param_turn(d, v, 1);
         }
-        bad += v != DK_PERC + SMP_SHOWN || param_turn(d, DK_80, -1) != DK_STD || param_turn(d, DK_STD, -1) != DK_STD;
+        bad += v != DK_DEAD || param_turn(d, DK_80, -1) != DK_STD || param_turn(d, DK_STD, -1) != DK_STD;
     }
     for (r = 1; r < 4u; r++)
         bad += strcmp(d->names[r], d->names[MAP[r]]) != 0 || enum_orig(d, (int32_t)r) != MAP[r] ||
                param_fit(d, (int32_t)r) != MAP[r];
-    bad += param_fit(d, 99) != DK_PERC + SMP_SHOWN || param_fit(d, -5) != DK_STD || enum_orig(d, DK_55) != DK_55;
+    bad += param_fit(d, 99) != DK_DEAD || param_fit(d, -5) != DK_STD || enum_orig(d, DK_55) != DK_55;
     bad += param_fit(&TP[P_LEVEL], 77) != 77;
     {   /* a motion event of KIT 2 (CYM): stored and played as 10 */
         host_tracks_init();
@@ -1449,7 +1453,7 @@ static void demos(const char *dir)
     for (k = 0; k < DV_NKIT; k++) {
         char name[32];
         snprintf(name, sizeof name, "beat_kit_%s", KITN[k]);
-        demo_seq(dir, name, BEAT, sizeof BEAT / sizeof BEAT[0], 64, 0, (int16_t)(DK_80 + k));
+        demo_seq(dir, name, BEAT, sizeof BEAT / sizeof BEAT[0], 64, 0, (int16_t)KITV(k));
     }
     printf("drum_test: demos in %s: %u voices (designed, DECAY / TONE / extra low and high, TUNE -5 / +5 st), the kit's "
            "keys, a beat (PUNCH, ROUND, the kits 80 10 66 55 77)\n", dir, (uint32_t)DVT_COUNT);

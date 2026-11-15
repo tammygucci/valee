@@ -42,15 +42,20 @@
 /* (2.0, #35, the user's pick A of design/mockups/v2_kits.png) USR1..USR3 (12..14): a user sample slot as the kit
  * (drum_user), appended; the SMK-37 offers USR1 only (SMP_SHOWN) */
 enum { DK_STD, DK_HAND, DK_CYM, DK_HCYM, DK_80, DK_10, DK_66, DK_55, DK_77, DK_DEEP, DK_TIGHT, DK_PERC, DK_USR1, DK_USR2,
-       DK_USR3, DK_COUNT };   /* (stored values) */
+       DK_USR3, DK_DEAD, DK_COUNT };   /* (stored values; (Vallée) DEAD appended, after the user kits) */
 /* the kit a stored KIT value plays: HAND CYM H+CYM (retired after 1.0.4) -> 66 (a conga on TOM), 10 (a cymbal on
  * BELL), 77 (claves on RIM, a cymbal on BELL) */
 static const uint8_t DK_PLAYS[DK_COUNT] = {DK_STD, DK_66, DK_10, DK_77, DK_80, DK_10, DK_66, DK_55, DK_77, DK_DEEP,
-                                           DK_TIGHT, DK_PERC, DK_USR1, DK_USR2, DK_USR3};
+                                           DK_TIGHT, DK_PERC, DK_USR1, DK_USR2, DK_USR3, DK_DEAD};
 static uint32_t drum_kit_plays(int32_t v) { return DK_PLAYS[clamp(v, 0, DK_COUNT - 1)]; }
+/* a kit's model (DV_KIT's row), DV_NKIT none (STD, a user kit) */
+static uint32_t drum_model(uint32_t kit)
+{
+    return kit >= DK_80 && kit < DK_USR1 ? kit - DK_80 : kit == DK_DEAD ? DV_NKIT - 1u : DV_NKIT;
+}
 /* the model kits' pieces where a lane plays another than its own (the lane's name): 1 TOM -> CONGA, 2 RIM -> CLAVE,
  * 4 BELL -> CYM */
-static const uint8_t DK_SWAP[DV_NKIT] = {0, 4, 1, 0, 2 | 4, 4, 0, 1 | 2};
+static const uint8_t DK_SWAP[DV_NKIT] = {0, 4, 1, 0, 2 | 4, 4, 0, 1 | 2, 0};
 static const uint8_t DV_TYPE_LANE[DVT_COUNT] = {
     DV_KICK, DV_KICK, DV_SNARE, DV_CLAP, DV_HATC, DV_HATO, DV_TOM, DV_TOM, DV_RIM, DV_RIM, DV_BELL, DV_BELL,
 };
@@ -59,7 +64,7 @@ static const uint8_t DV_TYPE_LANE[DVT_COUNT] = {
 static uint32_t drum_user(const int16_t *p)
 {
     uint32_t k = drum_kit_plays(p[P_E0]);
-    return k >= DK_USR1 ? k - DK_USR1 + 1u : 0u;
+    return k >= DK_USR1 && k <= DK_USR3 ? k - DK_USR1 + 1u : 0u;   /* ((Vallée) DEAD after them: not one) */
 }
 
 typedef struct {
@@ -77,7 +82,7 @@ typedef struct {
 
 /* 1..3 named as the kit they play: aliases, never shown or offered (EDITOR_PROTOCOL.md: retired values) */
 static const char *const N_DRUM_KIT[] = {"STD", "66", "10", "77", "80", "10", "66", "55", "77", "DEEP", "TIGHT", "PERC",
-                                         "USR1", "USR2", "USR3"};
+                                         "USR1", "USR2", "USR3", "DEAD"};
 static const char *const N_DRUM_KICK[] = {"PUNCH", "ROUND"};
 
 /* General MIDI notes 35..81 -> the drum (DVT_*; DVT_PUNCH: the kick KICK picks) and semitones from its
@@ -99,8 +104,8 @@ static uint32_t drum_gm(const int16_t *p, uint32_t note, int32_t *st)
     uint32_t n = note >= 35u && note <= 81u ? note : 36u + (note + 120u - 36u) % 12u, t = (uint32_t)DRUM_GM[n - 35u][0];
     uint32_t kit = drum_kit_plays(p[P_E0]);           /* STD, the model kits */
     *st = DRUM_GM[n - 35u][1];
-    if (kit >= DK_80 && kit < DK_USR1)
-        return DV_KTYPE(kit - DK_80 + 1u, DV_TYPE_LANE[t]);
+    if (drum_model(kit) < DV_NKIT)
+        return DV_KTYPE(drum_model(kit) + 1u, DV_TYPE_LANE[t]);
     return t == DVT_PUNCH && p[P_E6] > 0 ? DVT_ROUND : t;
 }
 
@@ -123,7 +128,7 @@ static uint32_t drum_swaps(const track_t *t)
     uint32_t kit = drum_kit_plays(t->p[P_E0]);
     if (t->eng_req % NENGINES != ENGI_DRUM)          /* ((Skiff) DRUM-X: its E0 is MRPH, its lanes their own names) */
         return 0u;
-    return kit >= DK_80 && kit < DK_USR1 ? DK_SWAP[kit - DK_80] : 0u;
+    return drum_model(kit) < DV_NKIT ? DK_SWAP[drum_model(kit)] : 0u;
 }
 
 /* (2.0, #35) user kit slot k's sample for lane l: the narrowest zone holding the lane's note (DRUM_LANE_NOTE, as
@@ -480,13 +485,15 @@ static const preset_t DRUM_PRESETS[] = {
     {"DEEP DRUMS", {DK_DEEP, 64, 64, 64, 64, 100, 0, 0}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 28), TAG(PT_DRUM)},
     {"SNAP KIT", {DK_TIGHT, 64, 64, 56, 64, 100, 0, 16}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 8), TAG(PT_DRUM)},
     {"PERC KIT", {DK_PERC, 64, 64, 64, 64, 100, 0, 0}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 24), TAG(PT_DRUM)},
+    /* (Vallée) the towel-muted seventies kit (KIT DEAD), appended */
+    {"DEAD DRUMS", {DK_DEAD, 64, 64, 64, 64, 90, 0, 6}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 6), TAG(PT_DRUM)},
 };
 
 static const engine_t ENG_DRUM = {
     .name = "DRUM",
     .page_title = {"KIT", "HIT"},
     .edit = {
-        {"KIT", N_DRUM_KIT, 0, DK_PERC + SMP_SHOWN, DK_STD, F_ENUM, 0},   /* ((2.0, #35) .. USR1..3; SMK: USR1) */
+        {"KIT", N_DRUM_KIT, 0, SMP_SHOWN == 3 ? DK_DEAD : DK_PERC + SMP_SHOWN, DK_STD, F_ENUM, 0},   /* ((Vallée) DEAD last) */   /* ((2.0, #35) .. USR1..3; SMK: USR1) */
         {"PITCH", 0, 0, 127, 64, F_ST16, 0},
         {"TONE", 0, 0, 127, 64, F_PCT, 0},
         {"DECAY", 0, 0, 127, 64, F_PCT, 0},
