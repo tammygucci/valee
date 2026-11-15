@@ -173,7 +173,7 @@ tempo between the reels; the tracks under it, their names big. No knob cards on 
 their room; turn a knob and the cards come back while you turn it (the same knobs, the same settings, also on the
 track's EDIT pages). No creatures; turning PRESETS pops up a box with the sound's name in big letters and its engine
 under it. HOME on HOME has the same song map and
-section keys, and under it, on black, a wire shape of a few thin lines that turns and bulges towards each track as it
+section keys, at the bottom, and above it, on black, a wire shape of a few thin lines that turns and bulges towards each track as it
 plays, its lines flashing in that track's colour; it takes a new build at every PLAY and new directions at every part,
 never the same twice. Pick one on MENU > DISPLAY > THEME.
 Skiff's other six (SKIFF, HI-CON, PAPER, CRYPT, NEON, QUARK) and their widgets and pixel font are gone, which freed

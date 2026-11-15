@@ -1499,14 +1499,15 @@ static void graph_gen(const track_t *t, uint16_t c)
     gplan_t p;
     char b[40], nm[12];
     uint32_t i, w = gen.win % GEN_NWIN;
-    int32_t h = (int32_t)cv_h, rad = (h - 18) / 2 > 44 ? 44 : (h - 18) / 2, cy = 6 + rad, x0 = 108, y;
-    (void)t;
+    int32_t h = (int32_t)cv_h, rad = (h - 18) / 2 > 44 ? 44 : (h - 18) / 2, x0 = 108, y,
+            top = (h - (2 * rad + 9)) / 2 > 6 ? (h - (2 * rad + 9)) / 2 : 6, cy = top + rad;   /* ((Vallée) in the middle */
+    (void)t;                                            /* of the box, up and down) */
     (void)c;
     gen_plan(&p);
     gen_sigil(10 + rad + 4, cy, rad, T_THEME, T_LINE);
     for (i = 0; i < GEN_NWIN; i++)                      /* the windows: SELECT's place */
         cv_rect(10 + rad + 4 - 15 + (int32_t)i * 9, cy + rad + 6, 6, 3, i == w ? T_ACCENT : T_RAISE);
-    y = 6;
+    y = top;
     str_cpy(b, GEN_STYLE[gen.v[GK_STYLE] % GS_N], sizeof b);
     cv_free_text(x0, y - AF_M_CAP_Y, &AF_M, b, T_TEXT, cv_bg, 232 - x0);
     y += 20;

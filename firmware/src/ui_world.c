@@ -147,7 +147,7 @@ static void wl_letter(int32_t x, int32_t y, uint32_t g, uint16_t c)
 }
 static int wl_on(void) { return ui.home && ui.home_scope && large_kind() != LK_TALL && !UX_QUARK && !UX_CRYPT && !UX_SKIFF; }
 /* the cards' row (y 28, 240 x 46): the map */
-static void wl_strip(void)
+static void wl_strip_at(int into)                  /* (into: the canvas as it is, at cv_oy: TEEN's, at the bottom) */
 {
     uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n, i, cur = 0, sig, bar, bars;
     uint8_t grp[WL_NSEC], ent[WL_NSEC];
@@ -173,10 +173,13 @@ static void wl_strip(void)
     sig = (uint32_t)wl.cue * 7717u + (wl.cue ? (ui.frame / 6u) & 1u : 0u) * 3u + (pos * 228u / (total ? total : 1u)) * 31u + n * 977u + cur * 7u + (uint32_t)song.playing * 5u + total;
     for (i = 0; i < n; i++)
         sig = sig * 31u + at0[i] + grp[i] * 13u + ent[i];
-    if (!ui.force && sig == wl_strip_sig)
-        return;
-    wl_strip_sig = sig;
-    cv_begin(240, 46, T_BG);
+    uint16_t bg0 = cv_bg;
+    if (!into) {
+        if (!ui.force && sig == wl_strip_sig)
+            return;
+        wl_strip_sig = sig;
+        cv_begin(240, 46, T_BG);
+    }
     cv_rrect(3, 0, 234, 46, 5, T_SURF, T_BG);
     cv_bg = T_SURF;
     gen = wl_gen_layout(grp, n);
@@ -229,8 +232,12 @@ static void wl_strip(void)
         cv_rect(x, Y - 3, 2, H + 6, T_TEXT);
         cv_rect(X0, Y + H + 3, x - X0, 2, T_THEME);
     }
-    cv_blit(0, Y_LABEL);
+    if (into)
+        cv_bg = bg0;
+    else
+        cv_blit(0, Y_LABEL);
 }
+static void wl_strip(void) { wl_strip_at(0); }
 
 /* the keys THE SPELL takes (the song's parts): on the page, with a song to jump in; else they play as ever */
 static int wl_keys_on(void)
@@ -621,14 +628,21 @@ static void tg_dirs(uint32_t s)
         tg.to[k][2] = cl * QK_SIN(lo) / 32767;
     }
 }
-static void wl_geo(int32_t H)
-{
-    enum { NR = 6, NP = 10 };
+enum { TG_NR = 6, TG_NP = 10 };
+static int32_t tg_sx[TG_NR + 2][TG_NP], tg_sy[TG_NR + 2][TG_NP], tg_sz[TG_NR + 2][TG_NP], tg_kk[TG_NR + 2][TG_NP];
+#define sx tg_sx
+#define sy tg_sy
+#define sz tg_sz
+#define kk tg_kk
+static void wl_geo(int32_t H, int upd)              /* (upd: the song's moves and the points; else the lines alone, */
+{                                                   /* as the last ones: TEEN's top piece) */
     const int anim = xe_anim();
     const uint32_t now = anim ? fm1_ms : 0u;
-    int32_t sx[NR + 2][NP], sy[NR + 2][NP], sz[NR + 2][NP], kk[NR + 2][NP], R = H * 31 / 100, cx = 120, cy = H / 2 + 2;
+    int32_t R = H * 31 / 100, cx = 120, cy = H / 2 + 2;
     uint32_t i, j, k, kb, pos, sig;
     cv_rect(0, 0, 240, H, T_BG);
+    if (!upd && tg.nr)
+        goto lines;
     if (song.playing && (!tg.was || !tg.nr)) {          /* PLAY: a new build */
         tg.seed = wl_h(fm1_ms ^ ui.frame ^ wl.seed);
         tg.nr = (uint8_t)(2u + tg.seed % 2u);           /* (few lines: 2 or 3 rings of 5 .. 7) */
@@ -700,6 +714,7 @@ static void wl_geo(int32_t H)
             sx[i][j] = cx + x1 * 260 / (260 + sz[i][j]);
             sy[i][j] = cy + ((y * cp - z1 * sp) / 32767) * 260 / (260 + sz[i][j]);
         }
+lines:
     for (i = 0; i < (uint32_t)tg.nr + 2u; i++)           /* the lines: round each ring, and down to the next */
         for (j = 0; j < tg.np; j++) {
             uint32_t n2 = (j + 1u) % tg.np, m;
@@ -718,6 +733,19 @@ static void wl_geo(int32_t H)
         }
 }
 
+#undef sx
+#undef sy
+#undef sz
+#undef kk
+/* TEEN's HOME on HOME: the wire shape from the cards' row down (two pieces, as TEEN's HOME), the song's map under it */
+#define WL_TEEN_TOP (Y_GRAPH - Y_LABEL)
+static int32_t wl_teen_h(void) { return WL_TEEN_TOP + (int32_t)graph_h() - 48; }
+static void wl_teen_top(void)
+{
+    cv_begin(240, WL_TEEN_TOP, T_BG);
+    wl_geo(wl_teen_h(), 0);
+    cv_blit(0, Y_LABEL);
+}
 static void wl_world(void)
 {
     const int32_t H = (int32_t)cv_h, cx = 120, cyc = H - 27;       /* (the circle's middle) */
@@ -725,8 +753,12 @@ static void wl_world(void)
     const uint32_t now = anim ? fm1_ms : 0u;
     const uint16_t sky = WL_RGB(14, 10, 28), floor = WL_RGB(24, 18, 40);
     int32_t lvl = 0, k, i, hx, hy;
-    if (UX_TEEN) {                                     /* (TEEN: the wire shape, no spell) */
-        wl_geo(H);
+    if (UX_TEEN) {                                     /* (TEEN: the wire shape, no spell; the map under it) */
+        cv_oy = -WL_TEEN_TOP;
+        wl_geo(wl_teen_h(), 1);
+        cv_oy = H - 46;
+        wl_strip_at(1);
+        cv_oy = 0;
         return;
     }
     scope_levels();
