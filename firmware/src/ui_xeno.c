@@ -425,7 +425,7 @@ static void xe_splash(int32_t w, int32_t pad)
  * colour, the sound's creature as large as the panel lets it (6 times), its name under it and its engine's. Drawn by
  * draw_graph (ui_graph.c) after the page; ui_draw.c counts ui.beast_t down, PRESETS again starts it over */
 #define BEAST_T 80u                                   /* (~1.3 s after the last detent) */
-static int beast_box_fits(void) { return ui.home && !ui.home_scope && !ui.layer && large_kind() != LK_TALL && !UX_TEEN; }
+static int beast_box_fits(void) { return ui.home && !ui.home_scope && !ui.layer && large_kind() != LK_TALL; }
 static uint32_t beast_sig(void)
 {
     const track_t *t = TSEL;
@@ -433,8 +433,45 @@ static uint32_t beast_sig(void)
     sound_name(t, name);
     return xb_hash(name) * 131u + t->eng_req * 7u + song.sel + 1u + (t->p[P_MUTE] ? 17u : 0u);
 }
+/* ((Vallée) TEEN: no creature; the sound's name big (L, or M if it is too wide), the engine under it, on black, a thin
+ * line in the track's colour round it) */
+static void beast_box_teen(void)
+{
+    const track_t *t = TSEL;
+    int32_t gh = (int32_t)graph_h(), bw, bh, bx, by, b[4], nh;
+    uint16_t edge = t->p[P_MUTE] ? T_DIM : T_TRK(song.sel);
+    char name[20];
+    const char *eng = ENGINES[t->eng_req % NENGINES]->name;
+    const aafont_t *f = &AF_L;
+    sound_name(t, name);
+    if (!name[0])
+        str_cpy(name, "--", sizeof name);
+    if (text_w(f, name) > 212)
+        f = &AF_M;
+    nh = f == &AF_L ? 28 : 18;
+    bw = text_w(f, name) + 28;
+    if (bw < 120)
+        bw = 120;
+    if (bw > 228)
+        bw = 228;
+    bh = 12 + nh + 4 + 12 + 10;
+    bx = 120 - bw / 2;
+    by = (gh - bh) / 2;
+    GFX_HOOK_OVERLAY(bx, by, bx + bw, by + bh);
+    cv_rect(bx, by, bw, bh, edge);
+    cv_rect(bx + 1, by + 1, bw - 2, bh - 2, T_BG);
+    text_ink(f, name, b);
+    cv_text_fit(120 - b[2] / 2 - b[0], by + 12 + (f == &AF_L ? CAP_IN(L, nh) : CAP_IN(M, nh)), f, name,
+                t->p[P_MUTE] ? T_DIM : T_TEXT, T_BG, bw - 12);
+    text_ink(&AF_S, eng, b);
+    cv_text_on(120 - b[2] / 2 - b[0], by + 12 + nh + 4 + CAP_IN(S, 12), &AF_S, eng, T_THEME, T_BG);
+}
 static void beast_box_draw(void)
 {
+    if (UX_TEEN) {
+        beast_box_teen();
+        return;
+    }
     const track_t *t = TSEL;
     int32_t gh = (int32_t)graph_h(), z = (gh - 2 * 10 - 18 - 12) / 12, bw, bh, bx, by, cw, b[4];
     uint8_t art[XB_ART_N];
