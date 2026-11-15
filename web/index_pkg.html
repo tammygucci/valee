@@ -49,6 +49,9 @@
   .install { border-color: var(--acid); box-shadow: 0 0 0 1px #7cff9622, 0 0 40px #7cff9614; }
   .note { border-left: 3px solid var(--plasma); padding: 10px 14px; background: #ff78ec0d; margin: 0 0 14px; }
   .warn { border-left: 3px solid var(--t3); padding: 10px 14px; background: #ffe6460d; margin: 0 0 14px; }
+  .guard { border: 1px solid var(--t2); background: #50a0ff12; padding: 14px 16px; margin: 0 0 16px; }
+  .guard b { display: block; font: 700 18px "Barlow Condensed", sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--t2); margin-bottom: 4px; }
+  .guard a { color: var(--t2); }
   button { font: 700 20px "Barlow Condensed", sans-serif; letter-spacing: .12em; text-transform: uppercase; background: var(--acid);
            color: #060410; border: 0; padding: 12px 34px; cursor: pointer; }
   button:hover:not(:disabled) { box-shadow: 0 0 24px #7cff9666; }
@@ -100,6 +103,13 @@
 
   <section class="card install">
     <p data-t="intro"></p>
+    <div class="guard">
+      <b data-t="mbTitle"></b>
+      <p data-t="mb" style="margin-bottom:8px"></p>
+      <p class="small" style="margin:0"><a href="https://github.com/jvitkauskas/m-flasher/releases" target="_blank" rel="noopener">M-Flasher</a> ·
+        <a href="https://github.com/jvitkauskas/m-flasher/blob/main/docs/usage.md" target="_blank" rel="noopener" data-t="mbHow"></a> ·
+        <a href="https://github.com/jvitkauskas/fm1-bootloader" target="_blank" rel="noopener">m-bootloader</a></p>
+    </div>
     <p class="warn" data-t="warn"></p>
     <p class="small" data-t="direct"></p>
     <p class="note small" data-t="beta"></p>
@@ -166,6 +176,9 @@
 const $ = (id) => document.getElementById(id);
 const TEXT = {
   ja: {
+    mbTitle: "カスタムファームウェアの前に: m-bootloader",
+    mb: "Vallée や他のカスタムファームウェアを入れる前に、M-Flasher で FM-1 に m-bootloader（オープンブートローダー）を入れておくことを強くおすすめします。文鎮化を防げます。インストールに失敗しても、REC を押しながら電源を入れればダウンロードモードで待機し、もう一度ファームウェアを入れられます。M-Flasher は Windows・macOS・Linux で動き、書き込む前にフラッシュ全体を保存します。",
+    mbHow: "使い方",
     tagline: "M-VAVE FM-1 用カスタムファームウェア。ワンプッシュで曲をまるごと生成、鍵盤でライブ演奏、ヴィンテージシンセ、デッドドラム、2つのテーマ。",
     hDemo: "デモ", hWhat: "できること", hNext: "インストール後",
     f1t: "GEN: 曲をまるごと", f1: "ワンプッシュで 6 トラックにイントロ・Aメロ・サビ・ブリッジ・アウトロを、選んだスタイルで書き込みます。",
@@ -229,6 +242,9 @@ const TEXT = {
     license: "GPL-3.0、無保証。ソース:",
   },
   en: {
+    mbTitle: "Before any custom firmware: m-bootloader",
+    mb: "We highly recommend using M-Flasher to install m-bootloader (the open bootloader) on your FM-1 before you install Vallée or any other custom firmware. It keeps the FM-1 from bricking: if an install ever goes wrong, hold REC while switching it on and it waits in download mode, ready to take a firmware again. M-Flasher runs on Windows, macOS and Linux, and saves the whole flash before it writes anything.",
+    mbHow: "How to use it",
     tagline: "Custom firmware for the M-VAVE FM-1: write a whole song in one press, play it live from the keys, vintage synths, dead drums, and two looks.",
     hDemo: "See it", hWhat: "What it does", hNext: "After installing",
     f1t: "GEN: a whole song", f1: "One press writes intro, verses, choruses, a bridge and an outro across all six tracks, in the style you pick.",
