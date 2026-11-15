@@ -1164,12 +1164,15 @@ static int proj_pack2(project_store_t *out, const project_t *q, const proj_fmt_t
     sum = proj_hash(b, f->size - 4u); memcpy(b + f->size - 4u, &sum, 4);
     return 1;
 }
-/* how many entries of the saved projects (the SKF2, SKF3 and SKF4 slots) name pattern id (bank.c pat_refs) */
-static uint32_t proj_slot_refs(uint32_t id)
+/* how many entries of the saved projects (the SKF2, SKF3 and SKF4 slots; (Vallée) those in mask, bit 0 slot 1) name
+ * pattern id (bank.c pat_refs) */
+static uint32_t proj_slot_refs_in(uint32_t mask, uint32_t id)
 {
     uint32_t sl, i, n = 0, np, off, w;
     for (sl = 0; sl < 4u; sl++) {
         const uint8_t *b = proj_slot[sl].raw;
+        if (!((mask >> sl) & 1u))
+            continue;
         const proj_fmt_t *f = proj_fmt_of(b, sizeof proj_slot[sl]);
         np = b[66];
         if (f == &PROJ_SKF4)
@@ -1183,6 +1186,7 @@ static uint32_t proj_slot_refs(uint32_t id)
     }
     return n;
 }
+static uint32_t proj_slot_refs(uint32_t id) { return proj_slot_refs_in(15u, id); }
 /* an SKF2 or SKF3 record (format f) -> q (no steps, no motion: the patterns hold them); f->nt tracks, the rest as at
  * power-on (an SKF2's scenes leave T5, T6 as they are: bank.c scene_trk). (2.0) SKF4: proj_unpack4 */
 static int proj_unpack2(project_t *q, const uint8_t *b, const proj_fmt_t *f)

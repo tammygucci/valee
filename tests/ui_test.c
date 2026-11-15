@@ -10504,6 +10504,27 @@ static int test_gen(void)
             song.playing = 0;
             press(B_OCTDN);
         }
+        {   /* full of patterns saved projects hold: PATTERNS FULL names the slots, nothing cleared */
+            uint8_t id;
+            uint32_t f;
+            while (gen_pool_free() > 3u && !gen_keep_trk(2, &id))
+                ;
+            (void)gen_flush();
+            memset(lists.ent, 0, sizeof lists.ent);     /* (the patterns in this project's lists, saved in slot 2) */
+            for (f = 0, e = 0; f < NPAT && e < 8u * NTRK; f++)
+                if (pool_used(f) && !pool_refs(f)) {
+                    lists.ent[e % NTRK][e / NTRK][0] = (uint8_t)(f + 1u);
+                    e++;
+                }
+            ok = project_save(1) == 0;
+            memset(lists.ent, 0, sizeof lists.ent);
+            f = gen_pool_free();
+            gen.v[GK_PART] = GP_SONG;
+            ui.msg_t = 0;
+            press(B_OCTUP);
+            ok &= !gen.song && gen_slot_held(1) >= 40u && gen_slot_held(0) == 0u && str_eq(ui.msg2, "SAVED SLOT 2:49") && f > 0u;
+            bad += check("(Vallée) GEN SONG: the patterns full of a saved project's: PATTERNS FULL names its slot (2)", ok);
+        }
         gen.v[GK_PART] = GP_LOOP;
     }
     ok = 1;                                               /* every style, part and vibe, a few seeds and amounts */

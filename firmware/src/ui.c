@@ -346,7 +346,7 @@ static struct {
     uint16_t pg_down;            /* page buttons down (panel ids) that act when let go */
     uint32_t layer_sig;          /* drawn-state cache of the map */
     char msg[24];
-    char msg2[24];               /* a second message, shown when the first is over */
+    char msg2[32];               /* a second message, shown when the first is over */
     uint32_t enc_t[NE];
     /* drawn-state cache */
     char col[4][32];

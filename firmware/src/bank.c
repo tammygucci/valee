@@ -1771,6 +1771,13 @@ static uint32_t gen_pool_free(void)                /* the patterns free (none wa
         n += !pool_used(id) && pend_at(id) == PEND_N;
     return n;
 }
+static uint32_t gen_slot_held(uint32_t sl)         /* ((Vallée) PATTERNS FULL: the patterns saved project slot sl holds */
+{
+    uint32_t id, n = 0;
+    for (id = 0; id < BK_POOL; id++)
+        n += pool_used(id) && proj_slot_refs_in(1u << (sl & 3u), id) != 0u;
+    return n;
+}
 static int gen_keep_trk(uint32_t k, uint8_t *id)   /* track k's pattern as it is now, a new pattern: 0, its id in id */
 {
     uint32_t n = pool_alloc();

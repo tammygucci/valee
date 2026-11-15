@@ -1221,6 +1221,7 @@ static void gen_write(void)
  * (bank.c), and each track's list made the song: INTRO VERSE CHORUS VERSE CHORUS BRIDGE CHORUS OUTRO, SONG ONCE. A
  * track whose role is OFF keeps its list and its pattern. OCT- puts the lists, the tracks and the pool back ---- */
 static uint32_t gen_pool_free(void);                    /* (bank.c) */
+static uint32_t gen_slot_held(uint32_t sl);             /* (bank.c) */
 static int gen_keep_trk(uint32_t k, uint8_t *id);
 static int gen_flush(void);
 static int gen_load(uint32_t k, uint32_t id);
@@ -1257,7 +1258,7 @@ static void gen_song_drop(void)                         /* the song's lists and 
 static int gen_song(void)                               /* 0 written; 1 not (said) */
 {
     uint32_t k, p, e, n = 0;
-    char b[24];
+    char b[36];
     for (k = 0; k < GR_NROLE; k++)
         n += gen_role_on(k) != 0;
     if (!n) {
@@ -1277,10 +1278,26 @@ static int gen_song(void)                               /* 0 written; 1 not (sai
     if (gen_pool_free() < GEN_NPART * n && pool_unused())
         pool_clear_unused();                            /* (short: first the patterns nothing uses, as SAVE > PATTERNS'
                                                          * CLEAR UNUSED: a project left, an old song; saved ones stay) */
-    if (gen_pool_free() < GEN_NPART * n) {
-        str_cpy(b, "NEED ", sizeof b);
-        fmt_int(b + 5, (int32_t)(GEN_NPART * n));
-        str_cpy(b + str_len(b), " FREE", sizeof b - str_len(b));
+    if (gen_pool_free() < GEN_NPART * n) {               /* (what holds them: the saved projects, by slot: SAVE >
+                                                         * PROJECT's DELETE frees them; else how many it needs) */
+        uint32_t sl, h, at = 0;
+        b[0] = 0;
+        for (sl = 0; sl < 4u; sl++)
+            if ((h = gen_slot_held(sl)) != 0u && at < sizeof b - 7u) {
+                if (!at)
+                    str_cpy(b, "SAVED SLOT", sizeof b);
+                at = str_len(b);
+                b[at++] = ' ';
+                b[at++] = (char)('1' + sl);
+                b[at++] = ':';
+                fmt_int(b + at, (int32_t)h);
+                at = str_len(b);
+            }
+        if (!at) {
+            str_cpy(b, "NEED ", sizeof b);
+            fmt_int(b + 5, (int32_t)(GEN_NPART * n));
+            str_cpy(b + str_len(b), " FREE", sizeof b - str_len(b));
+        }
         ui_way("PATTERNS FULL", b);
         return 1;
     }

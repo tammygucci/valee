@@ -121,7 +121,9 @@ track whose role is OFF keeps its own list and pattern. Edit any part afterwards
 
 The 64 patterns are shared by the whole unit, not per project: a new project doesn't free its old one's, and a saved
 project keeps its own. Short of room, GEN first clears the patterns nothing uses any more (as SAVE > PATTERNS' CLEAR
-UNUSED). If it still says PATTERNS FULL, your saved projects hold them: delete one you don't need on SAVE > PROJECT (KNOB 2: DELETE).
+UNUSED). If it still says PATTERNS FULL, your saved projects hold them, and the second line says which (SAVED SLOT 1:30 2:30:
+slot 1 holds 30, slot 2 holds 30): delete one you don't need on SAVE > PROJECT (KNOB 2: DELETE), and GEN frees its
+patterns. A generated song takes 30, so two saved songs fill most of the 64.
 
 **Making a song part by part.** Keep the seed and the style, step through PART (INTRO, VERSE, CHORUS, BRIDGE, OUTRO), and
 write each one. A seed keeps its key, tempo, sounds and hook across parts.
