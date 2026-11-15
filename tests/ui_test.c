@@ -10373,6 +10373,42 @@ static int test_world(void)
         gen.v[GK_PART] = GP_LOOP;
         bad += check("(Vallée) THE SPELL: a GEN SONG on the map: eight parts, 32 bars, INTRO .. BRIDGE .. OUTRO", ok);
     }
+    {   /* the keys: the song's parts by letter (C the INTRO, D a VERSE, E a CHORUS ..), silent; stopped there now,
+         * playing at the next bar, all tracks; a black key drops a jump still to come */
+        uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n, j, w;
+        uint8_t grp[WL_NSEC], ent[WL_NSEC];
+        frame();
+        ok = song.grid == 2u && wl_keys_on();
+        wl_keys(1u << 11);                              /* (E, stopped: the first CHORUS) */
+        n = wl_song(at0, len, grp, ent, &pos, &total);
+        for (j = 0; j < NTRK; j++)
+            ok &= !ent_at48(j, NENT) || lists.cur[j] == ent[2];
+        ok &= !wl.cue;
+        bad += check("(Vallée) THE SPELL's keys: E stopped: every track on the CHORUS, the keys silent", ok);
+        seq_start();
+        world_play(30u);
+        wl_keys(1u << 21);                              /* (D, an octave up: the next VERSE, part 3) */
+        for (j = 0, w = 0; j < NTRK; j++)
+            w += launch_q[j].armed && launch_q[j].mode == LAUNCH_BAR && !launch_q[j].adv;
+        ok = w >= 1u && wl.cue == 4u;
+        world_play(160u);
+        n = wl_song(at0, len, grp, ent, &pos, &total);
+        for (j = 0; j < NTRK; j++)
+            ok &= !ent_at48(j, NENT) || lists.cur[j] == ent[3];
+        ok &= !wl.cue && pos >= at0[3] && pos < at0[3] + len[3] && song.playing;
+        bad += check("(Vallée) THE SPELL's keys: D playing: the next VERSE comes in at the bar, all tracks together", ok);
+        wl_keys(1u << 12);                              /* (F: the BRIDGE ..) */
+        ok = wl.cue == 6u;
+        wl_keys(1u << 8);                               /* (.. a black key: dropped) */
+        for (j = 0, w = 0; j < NTRK; j++)
+            w += launch_q[j].armed && !launch_q[j].adv;
+        ok &= !wl.cue && !w;
+        wl_keys(1u << 25);                              /* (A: no sixth music in this song) */
+        bad += check("(Vallée) THE SPELL's keys: a black key drops the jump; a letter with no part: nothing", ok && !wl.cue);
+        stop_transport();
+        frames(5);
+        (void)n;
+    }
     press(B_HOME);
     frame();
     bad += check("(Vallée) THE SPELL: HOME again, the tracks", ui.home && !ui.home_scope);

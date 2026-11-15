@@ -54,6 +54,7 @@ static int pool_used(uint32_t id);
 static uint32_t ent_len48(uint32_t k, uint32_t e);   /* ((2.5, 2B) bank.c: a song's bars) */
 static uint32_t ent_at48(uint32_t k, uint32_t e);
 static uint32_t song_at(uint32_t *k, uint32_t *at);
+static int song_part_go(uint32_t at);               /* ((Vallée) bank.c: THE SPELL's keys) */
 static uint32_t pool_alloc(void);
 static uint32_t pool_alloc_after(uint32_t orig);   /* ((2.0, #34) a copy's number: bank.c) */
 static uint32_t bank_cur(uint32_t k);

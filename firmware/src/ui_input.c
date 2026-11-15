@@ -290,7 +290,7 @@ static uint32_t step_leds(void)
  * dark; 0: the keys held and the notes playing, over the idle glow */
 static int keys_own(void)
 {
-    return (name_on() && !ui.menu) || ui.layer || grid_on()
+    return (name_on() && !ui.menu) || ui.layer || grid_on() || wl_keys_on()
 #if FELUCCA_SLICE
            || (!ui.menu && !name_on() && slice_page_on())
 #endif
@@ -338,6 +338,7 @@ static uint32_t key_leds(uint32_t *br)                 /* (*br: a layer's keys t
     if (br)
         *br = 0;
     c = name_on() && !ui.menu ? name_leds(br) : ui.layer ? layer_leds(br) : grid_on() ? grid_leds() :
+        wl_keys_on() ? wl_leds(br) :
                  (fm1_in.notes & ~kb_layer) | play_leds() | step_leds();
 #if FELUCCA_SLICE
     if (!ui.layer && !ui.menu && !name_on() && slice_page_on())
@@ -2595,7 +2596,9 @@ static void ui_input(void)
         slice_keys_pick(notes);
 #endif
     lock_keys();                                        /* (a grid key on a hit let go: the hit goes) */
-    if (song.grid) {
+    if (song.grid == 2u) {                              /* ((Vallée) THE SPELL: a key, a part of the song) */
+        wl_keys(notes);
+    } else if (song.grid) {
         grid_keys(notes);
     } else if (song.seq_mode && step_page(cur_page()->graph)) {   /* NOTES (not FEEL: its knobs only) */
         static uint32_t wr_hint_ms;                     /* (Skiff U1) "REC: WRITE STEPS" said last (0: never) */

@@ -679,8 +679,8 @@ bfdfd74ade2d26e4 CUSTOM_NEON_head_rec_other
 eae5f0227912d7b8 CUSTOM_NEON_hint_free_take
 bbc042fb5828a0e6 CUSTOM_NEON_home
 560c2531bbf2d25c CUSTOM_NEON_home_idle
-d11ecc44bf6a1a8e CUSTOM_NEON_home_scope
-b5ab0fd4ebf65c1b CUSTOM_NEON_home_scope_play
+f0217066680e63c0 CUSTOM_NEON_home_scope
+8e793f6290a07778 CUSTOM_NEON_home_scope_play
 ceb2a355fa30e018 CUSTOM_NEON_insert_crush
 00aa3be7de137097 CUSTOM_NEON_insert_filter
 acc7df2957e6ff4a CUSTOM_NEON_insert_filter_hp
@@ -835,7 +835,7 @@ de9f2ffffd8e9ae8 CUSTOM_NEON_user
 a9709f2973c7f075 CUSTOM_NEON_voice_2
 f247d7920f1bc8b4 CUSTOM_NEON_voice_2_uni
 93865c1ddaed43e9 CUSTOM_NEON_voice_glide
-4bc7802c0f0b503e CUSTOM_NEON_world
+4069376c0db058a5 CUSTOM_NEON_world
 4d36c8d26febf32b CUSTOM_QUARK_about
 272b1c538c0417b6 CUSTOM_QUARK_about_credits
 32f558d5c8bb7951 CUSTOM_QUARK_about_end
@@ -1513,8 +1513,8 @@ b98e80df6de14ee2 CUSTOM_XENO_head_rec_other
 5586f112ec9e860d CUSTOM_XENO_hint_free_take
 ed095678f2ca150e CUSTOM_XENO_home
 2877ac818cead8ab CUSTOM_XENO_home_idle
-432dffe4fb847308 CUSTOM_XENO_home_scope
-741b427ffeecbd41 CUSTOM_XENO_home_scope_play
+385d60ce3512084a CUSTOM_XENO_home_scope
+9619d7792307175e CUSTOM_XENO_home_scope_play
 12a920969789fdd6 CUSTOM_XENO_insert_crush
 dfacd23280ed9e29 CUSTOM_XENO_insert_filter
 d0bed81ef817a9de CUSTOM_XENO_insert_filter_hp
@@ -1669,7 +1669,7 @@ f8003be05ab69bc1 CUSTOM_XENO_undo_box
 6daedec88104355f CUSTOM_XENO_voice_2
 ab092b4519a122bf CUSTOM_XENO_voice_2_uni
 aec0acb49bd5c8dc CUSTOM_XENO_voice_glide
-8ec8ba0cad1b8659 CUSTOM_XENO_world
+db970275fdb5fede CUSTOM_XENO_world
 5d37a90983dd80a7 HI-CON_about
 45b1484da3de2369 HI-CON_about_credits
 485a8dd85d6a206c HI-CON_about_end
@@ -1791,8 +1791,8 @@ a8ad43e4f9d963ef HI-CON_head_rec_other
 106d8cd9deeb2610 HI-CON_hint_free_take
 da8d2b881d36ad35 HI-CON_home
 abc22c0854a6a9f4 HI-CON_home_idle
-4d69a4f0d1be7ebe HI-CON_home_scope
-51d28cd86f509fe7 HI-CON_home_scope_play
+d84b7bafac524314 HI-CON_home_scope
+a25ab80302a47dc0 HI-CON_home_scope_play
 12309f84d74367fd HI-CON_insert_crush
 a941891a020adbd4 HI-CON_insert_filter
 548eb30dc2ef6a08 HI-CON_insert_filter_hp
@@ -1947,7 +1947,7 @@ a2ca236e28149451 HI-CON_take_box
 c0d16482925f14b8 HI-CON_voice_2
 8a1235bfb50b1246 HI-CON_voice_2_uni
 9ff39ab6006138a2 HI-CON_voice_glide
-06e84f822a24e67a HI-CON_world
+5da982aaca08e299 HI-CON_world
 53e79560bc6b146a LARGE_CRYPT_about
 7b406cff888c0edf LARGE_CRYPT_about_credits
 976a0b670244358f LARGE_CRYPT_about_end
@@ -3461,8 +3461,8 @@ a67980eadfe47b08 NEON_head_play_rec
 186d3ff8ba25667c NEON_hint_free_take
 c83d6054313fc880 NEON_home
 60b3dba7a4ba4dd1 NEON_home_idle
-da4aa235c6365f7f NEON_home_scope
-2392dce38824b9ae NEON_home_scope_play
+3b05e716d200cfd1 NEON_home_scope
+16c5043735b06681 NEON_home_scope_play
 1d9219fd6e2a0f23 NEON_insert_crush
 b0167b5951605187 NEON_insert_filter
 147e2d6059e64236 NEON_insert_filter_hp
@@ -3617,7 +3617,7 @@ f2d2dc9b85b9ae64 NEON_user
 4cb45b828529aff2 NEON_voice_2
 49fa32abfa218e46 NEON_voice_2_uni
 752e8e8afa5c7d8a NEON_voice_glide
-641bd0a6fc92a962 NEON_world
+21333491f487bba5 NEON_world
 1c6b8180ab0c4d3c PAPER_about
 17c5c1fd74334b10 PAPER_about_credits
 7026b69890b630f0 PAPER_about_end
@@ -3739,8 +3739,8 @@ cb9b694d27e189d5 PAPER_head_rec_other
 a6a5d4810845c3d8 PAPER_hint_free_take
 7ded33850cbbb01c PAPER_home
 8838e59f040df333 PAPER_home_idle
-3f27d0ad1dfd32b1 PAPER_home_scope
-ea4876a218d55706 PAPER_home_scope_play
+611a57451c7fb993 PAPER_home_scope
+af257be50736e4d1 PAPER_home_scope_play
 fec275f38ff04e48 PAPER_insert_crush
 122ed62af1e05f72 PAPER_insert_filter
 57d375abf4fb4dcc PAPER_insert_filter_hp
@@ -3895,7 +3895,7 @@ dd6a1721a997c1c0 PAPER_user_foot
 eb9be1e00ac79965 PAPER_voice_2
 f890a2ef01ae3072 PAPER_voice_2_uni
 1fff1471b4330b9d PAPER_voice_glide
-f9561a539f70e819 PAPER_world
+410af1162ea806ea PAPER_world
 0c1904e27ffddcde PHLINE_CRYPT_home
 8af24eb4d1be6645 PHLINE_CRYPT_six_home
 273790b4f26b923a PHLINE_NEON_home
@@ -4587,8 +4587,8 @@ eca4dd2730e57ba6 XENO_head_rec_other
 8e876464d8fa49ef XENO_hint_free_take
 d5549f3dd295b2f5 XENO_home
 b786cbf3009b0b75 XENO_home_idle
-17c94da29e838d9e XENO_home_scope
-5059604e72d4305f XENO_home_scope_play
+6dc82a57ac4b7abc XENO_home_scope
+06904e7295beb870 XENO_home_scope_play
 bf47eb2e96c87df0 XENO_insert_crush
 158b1a92e3f4425d XENO_insert_filter
 23a77091fc0eaa61 XENO_insert_filter_hp
@@ -4743,4 +4743,4 @@ ecc8baf54bc75a22 XENO_voice
 7389df73f42a9a7a XENO_voice_2
 5db157500075d852 XENO_voice_2_uni
 eb2256e46d14e1d3 XENO_voice_glide
-e1e5289314735600 XENO_world
+562eb11321eecc17 XENO_world

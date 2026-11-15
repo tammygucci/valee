@@ -40,6 +40,7 @@ static struct {
     uint8_t order[WL_GN * WL_GH], nmask, shown;        /* its cells (the shape the sounds give) in the order they appear */
     uint8_t allow;                                     /* how many may show by now: as far as the song is (whole at its end) */
     uint8_t got[NTRK];                                 /* each track's cells of it */
+    uint8_t cue;                                       /* a part a key sent the song to, still to come in (+ 1; 0 none) */
 } wl;
 
 static uint32_t wl_h(uint32_t v) { return (v ^ (v >> 15)) * 2654435761u; }
@@ -86,7 +87,7 @@ static uint32_t wl_song(uint32_t *at0, uint32_t *len, uint8_t *grp, uint8_t *ent
 {
     uint32_t kb, e, n = 0, ng = 0, sig[WL_NSEC], j, k;
     *total = song_at(&kb, pos);
-    if (!*total || !lists.song)
+    if (!*total)
         return 0;
     for (e = 0; e < NENT; e++) {
         uint32_t l = ent_len48(kb, e) * ent_reps(kb, e), s = 0x811C9DC5u;
@@ -131,6 +132,20 @@ static const uint16_t WL_SEC[8] = {WL_RGB(64, 200, 190), WL_RGB(240, 110, 90), W
                                    WL_RGB(150, 120, 255), WL_RGB(90, 170, 255), WL_RGB(150, 230, 90),
                                    WL_RGB(255, 130, 200), WL_RGB(220, 180, 140)};
 static uint32_t wl_strip_sig;
+/* (THE SPELL's keys) a part's music (its group, by first appearance) on the white keys by name: C the first, D the
+ * second .. B the seventh, in every octave; the black keys drop a jump still to come */
+static const char WL_KEYN[7] = {'C', 'D', 'E', 'F', 'G', 'A', 'B'};
+static const int8_t WL_PC[12] = {0, -1, 1, -1, 2, 3, -1, 4, -1, 5, -1, 6};   /* (a key's name, 0 = C: its group) */
+static int32_t wl_key_grp(uint32_t k) { return WL_PC[(k + 5u) % 12u]; }      /* (key 0 is F: seq.c key_place) */
+/* a key's letter, 3 x 5, on a part's block */
+static void wl_letter(int32_t x, int32_t y, uint32_t g, uint16_t c)
+{
+    static const uint16_t L[7] = {31015u, 27502u, 31207u, 31204u, 31087u, 11245u, 27566u};   /* (C D E F G A B: rows of 3, the top first)*/
+    uint32_t i;
+    for (i = 0; i < 15u; i++)
+        if ((L[g % 7u] >> (14u - i)) & 1u)
+            cv_pset(x + (int32_t)(i % 3u), y + (int32_t)(i / 3u), c);
+}
 static int wl_on(void) { return ui.home && ui.home_scope && large_kind() != LK_TALL && !ux.quark && !ux.crypt && !ux.skiff; }
 /* the cards' row (y 28, 240 x 46): the map */
 static void wl_strip(void)
@@ -149,7 +164,14 @@ static void wl_strip(void)
     for (i = 0; i < n; i++)
         if (pos >= at0[i] && pos < at0[i] + len[i])
             cur = i;
-    sig = (pos * 228u / (total ? total : 1u)) * 31u + n * 977u + cur * 7u + (uint32_t)song.playing * 5u + total;
+    if (wl.cue) {                                      /* (a key's jump: until it has come in, or was dropped) */
+        uint32_t k, w = 0;
+        for (k = 0; k < NTRK; k++)
+            w |= launch_q[k].armed && !launch_q[k].adv;
+        if (!w || !song.playing || wl.cue > n)
+            wl.cue = 0;
+    }
+    sig = (uint32_t)wl.cue * 7717u + (wl.cue ? (ui.frame / 6u) & 1u : 0u) * 3u + (pos * 228u / (total ? total : 1u)) * 31u + n * 977u + cur * 7u + (uint32_t)song.playing * 5u + total;
     for (i = 0; i < n; i++)
         sig = sig * 31u + at0[i] + grp[i] * 13u + ent[i];
     if (!ui.force && sig == wl_strip_sig)
@@ -161,6 +183,10 @@ static void wl_strip(void)
     gen = wl_gen_layout(grp, n);
     if (n) {
         wl_sec_name(nm, cur, grp[cur], gen);
+        if (wl.cue) {                                  /* (where a key sends it: at the next bar) */
+            str_cpy(nm + str_len(nm), " > ", sizeof nm - str_len(nm));
+            wl_sec_name(nm + str_len(nm), wl.cue - 1u, grp[wl.cue - 1u], gen);
+        }
         bar = pos / 192u + 1u;
         bars = (total + 191u) / 192u;
     } else {
@@ -189,6 +215,14 @@ static void wl_strip(void)
                 if (text_w(&AF_S, s) <= x1 - x0 - 3)
                     cv_text_on(x0 + 2, Y + 2, &AF_S, s, i == cur ? T_BG : ux_mix(T_SURF, T_TEXT, 70), i == cur ? c : ux_mix(T_SURF, c, 55));
             }
+            if (grp[i] < 7u && x1 - x0 > 8)             /* (its key's letter, top right) */
+                wl_letter(x1 - 6, Y + 2, grp[i], i == cur ? T_BG : ux_mix(T_SURF, T_TEXT, 85));
+            if (wl.cue == i + 1u && ((ui.frame / 6u) & 1u)) {   /* (the part a key sends it to: blinking) */
+                cv_rect(x0, Y - 2, x1 - x0 - 1, 1, T_TEXT);
+                cv_rect(x0, Y + H + 1, x1 - x0 - 1, 1, T_TEXT);
+                cv_rect(x0, Y - 2, 1, H + 4, T_TEXT);
+                cv_rect(x1 - 2, Y - 2, 1, H + 4, T_TEXT);
+            }
         }
     }
     {   /* the playhead */
@@ -197,6 +231,76 @@ static void wl_strip(void)
         cv_rect(X0, Y + H + 3, x - X0, 2, T_THEME);
     }
     cv_blit(0, Y_LABEL);
+}
+
+/* the keys THE SPELL takes (the song's parts): on the page, with a song to jump in; else they play as ever */
+static int wl_keys_on(void)
+{
+    uint32_t kb, at;
+    return wl_on() && !ui.menu && !ui.confirm && !ui.layer && song_at(&kb, &at);
+}
+/* a key pressed: its part (white: the music of that letter, C the first; the next time it comes in the song after the
+ * next bar, else its first) at the next bar; a black one drops a jump still to come */
+static void wl_keys(uint32_t notes)
+{
+    uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n, k, i, pick, nb;
+    uint8_t grp[WL_NSEC], ent[WL_NSEC];
+    int32_t g;
+    char b[24];
+    if (!notes || !(n = wl_song(at0, len, grp, ent, &pos, &total)))
+        return;
+    for (k = 26u; k > 0u && !((notes >> k) & 1u); k--)   /* (two at once: the higher) */
+        ;
+    if ((g = wl_key_grp(k)) < 0) {
+        if (wl.cue) {
+            for (k = 0; k < NTRK; k++)
+                (void)bank_cancel(k);
+            wl.cue = 0;
+            ui_message("JUMP DROPPED");
+        }
+        return;
+    }
+    nb = song.playing ? (pos / 192u + 1u) * 192u % total : pos;
+    for (i = 0, pick = n; i < n; i++)
+        if (grp[i] == (uint32_t)g && (pick == n || (at0[pick] < nb && at0[i] >= nb)))
+            pick = i;
+    if (pick == n) {
+        b[0] = WL_KEYN[g];
+        b[1] = 0;
+        ui_say(b, ": NO SUCH PART");
+        return;
+    }
+    if (song_part_go(at0[pick]))
+        ui_message("NO ROOM: SAVE");
+    wl_sec_name(b, pick, grp[pick], wl_gen_layout(grp, n));
+    wl.cue = song.playing ? (uint8_t)(pick + 1u) : 0u;
+    ui_say(song.playing ? "NEXT BAR: " : "FROM ", b);
+    ui.force = 1;
+}
+/* .. their LEDs: the part playing's letter lit, the song's other parts' breathing */
+static uint32_t wl_leds(uint32_t *br)
+{
+    uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n, k, i, cur = 0, have = 0, lit = 0, b = 0;
+    uint8_t grp[WL_NSEC], ent[WL_NSEC];
+    int32_t g;
+    n = wl_song(at0, len, grp, ent, &pos, &total);
+    for (i = 0; i < n; i++) {
+        have |= 1u << (grp[i] & 31u);
+        if (pos >= at0[i] && pos < at0[i] + len[i])
+            cur = grp[i];
+    }
+    if (wl.cue)
+        cur = grp[(wl.cue - 1u) % WL_NSEC];
+    for (k = 0; k < 27u; k++)
+        if ((g = wl_key_grp(k)) >= 0 && ((have >> g) & 1u)) {
+            if ((uint32_t)g == cur)
+                lit |= 1u << k;
+            else
+                b |= 1u << k;
+        }
+    if (br)
+        *br = b;
+    return lit;
 }
 
 /* ------------------------------------------------------------------ the spell --- */
@@ -345,6 +449,62 @@ static void wl_figure(int32_t cx, int32_t y, uint32_t now, int anim, uint16_t ri
     }
 }
 
+/* a candle on the floor round the circle, its foot at x, y: wax, a wick, a flame that flickers (taller as an element
+ * goes in), a glow round it */
+static void wl_candle(int32_t x, int32_t y, uint32_t i, uint32_t now, int flare, uint16_t bg)
+{
+    uint32_t h = wl_h(i * 977u + now / 90u);           /* (the flicker) */
+    int32_t hh = 6 + (int32_t)(i % 3u), tall = (int32_t)(h % 2u) + (flare ? 2 : 0), sway = (int32_t)((h >> 9) % 3u) - 1;
+    int32_t ft = y - hh - 5 - tall;                    /* (the flame's tip) */
+    uint16_t wax = WL_RGB(230, 215, 185), fl = WL_RGB(255, 150, 40), mid = WL_RGB(255, 210, 80), core = WL_RGB(255, 250, 215);
+    uint16_t glow = ux_mix(bg, fl, flare ? 45 : 28);
+    cv_pset(x - 3, ft + 3, glow);                      /* (its glow: a few lit motes round the flame) */
+    cv_pset(x + 3, ft + 3, glow);
+    cv_pset(x, ft - 2, glow);
+    cv_pset(x - 2, ft, glow);
+    cv_pset(x + 2, ft, glow);
+    cv_rect(x - 1, y - hh, 3, hh, wax);                /* the wax, its shadowed side, a drip */
+    cv_rect(x + 1, y - hh + 1, 1, hh - 1, ux_mix(wax, bg, 35));
+    cv_pset(x - 1, y - hh + 2 + (int32_t)(i % 2u), WL_RGB(250, 245, 230));
+    cv_pset(x, y - hh - 1, WL_RGB(60, 40, 30));        /* the wick */
+    cv_pset(x + sway, ft, fl);                         /* the flame, tip to root */
+    cv_rect(x + (sway > 0), ft + 1, 1, 1 + tall, fl);
+    cv_pset(x - 1, ft + 2 + tall, fl);
+    cv_pset(x + 1, ft + 2 + tall, fl);
+    cv_rect(x, ft + 2, 1, tall + 1, mid);
+    cv_rect(x - 1, ft + 3 + tall, 3, 1, mid);
+    cv_pset(x, ft + 3 + tall, core);
+}
+/* the alchemist's hands, floating either side of him, palms down as a puppeteer's (2x, 22 x 26: the palm drawn, then
+ * four fingers working the strings, each its own length); side 1: the right one (mirrored). The fingertips' places
+ * go to tx, ty (the strings and beams start there) */
+static void wl_hand(int32_t x, int32_t y, int side, uint32_t now, int anim, int32_t *tx, int32_t *ty)
+{
+    static const char *const P[8] = {
+        "..cccccc...", "..cccccc...", "..######...", ".########..",
+        ".#########.", ".##########", ".########.#", ".########..",
+    };
+    const uint16_t skin = WL_RGB(170, 160, 200), sh = WL_RGB(110, 100, 150), cuff = WL_RGB(110, 60, 170);
+    uint32_t r, c, f;
+    for (r = 0; r < 8u; r++)
+        for (c = 0; c < 11u; c++) {
+            char ch = P[r][c];
+            int32_t xx = side ? x + (int32_t)(10u - c) * 2 : x + (int32_t)c * 2;
+            if (ch == '#')
+                cv_rect(xx, y + (int32_t)r * 2, 2, 2, r == 7u ? sh : skin);
+            else if (ch == 'c')
+                cv_rect(xx, y + (int32_t)r * 2, 2, 2, cuff);
+        }
+    for (f = 0; f < 4u; f++) {                          /* (the fingers: bending in turn, as if pulling the strings) */
+        int32_t l = 3 + (f == 1u || f == 2u) + (anim ? (QK_SIN(now * 393216u + f * 1073741824u) + 32767) / 32768 : 0);
+        int32_t xx = side ? x + (int32_t)(10u - (1u + 2u * f)) * 2 : x + (int32_t)(1u + 2u * f) * 2;
+        cv_rect(xx, y + 16, 2, l * 2, skin);
+        cv_rect(xx, y + 16 + l * 2 - 1, 2, 1, sh);
+        tx[f] = xx + 1;
+        ty[f] = y + 16 + l * 2;
+    }
+}
+
 static void wl_world(void)
 {
     const int32_t H = (int32_t)cv_h, cx = 120, cyc = H - 27;       /* (the circle's middle) */
@@ -414,6 +574,12 @@ static void wl_world(void)
         }
         for (j = 0; j < 5u; j++)
             xe_line(px[j], py[j], px[(j + 2u) % 5u], py[(j + 2u) % 5u], ux_mix(rc, floor, 30));
+        for (j = 0; j < 20u; j++) {                     /* ten candles round it, the far ones first */
+            uint32_t a = (j % 10u) * 429496730u;
+            if ((QK_SIN(a) < 0) == (j >= 10u))
+                continue;
+            wl_candle(cx + 70 * QK_COS(a) / 32767, cyc + 1 + 12 * QK_SIN(a) / 32767, j % 10u, now, wl.flash > 3, floor);
+        }
     }
     /* what it summons: the figure over the circle, its glow */
     if (wl.total) {
@@ -431,10 +597,21 @@ static void wl_world(void)
         cols[2] = WL_RGB(50, 40, 80);
         cols[3] = wl.flash ? WL_COL[wl.flash_k] : WL_RGB(200, 120, 255);
         ui_sprite(hx, hy, SPR_VL_HEAD, 4u, cols, 2);
-        if (wl.flash) {
-            xe_line(hx + 22, hy + 14, cx - 6, cyc - 4, ux_mix(WL_COL[wl.flash_k], sky, 40));
-            xe_line(hx + 22, hy + 14, cx + 6, cyc - 4, ux_mix(WL_COL[wl.flash_k], sky, 40));
-            if (anim)
+        {   /* his hands: floating either side, working the summoning's strings; the beams from their fingertips */
+            int32_t tx[2][4], ty[2][4], s, f, bob = anim ? QK_SIN(now * 327680u) * 3 / 32767 : 0;
+            int32_t fy = cyc - 50;
+            uint16_t str = ux_mix(WL_RGB(200, 180, 255), sky, 72);
+            wl_hand(hx - 36, hy + 20 + bob, 0, now, anim, tx[0], ty[0]);
+            wl_hand(hx + 58, hy + 20 - bob, 1, now + 300u, anim, tx[1], ty[1]);
+            for (s = 0; s < 2; s++)
+                for (f = 0; f < 4; f++) {
+                    if (wl.flash)                       /* (an element going in: the beams, into the circle) */
+                        xe_line(tx[s][f], ty[s][f], cx + (s ? 4 : -4) + (f - 2) * 3, cyc - 4,
+                                ux_mix(WL_COL[wl.flash_k], sky, 25 + f * 8));
+                    else if (wl.total)                  /* (else the strings, to what is summoned) */
+                        xe_line(tx[s][f], ty[s][f], cx + (s ? 10 : -10) + (s ? f : -f) * 2, fy + 4 + f * 3, str);
+                }
+            if (wl.flash && anim)
                 wl.flash--;
         }
         if (lvl > 650)                                  /* (the incantation: its mouth lit when it is loud) */

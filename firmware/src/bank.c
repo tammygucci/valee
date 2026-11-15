@@ -2067,6 +2067,41 @@ static void song_from(void)
     ui_say("FROM ", b);
 }
 
+/* (Vallée) THE SPELL's keys (ui_world.c wl_keys): the song from at (48ths into the longest list, as ent_at48), live.
+ * Each track with a list goes onto the entry it is on there: playing, at the next bar (LAUNCH_BAR, whatever PERFORM's
+ * LAUNCH says: every track on the same bar line, so the song goes on in time), from the entry's start; stopped, there
+ * now (PLAY starts there). What the song had staged next is dropped; once in, the song goes on from there (SONG ON), or
+ * (SONG OFF) each track loops it. An empty entry (a rest between patterns): that track goes on as it is. 1: a track
+ * had no room to keep what it played (it stays) */
+static int song_part_go(uint32_t at)
+{
+    uint32_t j, f, s, n, tot, l;
+    int r = 0;
+    bank_poll();                                   /* (a swap just made: kept first) */
+    for (j = 0; j < NTRK; j++) {
+        if (!(tot = ent_at48(j, NENT)))
+            continue;
+        for (f = 0, s = 0, n = at % tot; f < NENT; f++) {
+            l = ent_len48(j, f) * ent_reps(j, f);
+            if (n < s + l)
+                break;
+            s += l;
+        }
+        if (f >= NENT || !ent_on(j, f))
+            continue;
+        chain_go[j] = chain_rep[j] = 0;
+        launch_q[j].armed = 0;
+        RING_PUBLISH();
+        if (!song.playing)
+            r |= ent_go(j, f) == 4;
+        else
+            r |= stage_entry(j, f, LAUNCH_BAR, 0u, 0u) == 4;
+    }
+    song_end = 0;
+    bk.gen++;
+    return r;
+}
+
 /* ---- the editor's backup (editor_backup.c): each chunk an object, ids 16..31 ---- */
 /* chunk c, read into bk_buf: *len BK_LEN, 0 when every pattern in it is empty (or never saved) */
 static const uint8_t *bank_chunk(uint32_t c, uint32_t *len)

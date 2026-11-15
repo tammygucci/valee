@@ -51,8 +51,9 @@ static void name_close(void)
         ui.force = 1;
     nm.kind = NK_NONE;
 }
-/* the keys: 2 = NAME's (silent), 1 = the DRUM grid, 0 = notes (seq.c keyboard_block reads song.grid) */
-static uint32_t keys_mode(void) { return name_on() ? 2u : (uint32_t)grid_on(); }
+/* the keys: 2 = NAME's or THE SPELL's (silent), 1 = the DRUM grid, 0 = notes (seq.c keyboard_block reads song.grid) */
+static uint32_t keys_mode(void) { return name_on() || wl_keys_on() ? 2u : (uint32_t)grid_on(); }   /* ((Vallée) THE SPELL's
+                                                         * keys: the song's parts, silent: ui_world.c wl_keys) */
 
 static const char *nm_group(uint32_t p)                /* white key place p's characters */
 {

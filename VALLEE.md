@@ -193,7 +193,17 @@ Tap **HOME** while on HOME and you're in THE SPELL. Tap HOME again for the track
 **At the top, the song's map** (where HOME's knob cards are): the song as SEQ > SONG has it, each part a block as long
 as its bars, the same music in the same colour, named as GEN named them (INTRO, VERSE, CHORUS, BRIDGE, OUTRO) or A, B,
 C... in the order they first come. The playhead runs across it, the part it's in lights up, and its name and the bar
-(BAR 9 / 32) are above. With SONG off, or no lists, it's one LOOP block.
+(BAR 9 / 32) are above. With no lists it's one LOOP block.
+
+**Play the song live from the keys.** On THE SPELL the keys don't play notes: each white key is a part of the song,
+by letter, in every octave. C is the first music in the song, D the second, E the third, and so on (on a GEN song:
+C INTRO, D VERSE, E CHORUS, F BRIDGE, G OUTRO). Each block on the map shows its key's letter in its corner, and the
+keys light up: the part playing lit, the others breathing. Press one and every track jumps to that part **on the next
+bar line**, all together, so it always lands on the 1 and stays in time: you can press it anywhere in the bar before.
+Until it comes in, the block blinks and the top line reads e.g. VERSE > CHORUS. A part that comes more than once: the
+next one in the song. Any black key cancels a jump that hasn't come in yet. Stopped, a key moves the song there and
+PLAY starts from it. With SONG ON the song carries on from the part you jumped to; with SONG OFF each part loops until
+you press another key.
 
 **Below, the Alchemist** (the head from the intro) conjures with your six tracks, each its own element:
 
@@ -207,7 +217,9 @@ C... in the order they first come. The playhead runs across it, the part it's in
 | 6 | orange mythic herbs |
 
 When a track plays (a note on its step, not muted) one of its element leaves its jar on the shelf and arcs into the
-summoning circle, at most one a track a beat. The shelf counts what each track has given.
+summoning circle (ringed with candles), at most one a track a beat. The Alchemist's two hands float either side of
+him like a puppet master's, fingers working the strings of what he summons; as each element lands, beams shoot from
+their fingertips into the circle. The shelf counts what each track has given.
 
 **What the spell summons** rises in the circle as the song goes on, and is whole when the song ends. Its shape comes from
 the six sounds you chose; each part of it takes the colour of an element, in the proportions the song used them; and
