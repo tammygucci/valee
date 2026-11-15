@@ -505,6 +505,100 @@ static void wl_hand(int32_t x, int32_t y, int side, uint32_t now, int anim, int3
     }
 }
 
+/* the sky's visitors, now and then, one at a time, never twice the same (a hash of the clock picks what, where, which
+ * way, how fast, what colour and when the next comes, 4 .. 18 s after): 1 a saucer (its lights blinking, now and then
+ * a beam), 2 a comet (its tail behind it), 3 4 a shooting star, 5 a plasma being (pulsing, its tendrils waving), 6 a
+ * ghost (see-through, its hem rippling). Behind the alchemist; ANIM OFF none */
+static struct { uint8_t kind, dir; int16_t y, x0; uint16_t c; uint32_t t0, dur, s, next, rng; } wv;
+static void wl_visit(int32_t H, uint32_t now, uint16_t sky)
+{
+    static const uint16_t VC[6] = {XB_RGB(120, 255, 230), XB_RGB(255, 120, 230), XB_RGB(150, 200, 255),
+                                   XB_RGB(255, 220, 120), XB_RGB(170, 255, 140), XB_RGB(210, 160, 255)};
+    uint32_t u, s;
+    int32_t x, y, i, d;
+    uint16_t c;
+    if (!wv.kind) {
+        if (!wv.next) {                                /* (the first: a few seconds in) */
+            wv.rng = wl_h(now ^ ui.frame ^ 0x51A7u);
+            wv.next = now + 3000u + wv.rng % 6000u;
+        }
+        if (now < wv.next)
+            return;
+        s = wv.rng = wl_h(wv.rng ^ now ^ (ui.frame * 7919u));
+        wv.kind = (uint8_t)(1u + s % 6u);
+        wv.dir = (uint8_t)((s >> 7) & 1u);
+        wv.y = (int16_t)(3 + (int32_t)((s >> 9) % (uint32_t)(H / 2 - 8)));
+        wv.x0 = (int16_t)(30 + (s >> 13) % 180u);
+        wv.c = VC[(s >> 17) % 6u];
+        wv.s = s;
+        wv.t0 = now;
+        wv.dur = wv.kind >= 3u && wv.kind <= 4u ? 500u + (s >> 20) % 700u : 6000u + (s >> 20) % 8000u;
+        wv.next = now + wv.dur + 4000u + wl_h(s) % 14000u;
+    }
+    if ((u = (now - wv.t0) * 1000u / wv.dur) >= 1000u) {
+        wv.kind = 0;
+        return;
+    }
+    s = wv.s;
+    d = wv.dir ? -1 : 1;
+    x = wv.dir ? 250 - (int32_t)u * 260 / 1000 : -10 + (int32_t)u * 260 / 1000;
+    y = wv.y + QK_SIN(now * 131072u + s) * 2 / 32767;
+    c = wv.c;
+    switch (wv.kind) {
+    case 1:                                            /* a saucer */
+        cv_rect(x - 2, y - 3, 5, 2, ux_mix(c, sky, 40));
+        cv_rect(x - 5, y - 1, 11, 1, XB_RGB(170, 170, 190));
+        cv_rect(x - 7, y, 15, 2, XB_RGB(130, 130, 150));
+        cv_rect(x - 4, y + 2, 9, 1, XB_RGB(70, 70, 90));
+        for (i = -1; i <= 1; i++)
+            cv_pset(x + i * 5, y + 1, ((now / 160u + (uint32_t)(i + 1)) % 3u) ? c : XB_RGB(255, 255, 255));
+        if ((s >> 3) % 3u == 0u && u > 400u && u < 560u)   /* (now and then it looks down) */
+            for (i = 3; i < 22; i++)
+                cv_rect(x - i / 4, y + i, i / 2 + 1, 1, ux_mix(c, sky, 55 + i));
+        break;
+    case 2:                                            /* a comet */
+        y += (int32_t)u * 18 / 1000;
+        for (i = 22; i > 0; i--)
+            cv_rect(x - d * i, y - i / 5, 1, i < 8 ? 2 : 1, ux_mix(c, sky, 20 + i * 3));
+        xe_disc(x, y, 2, ux_mix(c, XB_RGB(255, 255, 255), 50));
+        break;
+    case 3:
+    case 4:                                            /* a shooting star */
+        x = wv.x0 + d * (int32_t)u * 150 / 1000;
+        y = wv.y + (int32_t)u * 45 / 1000;
+        for (i = 12; i >= 0; i--)
+            cv_pset(x - d * i * 3 / 2, y - i / 2, i ? ux_mix(XB_RGB(255, 255, 230), sky, 25 + i * 6) : XB_RGB(255, 255, 255));
+        break;
+    case 5: {                                          /* a plasma being */
+        int32_t r = 5 + QK_SIN(now * 393216u) * 1 / 32767;
+        for (i = -2; i <= 2; i++)                      /* (its tendrils) */
+            xe_line(x + i * 2, y + r - 1, x + i * 3 + QK_SIN(now * 262144u + (uint32_t)i * 900000000u) * 2 / 32767,
+                    y + r + 7, ux_mix(c, sky, 55));
+        xe_disc(x, y, r + 1, ux_mix(c, sky, 70));
+        xe_disc(x, y, r, ux_mix(c, sky, 40));
+        xe_disc(x, y - 1, r - 2, ux_mix(c, XB_RGB(255, 255, 255), 30));
+        cv_pset(x - 2, y - 1, sky);
+        cv_pset(x + 2, y - 1, sky);
+        break;
+    }
+    default: {                                         /* a ghost */
+        static const uint16_t G[9] = {124u, 254u, 511u, 443u, 511u, 511u, 511u, 511u, 511u};   /* (9 wide, its eyes) */
+        uint16_t gc = ux_mix(XB_RGB(235, 235, 255), sky, 32);
+        uint32_t r, q, w = (now / 220u) & 1u;
+        y += QK_SIN(now * 196608u) * 2 / 32767;
+        for (r = 0; r < 10u; r++)
+            for (q = 0; q < 9u; q++) {
+                int on = r < 9u ? (G[r] >> (8u - q)) & 1u : (q + w) % 2u == 0u;   /* (the hem rippling) */
+                if (on)
+                    cv_pset(x - 4 + (int32_t)q, y - 5 + (int32_t)r, gc);
+                else if (r == 3u)
+                    cv_pset(x - 4 + (int32_t)q, y - 5 + (int32_t)r, XB_RGB(20, 14, 40));
+            }
+        break;
+    }
+    }
+}
+
 static void wl_world(void)
 {
     const int32_t H = (int32_t)cv_h, cx = 120, cyc = H - 27;       /* (the circle's middle) */
@@ -559,6 +653,8 @@ static void wl_world(void)
         if ((int32_t)tw < 400 + lvl / 2)
             cv_pset(6 + (int32_t)(h % 228u), 2 + (int32_t)(h >> 12) % (H / 2), tw < 120u ? WL_RGB(230, 230, 250) : WL_RGB(110, 100, 150));
     }
+    if (anim)
+        wl_visit(H, now, sky);                         /* (something passing, now and then) */
     cv_rect(4, cyc - 12, 232, H - cyc + 11, floor);
     /* the circle: a pentagram in its ring on the floor, turning; it flares as an element is taken in */
     {

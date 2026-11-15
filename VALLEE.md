@@ -218,6 +218,11 @@ summoning circle (ringed with candles), at most one a track a beat. The Alchemis
 him like a puppet master's, fingers working the strings of what he summons; as each element lands, beams shoot from
 their fingertips into the circle. The shelf counts what each track has given.
 
+**The sky** behind him isn't empty: every so often something passes across it, one at a time and never the same
+way twice (what it is, its height, direction, speed, colour and when the next one comes are all random): a UFO with
+blinking lights (sometimes it shines its beam down), a comet trailing its tail, a shooting star, a pulsing plasma
+being with waving tendrils, or a see-through ghost. Not with ANIM OFF.
+
 **What the spell summons** rises in the circle as the song goes on, and is whole when the song ends. Its shape comes from
 the six sounds you chose; each part of it takes the colour of an element, in the proportions the song used them; and
 once a track has given enough of itself its trait appears: aliens give it eyes, cryptids horns, psi orbs a halo,
