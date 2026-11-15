@@ -192,7 +192,7 @@ static void wl_strip(void)
         }
     }
     {   /* the playhead */
-        int32_t x = X0 + (int32_t)((uint64_t)pos * (uint32_t)W / (total ? total : 1u));
+        int32_t x = X0 + (int32_t)(pos * (uint32_t)W / (total ? total : 1u));   /* (32 bits: no 64-bit divide on the FM-1) */
         cv_rect(x, Y - 3, 2, H + 6, T_TEXT);
         cv_rect(X0, Y + H + 3, x - X0, 2, T_THEME);
     }
