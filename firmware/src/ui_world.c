@@ -131,15 +131,16 @@ static const uint16_t WL_SEC[8] = {WL_RGB(64, 200, 190), WL_RGB(240, 110, 90), W
                                    WL_RGB(150, 120, 255), WL_RGB(90, 170, 255), WL_RGB(150, 230, 90),
                                    WL_RGB(255, 130, 200), WL_RGB(220, 180, 140)};
 static uint32_t wl_strip_sig;
-/* (THE SPELL's keys) a part's music (its group, by first appearance) on the white keys by name: C the first, D the
- * second .. B the seventh, in every octave; the black keys drop a jump still to come */
-static const char WL_KEYN[7] = {'C', 'D', 'E', 'F', 'G', 'A', 'B'};
-static const int8_t WL_PC[12] = {0, -1, 1, -1, 2, 3, -1, 4, -1, 5, -1, 6};   /* (a key's name, 0 = C: its group) */
+/* (THE SPELL's keys) a part's music (its group, by first appearance) on the white keys from the left: F (the
+ * keyboard's first key) the first, G the second .. E the seventh, in every octave; the black keys drop a jump still to
+ * come */
+static const char WL_KEYN[7] = {'F', 'G', 'A', 'B', 'C', 'D', 'E'};
+static const int8_t WL_PC[12] = {4, -1, 5, -1, 6, 0, -1, 1, -1, 2, -1, 3};   /* (a key's name, 0 = C: its group) */
 static int32_t wl_key_grp(uint32_t k) { return WL_PC[(k + 5u) % 12u]; }      /* (key 0 is F: seq.c key_place) */
 /* a key's letter, 3 x 5, on a part's block */
 static void wl_letter(int32_t x, int32_t y, uint32_t g, uint16_t c)
 {
-    static const uint16_t L[7] = {31015u, 27502u, 31207u, 31204u, 31087u, 11245u, 27566u};   /* (C D E F G A B: rows of 3, the top first)*/
+    static const uint16_t L[7] = {31204u, 31087u, 11245u, 27566u, 31015u, 27502u, 31207u};   /* (F G A B C D E: rows of 3, the top first) */
     uint32_t i;
     for (i = 0; i < 15u; i++)
         if ((L[g % 7u] >> (14u - i)) & 1u)

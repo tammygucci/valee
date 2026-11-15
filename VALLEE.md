@@ -193,8 +193,8 @@ C... in the order they first come. The playhead runs across it, the part it's in
 (BAR 9 / 32) are above. With no lists it's one LOOP block.
 
 **Play the song live from the keys.** On THE SPELL the keys don't play notes: each white key is a part of the song,
-by letter, in every octave. C is the first music in the song, D the second, E the third, and so on (on a GEN song:
-C INTRO, D VERSE, E CHORUS, F BRIDGE, G OUTRO). Each block on the map shows its key's letter in its corner, and the
+starting from the keyboard's first key on the left, in every octave. F is the first music in the song, G the second, A
+the third, and so on to the right (on a GEN song: F INTRO, G VERSE, A CHORUS, B BRIDGE, C OUTRO). Each block on the map shows its key's letter in its corner, and the
 keys light up: the part playing lit, the others breathing. Press one and every track jumps to that part **on the next
 bar line**, all together, so it always lands on the 1 and stays in time: you can press it anywhere in the bar before.
 Until it comes in, the block blinks and the top line reads e.g. VERSE > CHORUS. A part that comes more than once: the
