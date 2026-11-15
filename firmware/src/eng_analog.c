@@ -36,7 +36,6 @@ static void analog_note_on(track_t *t, voice_t *v)
     v->s[4] = v->s[5] = 0;                            /* ((Vallée) FILTER MOOG JUNO: the second stage) */
 }
 
-static void analog_render_m(track_t *t, voice_t *v, int32_t *out, uint32_t n, const vmod_t *m);   /* ((Vallée) below) */
 /* WAVE SYNC / SUB: OSC 1 a saw, OSC 2 the synced saw / the sub square; then noise, drive and the filter as
  * analog_render. Its own function: analog_render's loop stays what it was */
 static __attribute__((noinline)) void analog_render_x(track_t *t, voice_t *v, int32_t *out, uint32_t n,
@@ -44,10 +43,6 @@ static __attribute__((noinline)) void analog_render_x(track_t *t, voice_t *v, in
 {
     const int16_t *p = t->p;
     uint32_t sub = p[P_E0] == AW_SUB, i;
-    if (p[P_AFLT] && p[P_E0] != AW_SYNC) {            /* ((Vallée) FILTER MOOG OBERHEIM JUNO: their own loop) */
-        analog_render_m(t, v, out, n, m);
-        return;
-    }
     int32_t det = p[P_E1], mix = p[P_E2], noise = p[P_E3];
     int32_t cut = (p[P_E4] << 8) + m->cutoff + (p[P_E7] * (v->pitch16 - 60 * 16) >> 4);
     tsvf_t flt;
@@ -238,7 +233,9 @@ static __attribute__((noinline)) void analog_render_m(track_t *t, voice_t *v, in
 }
 static void analog_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const vmod_t *m)
 {
-    if (t->p[P_E0] >= AW_SYNC || t->p[P_AFLT])          /* ((Vallée) FILTER: analog_render_x hands it on) */
+    if (t->p[P_AFLT] > 0 && t->p[P_E0] != AW_SYNC)      /* ((Vallée) FILTER MOOG OBERHEIM JUNO: their own loop) */
+        analog_render_m(t, v, out, n, m);
+    else if (t->p[P_E0] >= AW_SYNC)
         analog_render_x(t, v, out, n, m);
     else
         analog_osc(t, v, out, n, m);
