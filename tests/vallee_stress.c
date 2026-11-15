@@ -257,7 +257,7 @@ static void vs_creatures(void)
 {
     uint32_t e, n, i;
     uint8_t art[XB_ART_N + 8u];
-    for (e = 0; e < 32u; e++)                               /* (engine numbers past the last too) */
+    for (e = 0; e < 32u; e++)                               /* (track numbers past the last too) */
         for (n = 0; n < 256u; n++) {
             uint8_t px[12][12];
             memset(art, 0xEE, sizeof art);

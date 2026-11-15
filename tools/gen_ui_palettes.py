@@ -62,8 +62,8 @@ TRACKS = {"SKIFF": [(255, 90, 54), (34, 195, 180), (255, 191, 0), (149, 128, 255
                    (170, 100, 255), (80, 255, 170)],                                  # violet mint
           "QUARK": [(255, 84, 96), (70, 220, 130), (90, 140, 255), (60, 220, 240),    # red green blue, anti: cyan
                     (230, 96, 230), (250, 220, 80)],
-          "XENO": [(124, 255, 120), (60, 228, 255), (255, 210, 80), (255, 96, 214),   # acid ecto sigil plasma
-                   (170, 128, 255), (255, 140, 72)]}                                  # nebula ember                                  # magenta yellow
+          "XENO": [(90, 255, 110), (80, 160, 255), (255, 230, 70), (255, 110, 200),   # (Vallée) the elements: alien
+                   (180, 110, 255), (255, 150, 50)]}                                # cryptid orb crystal sigil herb                                  # nebula ember                                  # magenta yellow
 NTRACKS = 6
 # the eleven palettes before THEME (index order: their ids PAL_TAG + index) and Felucca's oldest twenty (ids below 20)
 OLD11 = ["GREY", "GREEN", "AMBER", "ICE", "VIOLET", "ROSE", "PAPER", "HI-CON", "NIGHT", "MONO", "SKIFF"]

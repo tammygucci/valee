@@ -23,8 +23,7 @@
 #define WL_GH 6u
 #define WL_TRAIT 6u                                    /* a track's elements before its trait shows */
 #define WL_RGB(r, g, b) ((uint16_t)((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3)))
-static const uint16_t WL_COL[NTRK] = {WL_RGB(90, 255, 110), WL_RGB(80, 160, 255), WL_RGB(255, 230, 70),
-                                      WL_RGB(255, 110, 200), WL_RGB(180, 110, 255), WL_RGB(255, 150, 50)};
+#define WL_COL XB_COL                                 /* (the elements' colours: ui_beast.c) */
 static const char *const WL_ELEM[NTRK] = {"ALIENS", "CRYPTIDS", "PSI ORBS", "CRYSTALS", "SIGILS", "HERBS"};
 static struct {
     uint16_t idx[NTRK];                                /* each track's step at the last frame (a strike: a new one, on) */

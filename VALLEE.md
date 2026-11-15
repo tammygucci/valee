@@ -163,24 +163,21 @@ hexagram hubs wind the tape from left to right as the pattern plays. The selecte
 sings (pink eyes, a halo) on its notes. There's a tape counter and one meter per track. Below the deck, each track is a
 lane of tape running past the head.
 
-**Every sound has its own creature** (original pixel art, 12 x 12): each of the 163 factory presets gets one of its
-own, and no two are alike. The engine decides the family, from the head, and every member carries the family's mark:
+**Every sound has its own creature** (original pixel art, 12 x 12), of its **track's family**, the same six
+elements THE SPELL conjures with, each in its colour (XENO's track colours are these colours too):
 
-| Engine | Family |
-|---|---|
-| ANALOG | greys (a dome) |
-| FM6 | pyramids with an eye |
-| VOICE, WHEEL, NOISE | hooded figures: singers, organ priests, spectres |
-| SAMPLE | seers and monks (a face) |
-| TRIO, DRUM | tall craniums; skulls |
-| LOFI | helmeted travellers with a visor |
-| PHASE, DRUM-X | insects |
-| GRAIN, PHYS | mantled things from the deep |
+| Track | Family | Bodies |
+|---|---|---|
+| 1 | green aliens | a grey's dome, a bulb in a suit, a cone head, an egg on tentacles |
+| 2 | blue cryptids | bigfoot, mothman, a wendigo, a yeti |
+| 3 | yellow psi orbs | a great orb, a ring, a small orb, one lit from above |
+| 4 | pink crystals | a spire, a diamond, a cluster, a geode |
+| 5 | purple sigils | the eye's triangle, a seal, an ankh, a chaos star |
+| 6 | orange mythic herbs | a mandrake, a mushroom, a flower, a sprout |
 
-The sound decides the rest: what is on the head (antennae, horns, a halo, a wizard's hat, a crown, a flame, long ears,
-eyes on stalks), the eyes (black almonds, two glowing, one great eye, a third eye, many, a band of light) and what is
-below (a robe, tentacles, legs, wings, a ghost's tail, arms raised, a beard, an orb it floats on). A user preset gets
-one from its name. They blink, sing on their track's notes, and sleep while muted.
+The sound decides the rest: which body, its eyes, what's on or round it (antennae, ears, rays, sparks, facets..) and a
+mark: 256 different creatures in each family, and sounds next to each other in a list never share one. A user preset
+gets one from its name. They blink, sing on their track's notes, and sleep while muted.
 
 **Turning PRESETS on HOME** (in any theme) opens a black box with a border in the track's colour: the new sound's
 creature six times its size, the sound's name and its engine. It closes by itself about a second after the last

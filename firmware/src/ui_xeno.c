@@ -26,9 +26,8 @@ static void xe_track_art(const track_t *t, uint8_t *art)
     uint32_t e = t->eng_req % NENGINES, n = ENGINES[e]->npresets ? t->preset % ENGINES[e]->npresets : 0u;
     char name[20];
     sound_name(t, name);
-    if (!ENGINES[e]->npresets || !str_eq(ENGINES[e]->presets[n].name, name))
-        n = xb_hash(name);
-    xe_beast_art(e, n, art);
+    n = !ENGINES[e]->npresets || !str_eq(ENGINES[e]->presets[n].name, name) ? xb_hash(name) : n + e * 53u;
+    xe_beast_art(trk_index(t), n, art);   /* ((Vallée) of the track's family: ui_beast.c) */
 }
 static int xe_anim(void) { return !(ui_prefs & PREF_ANIM_OFF); }
 
@@ -153,7 +152,7 @@ static void xe_deck(int32_t D)
     int32_t span = r - r / 2 - 3, prog = song.playing ? (int32_t)(cur * 1000u / len) : 0;
     int32_t lp = r / 2 + 2 + span * (1000 - prog) / 1000, rp = r / 2 + 2 + span * prog / 1000;
     uint32_t ph = song.playing && xe_anim() ? ui.frame * 0x03000000u : 0x08000000u;
-    uint16_t tape = ux_mix(T_THEME, T_BG, 78), sel = T_TRK(song.sel);
+    uint16_t tape = ux_mix(T_THEME, T_BG, 78);
     int sing = xe_sings(t), muted = t->p[P_MUTE] != 0;
     char d[8];
     cv_rect(0, 0, 240, D, T_BG);
@@ -185,7 +184,7 @@ static void xe_deck(int32_t D)
         }
         uint8_t art[XB_ART_N];
         xe_track_art(t, art);
-        xe_alien(ax, ay, art, muted ? T_DIM : sel, T_BG, muted ? 2 : sing ? 1 : xe_blink(song.sel) ? 3 : 0, 2);
+        xe_alien(ax, ay, art, muted ? T_DIM : XB_COL[song.sel % NTRK], T_BG, muted ? 2 : sing ? 1 : xe_blink(song.sel) ? 3 : 0, 2);
     }
     /* left of the head: a meter a track, lit while its step strikes; right: the tape counter (the step, 3 digits) */
     {
@@ -235,7 +234,7 @@ static void xe_lanes(int32_t y, int32_t lh)
             cv_rect(15, y + lh / 2 - 1, 2, 2, T_THEME);
         uint8_t art[XB_ART_N];
         xe_track_art(t, art);
-        xe_alien(18, y + (lh - 12) / 2, art, col, strip, muted ? 2 : sing ? 1 : xe_blink(k) ? 3 : 0, 1);
+        xe_alien(18, y + (lh - 12) / 2, art, muted ? T_DIM : XB_COL[k], strip, muted ? 2 : sing ? 1 : xe_blink(k) ? 3 : 0, 1);
         sound_name(t, name);
         cv_free_text(33, y + CAP_IN(S, lh), &AF_S, name[0] ? name : "--", muted ? T_DIM : sel ? T_TEXT : T_MID, lane,
                      XE_TAPE_X0 - 4 - 33);
@@ -337,7 +336,7 @@ static void beast_box_draw(void)
     cv_rect(bx, by, bw, bh, edge);                    /* the border, 2 px, the track's colour */
     cv_rect(bx + 2, by + 2, bw - 4, bh - 4, ink);     /* black */
     xe_track_art(t, art);
-    xe_alien(120 - 6 * z, by + 10, art, edge, ink, t->p[P_MUTE] ? 2 : 0, z);
+    xe_alien(120 - 6 * z, by + 10, art, t->p[P_MUTE] ? T_DIM : XB_COL[song.sel % NTRK], ink, t->p[P_MUTE] ? 2 : 0, z);
     GFX_HOOK_ALIGN(bx, by + 10 + 12 * z + 6, bx + bw, by + 10 + 12 * z + 22, AL_H, "creature box name");
     text_ink(&AF_M, name, b);
     cv_text_fit(120 - b[2] / 2 - b[0], by + 10 + 12 * z + 6 + CAP_IN(M, 16), &AF_M, name, T_TEXT, ink, bw - 12);

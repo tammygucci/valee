@@ -10174,29 +10174,25 @@ static void gen_wav(const char *dir)
  * box (black, the track's colour round it), it closes by itself, and the lanes draw the sound's creature */
 static int test_beasts(void)
 {
-    static uint8_t seen[200][144];
-    uint32_t e, n, k, cnt = 0, dup = 0, empty = 0;
+    static uint8_t seen[256][144];
+    uint32_t e, n, k, f, cnt, dup = 0, empty = 0, want = 0;
     int bad = 0, ok;
-    for (e = 0; e < NENGINES; e++)
-        for (n = 0; n < ENGINES[e]->npresets; n++) {
+    for (f = 0; f < NTRK; f++)                          /* (each family: its 256 all different, none thin) */
+        for (n = 0, cnt = 0; n < 256u; n++) {
             uint8_t px[12][12];
             uint32_t on = 0, j;
-            xe_beast_px(e, n, px);
+            xe_beast_px(f, n, px);
             for (j = 0; j < 144u; j++)
                 on += ((uint8_t *)px)[j] != 0u;
-            empty += on < 40u;
+            empty += on < 14u;
             for (k = 0; k < cnt; k++)
                 dup += !memcmp(seen[k], px, 144);
-            if (cnt < 200u)
-                memcpy(seen[cnt++], px, 144);
+            memcpy(seen[cnt++], px, 144);
         }
-    {
-        uint32_t want = 0;
-        for (e = 0; e < NENGINES; e++)
-            want += ENGINES[e]->npresets;
-        bad += check("(Vallée) creatures: every factory sound its own (no two alike), none thin",
-                     cnt == want && want >= 140u && !dup && !empty);
-    }
+    for (e = 0; e < NENGINES; e++)                      /* (an engine's sounds: all different on any track) */
+        want += ENGINES[e]->npresets <= 256u;
+    bad += check("(Vallée) creatures: six families of 256, all different, none thin; an engine's sounds each its own",
+                 !dup && !empty && want == NENGINES);
     ui_power_on();
     go_home();
     frames(300);
