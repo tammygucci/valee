@@ -16,6 +16,7 @@ static void sound_name(const track_t *t, char *b);   /* (ui_draw.c) */
  * wire shape that the song moves (ui_world.c wl_geo) */
 #define UX_TEEN (ux.teen != 0)
 #define XE_LANE_H 13                                  /* a lane, 1 between them: the deck gets what is left (39 or more) */
+#define XE_TEEN_TOP (Y_GRAPH - Y_LABEL)              /* ((Vallée) TEEN's HOME tall: the cards' row's rows (xe_home) */
 #define XE_LANE_TEEN 9                                /* ((Vallée) TEEN: thin lanes, the deck the bigger */
 #define XE_HEAD_X 120                                 /* the head: the deck's middle and the lanes' window */
 #define XE_TAPE_X0 92                                 /* the lanes' tape: x 92 .. 236 */
@@ -161,6 +162,7 @@ static int xe_sings(const track_t *t)
 /* (Vallée) TEEN's deck, as an OP-1's tape: on black, two reels drawn in thin lines (the rim, a hub of two rings, three
  * short spokes turning), the tape from under each reel down round a row of rollers to the head (a square, the lanes'
  * window under it); between the reels the counter, the track in its box, PLAY's triangle and the tempo */
+static int xe_teen_tall(void) { return UX_TEEN && ui.home && !ui.home_scope && !ui.layer && large_kind() != LK_TALL; }
 static void xe_deck_teen(int32_t D)
 {
     const track_t *t = TSEL;
@@ -203,7 +205,8 @@ static void xe_deck_teen(int32_t D)
             cv_pset(rx[k], ry, T_TEXT);
     }
     {   /* between the reels: the counter, then the track's box, PLAY, the tempo */
-        int32_t x0 = lcx + r + 4, x1 = rcx - r - 4, mid = (x0 + x1) / 2, yy = cy - 4;
+        int32_t x0 = lcx + r + 4, x1 = rcx - r - 4, mid = (x0 + x1) / 2,
+                yy = xe_teen_tall() && cy - 4 < XE_TEEN_TOP + 3 ? XE_TEEN_TOP + 3 : cy - 4;   /* (tall: under the seam) */
         uint32_t n = cur + 1u, bpm = (uint32_t)song.g[G_BPM];
         d[0] = (char)('0' + n / 100u % 10u);
         d[1] = (char)('0' + n / 10u % 10u);
@@ -346,7 +349,9 @@ static void xe_lanes(int32_t y, int32_t lh)
         cv_rect(3, y, 234, lh, lane);
         if (sel)
             cv_rect(3, y, 2, lh, col);
-        if (UX_TEEN)                                  /* (TEEN: the tiny face) */
+        if (UX_TEEN && lh >= 15)                      /* (TEEN tall: M) */
+            cv_text_on(6, y + CAP_IN(M, lh), &AF_M, d, sel ? T_TEXT : col, lane);
+        else if (UX_TEEN)                             /* (TEEN: the tiny face) */
             xe_tiny(8, y + (lh - 5) / 2, d, sel ? T_TEXT : col, 4);
         else
             cv_text_on(8, y + CAP_IN(S, lh), &AF_S, d, sel ? T_TEXT : col, lane);
@@ -358,7 +363,10 @@ static void xe_lanes(int32_t y, int32_t lh)
             xe_alien(18, y + (lh - 12) / 2, art, muted ? T_DIM : T_TRK((k) % NTRK), strip, muted ? 2 : sing ? 1 : xe_blink(k) ? 3 : 0, 1);
         }
         sound_name(t, name);
-        if (UX_TEEN)
+        if (UX_TEEN && lh >= 15)
+            cv_free_text(19, y + CAP_IN(M, lh), &AF_M, name[0] ? name : "--", muted ? T_DIM : sel ? T_TEXT : T_MID, lane,
+                         XE_TAPE_X0 - 4 - 19);
+        else if (UX_TEEN)
             xe_tiny(16, y + (lh - 5) / 2, name[0] ? name : "--", muted ? T_DIM : sel ? T_TEXT : T_MID, XE_TAPE_X0 - 4 - 16);
         else
             cv_free_text(33, y + CAP_IN(S, lh), &AF_S, name[0] ? name : "--", muted ? T_DIM : sel ? T_TEXT : T_MID, lane,
@@ -389,10 +397,31 @@ static void xe_lanes(int32_t y, int32_t lh)
     }
 }
 
+/* ((Vallée) TEEN's HOME tall: no cards, the deck and the lanes from the cards' row down (XE_TEEN_TOP more rows), drawn
+ * in two pieces, the top in the cards' row (ui_draw.c draw_columns), the rest in the panel; a knob turned brings the
+ * cards back while it is (ui.hot_t). The lanes then 15 px, their names in M) */
+static int xe_teen_cards(void) { return xe_teen_tall() && !ui.hot_t; }   /* (the deck's top where the cards were) */
+static void xe_home_in(int32_t gh);
+static void xe_teen_top(void)                         /* (the cards' row's piece) */
+{
+    cv_begin(240, XE_TEEN_TOP, T_BG);
+    xe_home_in((int32_t)graph_h() + XE_TEEN_TOP);
+    cv_blit(0, Y_LABEL);
+}
 /* HOME, THEME XENO: the deck over the lanes (ui_home.c graph_tracks) */
 static void xe_home(void)
 {
-    int32_t gh = (int32_t)graph_h(), lh = UX_TEEN ? XE_LANE_TEEN : XE_LANE_H, lanes = (int32_t)NTRK * (lh + 1) - 1, D;
+    if (xe_teen_tall()) {                             /* (TEEN: the panel's piece, under the top's) */
+        cv_oy = -XE_TEEN_TOP;
+        xe_home_in((int32_t)graph_h() + XE_TEEN_TOP);
+        cv_oy = 0;
+        return;
+    }
+    xe_home_in((int32_t)graph_h());
+}
+static void xe_home_in(int32_t gh)
+{
+    int32_t lh = UX_TEEN ? (xe_teen_tall() ? 15 : XE_LANE_TEEN) : XE_LANE_H, lanes = (int32_t)NTRK * (lh + 1) - 1, D;
     if (gh - lanes < 36) {                            /* (no room for the deck: the lanes alone, as tall as fit) */
         lh = (gh - ((int32_t)NTRK - 1)) / (int32_t)NTRK;
         cv_rect(0, 0, 240, gh, T_BG);

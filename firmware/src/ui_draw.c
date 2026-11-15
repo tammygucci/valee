@@ -861,6 +861,10 @@ static void draw_columns(void)
         wl_strip();
         return;
     }
+    if (xe_teen_cards()) {                             /* ((Vallée) TEEN's HOME: the deck's top there, not the cards) */
+        xe_teen_top();
+        return;
+    }
     if (ui.home) {
         for (c = 0; c < 4u; c++) {
             int16_t *vp;
