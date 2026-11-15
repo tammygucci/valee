@@ -184,7 +184,7 @@ static void xe_deck(int32_t D)
         }
         uint8_t art[XB_ART_N];
         xe_track_art(t, art);
-        xe_alien(ax, ay, art, muted ? T_DIM : XB_COL[song.sel % NTRK], T_BG, muted ? 2 : sing ? 1 : xe_blink(song.sel) ? 3 : 0, 2);
+        xe_alien(ax, ay, art, muted ? T_DIM : T_TRK((song.sel % NTRK) % NTRK), T_BG, muted ? 2 : sing ? 1 : xe_blink(song.sel) ? 3 : 0, 2);
     }
     /* left of the head: a meter a track, lit while its step strikes; right: the tape counter (the step, 3 digits) */
     {
@@ -234,7 +234,7 @@ static void xe_lanes(int32_t y, int32_t lh)
             cv_rect(15, y + lh / 2 - 1, 2, 2, T_THEME);
         uint8_t art[XB_ART_N];
         xe_track_art(t, art);
-        xe_alien(18, y + (lh - 12) / 2, art, muted ? T_DIM : XB_COL[k], strip, muted ? 2 : sing ? 1 : xe_blink(k) ? 3 : 0, 1);
+        xe_alien(18, y + (lh - 12) / 2, art, muted ? T_DIM : T_TRK((k) % NTRK), strip, muted ? 2 : sing ? 1 : xe_blink(k) ? 3 : 0, 1);
         sound_name(t, name);
         cv_free_text(33, y + CAP_IN(S, lh), &AF_S, name[0] ? name : "--", muted ? T_DIM : sel ? T_TEXT : T_MID, lane,
                      XE_TAPE_X0 - 4 - 33);
@@ -336,7 +336,7 @@ static void beast_box_draw(void)
     cv_rect(bx, by, bw, bh, edge);                    /* the border, 2 px, the track's colour */
     cv_rect(bx + 2, by + 2, bw - 4, bh - 4, ink);     /* black */
     xe_track_art(t, art);
-    xe_alien(120 - 6 * z, by + 10, art, t->p[P_MUTE] ? T_DIM : XB_COL[song.sel % NTRK], ink, t->p[P_MUTE] ? 2 : 0, z);
+    xe_alien(120 - 6 * z, by + 10, art, t->p[P_MUTE] ? T_DIM : T_TRK((song.sel % NTRK) % NTRK), ink, t->p[P_MUTE] ? 2 : 0, z);
     GFX_HOOK_ALIGN(bx, by + 10 + 12 * z + 6, bx + bw, by + 10 + 12 * z + 22, AL_H, "creature box name");
     text_ink(&AF_M, name, b);
     cv_text_fit(120 - b[2] / 2 - b[0], by + 10 + 12 * z + 6 + CAP_IN(M, 16), &AF_M, name, T_TEXT, ink, bw - 12);

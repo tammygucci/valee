@@ -168,7 +168,8 @@ back for DEMARCO).
 Vallée has two themes, both with XENO's screens (the tape deck, the creatures, THE SPELL): **XENO** (the default) and
 **TEEN**, the same screens in teenage engineering's colours, as on an OP-1's display: black and graphite, off-white
 text, TE orange for values, TE blue for the selected thing, and the six tracks in their primaries (red, orange, yellow,
-blue, light grey, green). The creatures keep their elements' colours in both. Pick one on MENU > DISPLAY > THEME.
+blue, light grey, green). The creatures and THE SPELL's elements take the theme's track colours: XENO's are the
+elements' own (green aliens, blue cryptids ..), TEEN's its primaries (a red alien, an orange cryptid ..). Pick one on MENU > DISPLAY > THEME.
 Skiff's other six (SKIFF, HI-CON, PAPER, CRYPT, NEON, QUARK) and their widgets and pixel font are gone, which freed
 about 36 KB of the FM-1's flash; a unit on one of them comes up in XENO. THEME CUSTOM (your own colours, from the web
 editor) still works, over either.

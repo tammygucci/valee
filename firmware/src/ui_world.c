@@ -23,7 +23,6 @@
 #define WL_GH 6u
 #define WL_TRAIT 6u                                    /* a track's elements before its trait shows */
 #define WL_RGB(r, g, b) ((uint16_t)((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3)))
-#define WL_COL XB_COL                                 /* (the elements' colours: ui_beast.c) */
 static const char *const WL_ELEM[NTRK] = {"ALIENS", "CRYPTIDS", "PSI ORBS", "CRYSTALS", "SIGILS", "HERBS"};
 static struct {
     uint16_t idx[NTRK];                                /* each track's step at the last frame (a strike: a new one, on) */
@@ -401,7 +400,7 @@ static void wl_figure(int32_t cx, int32_t y, uint32_t now, int anim, uint16_t ri
     for (r = 0; r < WL_GN; r++)
         for (c = 0; c < WL_GH; c++)
             if (wl.cell[r][c]) {
-                uint16_t col = WL_COL[(wl.cell[r][c] - 1u) % NTRK];
+                uint16_t col = T_TRK(((wl.cell[r][c] - 1u) % NTRK) % NTRK);
                 uint16_t lit = ux_mix(col, WL_RGB(255, 255, 255), 30 - (int32_t)r * 4);
                 uint16_t sh = ux_mix(col, rim, 35);
                 for (side = 0; side < 2u; side++) {
@@ -411,7 +410,7 @@ static void wl_figure(int32_t cx, int32_t y, uint32_t now, int anim, uint16_t ri
                 }
             }
     for (k = 0; k < NTRK; k++) {
-        uint16_t col = WL_COL[k];
+        uint16_t col = T_TRK((k) % NTRK);
         if (wl.cnt[k] < WL_TRAIT)
             continue;
         switch (k) {
@@ -658,7 +657,7 @@ static void wl_world(void)
     cv_rect(4, cyc - 12, 232, H - cyc + 11, floor);
     /* the circle: a pentagram in its ring on the floor, turning; it flares as an element is taken in */
     {
-        uint16_t rc = wl.flash ? ux_mix(WL_COL[wl.flash_k], floor, 60 - (int32_t)wl.flash * 8) : WL_RGB(120, 90, 200);
+        uint16_t rc = wl.flash ? ux_mix(T_TRK((wl.flash_k) % NTRK), floor, 60 - (int32_t)wl.flash * 8) : WL_RGB(120, 90, 200);
         uint32_t a0 = anim ? now * 262144u : 0u, j;
         int32_t px[5], py[5];
         wl_oval_i(cx, cyc, 58, 9, 72u, rc);
@@ -682,7 +681,7 @@ static void wl_world(void)
         int32_t fy = cyc - 50 + (anim ? QK_SIN(now * 196608u) * 2 / 32767 : 0), g = (int32_t)(wl.total - wl.shown);
         if (wl.shown >= wl.nmask)                       /* (whole: the elements after feed its glow) */
             xe_dots(cx, fy + 24, 30 + (g > 60 ? 12 : g / 5), 32u, anim ? now * 1048576u : 0u,
-                    ux_mix(WL_COL[wl.flash_k], sky, 55));
+                    ux_mix(T_TRK((wl.flash_k) % NTRK), sky, 55));
         wl_figure(cx, fy, now, anim, WL_RGB(20, 12, 36));
     }
     /* the alchemist: the head, its hands' beam from its third eye down into the circle as an element goes in */
@@ -691,7 +690,7 @@ static void wl_world(void)
         cols[0] = WL_RGB(170, 160, 200);
         cols[1] = WL_RGB(130, 120, 165);
         cols[2] = WL_RGB(50, 40, 80);
-        cols[3] = wl.flash ? WL_COL[wl.flash_k] : WL_RGB(200, 120, 255);
+        cols[3] = wl.flash ? T_TRK((wl.flash_k) % NTRK) : WL_RGB(200, 120, 255);
         ui_sprite(hx, hy, SPR_VL_HEAD, 4u, cols, 2);
         {   /* his hands: floating either side, working the summoning's strings; the beams from their fingertips */
             int32_t tx[2][4], ty[2][4], s, f, bob = anim ? QK_SIN(now * 327680u) * 3 / 32767 : 0;
@@ -703,7 +702,7 @@ static void wl_world(void)
                 for (f = 0; f < 4; f++) {
                     if (wl.flash)                       /* (an element going in: the beams, into the circle) */
                         xe_line(tx[s][f], ty[s][f], cx + (s ? 4 : -4) + (f - 2) * 3, cyc - 4,
-                                ux_mix(WL_COL[wl.flash_k], sky, 25 + f * 8));
+                                ux_mix(T_TRK((wl.flash_k) % NTRK), sky, 25 + f * 8));
                     else if (wl.total)                  /* (else the strings, to what is summoned) */
                         xe_line(tx[s][f], ty[s][f], cx + (s ? 10 : -10) + (s ? f : -f) * 2, fy + 4 + f * 3, str);
                 }
@@ -719,7 +718,7 @@ static void wl_world(void)
         int32_t x = wl_jar_x((uint32_t)k), y = H - 13;
         int on = ENGINES[t->eng_req % NENGINES]->npresets && !t->p[P_MUTE];
         char b[6];
-        wl_elem(x, y, (uint32_t)k, on ? WL_COL[k] : ux_mix(WL_COL[k], sky, 75));
+        wl_elem(x, y, (uint32_t)k, on ? T_TRK((k) % NTRK) : ux_mix(T_TRK((k) % NTRK), sky, 75));
         fmt_int(b, wl.cnt[k] > 999u ? 999 : (int32_t)wl.cnt[k]);
         cv_text_on(x + 11, y - 1, &AF_S, b, on ? WL_RGB(210, 200, 230) : WL_RGB(90, 80, 110), sky);
     }
@@ -735,7 +734,7 @@ static void wl_world(void)
         u = (int32_t)wl.fly[i].t * 1000 / (int32_t)WL_FT;  /* (0 .. 1000: a quadratic curve) */
         x = (x0 * (1000 - u) / 1000 * (1000 - u) + 2 * mx * (1000 - u) / 1000 * u + x1 * u / 1000 * u) / 1000;
         y = (y0 * (1000 - u) / 1000 * (1000 - u) + 2 * my * (1000 - u) / 1000 * u + y1 * u / 1000 * u) / 1000;
-        wl_elem(x, y, wl.fly[i].k, WL_COL[wl.fly[i].k]);
+        wl_elem(x, y, wl.fly[i].k, T_TRK((wl.fly[i].k) % NTRK));
         if (anim && ++wl.fly[i].t > WL_FT) {
             wl_add(wl.fly[i].k, wl.fly[i].note);
             wl.fly[i].t = 0;
