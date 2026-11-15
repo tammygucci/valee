@@ -169,7 +169,8 @@ Vallée has two themes. **XENO** (the default): the esoteric one, the tape deck 
 for every sound, THE SPELL. **TEEN**: plain, in an OP-1's colours (black, white lines and text, TE blue for values, red
 for the selected thing; the tracks red, blue, white, violet, green, orange). Its HOME is an OP-1-style tape machine: two
 line-drawn reels with turning spokes, the tape round a row of rollers to the head, the counter, the track, PLAY and the
-tempo between the reels; the tracks under it, no creatures (and no preset box). HOME on HOME has the same song map and
+tempo between the reels; the tracks under it in thin lanes (their names in a tiny 3 x 5 face, the deck the bigger), no
+creatures (and no preset box). HOME on HOME has the same song map and
 section keys, and under it, on black, a wire shape of a few thin lines that turns and bulges towards each track as it
 plays, its lines flashing in that track's colour; it takes a new build at every PLAY and new directions at every part,
 never the same twice. Pick one on MENU > DISPLAY > THEME.

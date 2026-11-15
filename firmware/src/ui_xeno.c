@@ -16,6 +16,7 @@ static void sound_name(const track_t *t, char *b);   /* (ui_draw.c) */
  * wire shape that the song moves (ui_world.c wl_geo) */
 #define UX_TEEN (ux.teen != 0)
 #define XE_LANE_H 13                                  /* a lane, 1 between them: the deck gets what is left (39 or more) */
+#define XE_LANE_TEEN 9                                /* ((Vallée) TEEN: thin lanes, the deck the bigger */
 #define XE_HEAD_X 120                                 /* the head: the deck's middle and the lanes' window */
 #define XE_TAPE_X0 92                                 /* the lanes' tape: x 92 .. 236 */
 #define XE_TAPE_X1 236
@@ -307,6 +308,27 @@ static void xe_deck(int32_t D)
     }
 }
 
+/* ((Vallée) TEEN's lanes, 9 px: a name in a tiny face, 3 x 5 (A..Z 0..9 - . + /, any other a ?), 1 between; to x + w) */
+static void xe_tiny(int32_t x, int32_t y, const char *s, uint16_t c, int32_t w)
+{
+    static const char ORD[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-.+/?";
+    static const uint16_t T[41] = {11245u,27566u,14627u,27502u,31143u,31140u,14699u,23533u,29847u,4714u,23469u,18727u,24557u,27501u,11114u,27556u,11123u,27565u,14478u,29842u,23407u,23402u,23549u,23213u,23186u,29351u,31599u,11415u,25255u,25230u,23497u,31118u,14831u,29330u,31727u,31694u,448u,2u,1488u,4772u,29314u};
+    int32_t x1 = x + w;
+    for (; *s && x + 3 <= x1; s++, x += 4) {
+        char ch = *s >= 'a' && *s <= 'z' ? (char)(*s - 32) : *s;
+        uint32_t g, i;
+        if (ch == ' ')
+            continue;
+        for (g = 0; ORD[g] && ORD[g] != ch; g++)
+            ;
+        if (g > 40u)
+            g = 40u;
+        for (i = 0; i < 15u; i++)
+            if ((T[g] >> (14u - i)) & 1u)
+                cv_pset(x + (int32_t)(i % 3u), y + (int32_t)(i / 3u), c);
+    }
+}
+
 /* the lanes under the deck, from y; lh tall, 1 between */
 static void xe_lanes(int32_t y, int32_t lh)
 {
@@ -324,7 +346,10 @@ static void xe_lanes(int32_t y, int32_t lh)
         cv_rect(3, y, 234, lh, lane);
         if (sel)
             cv_rect(3, y, 2, lh, col);
-        cv_text_on(8, y + CAP_IN(S, lh), &AF_S, d, sel ? T_TEXT : col, lane);
+        if (UX_TEEN)                                  /* (TEEN: the tiny face) */
+            xe_tiny(8, y + (lh - 5) / 2, d, sel ? T_TEXT : col, 4);
+        else
+            cv_text_on(8, y + CAP_IN(S, lh), &AF_S, d, sel ? T_TEXT : col, lane);
         if (midi_mark(k))                             /* (MIDI IN playing it: a mark after the number) */
             cv_rect(15, y + lh / 2 - 1, 2, 2, T_THEME);
         if (!UX_TEEN) {                               /* (TEEN: no creatures, the name from 18) */
@@ -333,8 +358,11 @@ static void xe_lanes(int32_t y, int32_t lh)
             xe_alien(18, y + (lh - 12) / 2, art, muted ? T_DIM : T_TRK((k) % NTRK), strip, muted ? 2 : sing ? 1 : xe_blink(k) ? 3 : 0, 1);
         }
         sound_name(t, name);
-        cv_free_text(UX_TEEN ? 19 : 33, y + CAP_IN(S, lh), &AF_S, name[0] ? name : "--", muted ? T_DIM : sel ? T_TEXT : T_MID,
-                     lane, XE_TAPE_X0 - 4 - (UX_TEEN ? 19 : 33));
+        if (UX_TEEN)
+            xe_tiny(16, y + (lh - 5) / 2, name[0] ? name : "--", muted ? T_DIM : sel ? T_TEXT : T_MID, XE_TAPE_X0 - 4 - 16);
+        else
+            cv_free_text(33, y + CAP_IN(S, lh), &AF_S, name[0] ? name : "--", muted ? T_DIM : sel ? T_TEXT : T_MID, lane,
+                         XE_TAPE_X0 - 4 - 33);
         /* the tape: its strip, edged */
         cv_rect(XE_TAPE_X0, y + 1, XE_TAPE_X1 - XE_TAPE_X0, lh - 2, strip);
         cv_rect(XE_TAPE_X0, y + 1, XE_TAPE_X1 - XE_TAPE_X0, 1, ux_mix(strip, T_TEXT, 10));
@@ -364,7 +392,7 @@ static void xe_lanes(int32_t y, int32_t lh)
 /* HOME, THEME XENO: the deck over the lanes (ui_home.c graph_tracks) */
 static void xe_home(void)
 {
-    int32_t gh = (int32_t)graph_h(), lh = XE_LANE_H, lanes = (int32_t)NTRK * (XE_LANE_H + 1) - 1, D;
+    int32_t gh = (int32_t)graph_h(), lh = UX_TEEN ? XE_LANE_TEEN : XE_LANE_H, lanes = (int32_t)NTRK * (lh + 1) - 1, D;
     if (gh - lanes < 36) {                            /* (no room for the deck: the lanes alone, as tall as fit) */
         lh = (gh - ((int32_t)NTRK - 1)) / (int32_t)NTRK;
         cv_rect(0, 0, 240, gh, T_BG);
