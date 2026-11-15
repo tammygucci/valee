@@ -1048,8 +1048,8 @@ int main(int argc, char **argv)
         }
     add(J_DRUMS, "drums/drum_gm_kit");
     for (i = 0; i < DV_NKIT; i++) {                 /* the model kits (KIT 80 10 66 55 77) */
-        snprintf(name, sizeof name, "drums/kit_%s", N_DRUM_KIT[DK_80 + i]);
-        add(J_DRUMS, name)->arg = (uint8_t)(DK_80 + i);
+        snprintf(name, sizeof name, "drums/kit_%s", N_DRUM_KIT[i < 8u ? DK_80 + i : DK_DEAD]);
+        add(J_DRUMS, name)->arg = (uint8_t)(i < 8u ? DK_80 + i : DK_DEAD);
     }
     for (i = 0; i < 3u; i++)
         for (k0 = 0; k0 < 4u && eng_ok(MODE_E[i][0]); k0++) {
@@ -1120,14 +1120,14 @@ int main(int argc, char **argv)
         }
     for (i = 0; i < DV_NKIT; i++) {                 /* DRUM's model kits: the 8 lanes, as its preset above */
         job_t *j;
-        snprintf(name, sizeof name, "cpu/DRUM/kit_%s", N_DRUM_KIT[DK_80 + i]);
+        snprintf(name, sizeof name, "cpu/DRUM/kit_%s", N_DRUM_KIT[i < 8u ? DK_80 + i : DK_DEAD]);
         j = add(J_CPU, name);
         memset(cpu_parts[ncpu], 0, sizeof cpu_parts[ncpu]);
         cpu_parts[ncpu][0][0] = ENGI_DRUM, cpu_parts[ncpu][0][1] = 0, cpu_parts[ncpu][0][2] = 8;
         j->parts = (const uint8_t (*)[3])cpu_parts[ncpu++];
         j->e = ENGI_DRUM;
         j->pi = 0;
-        j->arg = (uint8_t)(DK_80 + i);
+        j->arg = (uint8_t)(i < 8u ? DK_80 + i : DK_DEAD);
     }
     {   /* mixes: idle (subtracted from the presets' counts), idle + drums (part 4 DRUM; SAMPLE PERC until 1.0.2), FM (DIGITAL with
          * FELUCCA_FM4, else FM6) + PHASE + VOICE asking 8 + 8 + 4 + the drums (the budget keeps 8; FM6 plays 6) */
