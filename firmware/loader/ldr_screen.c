@@ -4,7 +4,7 @@
  * and what it waits for, then WRITING and a bar while the app area is written. Drawn with the loader's own 5 x 7
  * letters (the app area may be half written: never read), before USB starts (USB is polled: the panel's ~0.3 s init
  * would leave the host's enumeration unanswered) */
-static const char LDR_CH[] = "ABCDEFGHIKLMNOPRSTUW";            /* the letters the screens use; others: a space */
+static const char LDR_CH[] = "ABCDEFGHIKLMNOPRSTUWV\xC9";            /* the letters the screens use; others: a space */
 static const uint8_t LDR_FONT[sizeof LDR_CH - 1u][7] = {         /* rows, bit 4 the left dot */
     {0x0E, 0x11, 0x11, 0x1F, 0x11, 0x11, 0x11}, {0x1E, 0x11, 0x11, 0x1E, 0x11, 0x11, 0x1E},   /* A B */
     {0x0E, 0x11, 0x10, 0x10, 0x10, 0x11, 0x0E}, {0x1E, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1E},   /* C D */
@@ -16,6 +16,7 @@ static const uint8_t LDR_FONT[sizeof LDR_CH - 1u][7] = {         /* rows, bit 4 
     {0x1E, 0x11, 0x11, 0x1E, 0x10, 0x10, 0x10}, {0x1E, 0x11, 0x11, 0x1E, 0x14, 0x12, 0x11},   /* P R */
     {0x0F, 0x10, 0x10, 0x0E, 0x01, 0x01, 0x1E}, {0x1F, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04},   /* S T */
     {0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x0E}, {0x11, 0x11, 0x11, 0x15, 0x15, 0x15, 0x0A},   /* U W */
+    {0x11, 0x11, 0x11, 0x11, 0x11, 0x0A, 0x04}, {0x1F, 0x10, 0x10, 0x1E, 0x10, 0x10, 0x1F},   /* V, E acute ((Vallée): the name; its accent above) */
 };
 #define LDR_INK 0xFFFFu
 #define LDR_TITLE 0x2616u                /* teal, #22C3B4: calm (the orange read as an error) */
@@ -49,20 +50,24 @@ static void ldr_text(uint32_t y, uint32_t s, uint16_t c, const char *t)   /* cen
                 if (b > i)
                     lcd_fill(x + i * s, y + r * s, (b - i) * s, s, c);
             }
+        if (*t == '\xC9' && y >= 3u * s) {             /* ((Vallée) the acute: two dots up to the right, above it) */
+            lcd_fill(x + 3u * s, y - 2u * s, s, s, c);
+            lcd_fill(x + 4u * s, y - 3u * s, s, s, c);
+        }
     }
 }
 static void ldr_lines(const char *a, const char *b, const char *c)   /* the three lines under the title */
 {
-    lcd_fill(0, 106, 240, 66, 0);
-    ldr_text(110, 2, LDR_INK, a);
-    ldr_text(130, 2, LDR_INK, b);
-    ldr_text(150, 2, LDR_INK, c);
+    lcd_fill(0, 100, 240, 76, 0);
+    ldr_text(108, 2, LDR_INK, a);                   /* ((Vallée) 24 px apart: room for the É's accent */
+    ldr_text(132, 2, LDR_INK, b);
+    ldr_text(156, 2, LDR_INK, c);
 }
 static void ldr_screen(void)
 {
     lcd_init();                                     /* (the panel cleared, on) */
     ldr_text(70, 3, LDR_TITLE, "UPDATE MODE");
-    ldr_lines("WAITING FOR THE", "SKIFF INSTALLER", "KEEP USB CONNECTED");   /* (an install on its way, or one cut
+    ldr_lines("WAITING FOR THE", "VALL\xC9" "E INSTALLER", "KEEP USB CONNECTED");   /* (an install on its way, or one cut
                                                                               * off: words for both, no alarm) */
     lcd_sync();
 }
@@ -85,7 +90,7 @@ static void ldr_bar(uint32_t done, uint32_t total)
 }
 static void ldr_failed(void)                        /* a session that wrote nothing or stopped: the way out */
 {
-    ldr_lines("UPDATE FAILED", "INSTALL AGAIN WITH", "THE SKIFF INSTALLER");
+    ldr_lines("UPDATE FAILED", "INSTALL AGAIN WITH", "THE VALL\xC9" "E INSTALLER");
     lcd_fill(LDR_BAR_X, LDR_BAR_Y, LDR_BAR_W, 8, 0);
     lcd_sync();
     ldr_writing = 0;

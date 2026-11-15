@@ -505,7 +505,7 @@
     </div>
   </section>
 
-  <footer>Skiff by illuminus5 (<a href="https://github.com/illuminus5/skiff" target="_blank" rel="noopener">github.com/illuminus5/skiff</a>), built on Felucca by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>. GPL-3.0.<br>
+  <footer>Vallée by tammygucci (<a href="https://github.com/tammygucci/valee" target="_blank" rel="noopener">github.com/tammygucci/valee</a>), a fork of Skiff by illuminus5 (<a href="https://github.com/illuminus5/skiff" target="_blank" rel="noopener">github.com/illuminus5/skiff</a>), built on Felucca by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>. GPL-3.0.<br>
     <span data-t="foot"></span> M-VAVE and FM-1 are trademarks of their respective owners.<br>
     <a href="FUKIAI-LICENSE.txt" data-t="iconsCredit"></a></footer>
 </main>
@@ -3567,7 +3567,7 @@ const TEXT = {
     sgEmpty: "空です", sgAutoFull: "完了（オートメーションなし: AUTOMATION FULL）", sgStopClear: "停止してからクリアしてください",
     sgApc: "APC mini mk2 接続中: 1〜6列は T1〜T6 のエントリー、7・8列はシーン、下のボタン1〜6は MUTE、右上の2つはページ（A–H / I–P）、右下は PLAY、フェーダー1〜6は LEVEL",
     sgFull: "パターンがいっぱいです: プールで未使用のものをクリアしてください", sgFailed: "本体で失敗しました", sgNothing: "クリアするものがありません", sgInUse: "使用中です",
-    sgNoFw: "このファームウェアにはソングのコマンドがありません。Skiff を更新してください。",
+    sgNoFw: "このファームウェアにはソングのコマンドがありません。Vallée を更新してください。",
     confirmSave: "スロット {n} に上書き保存しますか？", confirmLoad: "スロット {n} を読み込みますか？ すべてのトラックの音色とシーケンスが置き換わります（元に戻せません）。",
     confirmLoadFile: "「{name}」を読み込みますか？ 今の音色は置き換わります（本体の SAVE 長押しで元に戻せます）。",
     confirmLoadFileSteps: "「{name}」を読み込みますか？ 今の音色とシーケンス（64 ステップ）が置き換わります。",
@@ -3615,7 +3615,7 @@ const TEXT = {
     tabScreen: "画面", scrTitle: "本体の画面",
     scrHelp: "スタートを押すとバックアップを取ってから FM-1 を再起動し、同じ瞬間から本体の画面をここに映します。曲はそのまま残ります。画面をタップすると全画面になります。",
     scrStart: "スタート", scrStop: "ストップ", scrNeedDev: "先に FM-1 を接続してください。",
-    scrNeedFw: "このファームウェアは画面を送れません。画面タブには FM-1 の Skiff 2.6 以降が必要です（SMK-37 はまだ対応していません）。",
+    scrNeedFw: "このファームウェアは画面を送れません。画面タブには FM-1 の Vallée が必要です（SMK-37 はまだ対応していません）。",
     scrBackup: "FM-1 のバックアップ中… ", scrRestart: "FM-1 を再起動しています。触らないでください…",
     scrWait: "FM-1 を待っています…", scrFollow: "FM-1 に合わせて表示しています（ずれなし）。フレームの {pct} % が完全に一致。",
     scrOut: "FM-1 とずれました（チェック {n} / {m}）。スタートでやり直してください。",
@@ -3721,7 +3721,7 @@ const TEXT = {
     sgEmpty: "Empty", sgAutoFull: "Done, without its automation (AUTOMATION FULL)", sgStopClear: "Stop to clear",
     sgApc: "APC mini mk2 connected: columns 1–6 T1–T6's entries, columns 7–8 the scenes, bottom buttons 1–6 MUTE, the top two side buttons the page (A–H, I–P), the bottom one PLAY, faders 1–6 LEVEL",
     sgFull: "Patterns full: clear unused ones in the pool", sgFailed: "Failed on the device", sgNothing: "Nothing to clear", sgInUse: "In use",
-    sgNoFw: "This firmware has no song commands: update Skiff.",
+    sgNoFw: "This firmware has no song commands: update Vallée.",
     confirmSave: "Overwrite slot {n}?", confirmLoad: "Load slot {n}? The sounds and sequences of every track are replaced (no undo).",
     confirmLoadFile: "Load \"{name}\"? It replaces the current sound (hold SAVE on the device to undo).",
     confirmLoadFileSteps: "Load \"{name}\"? It replaces the current sound and the sequence (64 steps).",
@@ -3769,7 +3769,7 @@ const TEXT = {
     tabScreen: "Screen", scrTitle: "The FM-1's screen",
     scrHelp: "Start takes a backup of your FM-1, then restarts it, so that this copy starts at the same moment and shows its screen here as it changes. Your music is kept. Tap the screen for full screen.",
     scrStart: "Start", scrStop: "Stop", scrNeedDev: "Connect your FM-1 first.",
-    scrNeedFw: "This firmware can't send its screen. The Screen tab needs Skiff 2.6 or later on an FM-1 (the SMK-37 can't send it yet).",
+    scrNeedFw: "This firmware can't send its screen. The Screen tab needs Vallée on an FM-1 (the SMK-37 can't send it yet).",
     scrBackup: "Taking a backup of your FM-1… ", scrRestart: "Restarting your FM-1. Please don't touch it…",
     scrWait: "Waiting for your FM-1…", scrFollow: "Following your FM-1, in step. {pct} % of frames exactly alike.",
     scrOut: "This copy is out of step with your FM-1 ({n} of {m} checks). Press Start to begin again.",
@@ -4855,7 +4855,7 @@ $("backup-export").addEventListener("click", () => op(async () => {
   assertSession(d);
   const file = await captureBackup((r, o) => sessionRequest(d, r, o), d.info.version, backupProgress);
   assertSession(d);
-  download(`Skiff-backup-${new Date().toISOString().slice(0, 10)}.json`, file);
+  download(`Vallee-backup-${new Date().toISOString().slice(0, 10)}.json`, file);
   sayK("backupDone");
 }));
 $("backup-import").addEventListener("click", () => { if (dev?.info?.backupCaps & 2) $("backup-file").click(); });

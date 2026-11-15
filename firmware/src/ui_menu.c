@@ -7,14 +7,14 @@
 /* ------------------------------------------------------------ menu --- */
 /* (the rows, their values and names, usb_serial_apply: menu_items.c) */
 
-/* https://github.com/illuminus5/skiff, QR version 3, correction M, mask 3 (tools/gen_qr.py).
+/* https://github.com/tammygucci/valee, QR version 3, correction M, mask 2 (tools/gen_qr.py).
  * One row per word, leftmost module in bit 0; the constant matrix needs no encoder or RAM. */
 static const uint32_t ABOUT_QR[29] = {
-    0x1FD99B7Fu, 0x1056C141u, 0x175CFA5Du, 0x174A195Du, 0x17482A5Du, 0x104D4641u,
-    0x1FD5557Fu, 0x0007F100u, 0x1A4778EDu, 0x11DF1002u, 0x0CA25A6Bu, 0x116CE8ABu,
-    0x060A9F7Eu, 0x1C49BA8Du, 0x1C5E534Eu, 0x09FCAAB0u, 0x0B1C8B47u, 0x0E84B330u,
-    0x05D19951u, 0x05C68D8Cu, 0x07F7BD7Au, 0x1F117700u, 0x0B593D7Fu, 0x0B158341u,
-    0x0DF7C45Du, 0x13AFDB5Du, 0x14940F5Du, 0x0AB12C41u, 0x0878B97Fu,
+    0x1FDF987Fu, 0x10500C41u, 0x1751515Du, 0x174A135Du, 0x175AF15Du, 0x1055E941u,
+    0x1FD5557Fu, 0x0001AB00u, 0x07C2CE7Du, 0x11DD063Au, 0x010393FAu, 0x0A11D4B5u,
+    0x06129FF0u, 0x11F978A6u, 0x0730FED4u, 0x09F9BD15u, 0x06AA51E0u, 0x15ED0AB1u,
+    0x05D79759u, 0x0870DDB5u, 0x1DFA82C5u, 0x1F156F00u, 0x075EF47Fu, 0x11193141u,
+    0x0DF3D75Du, 0x1E1F1D5Du, 0x0FFDAB5Du, 0x0AB13A41u, 0x05CE617Fu,
 };
 
 static void draw_about_qr(int32_t x, int32_t y)
@@ -132,7 +132,7 @@ static int32_t menu_document(int32_t y, int draw)
     uint32_t i;
     if (draw) {
         cv_text(6, y + 2, &AF_L, "VALL\xC9" "E", T_THEME);   /* ((Vallée) the name; a fork of Skiff) */
-        cv_text(6, y + 38, &AF_S, "Skiff groovebox, Felucca", T_TEXT);
+        cv_text(6, y + 38, &AF_S, "a fork of Skiff, Felucca", T_TEXT);
         cv_text(6, y + 58, &AF_M, FELUCCA_VERSION, T_THEME);
         cv_text_r(232, y + 61, &AF_S, __DATE__, T_MID, T_BG);
         {   /* (Skiff) the core clock now, from the PLL (hal/fm1_clk.h; MENU > SYSTEM > CPU CLOCK) */
@@ -148,8 +148,8 @@ static int32_t menu_document(int32_t y, int draw)
             cv_text_r(232, y + 100, &AF_S, boot_code, T_MID, T_BG);
         cv_text(6, y + 118, &AF_S, "Leo Kuroshita, H\xFCgelton", T_TEXT);
         cv_text(6, y + 138, &AF_S, "GPL-3.0-only", T_TEXT);
-        cv_text(6, y + 160, &AF_S, "github.com/illuminus5", T_MID);
-        cv_text(6, y + 178, &AF_S, "/skiff", T_MID);
+        cv_text(6, y + 160, &AF_S, "github.com/tammygucci", T_MID);
+        cv_text(6, y + 178, &AF_S, "/valee", T_MID);
         draw_about_qr(158, y + 122);
     }
     y = menu_text("CREDITS", y + 216, T_THEME, draw) + 8;
@@ -167,7 +167,8 @@ static int32_t menu_document(int32_t y, int draw)
     y = menu_text("Fonts and icons: their licences travel with the source and the release files.", y, T_TEXT, draw);
     y = menu_text("NO WARRANTY", y, T_TEXT, draw);
     y = menu_text("Full notices in source:", y + 8, T_TEXT, draw);
-    y = menu_text("github.com/illuminus5/skiff", y, T_MID, draw);
+    y = menu_text("github.com/tammygucci/valee", y, T_MID, draw);
+    y = menu_text("Skiff: github.com/illuminus5/skiff", y, T_MID, draw);
     return y + 4;
 }
 static int32_t menu_scroll_max(void)

@@ -90,7 +90,7 @@ int main(int argc, char **argv)
     ldr_screen();
     ppm(dir, "ldr_update_mode");
     check("UPDATE MODE: the title in teal, three lines in white, nothing else lit",
-          count(0, 70, 240, 91, LDR_TITLE) > 300u && count(0, 110, 240, 164, LDR_INK) > 900u &&
+          count(0, 70, 240, 91, LDR_TITLE) > 300u && count(0, 100, 240, 172, LDR_INK) > 900u &&
           count(0, 0, 240, 240, 0) + count(0, 0, 240, 240, LDR_TITLE) + count(0, 0, 240, 240, LDR_INK) == 240u * 240u);
     ldr_bar(total / 2u, total);
     ppm(dir, "ldr_writing");
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
     ppm(dir, "ldr_failed");
     check("UPDATE FAILED: the bar gone, the way out again",
           count(LDR_BAR_X, LDR_BAR_Y, LDR_BAR_X + 200u, LDR_BAR_Y + 8u, 0) == 1600u &&
-          count(0, 110, 240, 164, LDR_INK) > 900u);
+          count(0, 100, 240, 172, LDR_INK) > 900u);
     check("every letter of the texts in the loader's font, nothing outside the panel", !ldr_missing && !outside);
     printf("%s\n", bad ? "LDR SCREEN TEST FAILED" : "ldr_screen test passed");
     return bad != 0;
