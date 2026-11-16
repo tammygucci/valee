@@ -2590,6 +2590,8 @@ static void ui_input(void)
     } else if (ui.ml.on && oct) {                       /* ((1.3) MIDI LEARN: OCT- clears the picked CC, OCT+ done) */
         ml_oct(oct);
     }
+    gen_rr_poll();                                      /* ((Vallée) THE SPELL: a re-rolled bar, once it has gone by */
+    wl_poll();                                          /* .. REC ARRANGE */
     song.grid = (uint8_t)keys_mode();                 /* (seq.c: the keys are the grid's) */
 #if FELUCCA_SLICE
     if (notes && slice_page_on())                       /* SLICES: a key picks the slice it plays */

@@ -10383,15 +10383,124 @@ static int test_world(void)
         bad += check("(Vallée) THE SPELL's keys: G playing: the next VERSE comes in at the bar, all tracks together", ok);
         wl_keys(1u << 6);                               /* (B: the BRIDGE ..) */
         ok = wl.cue == 6u;
-        wl_keys(1u << 8);                               /* (.. a black key: dropped) */
+        wl_keys(1u << 13);                              /* (.. F#, a black key: dropped) */
         for (j = 0, w = 0; j < NTRK; j++)
             w += launch_q[j].armed && !launch_q[j].adv;
         ok &= !wl.cue && !w;
         wl_keys(1u << 21);                              /* (D: no sixth music in this song) */
-        bad += check("(Vallée) THE SPELL's keys: a black key drops the jump; a letter with no part: nothing", ok && !wl.cue);
+        bad += check("(Vallée) THE SPELL's keys: F# drops the jump; a letter with no part: nothing", ok && !wl.cue);
         stop_transport();
         frames(5);
         (void)n;
+    }
+    {   /* (Vallée) the black keys on a GEN SONG: G# the next part, with a transition (SHIFT: none); F# drops both; A# a
+         * new take of the part playing (all but the bar playing at once, that one once it has gone by), C# only the
+         * selected track's; D# REC ARRANGE (the parts as played become the lists; SHIFT + D#: as before); a song not
+         * GEN's: no re-roll */
+        uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n, j, i, b, d0, d1, cur, a0;
+        uint8_t grp[WL_NSEC], ent[WL_NSEC];
+        static step_t s0[NTRK][NSTEP];
+        static uint8_t lsave[sizeof lists];
+        int32_t pi;
+        stop_transport();
+        frames(5);
+        gen.made = 0; gen.nseq = 0; gen.song = 0;
+        gen.v[GK_PART] = GP_SONG;
+        ok = gen_song() == 0;
+        gen.v[GK_PART] = GP_LOOP;
+        memset(&wl, 0, sizeof wl);
+        seq_start();
+        world_play(40u);
+        n = wl_song(at0, len, grp, ent, &pos, &total);
+        for (i = 0, cur = 0; i < n; i++)
+            if (pos >= at0[i] && pos < at0[i] + len[i])
+                cur = i;
+        wl_keys(1u << 3);                               /* (G#3: the next part) */
+        a0 = perf_auto_left;
+        ok &= wl.cue == cur + 2u && a0 > 0u && a0 <= perf_auto_len && perf_auto_len <= 192u * (beat_samples() / 48u);
+        world_play(6u);
+        ok &= perf_auto_left < a0 && pf.hc > 0;
+        bad += check("(Vallée) THE SPELL: G# the next part at the bar, a rising transition on its way", ok);
+        wl_keys(1u << 13);                              /* (F#4: dropped, the transition too) */
+        ok = !wl.cue && perf_auto_left == 0u;
+        ui.home_t0 = 1u;                                /* (SHIFT held: no transition) */
+        wl_keys(1u << 15);                              /* (G#4) */
+        ok &= wl.cue != 0u && perf_auto_left == 0u;
+        ui.home_t0 = 0u;
+        world_play(200u);
+        ok &= !wl.cue && pf.hc == 0;
+        bad += check("(Vallée) THE SPELL: F# drops the jump and its transition; SHIFT + G#: the jump, no transition", ok);
+        stop_transport();
+        frames(3);
+        pi = gen_part_now();
+        seq_start();
+        world_play(20u);
+        for (j = 0; j < NTRK; j++)
+            memcpy(s0[j], trk[j].step, sizeof s0[j]);
+        b = (trk[0].seq_idx % NSTEP) / 16u;
+        pi = gen_part_now();
+        wl_keys(1u << 5);                               /* (A#3: a new take of the part playing) */
+        for (j = 0, d0 = 0, d1 = 0; j < NTRK; j++)
+            for (i = 0; i < NSTEP; i++) {
+                int same = !memcmp(&s0[j][i], &trk[j].step[i], sizeof(step_t));
+                if (j == 0u && i / 16u == b)
+                    d1 += !same;
+                else
+                    d0 += !same;
+            }
+        ok = pi >= 0 && gen_take((uint32_t)pi) == 2u && d0 > 0u && d1 == 0u && gen_rr[0] == b + 1u;
+        bad += check("(Vallée) THE SPELL: A# a new take of the part playing, every bar but the one playing at once", ok);
+        stop_transport();
+        frame();
+        frame();
+        (void)gen_part_steps((uint32_t)pi, 0);
+        ok = !gen_rr[0] && !memcmp(trk[0].step, gen_w, sizeof trk[0].step);
+        bad += check("(Vallée) THE SPELL: .. the bar that was playing written once it has gone by (the whole take)", ok);
+        for (j = 0; j < NTRK; j++)
+            memcpy(s0[j], trk[j].step, sizeof s0[j]);
+        song.sel = 2;
+        wl_keys(1u << 8);                               /* (C#4: only the selected track's, T3) */
+        for (j = 0, d0 = 0, d1 = 0; j < NTRK; j++)
+            if (memcmp(s0[j], trk[j].step, sizeof s0[j])) {
+                if (j == 2u) d1++;
+                else d0++;
+            }
+        ok = d1 == 1u && d0 == 0u && gen_take((uint32_t)pi) == 3u;
+        song.sel = 0;
+        bad += check("(Vallée) THE SPELL: C# a new take of the selected track's part only", ok);
+        memcpy(lsave, &lists, sizeof lists);
+        wl_keys(1u << 10);                              /* (D#4: REC ARRANGE on) */
+        ok = wl.rec;
+        seq_start();
+        world_play(20u);
+        ok &= wl.rec_n == 1u;
+        wl_keys(1u << 0);                               /* (F3: the INTRO, at the next bar) */
+        world_play(170u);
+        wl_keys(1u << 6);                               /* (B3: the BRIDGE) */
+        world_play(170u);
+        ok &= wl.rec_n == 3u && wl.rec_e[1] == 0u && wl.rec_e[2] == 5u;
+        wl_keys(1u << 10);                              /* (D#4: done: the lists so, from the top) */
+        ok &= !wl.rec && !song.playing && wl.lwas_ok && lists.song == SONG_ONCE;
+        for (j = 0; j < NTRK; j++)
+            ok &= lists.ent[j][1][0] == lsave[offsetof(typeof(lists), ent) + (j * NENT + 0u) * 2u] &&
+                  lists.ent[j][2][0] == lsave[offsetof(typeof(lists), ent) + (j * NENT + 5u) * 2u] &&
+                  lists.ent[j][3][0] == 0u && lists.cur[j] == 0u;
+        n = wl_song(at0, len, grp, ent, &pos, &total);
+        ok &= n == 3u && gen_part_now() >= 0;
+        bad += check("(Vallée) THE SPELL: D# REC ARRANGE: the parts as played (3) become the lists, SONG ONCE, GEN's still", ok);
+        ui.home_t0 = 1u;
+        wl_keys(1u << 10);                              /* (SHIFT + D#: as before) */
+        ui.home_t0 = 0u;
+        ok = !memcmp(&lists, lsave, offsetof(typeof(lists), cur)) && lists.song == ((typeof(lists) *)lsave)->song &&
+             !wl.lwas_ok;                               /* (each track's entry now: the song's start) */
+        bad += check("(Vallée) THE SPELL: SHIFT + D#: the arrangement as before it", ok);
+        lists.ent[0][0][1] ^= 1u;                       /* (the lists edited: not GEN's song any more) */
+        ok = gen_part_now() < 0 && gen_reroll(0, 0x3Fu) == 1;
+        lists.ent[0][0][1] ^= 1u;
+        ok &= gen_part_now() >= 0;
+        bad += check("(Vallée) THE SPELL: the lists edited: no re-roll (GEN's song only); as written again: yes", ok);
+        stop_transport();
+        frames(3);
     }
     press(B_HOME);
     frame();

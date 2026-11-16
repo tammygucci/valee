@@ -70,13 +70,16 @@ static uint32_t g_next(grng_t *r)
 }
 static uint32_t g_n(grng_t *r, uint32_t n) { return n ? g_next(r) % n : 0u; }
 static int g_pct(grng_t *r, int32_t p) { return (int32_t)g_n(r, 100) < p; }
-/* a stream of its own for each part of the music: the seed, the style and what it is for (id); part: the PART's own */
+/* a stream of its own for each part of the music: the seed, the style and what it is for (id); part: the PART's own;
+ * ((Vallée) g_vary: a part's take, THE SPELL's re-roll (gen_reroll): 0 the first, as before; only the parts' writers
+ * see it, not the plan (key, tempo, chords) nor the sounds) */
+static uint8_t g_vary;
 static grng_t g_stream(uint32_t id, uint32_t part)
 {
     grng_t r;
     uint32_t i;
     r.s = (uint32_t)gen.seed * 2654435761u ^ (uint32_t)gen.v[GK_STYLE] * 0x9E3779B9u ^ id * 0x85EBCA6Bu ^
-          part * 0xC2B2AE35u;
+          part * 0xC2B2AE35u ^ (uint32_t)g_vary * 0x27D4EB2Fu;
     for (i = 0; i < 4u; i++)
         g_next(&r);
     return r;
@@ -1118,6 +1121,47 @@ static uint32_t gen_amt(uint32_t role)
     return gen.v[K[role]] & 3u;
 }
 
+/* (Vallée) role's steps for part (GEN's knobs as they are, plan p) into w: their length (gen_write; THE SPELL's
+ * re-roll, gen_part_steps) */
+static step_t gen_w[NSTEP];                             /* (.bss: the pool is full) */
+static uint32_t gen_role_steps(uint32_t role, uint32_t part, const gplan_t *p, step_t *w)
+{
+    const gstyle_t *s = g_sty();
+    uint32_t sty = gen.v[GK_STYLE] % GS_N, amt = gen_amt(role), len = 64;
+    int32_t energy = gen.v[GK_ENERGY] * (part == GP_CHORUS ? 120 : part == GP_VERSE || part == GP_OUTRO ? 85 :
+                                         part == GP_INTRO ? 60 : 100) / 100;
+    grng_t r = g_stream('D' + role * 7u, role == GR_LEAD ? 0u : part);
+    w_clear(w, NSTEP);
+    switch (role) {
+    case GR_BASS: g_bass(w, p, &r, amt, part); break;
+    case GR_KEYS: g_keys(w, p, &r, amt, part); break;
+    case GR_LEAD:
+        if (sty == GS_ENO)
+            len = g_eno_loop(w, p, &r, 53, 2u + amt, s->lead_lo);
+        else
+            g_lead(w, p, amt, part);
+        break;
+    case GR_DRUMS:
+        if (sty != GS_ENO || energy > 50)
+            g_drums(w, &s->drum[part == GP_CHORUS || (part == GP_LOOP && energy > 70) || amt == 3u],
+                    &r, energy, part != GP_INTRO && part != GP_OUTRO && amt > 1u, 64, part == GP_INTRO);
+        break;
+    case GR_COLOR:
+        if (sty == GS_ENO)
+            len = g_eno_loop(w, p, &r, 37, 2u + amt, 72);
+        else
+            g_color(w, p, &r, amt, part);
+        break;
+    default:                                            /* PERC: a second kit; HEAD's an odd length */
+        if (sty == GS_HEAD)
+            len = 12u + 2u * g_n(&r, 2);
+        if (amt > 1u || part == GP_CHORUS)
+            g_drums(w, s->perc, &r, energy, 0, len, part == GP_INTRO);
+        break;
+    }
+    return len;
+}
+
 /* write the piece into the tracks */
 static void gen_write(void)
 {
@@ -1127,12 +1171,10 @@ static void gen_write(void)
             if (gen.v[k] > GEN_MAX[k])
                 gen.v[k] = GEN_MAX[k];
     }
-    static step_t w[NSTEP];                             /* (.bss: the pool is full) */
+    step_t *w = gen_w;
     const gstyle_t *s = g_sty();
     gplan_t p;
     uint32_t role, part = gen.v[GK_PART] % GP_N, sty = gen.v[GK_STYLE] % GS_N, keep = !gen_copies_top(), i;
-    int32_t energy = gen.v[GK_ENERGY] * (part == GP_CHORUS ? 120 : part == GP_VERSE || part == GP_OUTRO ? 85 :
-                                         part == GP_INTRO ? 60 : 100) / 100;
     gen_plan(&p);
     if (keep) {                                         /* a fresh GEN: the copies, the globals as they were */
         gen.nseq = 0;
@@ -1142,8 +1184,8 @@ static void gen_write(void)
     undo_depth++;                                       /* (the sound loads below take no copies of their own) */
     for (role = 0; role < GR_NROLE; role++) {
         track_t *t = &trk[role];
-        grng_t r = g_stream('D' + role * 7u, role == GR_LEAD ? 0u : part), rs = g_stream('S' + role, 0);
-        uint32_t amt = gen_amt(role), len = 64, j, have;
+        grng_t rs = g_stream('S' + role, 0);
+        uint32_t len, j, have;
         if (!gen_role_on(role))
             continue;
         for (have = 0, j = 0; j < gen.nseq; j++)       /* (a copy of this track already: OCT+ again) */
@@ -1157,34 +1199,7 @@ static void gen_write(void)
             g_sound(t, role, &rs);
             g_mix(t, role);
         }
-        w_clear(w, NSTEP);
-        switch (role) {
-        case GR_BASS: g_bass(w, &p, &r, amt, part); break;
-        case GR_KEYS: g_keys(w, &p, &r, amt, part); break;
-        case GR_LEAD:
-            if (sty == GS_ENO)
-                len = g_eno_loop(w, &p, &r, 53, 2u + amt, s->lead_lo);
-            else
-                g_lead(w, &p, amt, part);
-            break;
-        case GR_DRUMS:
-            if (sty != GS_ENO || energy > 50)
-                g_drums(w, &s->drum[part == GP_CHORUS || (part == GP_LOOP && energy > 70) || amt == 3u],
-                        &r, energy, part != GP_INTRO && part != GP_OUTRO && amt > 1u, 64, part == GP_INTRO);
-            break;
-        case GR_COLOR:
-            if (sty == GS_ENO)
-                len = g_eno_loop(w, &p, &r, 37, 2u + amt, 72);
-            else
-                g_color(w, &p, &r, amt, part);
-            break;
-        default:                                        /* PERC: a second kit; HEAD's an odd length */
-            if (sty == GS_HEAD)
-                len = 12u + 2u * g_n(&r, 2);
-            if (amt > 1u || part == GP_CHORUS)
-                g_drums(w, s->perc, &r, energy, 0, len, part == GP_INTRO);
-            break;
-        }
+        len = gen_role_steps(role, part, &p, w);
         fm1_irq_off();                                  /* the audio ISR sees the old pattern or the new one */
         memcpy(t->step, w, sizeof t->step);
         t->p[P_SLEN] = (int16_t)len;
@@ -1232,6 +1247,25 @@ static void gen_unkeep(uint32_t id);
 static const uint8_t GEN_ARR[8] = {GP_INTRO, GP_VERSE, GP_CHORUS, GP_VERSE, GP_CHORUS, GP_BRIDGE, GP_CHORUS, GP_OUTRO};
 static uint8_t gen_sid[GR_NROLE][GEN_NPART];            /* each part's pattern a track (.bss: the pool is full) */
 static uint8_t gen_lwas[sizeof lists];                  /* the lists as they were */
+/* ((Vallée) THE SPELL's re-roll: the knobs and seed the song was written with, each part's take (0 the first), the
+ * lists' fingerprint then (another song since, or the lists edited: not GEN's song any more), each track's bar still
+ * to write (+ 1, gen_rr_poll) and its part) */
+static uint8_t gen_sv[GK_N], gen_pvar[GEN_NPART], gen_rr[NTRK], gen_rr_pi[NTRK];
+static uint16_t gen_sseed;
+static uint32_t gen_lsig;
+static uint32_t gen_lists_sig(void)
+{
+    uint32_t i, h = 0x811C9DC5u;
+    const uint8_t *b = &lists.ent[0][0][0];
+    for (i = 0; i < sizeof lists.ent; i++)
+        h = (h ^ b[i]) * 16777619u;
+    return h;
+}
+static void gen_lists_signed(void)                      /* (THE SPELL's REC ARRANGE: the same patterns, a new order) */
+{
+    if (gen.song)
+        gen_lsig = gen_lists_sig();
+}
 static void gen_pid_back(void)                          /* each track's pattern id as GEN's copy of it has it */
 {
     uint32_t j;
@@ -1244,6 +1278,7 @@ static void gen_pid_back(void)                          /* each track's pattern 
 static void gen_song_drop(void)                         /* the song's lists and patterns gone (its copies stay) */
 {
     uint32_t k, p;
+    memset(gen_rr, 0, sizeof gen_rr);
     fm1_irq_off();
     memcpy(&lists, gen_lwas, sizeof lists);
     fm1_irq_on();
@@ -1303,6 +1338,10 @@ static int gen_song(void)                               /* 0 written; 1 not (sai
         return 1;
     }
     gen.song = 1;                                       /* (from here OCT- gives back what was made) */
+    memcpy(gen_sv, gen.v, sizeof gen_sv);               /* (THE SPELL's re-roll: what it was written with) */
+    gen_sseed = gen.seed;
+    memset(gen_pvar, 0, sizeof gen_pvar);
+    memset(gen_rr, 0, sizeof gen_rr);
     for (p = 0; p < GEN_NPART; p++) {
         gen.v[GK_PART] = (uint8_t)(GP_INTRO + p);
         gen_write();
@@ -1331,11 +1370,119 @@ static int gen_song(void)                               /* 0 written; 1 not (sai
     }
     lists.song = SONG_ONCE;
     fm1_irq_on();
+    gen_lsig = gen_lists_sig();
     for (k = 0; k < GR_NROLE; k++)
         if (gen_role_on(k))
             (void)gen_load(k, gen_sid[k][0]);           /* (the tracks on the INTRO) */
     ui.force = 1;
     return 0;
+}
+
+/* ---- (Vallée) THE SPELL's re-roll: a part of GEN's song written anew while it plays (ui_world.c wl_keys). Only GEN's
+ * song as it was written (its patterns in the lists, the same lists); the plan stays (key, tempo, chords), so do the
+ * sounds; the parts' writers take the part's next take (g_vary). The tracks on that part now get it: every bar but
+ * the one playing at once, that one once it has gone by (gen_rr_poll), so it always comes in on a bar line ---- */
+static int gen_is_song(void) { return gen.song && gen_lists_sig() == gen_lsig; }
+/* the part (0 INTRO .. 4 OUTRO) GEN's song is on: the one most tracks' patterns are; -1 none */
+static int32_t gen_part_now(void)
+{
+    uint32_t pi, k, n, best = 0;
+    int32_t at = -1;
+    if (!gen_is_song())
+        return -1;
+    for (pi = 0; pi < GEN_NPART; pi++) {
+        for (n = 0, k = 0; k < GR_NROLE; k++)
+            n += gen_sid[k][pi] != GEN_NOID && trk_pid[k] == gen_sid[k][pi] + 1u;
+        if (n > best) {
+            best = n;
+            at = (int32_t)pi;
+        }
+    }
+    return at;
+}
+/* role's steps for part pi of the song, its take now, as written: into gen_w, their length */
+static uint32_t gen_part_steps(uint32_t pi, uint32_t role)
+{
+    uint8_t v0[GK_N];
+    uint16_t s0 = gen.seed;
+    gplan_t pl;
+    uint32_t len;
+    memcpy(v0, gen.v, sizeof v0);
+    memcpy(gen.v, gen_sv, sizeof gen.v);
+    gen.seed = gen_sseed;
+    gen.v[GK_PART] = (uint8_t)(GP_INTRO + pi % GEN_NPART);
+    gen_plan(&pl);
+    g_vary = gen_pvar[pi % GEN_NPART];
+    len = gen_role_steps(role, GP_INTRO + pi % GEN_NPART, &pl, gen_w);
+    g_vary = 0;
+    memcpy(gen.v, v0, sizeof gen.v);
+    gen.seed = s0;
+    return len;
+}
+/* gen_w into track role: all but its bar playing (16 steps; a pattern of another length, or stopped: all) */
+static void gen_live_put(uint32_t role, uint32_t len, uint32_t pi)
+{
+    track_t *t = &trk[role % NTRK];
+    uint32_t b = NSTEP, i;
+    if (song.playing && len == NSTEP && t->p[P_SLEN] == NSTEP)
+        b = (t->seq_idx % NSTEP) / 16u * 16u;
+    fm1_irq_off();                                      /* the audio ISR sees the old steps or the new ones */
+    for (i = 0; i < NSTEP; i++)
+        if (i < b || i >= b + 16u)
+            t->step[i] = gen_w[i];
+    t->p[P_SLEN] = (int16_t)len;
+    fm1_irq_on();
+    gen_rr[role % NTRK] = (uint8_t)(b < NSTEP ? b / 16u + 1u : 0u);
+    gen_rr_pi[role % NTRK] = (uint8_t)pi;
+    if (t == TSEL)
+        sync_reload = 1;
+}
+/* part pi written anew for the tracks in mask on it now: 0 done, 1 not GEN's song, 2 none of them on it */
+static int gen_reroll(uint32_t pi, uint32_t mask)
+{
+    uint32_t role, n = 0, len;
+    if (!gen_is_song() || pi >= GEN_NPART)
+        return 1;
+    gen_pvar[pi]++;
+    for (role = 0; role < GR_NROLE; role++) {
+        if (!((mask >> role) & 1u) || gen_sid[role][pi] == GEN_NOID || trk_pid[role] != gen_sid[role][pi] + 1u)
+            continue;
+        len = gen_part_steps(pi, role);
+        gen_live_put(role, len, pi);
+        n++;
+    }
+    if (!n) {
+        gen_pvar[pi]--;
+        return 2;
+    }
+    return 0;
+}
+static uint32_t gen_take(uint32_t pi) { return gen_pvar[pi % GEN_NPART] + 1u; }
+static const char *gen_part_name(uint32_t pi) { return GEN_PART[GP_INTRO + pi % GEN_NPART]; }
+/* each frame (ui_input): a re-rolled track's bar that was playing, written once it has gone by (the track on that
+ * part again: the song moved on before, it comes back to it) */
+static void gen_rr_poll(void)
+{
+    uint32_t role, b, pi;
+    for (role = 0; role < NTRK; role++) {
+        if (!gen_rr[role])
+            continue;
+        b = gen_rr[role] - 1u;
+        pi = gen_rr_pi[role];
+        if (!gen_is_song()) {
+            gen_rr[role] = 0;
+            continue;
+        }
+        if (trk_pid[role] != gen_sid[role][pi] + 1u || (song.playing && (trk[role].seq_idx % NSTEP) / 16u == b))
+            continue;
+        (void)gen_part_steps(pi, role);
+        fm1_irq_off();
+        memcpy(&trk[role].step[b * 16u], &gen_w[b * 16u], 16u * sizeof(step_t));
+        fm1_irq_on();
+        gen_rr[role] = 0;
+        if (&trk[role] == TSEL)
+            sync_reload = 1;
+    }
 }
 
 static void gen_oct(void)
@@ -1391,6 +1538,7 @@ static int gen_back(void)
                     gen_unkeep(gen_sid[k][p]);
         (void)gen_flush();
         gen.song = 0;
+        memset(gen_rr, 0, sizeof gen_rr);
     }
     gen.made = 0;
     gen.nseq = 0;

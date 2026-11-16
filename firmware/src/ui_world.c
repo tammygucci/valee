@@ -39,7 +39,18 @@ static struct {
     uint8_t allow;                                     /* how many may show by now: as far as the song is (whole at its end) */
     uint8_t got[NTRK];                                 /* each track's cells of it */
     uint8_t cue;                                       /* a part a key sent the song to, still to come in (+ 1; 0 none) */
+    uint8_t rec, rec_n, rec_cur, lwas_ok;              /* ((Vallée) REC ARRANGE: on, the parts taken, the last (+ 1), a */
+    uint8_t rec_e[NENT];                               /* way back; the entries in the order they were played */
 } wl;
+static uint8_t wl_lwas[sizeof lists];                  /* (REC ARRANGE: the lists as they were: SHIFT + D# puts them back) */
+/* ((Vallée) vgen.c, later in the build: GEN's song for THE SPELL's re-roll) */
+static int32_t gen_part_now(void);
+static int gen_reroll(uint32_t pi, uint32_t mask);
+static uint32_t gen_take(uint32_t pi);
+static void gen_lists_signed(void);
+static const char *gen_part_name(uint32_t pi);
+static int shift_held(void);                           /* (ui_input.c) */
+static void shift_mark(void);
 
 static uint32_t wl_h(uint32_t v) { return (v ^ (v >> 15)) * 2654435761u; }
 static int32_t wl_abs_i(int32_t v) { return v < 0 ? -v : v; }
@@ -170,7 +181,8 @@ static void wl_strip_at(int into)                  /* (into: the canvas as it is
         if (!w || !song.playing || wl.cue > n)
             wl.cue = 0;
     }
-    sig = (uint32_t)wl.cue * 7717u + (wl.cue ? (ui.frame / 6u) & 1u : 0u) * 3u + (pos * 228u / (total ? total : 1u)) * 31u + n * 977u + cur * 7u + (uint32_t)song.playing * 5u + total;
+    sig = (uint32_t)wl.rec * 131u + (uint32_t)wl.rec_n * 17u + (wl.rec ? (ui.frame / 15u) & 1u : 0u) * 5u +
+          (uint32_t)wl.cue * 7717u + (wl.cue ? (ui.frame / 6u) & 1u : 0u) * 3u + (pos * 228u / (total ? total : 1u)) * 31u + n * 977u + cur * 7u + (uint32_t)song.playing * 5u + total;
     for (i = 0; i < n; i++)
         sig = sig * 31u + at0[i] + grp[i] * 13u + ent[i];
     uint16_t bg0 = cv_bg;
@@ -197,11 +209,19 @@ static void wl_strip_at(int into)                  /* (into: the canvas as it is
         bars = 1;
     }
     cv_text_on(8, 3, &AF_S, nm, n ? WL_SEC[grp[cur] % 8u] : T_THEME, T_SURF);
-    str_cpy(b, "BAR ", sizeof b);
-    fmt_int(b + 4, (int32_t)bar);
-    str_cpy(b + str_len(b), " / ", sizeof b - str_len(b));
-    fmt_int(b + str_len(b), (int32_t)bars);
-    cv_text_r(232, 3, &AF_S, b, T_MID, T_SURF);
+    if (wl.rec) {                                      /* ((Vallée) REC ARRANGE: the parts taken, a blinking dot */
+        str_cpy(b, "REC ", sizeof b);
+        fmt_int(b + 4, (int32_t)wl.rec_n);
+        cv_text_r(232, 3, &AF_S, b, WL_RGB(255, 80, 80), T_SURF);
+        if ((ui.frame / 15u) & 1u)
+            cv_rect(232 - text_w(&AF_S, b) - 8, 7, 4, 4, WL_RGB(255, 80, 80));
+    } else {
+        str_cpy(b, "BAR ", sizeof b);
+        fmt_int(b + 4, (int32_t)bar);
+        str_cpy(b + str_len(b), " / ", sizeof b - str_len(b));
+        fmt_int(b + str_len(b), (int32_t)bars);
+        cv_text_r(232, 3, &AF_S, b, T_MID, T_SURF);
+    }
     if (!n) {
         cv_rect(X0, Y, W, H, ux_mix(T_SURF, T_THEME, 45));
     } else {
@@ -245,11 +265,100 @@ static int wl_keys_on(void)
     uint32_t kb, at;
     return wl_on() && !ui.menu && !ui.confirm && !ui.layer && song_at(&kb, &at);
 }
-/* a key pressed: its part (white: the music of that letter, C the first; the next time it comes in the song after the
- * next bar, else its first) at the next bar; a black one drops a jump still to come */
+/* the part the song goes to: its start at the next bar (stopped: there now). Playing, a transition into it (perform.c
+ * perf_auto_*: a rise, the last beat rolled), unless SHIFT (HOME) is held */
+static void wl_go(uint32_t pick, const uint32_t *at0, const uint8_t *grp, uint32_t n, uint32_t pos)
+{
+    char b[24];
+    int dry = shift_held();
+    if (dry)
+        shift_mark();
+    if (song_part_go(at0[pick]))
+        ui_message("NO ROOM: SAVE");
+    wl_sec_name(b, pick, grp[pick], wl_gen_layout(grp, n));
+    wl.cue = song.playing ? (uint8_t)(pick + 1u) : 0u;
+    perf_auto_left = 0;
+    if (song.playing && !dry) {
+        uint32_t l = (192u - pos % 192u) * (beat_samples() / 48u);   /* (to the bar line it comes in on) */
+        perf_auto_len = l;
+        perf_auto_left = l;
+    }
+    ui_say(song.playing ? "NEXT BAR: " : "FROM ", b);
+    ui.force = 1;
+}
+/* REC ARRANGE off: the parts as played, the lists (every track's entries in that order; SONG ONCE), from the top. Fewer
+ * than two: nothing changes */
+static void wl_rec_end(void)
+{
+    uint32_t k, i;
+    char b[24];
+    wl.rec = 0;
+    ui.force = 1;
+    if (wl.rec_n < 2u) {
+        ui_say("ARRANGE: ", "NOTHING KEPT");
+        return;
+    }
+    if (transport_busy())
+        transport_stop_now();
+    memcpy(wl_lwas, &lists, sizeof lists);
+    wl.lwas_ok = 1;
+    fm1_irq_off();
+    for (k = 0; k < NTRK; k++) {
+        uint8_t e2[NENT][2], s2[NENT][2];
+        for (i = 0; i < NENT; i++) {
+            uint32_t e = i < wl.rec_n ? wl.rec_e[i] % NENT : NENT;
+            e2[i][0] = e < NENT ? lists.ent[k][e][0] : 0u;
+            e2[i][1] = e < NENT ? lists.ent[k][e][1] : 0u;
+            s2[i][0] = e < NENT ? lists.snd[k][e][0] : 0u;
+            s2[i][1] = e < NENT ? lists.snd[k][e][1] : 0u;
+        }
+        memcpy(lists.ent[k], e2, sizeof e2);
+        memcpy(lists.snd[k], s2, sizeof s2);
+        lists.cur[k] = 0;
+    }
+    lists.song = SONG_ONCE;
+    fm1_irq_on();
+    gen_lists_signed();
+    (void)song_part_go(0);                             /* (stopped: every track on its first part now) */
+    str_cpy(b, "KEPT: ", sizeof b);
+    fmt_int(b + 6, (int32_t)wl.rec_n);
+    str_cpy(b + str_len(b), " PARTS", sizeof b - str_len(b));
+    ui_say(b, "  PLAY");
+}
+/* each frame (ui_input): REC ARRANGE takes each part as it comes in; the song stopped, or 16 taken: done */
+static void wl_poll(void)
+{
+    uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n, i;
+    uint8_t grp[WL_NSEC], ent[WL_NSEC];
+    if (!wl.rec)
+        return;
+    if (!(n = wl_song(at0, len, grp, ent, &pos, &total))) {
+        wl.rec = 0;
+        return;
+    }
+    if (!song.playing) {
+        if (wl.rec_n)
+            wl_rec_end();
+        return;
+    }
+    for (i = 0; i < n; i++)
+        if (pos >= at0[i] && pos < at0[i] + len[i])
+            break;
+    if (i < n && ent[i] + 1u != wl.rec_cur) {
+        wl.rec_cur = (uint8_t)(ent[i] + 1u);
+        wl.rec_e[wl.rec_n++] = ent[i];
+        ui.force = 1;
+        if (wl.rec_n >= NENT)
+            wl_rec_end();
+    }
+}
+/* a key pressed: white, its part (the music of that letter, F the first; the next time it comes in the song after the
+ * next bar, else its first) at the next bar. ((Vallée) black, the same in every octave: F# drops a jump still to come,
+ * G# the next part, A# the part playing written anew (GEN's song: gen_reroll), C# only the selected track's of it, D#
+ * REC ARRANGE on / off (SHIFT + D#: the lists as before it)) */
 static void wl_keys(uint32_t notes)
 {
-    uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n, k, i, pick, nb;
+    uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n, k, i, pick, nb, pc, cur = 0;
     uint8_t grp[WL_NSEC], ent[WL_NSEC];
     int32_t g;
     char b[24];
@@ -257,12 +366,66 @@ static void wl_keys(uint32_t notes)
         return;
     for (k = 26u; k > 0u && !((notes >> k) & 1u); k--)   /* (two at once: the higher) */
         ;
+    for (i = 0; i < n; i++)
+        if (pos >= at0[i] && pos < at0[i] + len[i])
+            cur = i;
     if ((g = wl_key_grp(k)) < 0) {
-        if (wl.cue) {
-            for (k = 0; k < NTRK; k++)
-                (void)bank_cancel(k);
-            wl.cue = 0;
-            ui_message("JUMP DROPPED");
+        pc = (k + 5u) % 12u;                           /* (1 C#, 3 D#, 6 F#, 8 G#, 10 A#) */
+        if (pc == 6u) {                                /* F#: the jump dropped */
+            if (wl.cue) {
+                for (k = 0; k < NTRK; k++)
+                    (void)bank_cancel(k);
+                wl.cue = 0;
+                perf_auto_left = 0;
+                ui_message("JUMP DROPPED");
+            }
+        } else if (pc == 8u) {                         /* G#: the next part (after the one coming, if one is) */
+            i = wl.cue ? (uint32_t)(wl.cue - 1u) : cur;
+            wl_go((i + 1u) % n, at0, grp, n, pos);
+        } else if (pc == 10u || pc == 1u) {            /* A# / C#: a new take of the part playing */
+            int32_t pi = gen_part_now();
+            int r = pi < 0 ? 1 : gen_reroll((uint32_t)pi, pc == 10u ? 0x3Fu : 1u << (song.sel % NTRK));
+            if (r == 1)
+                ui_say("RE-ROLL: ", "GEN SONGS ONLY");
+            else if (r == 2)
+                ui_say("RE-ROLL: ", "NOT IN THIS PART");
+            else {
+                str_cpy(b, gen_part_name((uint32_t)pi), sizeof b);
+                if (pc == 1u) {
+                    str_cpy(b + str_len(b), " T", sizeof b - str_len(b));
+                    b[str_len(b) + 1] = 0;
+                    b[str_len(b)] = (char)('1' + song.sel % NTRK);
+                }
+                str_cpy(b + str_len(b), " TAKE ", sizeof b - str_len(b));
+                fmt_int(b + str_len(b), (int32_t)gen_take((uint32_t)pi));
+                ui_say(b, song.playing ? "  NEXT BAR" : "");
+            }
+            ui.force = 1;
+        } else if (pc == 3u) {                         /* D#: REC ARRANGE */
+            if (shift_held()) {
+                shift_mark();
+                if (!wl.lwas_ok || wl.rec) {
+                    ui_say("ARRANGE: ", "NOTHING TO PUT BACK");
+                    return;
+                }
+                if (transport_busy())
+                    transport_stop_now();
+                fm1_irq_off();
+                memcpy(&lists, wl_lwas, sizeof lists);
+                fm1_irq_on();
+                wl.lwas_ok = 0;
+                gen_lists_signed();
+                (void)song_part_go(0);
+                ui_say("ARRANGE: ", "AS BEFORE");
+            } else if (wl.rec) {
+                wl_rec_end();
+            } else {
+                wl.rec = 1;
+                wl.rec_n = 0;
+                wl.rec_cur = 0;
+                ui_say("REC ARRANGE: ", song.playing ? "PLAY THE PARTS" : "PLAY, THEN THE PARTS");
+            }
+            ui.force = 1;
         }
         return;
     }
@@ -276,12 +439,7 @@ static void wl_keys(uint32_t notes)
         ui_say(b, ": NO SUCH PART");
         return;
     }
-    if (song_part_go(at0[pick]))
-        ui_message("NO ROOM: SAVE");
-    wl_sec_name(b, pick, grp[pick], wl_gen_layout(grp, n));
-    wl.cue = song.playing ? (uint8_t)(pick + 1u) : 0u;
-    ui_say(song.playing ? "NEXT BAR: " : "FROM ", b);
-    ui.force = 1;
+    wl_go(pick, at0, grp, n, pos);
 }
 /* .. their LEDs: the part playing's letter lit, the song's other parts' breathing */
 static uint32_t wl_leds(uint32_t *br)
@@ -304,6 +462,8 @@ static uint32_t wl_leds(uint32_t *br)
             else
                 b |= 1u << k;
         }
+    if (wl.rec)                                        /* ((Vallée) REC ARRANGE: D# lit */
+        lit |= 1u << 10 | 1u << 22;
     if (br)
         *br = b;
     return lit;
