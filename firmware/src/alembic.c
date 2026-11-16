@@ -216,3 +216,23 @@ static __attribute__((noinline)) void alm_post(int32_t *ml, int32_t *mr, uint32_
     }
     alm_stage(AS_GRN, ALM_GRN_T[f], pp, ins_mixq(f == 2u ? b * 2 : b * 4), b, ml, mr, n);
 }
+
+/* mix_block's calls (the audio ISR's: a call each, the tests and the work here, out of its loops): before the buses on
+ * the dry mix and its sends; after them, GRAIN on the mix with the buses' wet folded in (the master adds wet: 0 now) */
+static __attribute__((noinline)) void alm_pre_blk(uint32_t n)
+{
+    if (alm_pre_on())
+        alm_pre(mix_l, mix_r, send_d, song.g[G_DMODE] != DM_MONO ? send_e : 0, send_r, n);
+}
+static __attribute__((noinline)) void alm_post_blk(uint32_t n)
+{
+    uint32_t i;
+    if (!alm_post_on())
+        return;
+    for (i = 0; i < n; i++) {
+        mix_l[i] += wet[i];
+        mix_r[i] += wet[i];
+        wet[i] = 0;
+    }
+    alm_post(mix_l, mix_r, n);
+}

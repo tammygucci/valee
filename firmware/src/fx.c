@@ -1524,19 +1524,11 @@ static void mix_block(int32_t *out, uint32_t n)
         throw_off();                                    /* (Skiff) .. and off: nothing else sees them */
     if (perf)                                           /* ((2.5) a stereo delay: THROW and DUB left and right) */
         AUDIO_FAR(perf_pre)(mix_l, mix_r, send_d, song.g[G_DMODE] != DM_MONO ? send_e : 0, send_r, n);
-    if (alm_pre_on())                                   /* ((Vallée) ALEMBIC: DRIVE, MOTION, SPACE's sends) */
-        alm_pre(mix_l, mix_r, send_d, song.g[G_DMODE] != DM_MONO ? send_e : 0, send_r, n);
+    alm_pre_blk(n);                                     /* ((Vallée) ALEMBIC: DRIVE, MOTION, SPACE's sends; off: nothing) */
     fx_buses(send_c, send_d, send_e, send_r, wet, n);
     if (hl.side)
         rev_side_mix(mix_l, mix_r, n);                  /* HALL, (2.5) a stereo delay and chorus: stereo */
-    if (alm_post_on()) {                                /* ((Vallée) ALEMBIC's GRAIN: on the mix with the wet in it) */
-        for (i = 0; i < n; i++) {
-            mix_l[i] += wet[i];
-            mix_r[i] += wet[i];
-            wet[i] = 0;
-        }
-        alm_post(mix_l, mix_r, n);
-    }
+    alm_post_blk(n);                                    /* ((Vallée) ALEMBIC's GRAIN: on the mix with the wet in it) */
     if (perf) {
         AUDIO_FAR(perf_master)(out, n);
         return;
