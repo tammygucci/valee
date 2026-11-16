@@ -65,7 +65,8 @@ SDK_SHA256 = {
 PRODUCT = "FM-1_700"                # package identity; release builds are FM-1_7XY (Felucca's are FM-1_9XY)
 BOARD = "fm1"                       # fm1 (default) or smk37: BOARD env or --board
 BOARD_PRODUCT = {"fm1": "FM-1_700", "smk37": "SMK-37 Pro_700"}   # a dev build's identity
-BOARD_PREFIX = {"fm1": "FM-1_7", "smk37": "SMK-37 Pro_7"}        # a release build's: prefix + X + Y
+BOARD_PREFIX = {"fm1": "FM-1_56", "smk37": "SMK-37 Pro_56"}      # a release build's: prefix + X + Y ((Vallée) FM-1_56XY:
+                                    # its own identity on The Firmware Hub; Skiff's are FM-1_7XY)
 BOARD_DEFS = {"fm1": [], "smk37": ["-DBOARD_SMK37=1"]}           # the FM-1 build gets no new flag (byte-identical)
 BOARD_STEM = {"fm1": "vallee", "smk37": "vallee-smk37"}   # ((Vallée) the packages' names)            # a release package: STEM-X.Y.fwsc
 # smk37: the keyboard's model name (MODEL env or --model); one hardware, three names. pro adds no flag
@@ -376,7 +377,7 @@ def mmio_check():
 def main():
     global PRODUCT, VERSION, BOARD, APP_SLOT
     ap = argparse.ArgumentParser()
-    ap.add_argument("--release", metavar="X.Y", help="release build: identity FM-1_7XY, version string vX.Y")
+    ap.add_argument("--release", metavar="X.Y", help="release build: identity FM-1_56XY, version string vX.Y")
     ap.add_argument("--board", choices=sorted(BOARD_PRODUCT), default=None,
                     help="target board: fm1 (default) or smk37 (default: $BOARD, else fm1)")
     ap.add_argument("--model", choices=sorted(MODELS), default=None,

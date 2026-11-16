@@ -1,0 +1,13 @@
+{
+  "what": "Skiff 2.6 with a song generator: one press writes a whole song in twelve styles, then you play its parts live from the keys. Moog, Oberheim and Juno filters, a towel-muted 70s drum kit, a tape-deck home screen with a creature for every sound, and an alchemist who conjures your song as it plays.",
+  "author": "tammygucci",
+  "kinds": [
+    "groove"
+  ],
+  "play": "https://tammygucci.github.io/valee/try/",
+  "editor": "https://tammygucci.github.io/valee/webapp/editor/",
+  "cheat": "https://tammygucci.github.io/valee/webapp/installer/brand/vallee_cheatsheet.pdf",
+  "image": "docs/card.png",
+  "color": "#5AFF6E",
+  "sounds": "CC0: Versilian Studios VSCO-2 CE and VCSL (assets/samples-cc0); assets/breaks: Skiff's SLICE loops made with YuE2 (see its ATTRIBUTION.txt), not in Vallée's build"
+}

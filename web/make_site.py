@@ -18,8 +18,8 @@
   web/make_site.py build/skiff-X.Y.fwsc X.Y OUT_DIR [SMK_PACKAGE ...]
 
 The packages must be ones made by tools/fm1pkg_make.py (Felucca's own loader, no vendor files).
-Their identities are read from them (FM-1_7xx, and for the SMK-37 builds SMK-37 Pro_7xx,
-SMK-37 Elite_7xx, MKE-P37_7xx, one per model); the installer picks the one for the connected
+Their identities are read from them (FM-1_56xx, and for the SMK-37 builds SMK-37 Pro_56xx,
+SMK-37 Elite_56xx, MKE-P37_56xx, one per model); the installer picks the one for the connected
 model, and the device must report it after the install. Names: skiff-X.Y.fwsc (FM-1),
 skiff-X.Y-smk37.fwsc, skiff-X.Y-smk37-elite.fwsc, skiff-X.Y-smk37-mke.fwsc.
 """
@@ -51,9 +51,9 @@ def package(path, version):
     raw = Path(path).read_bytes()
     product = product_of(raw)
     model, _, num = product.rpartition("_")
-    if model not in MODELS or not re.fullmatch(r"7\d\d", num):
+    if model not in MODELS or not re.fullmatch(r"56\d\d", num):
         raise SystemExit(f"{path}: identity {product!r} is not one of our packages "
-                         f"(FM-1_7xx, SMK-37 Pro_7xx, SMK-37 Elite_7xx, MKE-P37_7xx)")
+                         f"(FM-1_56xx, SMK-37 Pro_56xx, SMK-37 Elite_56xx, MKE-P37_56xx)")
     if b"FELUCCA-LOADER-1" not in raw:              # Felucca loader marker: never publish a package with vendor files
         raise SystemExit(f"{path}: no Felucca loader in it; the site ships only fm1pkg_make.py packages "
                          "(a package patched from an official one carries vendor files)")
@@ -65,7 +65,7 @@ def main(pkg, version, out, *more):
     pkgs = [package(p, version) for p in (pkg, *more)]
     product, raw, name = pkgs[0]
     if not product.startswith("FM-1_"):
-        raise SystemExit(f"{pkg}: the first package is the FM-1's (FM-1_7xx), not {product!r}")
+        raise SystemExit(f"{pkg}: the first package is the FM-1's (FM-1_56xx), not {product!r}")
     models = [p.rpartition("_")[0] for p, _, _ in pkgs]
     if len(set(models)) != len(models):
         raise SystemExit(f"one package per model: {models}")

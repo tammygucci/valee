@@ -308,6 +308,10 @@ It builds the firmware, runs every test (host, UI, web, emulator), then makes th
 
 The package and a one-file emulator page (`vallee-web.html`) are kept as downloads on the run.
 
+**Identity.** A release answers **FM-1_56XY** (2.6: `FM-1_5626`), Vallée's own number, not Skiff's FM-1_7XY, so
+The Firmware Hub can tell the two apart. Push a tag `v*` (e.g. `v2.6-vallee`) and the build also makes a GitHub
+release with the package attached; `fmhub.json` in the root is the hub's card (its text, picture and links).
+
 To build locally, see `BUILDING.md`:
 
 ```
