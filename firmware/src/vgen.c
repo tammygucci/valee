@@ -382,26 +382,26 @@ static const char *const GEE_L_[3] = {"....n-n-n---....n-n-n-n-n-------", "n---n
 static const gstyle_t GSTY[GS_N] = {
     /* IMPALA */
     {96, 118, 12, 1, 0, {9, 4, 2, 7}, 3, 4, IMP_D, IMP_L, 4, 4, IMP_DR, &IMP_PC, IMP_B, IMP_C, IMP_L_, XC_ARP16, 64, 86,
-     {{{E_FM6, "PICK BASS"}, {E_ANALOG, "MOOG BASS"}, {E_TRIO, "FAT BASS"}},
-      {{E_ANALOG, "SUNSET PAD"}, {E_ANALOG, "JUNO PAD"}, {E_PHASE, "PD STRINGS"}},
-      {{E_TRIO, "ARP LEAD"}, {E_ANALOG, "MOOG LEAD"}, {E_LOFI, "WAVE LEAD"}},
-      {{E_DRUM, "DEEP DRUMS"}, {E_DRUM, "DEAD DRUMS"}, {E_DRUM, "BOOM KIT"}},
+     {{{E_ANALOG, "MOOG BASS"}, {E_FM6, "PICK BASS"}, {E_TRIO, "FAT BASS"}},
+      {{E_ANALOG, "JUNO PAD"}, {E_ANALOG, "SUNSET PAD"}, {E_PHASE, "PD STRINGS"}},
+      {{E_ANALOG, "MOOG LEAD"}, {E_TRIO, "ARP LEAD"}, {E_LOFI, "WAVE LEAD"}},
+      {{E_DRUM, "DEAD DRUMS"}, {E_DRUM, "DEEP DRUMS"}, {E_DRUM, "BOOM KIT"}},
       {{E_TRIO, "NEON ARP"}, {E_LOFI, "ARP 8BIT"}, {E_VOICE, "DREAM CHOIR"}},
       {{E_DRUM, "PERC KIT"}, {E_DRUM, "LOFI KIT"}, {0, 0}}},
      2, 100, 10, 70, 70, 2, {6, 36, 30, 22, 30, 16}, {0, 10, 40, 0, 50, 0}, 6, 0, 0},
     /* DEMARCO */
     {72, 96, 18, 2, 1, {7, 2, 9, 4}, 3, 1, DEM_D, DEM_L, 3, 4, DEM_DR, &DEM_PC, DEM_B, DEM_C, DEM_L_, XC_JANGLE, 62, 81,
      {{{E_FM6, "PICK BASS"}, {E_LOFI, "TRI BASS"}, {E_FM6, "FM BASS"}},
-      {{E_SAMPLE, "LOFI PIANO"}, {E_FM6, "TINE EP"}, {E_ANALOG, "JUNO KEYS"}},
+      {{E_ANALOG, "JUNO KEYS"}, {E_SAMPLE, "LOFI PIANO"}, {E_FM6, "TINE EP"}},
       {{E_LOFI, "WAVE LEAD"}, {E_ANALOG, "SINE KEY"}, {E_PHYS, "HARP"}},
-      {{E_DRUM, "TIGHT KIT"}, {E_DRUM, "LOFI KIT"}, {E_DRUM, "DEAD DRUMS"}},
+      {{E_DRUM, "DEAD DRUMS"}, {E_DRUM, "TIGHT KIT"}, {E_DRUM, "LOFI KIT"}},
       {{E_FM6, "NYLON PICK"}, {E_SAMPLE, "KOTO"}, {E_LOFI, "CHIP BELL"}},
       {{E_DRUM, "PERC KIT"}, {0, 0}, {0, 0}}},
      0, 70, 11, 50, 50, 0, {10, 24, 26, 14, 30, 10}, {0, 0, 20, 0, 12, 0}, 8, 1, 0},
     /* DAFT */
     {118, 126, 8, 1, 0, {9, 5, 2, 0}, 2, 1, DAF_D, DAF_L, 3, 3, DAF_DR, &DAF_PC, DAF_B, DAF_C, DAF_L_, XC_ROBOT, 60, 76,
-     {{{E_FM6, "FM BASS"}, {E_TRIO, "DIRTY BASS"}, {E_ANALOG, "MOOG FUNK"}},
-      {{E_ANALOG, "PWM STR"}, {E_FM6, "TINE EP"}, {E_ANALOG, "OBERHEIM KEY"}},
+     {{{E_ANALOG, "MOOG FUNK"}, {E_FM6, "FM BASS"}, {E_TRIO, "DIRTY BASS"}},
+      {{E_ANALOG, "OBERHEIM KEY"}, {E_ANALOG, "PWM STR"}, {E_FM6, "TINE EP"}},
       {{E_VOICE, "ROBOT TALK"}, {E_TRIO, "SYNC LEAD"}, {E_ANALOG, "SAW LEAD"}},
       {{E_DRUM, "ELECTRO KIT"}, {E_DRUM, "RHYTHM BOX"}, {E_DRUM, "CRISP KIT"}},
       {{E_VOICE, "ROBOT TALK"}, {E_VOICE, "VOX LEAD"}, {E_TRIO, "CHIP CHOIR"}},
@@ -411,9 +411,9 @@ static const gstyle_t GSTY[GS_N] = {
     {132, 140, 0, 1, 0, {9, 2, 7, 4}, 2, 9, HEA_D, HEA_L, 4, 3, HEA_DR, &HEA_PC, HEA_B, HEA_C, HEA_L_, XC_TEXTURE, 64,
      79,
      {{{E_ANALOG, "SUB BASS"}, {E_FM6, "DARK MATTER"}, {E_TRIO, "FAT BASS"}},
-      {{E_ANALOG, "DARK STRINGS"}, {E_ANALOG, "OBERHEIM PAD"}, {E_ANALOG, "PWM STR"}},
+      {{E_ANALOG, "OBERHEIM PAD"}, {E_ANALOG, "DARK STRINGS"}, {E_ANALOG, "PWM STR"}},
       {{E_VOICE, "VOX LEAD"}, {E_VOICE, "WHISPER"}, {E_ANALOG, "SINE KEY"}},
-      {{E_DRUM, "ELECTRO KIT"}, {E_DRUM, "RHYTHM BOX"}, {E_DRUM, "CRUSH KIT"}},
+      {{E_DRUM, "CRUSH KIT"}, {E_DRUM, "ELECTRO KIT"}, {E_DRUM, "RHYTHM BOX"}},
       {{E_NOISE, "GEIGER"}, {E_NOISE, "ARCADE"}, {E_NOISE, "PLASMA"}},
       {{E_DRUM, "SNAP KIT"}, {E_DRUM, "RHYTHM BOX"}, {0, 0}}},
      0, 70, 11, 50, 50, 0, {6, 34, 30, 8, 30, 16}, {0, 10, 30, 0, 24, 18}, 0, 0, 0},
@@ -429,10 +429,10 @@ static const gstyle_t GSTY[GS_N] = {
     /* STEELY */
     {124, 132, 10, 3, 0, {7, 2, 9, 4}, 4, 1, STE_D, STE_L, 3, 4, STE_DR, &STE_PC, STE_B, STE_C, STE_L_, XC_FILLS, 64,
      83,
-     {{{E_FM6, "PICK BASS"}, {E_FM6, "FM BASS"}, {E_ANALOG, "MOOG FUNK"}},
+     {{{E_ANALOG, "MOOG FUNK"}, {E_FM6, "PICK BASS"}, {E_FM6, "FM BASS"}},
       {{E_FM6, "TINE EP"}, {E_FM6, "GLASS KEYS"}, {E_PHASE, "SOFT KEYS"}},
       {{E_VOICE, "CHOIR AAH"}, {E_FM6, "FM BRASS"}, {E_ANALOG, "SYNTH BRASS"}},
-      {{E_DRUM, "STUDIO KIT"}, {E_DRUM, "TIGHT KIT"}, {E_DRUM, "TAPE KIT"}},
+      {{E_DRUM, "TAPE KIT"}, {E_DRUM, "STUDIO KIT"}, {E_DRUM, "TIGHT KIT"}},
       {{E_FM6, "NYLON PICK"}, {E_ANALOG, "SYNTH PLUCK"}, {E_PHYS, "PLUCK"}},
       {{E_DRUM, "PERC KIT"}, {0, 0}, {0, 0}}},
      0, 50, 11, 34, 30, 0, {4, 14, 22, 8, 14, 6}, {0, 0, 12, 0, 10, 0}, 8, 0, 0},
@@ -441,17 +441,17 @@ static const gstyle_t GSTY[GS_N] = {
      {{{E_FM6, "PICK BASS"}, {E_FM6, "FM BASS"}, {E_TRIO, "FAT BASS"}},
       {{E_SAMPLE, "PIANO"}, {E_FM6, "TINE EP"}, {E_SAMPLE, "LOFI PIANO"}},
       {{E_VOICE, "VOX LEAD"}, {E_SAMPLE, "SAX"}, {E_ANALOG, "HERO BRASS"}},
-      {{E_DRUM, "STUDIO KIT"}, {E_DRUM, "TIGHT KIT"}, {E_DRUM, "TAPE KIT"}},
-      {{E_ANALOG, "STRINGS"}, {E_ANALOG, "SYNTH BRASS"}, {E_ANALOG, "OBERHEIM STR"}},
+      {{E_DRUM, "TAPE KIT"}, {E_DRUM, "STUDIO KIT"}, {E_DRUM, "TIGHT KIT"}},
+      {{E_ANALOG, "OBERHEIM STR"}, {E_ANALOG, "STRINGS"}, {E_ANALOG, "SYNTH BRASS"}},
       {{E_DRUM, "PERC KIT"}, {0, 0}, {0, 0}}},
      2, 70, 11, 36, 34, 0, {6, 18, 24, 10, 32, 8}, {0, 0, 16, 0, 0, 0}, 8, 0, 0},
     /* LCD */
     {86, 100, 0, 1, 0, {0, 9, 4, 2}, 2, 1, LCD_D, LCD_L, 3, 4, LCD_DR, &LCD_PC, LCD_B, LCD_C, LCD_L_, XC_ARP16, 60, 79,
-     {{{E_ANALOG, "SQR BASS"}, {E_ANALOG, "NIGHT BASS"}, {E_ANALOG, "MOOG BASS"}},
-      {{E_ANALOG, "SUNSET PAD"}, {E_ANALOG, "JUNO PAD"}, {E_ANALOG, "JUNO STRINGS"}},
+     {{{E_ANALOG, "MOOG BASS"}, {E_ANALOG, "SQR BASS"}, {E_ANALOG, "NIGHT BASS"}},
+      {{E_ANALOG, "JUNO PAD"}, {E_ANALOG, "JUNO STRINGS"}, {E_ANALOG, "SUNSET PAD"}},
       {{E_VOICE, "VOX LEAD"}, {E_ANALOG, "NEON LEAD"}, {E_VOICE, "DREAM CHOIR"}},
-      {{E_DRUM, "RHYTHM BOX"}, {E_DRUM, "ELECTRO KIT"}, {E_DRUM, "CRUSH KIT"}},
-      {{E_TRIO, "NEON ARP"}, {E_ANALOG, "JUNO ARP"}, {E_LOFI, "ARP 8BIT"}},
+      {{E_DRUM, "CRUSH KIT"}, {E_DRUM, "RHYTHM BOX"}, {E_DRUM, "ELECTRO KIT"}},
+      {{E_ANALOG, "JUNO ARP"}, {E_TRIO, "NEON ARP"}, {E_LOFI, "ARP 8BIT"}},
       {{E_DRUM, "PERC KIT"}, {E_DRUM, "LOFI KIT"}, {0, 0}}},
      2, 78, 11, 44, 30, 0, {4, 26, 30, 8, 26, 8}, {0, 6, 26, 0, 20, 0}, 0, 0, 0},
     /* STROKE */
@@ -459,7 +459,7 @@ static const gstyle_t GSTY[GS_N] = {
      {{{E_FM6, "PICK BASS"}, {E_ANALOG, "DRIVE BASS"}, {E_FM6, "FM BASS"}},
       {{E_PHYS, "PLUCK"}, {E_FM6, "NYLON PICK"}, {E_ANALOG, "SYNTH PLUCK"}},
       {{E_PHYS, "PLUCK"}, {E_FM6, "NYLON PICK"}, {E_ANALOG, "SYNTH PLUCK"}},
-      {{E_DRUM, "TIGHT KIT"}, {E_DRUM, "DRUM KIT"}, {E_DRUM, "DEAD DRUMS"}},
+      {{E_DRUM, "DEAD DRUMS"}, {E_DRUM, "TIGHT KIT"}, {E_DRUM, "DRUM KIT"}},
       {{E_WHEEL, "ROCK DRIVE"}, {E_FM6, "NYLON PICK"}, {E_ANALOG, "SYNTH PLUCK"}},
       {{E_DRUM, "CRISP KIT"}, {0, 0}, {0, 0}}},
      0, 44, 11, 30, 30, 0, {4, 10, 10, 8, 10, 6}, {0, 0, 6, 0, 0, 0}, 0, 0, 0},
@@ -475,9 +475,9 @@ static const gstyle_t GSTY[GS_N] = {
     /* WINWOOD */
     {116, 124, 0, 1, 0, {0, 7, 2, 9}, 3, 1, WIN_D, WIN_L, 2, 4, WIN_DR, &WIN_PC, WIN_B, WIN_C, WIN_L_, XC_ARP16, 64,
      83,
-     {{{E_ANALOG, "SQR BASS"}, {E_ANALOG, "JUNO BASS"}, {E_FM6, "FM BASS"}},
-      {{E_ANALOG, "SUNSET PAD"}, {E_ANALOG, "JUNO BRASS"}, {E_FM6, "GLASS KEYS"}},
-      {{E_ANALOG, "NEON LEAD"}, {E_VOICE, "VOX LEAD"}, {E_ANALOG, "OBERHEIM LEAD"}},
+     {{{E_ANALOG, "JUNO BASS"}, {E_ANALOG, "SQR BASS"}, {E_FM6, "FM BASS"}},
+      {{E_ANALOG, "JUNO BRASS"}, {E_ANALOG, "SUNSET PAD"}, {E_FM6, "GLASS KEYS"}},
+      {{E_ANALOG, "OBERHEIM LEAD"}, {E_ANALOG, "NEON LEAD"}, {E_VOICE, "VOX LEAD"}},
       {{E_DRUM, "NEON KIT"}, {E_DRUM, "ELECTRO KIT"}, {E_DRUM, "BOOM KIT"}},
       {{E_TRIO, "NEON ARP"}, {E_FM6, "GLASS BELL"}, {E_ANALOG, "SYNTH PLUCK"}},
       {{E_DRUM, "PERC KIT"}, {0, 0}, {0, 0}}},
@@ -487,7 +487,7 @@ static const gstyle_t GSTY[GS_N] = {
      {{{E_FM6, "PICK BASS"}, {E_ANALOG, "SUB BASS"}, {E_TRIO, "FAT BASS"}},
       {{E_PHYS, "PLUCK"}, {E_FM6, "NYLON PICK"}, {E_GRAIN, "PIANO HAZE"}},
       {{E_VOICE, "VOX LEAD"}, {E_VOICE, "WHISPER"}, {E_VOICE, "DREAM CHOIR"}},
-      {{E_DRUM, "LOFI KIT"}, {E_DRUM, "BOOM KIT"}, {E_DRUM, "CRUSH KIT"}},
+      {{E_DRUM, "CRUSH KIT"}, {E_DRUM, "LOFI KIT"}, {E_DRUM, "BOOM KIT"}},
       {{E_FM6, "NYLON PICK"}, {E_LOFI, "WAVE LEAD"}, {E_PHYS, "HARP"}},
       {{E_DRUM, "PERC KIT"}, {E_DRUM, "LOFI KIT"}, {0, 0}}},
      2, 66, 11, 40, 34, 0, {6, 26, 34, 10, 24, 8}, {0, 10, 24, 0, 14, 0}, 8, 1, 1},
@@ -1033,7 +1033,15 @@ static void g_sound(track_t *t, uint32_t role, grng_t *r)
             c[n++] = &s->snd[role][i];
     if (!n)
         return;
-    pick = g_n(r, n);
+    {   /* ((Vallée) the first, the style's own sound (its vintage synths, its kits, listed first): twice as likely as
+         * each other. The stream's value mixed first (a finalizer): the roles' streams start close together, and
+         * their low bits ran alike: the bass and the lead always took the same place, never MOOG BASS with JUNO PAD) */
+        uint32_t h = g_next(r) ^ (role + 1u) * 0x9E3779B9u;
+        h ^= h >> 16; h *= 0x85EBCA6Bu; h ^= h >> 13; h *= 0xC2B2AE35u; h ^= h >> 16;
+        pick = h % (n + 1u);
+        if (pick >= n)
+            pick = 0;
+    }
     if (t->eng_req % NENGINES != c[pick]->eng)
         set_engine_of(t, c[pick]->eng);
     apply_preset_to(t, g_preset(c[pick]->eng, c[pick]->pre));
@@ -1459,6 +1467,26 @@ static int gen_reroll(uint32_t pi, uint32_t mask)
 }
 static uint32_t gen_take(uint32_t pi) { return gen_pvar[pi % GEN_NPART] + 1u; }
 static const char *gen_part_name(uint32_t pi) { return GEN_PART[GP_INTRO + pi % GEN_NPART]; }
+/* entry e of the lists: the part of GEN's song its patterns are (every track's that has one there): 0 .. 4; -1 not one */
+static int32_t gen_part_of(uint32_t e)
+{
+    uint32_t k, pi, id;
+    int32_t at = -1;
+    if (!gen_is_song())
+        return -1;
+    for (k = 0; k < GR_NROLE; k++) {
+        if (!(id = lists.ent[k][e % NENT][0]))
+            continue;
+        for (pi = 0; pi < GEN_NPART && gen_sid[k][pi] + 1u != id; pi++)
+            ;
+        if (pi < GEN_NPART) {
+            if (at >= 0 && at != (int32_t)pi)
+                return -1;
+            at = (int32_t)pi;
+        }
+    }
+    return at;
+}
 /* each frame (ui_input): a re-rolled track's bar that was playing, written once it has gone by (the track on that
  * part again: the song moved on before, it comes back to it) */
 static void gen_rr_poll(void)

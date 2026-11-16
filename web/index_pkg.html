@@ -135,7 +135,10 @@
   </section>
 
   <h2 data-t="hDemo"></h2>
-  <video src="brand/vallee_demo.mp4" controls preload="metadata" playsinline poster="brand/poster.jpg"></video>
+  <p class="small" data-t="vPerf" style="margin:0 0 8px"></p>
+  <video src="brand/vallee_perform.mp4" controls preload="metadata" playsinline poster="brand/poster_perform.jpg"></video>
+  <p class="small" data-t="vTour" style="margin:22px 0 8px"></p>
+  <video src="brand/vallee_demo.mp4" controls preload="none" playsinline poster="brand/poster.jpg"></video>
 
   <h2 data-t="hWhat"></h2>
   <div class="grid">
@@ -187,9 +190,10 @@ const TEXT = {
     tagline: "M-VAVE FM-1 のためのソングマシン。ワンプッシュで曲をまるごと書き、鍵盤でパートごとにライブ演奏。切り替えはいつも小節の頭に。",
     hDemo: "デモ", hWhat: "できること", hNext: "インストール後",
     f1t: "GEN: 曲をまるごと", f1: "ワンプッシュで 6 トラックにイントロ・Aメロ・サビ・ブリッジ・アウトロを、選んだスタイルで書き込みます。",
-    f2t: "ライブで演奏", f2: "曲マップの画面で、左から白鍵ひとつずつがパート。次の小節頭で切り替わるので、いつも 1 拍目に入ります。",
-    f3t: "ヴィンテージシンセ", f3: "アナログエンジンに Moog・Oberheim・Juno のフィルターとプリセット。",
-    f4t: "デッドドラム", f4: "タオルでミュートしたような、短く乾いたキット。",
+    f2t: "ライブで演奏", f2: "白鍵ひとつずつが曲のパート。次の小節頭にトランジションつきで入ります。黒鍵で次のパートへ、演奏中のパートを書き直し、演奏した順をアレンジとして記録。",
+    vPerf: "演奏: ワンプッシュで曲を書き、鍵盤でライブ演奏", vTour: "機能ツアー",
+    f3t: "ヴィンテージシンセ", f3: "アナログエンジンに Moog・Oberheim・Juno のフィルターとプリセット。GEN の曲もこの音で鳴ります。",
+    f4t: "オリジナルのキット", f4: "DEAD: タオルでミュートした乾いたキット。TAPE: 温かいソウルのセッション。CRUSH: 歪ませたドラムマシン。",
     f5t: "FX レイヤー", f5: "FX を押しながら鍵盤: LPF・HPF は即座に、リピート、テープストップ。HOME でロック。",
     f6t: "2つのテーマ", f6: "神秘的な XENO と、OP-1 風のすっきりした TEEN。",
     xenoSub: "標準", teenSub: "OP-1 風",
@@ -254,9 +258,10 @@ const TEXT = {
     tagline: "A song machine for the M-VAVE FM-1: one press writes you a whole song, then the keys let you perform it, part by part, always on the 1.",
     hDemo: "See it", hWhat: "What it does", hNext: "After installing",
     f1t: "GEN: a whole song", f1: "One press writes intro, verses, choruses, a bridge and an outro across all six tracks, in the style you pick.",
-    f2t: "Play it live", f2: "On the song map, each white key from the left is a part: it comes in on the next bar, so it always lands on the 1.",
-    f3t: "Vintage synths", f3: "Moog, Oberheim and Juno filters and presets on the analog engine.",
-    f4t: "Dead drums", f4: "A towel-muted kit: short, dry, thuddy, made for the pocket.",
+    f2t: "Perform it", f2: "Each white key is a part of the song, in on the next bar with a transition. The black keys: the next part, a new take of the part playing, and recording your arrangement as you play it.",
+    vPerf: "The performance: one press writes the song, then the keys play it", vTour: "The feature tour",
+    f3t: "Vintage synths", f3: "Moog, Oberheim and Juno filters and presets on the analog engine, and GEN's songs are voiced with them.",
+    f4t: "Its own kits", f4: "DEAD, a towel-muted seventies kit; TAPE, a warm soul session; CRUSH, a drum machine run hot.",
     f5t: "FX layer", f5: "Hold FX, then a key: instant LPF and HPF, repeats, tape stop. Lock it with HOME.",
     f6t: "Two themes", f6: "XENO, the esoteric one, and TEEN, a clean OP-1 style tape machine.",
     xenoSub: "THE DEFAULT", teenSub: "OP-1 STYLE",

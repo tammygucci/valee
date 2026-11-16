@@ -10,6 +10,10 @@ SLICE engine is left out** (see [Room on the FM-1](#room-on-the-fm-1)). On top o
 - **THE SPELL**: tap HOME on HOME: the song's map on top, and the Alchemist (the intro's head) conjuring with your six
   tracks' elements a figure the song summons, different for every song.
 - **GEN**: a song generator in twelve styles, which writes ordinary steps you then edit in the sequencer.
+- **Performing the song**: THE SPELL's keys are its parts, in on the bar with a transition; the next part, a new take
+  of a part while it plays, and your arrangement recorded as you play it.
+- **Its own sounds**: MOOG, OBERHEIM and JUNO filters and presets, and the kits DEAD, TAPE and CRUSH, which GEN's
+  styles are voiced with.
 
 Vallée's first start sets the look it is made for, once, on a new unit and over Skiff's settings alike: THEME XENO,
 LARGE OFF (its big cards hide the deck and the creatures), ANIM ON, PLAYHEAD THEME, BPM LOCK ON (SELECT on HOME opens
@@ -32,14 +36,22 @@ LEAD, OBERHEIM KEY; JUNO PAD, JUNO STRINGS, JUNO BASS, JUNO HOOVER, JUNO BRASS, 
 after those instruments by ear; no circuit or sample of theirs is in here, and Vallée is not affiliated with Moog,
 Oberheim or Roland.
 
-## DEAD DRUMS
+## Kits: DEAD, TAPE, CRUSH
 
-A new kit for the DRUM engine: **KIT DEAD**, and the preset **DEAD DRUMS** (SAVE > PRESETS, or PRESETS on a DRUM
+A kit for the DRUM engine: **KIT DEAD**, and the preset **DEAD DRUMS** (SAVE > PRESETS, or PRESETS on a DRUM
 track). A seventies studio kit muted with towels: a short fat kick with no click, a deep snare whose body thumps and
 whose wires stay low and dark, a short clap, hats taped down, a floor tom and (on the BELL lane) a rack tom, both dead,
 and a woody cross-stick on RIM. Synthesized, like Skiff's other kits (no samples: there is no room for them, and the
 sampled packs it is modelled on are not free to copy). EDIT > LANES and LANE MIX set each piece's level, tune, decay
 and pan as on any kit.
+
+Two more, put together from the model kits' pieces (as Skiff's DEEP, TIGHT and PERC are) and retuned:
+
+- **KIT TAPE**, preset **TAPE KIT**: a warm seventies soul session with the towels off. DEAD's kick let ring, with a
+  felt beater; a deep snare with its wires on; soft noise hats, the open one long; a ringing tom; the cross-stick; a
+  ride cymbal on the BELL lane.
+- **KIT CRUSH**, preset **CRUSH KIT**: a drum machine run too hot. A long kick driven hard, a snappy snare, eight
+  claps, a bright metal hat, a short rim, a cowbell on BELL; the preset adds DIST CRUSH.
 
 ## The opening
 
@@ -88,6 +100,17 @@ DRUMS, BASS, KEYS, LEAD and COLOR are each OFF, LITE, ON or BUSY. OFF leaves tha
 
 GEN starts with **COMPLEX 0 and HUMAN 0** (COLOR ON, SWING on AUTO): the plainest version of each style. Turn them
 up when you want more.
+
+**The song's code.** The same knobs write the same song on every Vallée of this version, so a song can be passed on
+as text. The panel shows it: the style, the vibe, the part and the seed (AETHER / HAZY SONG #27), and under them, in
+the accent colour, only the knobs you set away from where GEN starts: `E80` ENERGY, `IN A` KEY, `120BPM` TEMPO,
+`KEEP` SOUNDS, `DR3 BA1 KY0 LD2 CO0` the parts' amounts (0 OFF .. 3 BUSY), `X40` COMPLEX, `S20` SWING, `H30` HUMAN.
+No third line: everything else is as GEN starts.
+
+**Its sounds.** Each style picks every track's sound from three, the seed's pick, and the first of them, twice as
+likely as each other, is Vallée's own where the style has one: the MOOG, OBERHEIM and JUNO presets (AETHER's Moog bass
+and lead and Juno pad, ZETA's Moog funk bass and Oberheim stabs, ASTRAL's Juno pads, strings and arp ..) and its kits:
+DEAD DRUMS (AETHER, LOTUS, HEX), TAPE KIT (LEMURIA, SIGIL), CRUSH KIT (WRAITH, ORACLE, ASTRAL).
 
 **The buttons.**
 
@@ -223,9 +246,26 @@ the third, and so on to the right (on a GEN song: F INTRO, G VERSE, A CHORUS, B 
 keys light up: the part playing lit, the others breathing. Press one and every track jumps to that part **on the next
 bar line**, all together, so it always lands on the 1 and stays in time: you can press it anywhere in the bar before.
 Until it comes in, the block blinks and the top line reads e.g. VERSE > CHORUS. A part that comes more than once: the
-next one in the song. Any black key cancels a jump that hasn't come in yet. Stopped, a key moves the song there and
-PLAY starts from it. With SONG ON the song carries on from the part you jumped to; with SONG OFF each part loops until
+next one in the song. Stopped, a key moves the song there and PLAY starts from it. With SONG ON the song carries on from the part you jumped to; with SONG OFF each part loops until
 you press another key.
+
+**A jump comes in with a transition**: over what is left of the bar the mix thins (a high-pass rising), and its last
+beat rolls (REPEAT 1/16), gone exactly on the bar line as the new part lands. Hold HOME (SHIFT) as you press the key
+for a plain jump.
+
+**The black keys** are the performance's controls, the same in every octave:
+
+| Key | What it does |
+|---|---|
+| F# | drops a jump that hasn't come in yet (and its transition) |
+| G# | the next part of the song (after the one coming, if one is) |
+| A# | **a new take** of the part playing: GEN writes it again, live. The key, tempo, chords and sounds stay; the notes are new. Every bar but the one playing changes at once, that one once it has gone by, so it comes in on a bar line. The top line says e.g. CHORUS TAKE 2. Every time that part comes round it is the new take |
+| C# | a new take of the selected track's part only (ALGORITHM picks the track): just the bass, just the drums .. |
+| D# | **REC ARRANGE**: on (the map says REC and counts), play the parts in the order you want, D# again (or let the song stop): that order is the song now, up to 16 parts, SONG ONCE, from the top. SHIFT + D# puts the arrangement back as it was |
+
+New takes are for a song GEN wrote in this session (after a restart, or once you edit its lists on SEQ > SONG, the
+keys still play its parts; A# and C# say GEN SONGS ONLY). In a GEN song the letters stay with the parts whatever order
+you arrange them in: F is always the INTRO, G a VERSE, A a CHORUS, B the BRIDGE, C the OUTRO.
 
 **Below, the Alchemist** (the head from the intro) conjures with your six tracks, each its own element:
 

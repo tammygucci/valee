@@ -49,6 +49,7 @@ static int gen_reroll(uint32_t pi, uint32_t mask);
 static uint32_t gen_take(uint32_t pi);
 static void gen_lists_signed(void);
 static const char *gen_part_name(uint32_t pi);
+static int32_t gen_part_of(uint32_t e);
 static int shift_held(void);                           /* (ui_input.c) */
 static void shift_mark(void);
 
@@ -92,6 +93,7 @@ static void wl_elem(int32_t x, int32_t y, uint32_t k, uint16_t c)
 /* the song's parts on the longest list (bank.c song_at): their starts and lengths (48ths of a beat x 4: 192 a bar),
  * a group each (the same music: the same group), where the playhead is; 0 parts: no song (the LOOP) */
 #define WL_NSEC NENT
+static uint8_t wl_genmap;                              /* (wl_song: the groups are GEN's parts) */
 static uint32_t wl_song(uint32_t *at0, uint32_t *len, uint8_t *grp, uint8_t *ent, uint32_t *pos, uint32_t *total)
 {
     uint32_t kb, e, n = 0, ng = 0, sig[WL_NSEC], j, k;
@@ -113,6 +115,16 @@ static uint32_t wl_song(uint32_t *at0, uint32_t *len, uint8_t *grp, uint8_t *ent
         sig[n] = s;
         n++;
     }
+    wl_genmap = 0;                                     /* ((Vallée) GEN's song, every part one of its five: a part's
+                                                        * group is its GEN part, so F is the INTRO, A the CHORUS ..
+                                                        * whatever order REC ARRANGE left them in) */
+    for (j = 0; j < n && gen_part_of(ent[j]) >= 0; j++)
+        ;
+    if (n && j == n) {
+        for (j = 0; j < n; j++)
+            grp[j] = (uint8_t)gen_part_of(ent[j]);
+        wl_genmap = 1;
+    }
     return n;
 }
 /* a part's name: GEN SONG's layout (eight parts, five musics: A B C B C D C E) by GEN's names, else A B C .. */
@@ -120,6 +132,8 @@ static int wl_gen_layout(const uint8_t *grp, uint32_t n)
 {
     static const uint8_t L[8] = {0, 1, 2, 1, 2, 3, 2, 4};
     uint32_t i;
+    if (wl_genmap)                                     /* ((Vallée) GEN's song in any order: wl_song) */
+        return 1;
     if (n != 8u)
         return 0;
     for (i = 0; i < 8u; i++)
@@ -129,9 +143,10 @@ static int wl_gen_layout(const uint8_t *grp, uint32_t n)
 }
 static void wl_sec_name(char *b, uint32_t i, uint32_t g, int gen)
 {
-    static const char *const GN[8] = {"INTRO", "VERSE", "CHORUS", "VERSE", "CHORUS", "BRIDGE", "CHORUS", "OUTRO"};
-    if (gen && i < 8u)
-        str_cpy(b, GN[i], 8);
+    static const char *const GN[5] = {"INTRO", "VERSE", "CHORUS", "BRIDGE", "OUTRO"};   /* (a GEN song's groups: its parts) */
+    (void)i;
+    if (gen && g < 5u)
+        str_cpy(b, GN[g], 8);
     else {
         b[0] = (char)('A' + g % 26u);
         b[1] = 0;
@@ -295,7 +310,7 @@ static void wl_rec_end(void)
     wl.rec = 0;
     ui.force = 1;
     if (wl.rec_n < 2u) {
-        ui_say("ARRANGE: ", "NOTHING KEPT");
+        ui_message("NOTHING KEPT");
         return;
     }
     if (transport_busy())
@@ -386,9 +401,9 @@ static void wl_keys(uint32_t notes)
             int32_t pi = gen_part_now();
             int r = pi < 0 ? 1 : gen_reroll((uint32_t)pi, pc == 10u ? 0x3Fu : 1u << (song.sel % NTRK));
             if (r == 1)
-                ui_say("RE-ROLL: ", "GEN SONGS ONLY");
+                ui_message("GEN SONGS ONLY");
             else if (r == 2)
-                ui_say("RE-ROLL: ", "NOT IN THIS PART");
+                ui_message("TRACK NOT IN PART");
             else {
                 str_cpy(b, gen_part_name((uint32_t)pi), sizeof b);
                 if (pc == 1u) {
@@ -398,14 +413,14 @@ static void wl_keys(uint32_t notes)
                 }
                 str_cpy(b + str_len(b), " TAKE ", sizeof b - str_len(b));
                 fmt_int(b + str_len(b), (int32_t)gen_take((uint32_t)pi));
-                ui_say(b, song.playing ? "  NEXT BAR" : "");
+                ui_message(b);
             }
             ui.force = 1;
         } else if (pc == 3u) {                         /* D#: REC ARRANGE */
             if (shift_held()) {
                 shift_mark();
                 if (!wl.lwas_ok || wl.rec) {
-                    ui_say("ARRANGE: ", "NOTHING TO PUT BACK");
+                    ui_message("NOTHING TO PUT BACK");
                     return;
                 }
                 if (transport_busy())
@@ -423,7 +438,7 @@ static void wl_keys(uint32_t notes)
                 wl.rec = 1;
                 wl.rec_n = 0;
                 wl.rec_cur = 0;
-                ui_say("REC ARRANGE: ", song.playing ? "PLAY THE PARTS" : "PLAY, THEN THE PARTS");
+                ui_message(song.playing ? "REC ARRANGE ON" : "REC ON: PRESS PLAY");
             }
             ui.force = 1;
         }

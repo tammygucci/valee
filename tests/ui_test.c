@@ -10487,7 +10487,19 @@ static int test_world(void)
                   lists.ent[j][3][0] == 0u && lists.cur[j] == 0u;
         n = wl_song(at0, len, grp, ent, &pos, &total);
         ok &= n == 3u && gen_part_now() >= 0;
-        bad += check("(Vallée) THE SPELL: D# REC ARRANGE: the parts as played (3) become the lists, SONG ONCE, GEN's still", ok);
+        {   /* (the keys and the names stay GEN's parts': F the INTRO, B the BRIDGE, in any order) */
+            char nm2[8];
+            wl_sec_name(nm2, 2u, grp[2], wl_gen_layout(grp, n));
+            ok &= grp[1] == 0u && grp[2] == 3u && str_eq(nm2, "BRIDGE");
+            wl_keys(1u << 6);                           /* (B, stopped: the tracks on the BRIDGE, now the third part) */
+            for (j = 0; j < NTRK; j++)
+                ok &= !ent_at48(j, NENT) || lists.cur[j] == 2u;
+            wl_keys(1u << 0);                           /* (F: the INTRO, the second) */
+            for (j = 0; j < NTRK; j++)
+                ok &= !ent_at48(j, NENT) || lists.cur[j] == 1u;
+            (void)song_part_go(0);
+        }
+        bad += check("(Vallée) THE SPELL: D# REC ARRANGE: the parts as played (3) become the lists, SONG ONCE; F and B still the INTRO and BRIDGE", ok);
         ui.home_t0 = 1u;
         wl_keys(1u << 10);                              /* (SHIFT + D#: as before) */
         ui.home_t0 = 0u;

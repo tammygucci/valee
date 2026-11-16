@@ -35,6 +35,12 @@ th { font: 700 8.3pt Barlow, sans-serif; letter-spacing: .05em; background: #f3f
 .keys { display: flex; gap: 3px; margin: 4px 0 3px; }
 .keys div { flex: 1; text-align: center; border: 1px solid #bdb6cf; border-radius: 0 0 4px 4px; padding: 13px 0 3px; font: 700 8pt Barlow, sans-serif; }
 .keys div i { display: block; font: 500 7pt Barlow, sans-serif; color: var(--mid); font-style: normal; }
+.kb { position: relative; display: flex; gap: 3px; margin: 4px 0 4px; }
+.kb .w { flex: 1; text-align: center; border: 1px solid #bdb6cf; border-radius: 0 0 4px 4px; padding: 30px 0 3px; font: 700 8pt Barlow, sans-serif; }
+.kb .w i, .kb .b i { display: block; font: 500 6.6pt Barlow, sans-serif; font-style: normal; }
+.kb .w i { color: var(--mid); }
+.kb .b { position: absolute; top: 0; width: 10%; height: 27px; background: #16131f; color: #fff; text-align: center; border-radius: 0 0 3px 3px; font: 700 7.4pt/1.15 Barlow, sans-serif; padding-top: 3px; }
+.kb .b i { color: #ffe646; }
 .styles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px 8px; font-size: 8.5pt; }
 .styles b { font: 700 8.4pt Barlow, sans-serif; letter-spacing: .04em; }
 .warn { border: 1.5px solid var(--t2); background: #eef5ff; padding: 5px 7px; font-size: 8.8pt; }
@@ -94,13 +100,19 @@ footer { position: absolute; left: 0.42in; right: 0.42in; bottom: 0.18in; font-s
       <div class="note">VIBE: DARK · HAZY · WARM · BRIGHT · WEIRD. ENERGY sets tempo, drum density and fills.</div>
     </section>
 
-    <section class="h2c4"><h2>THE SPELL <small>play the song live</small></h2>
-      <div class="note" style="margin:0 0 2px;color:var(--ink)">On THE SPELL the white keys are the song's parts, from the leftmost key, in every octave:</div>
-      <div class="keys"><div>F<i>INTRO</i></div><div>G<i>VERSE</i></div><div>A<i>CHORUS</i></div><div>B<i>BRIDGE</i></div><div>C<i>OUTRO</i></div><div>D<i>6th</i></div><div>E<i>7th</i></div></div>
-      <div class="e"><span class="l"><kbd>white key</kbd></span><b>Every track jumps to that part on the next bar line, so it lands on the 1. Press it any time in the bar before.</b></div>
-      <div class="e"><span class="l"><kbd>black key</kbd></span><b>Cancels a jump that hasn't come in yet.</b></div>
-      <div class="e"><span class="l"><kbd>stopped + key</kbd></span><b>Moves the song there; PLAY starts from it.</b></div>
-      <div class="note">The blinking outline on the map is the part waiting to come in (e.g. VERSE &gt; CHORUS). SONG ON carries on from the new part; SONG OFF loops it.</div>
+    <section class="h2c4"><h2>THE SPELL <small>perform the song</small></h2>
+      <div class="note" style="margin:0 0 2px;color:var(--ink)">On THE SPELL the keys are the song, the same in every octave. White: its parts. Black: the performance.</div>
+      <div class="kb">
+        <div class="w">F<i>INTRO</i></div><div class="w">G<i>VERSE</i></div><div class="w">A<i>CHORUS</i></div><div class="w">B<i>BRIDGE</i></div><div class="w">C<i>OUTRO</i></div><div class="w">D<i>6th</i></div><div class="w">E<i>7th</i></div>
+        <div class="b" style="left:9.3%">F#<i>DROP</i></div><div class="b" style="left:23.6%">G#<i>NEXT</i></div><div class="b" style="left:37.9%">A#<i>TAKE</i></div><div class="b" style="left:66.4%">C#<i>TAKE 1</i></div><div class="b" style="left:80.7%">D#<i>REC</i></div>
+      </div>
+      <div class="e"><span class="l"><kbd>white key</kbd></span><b>Every track jumps to that part on the next bar, with a rise and a roll into it. <kbd>SHIFT</kbd> + key: a plain jump.</b></div>
+      <div class="e"><span class="l"><kbd>F#</kbd></span><b>Drops a jump that hasn't come in yet.</b></div>
+      <div class="e"><span class="l"><kbd>G#</kbd></span><b>The next part of the song.</b></div>
+      <div class="e"><span class="l"><kbd>A#</kbd></span><b>A new take of the part playing: GEN writes it again, live, in on a bar line. Same key, chords and sounds.</b></div>
+      <div class="e"><span class="l"><kbd>C#</kbd></span><b>A new take of the selected track only (ALGORITHM picks it).</b></div>
+      <div class="e"><span class="l"><kbd>D#</kbd></span><b>REC ARRANGE: play the parts in your order, D# again: that is the song now. <kbd>SHIFT</kbd> + D#: as before.</b></div>
+      <div class="note">Stopped, a white key moves the song there and PLAY starts from it. New takes: songs GEN wrote this session.</div>
     </section>
 
     <section class="h2c2"><h2>Looks</h2>
@@ -109,6 +121,10 @@ footer { position: absolute; left: 0.42in; right: 0.42in; bottom: 0.18in; font-s
       <div class="note">Creature families by track: 1 green aliens · 2 blue cryptids · 3 yellow psi orbs · 4 pink crystals · 5 purple sigils · 6 orange herbs.</div>
     </section>
 
+
+    <section class="h2c3"><h2>Share a song</h2>
+      <div class="note" style="color:var(--ink);margin:0">Pass on the style, the vibe and the seed, plus the coloured line under them on GEN: the knobs you changed, e.g. <kbd>E80</kbd> <kbd>X40</kbd>. The same settings write the same song on any Vallée.</div>
+    </section>
 
     <section class="h2c5"><h2>Patterns full?</h2>
       <div class="note" style="color:var(--ink);margin:0">The 64 patterns are shared by the whole unit, and saved projects keep theirs. The message's second line says who holds them (SAVED SLOT 1:30 = slot 1 holds 30). Delete a saved project you don't need on <kbd>SAVE › PROJECT</kbd> <kbd>KNOB 2</kbd> DELETE, then press GEN again.</div>
@@ -185,11 +201,10 @@ footer { position: absolute; left: 0.42in; right: 0.42in; bottom: 0.18in; font-s
     <section class="h2c6"><h2>Sounds Vallée adds</h2>
       <div class="e"><span class="l"><kbd>EDIT › FILTER</kbd></span><b>On an ANALOG track: CLASSIC, MOOG, OBERHEIM or JUNO filter.</b></div>
       <div class="e"><span class="l"><kbd>PRESETS</kbd></span><b>21 presets named MOOG…, OBERHEIM…, JUNO… on ANALOG.</b></div>
-      <div class="e"><span class="l"><kbd>DEAD DRUMS</kbd></span><b>A towel-muted 70s kit on the DRUM engine (KIT DEAD).</b></div>
+      <div class="e"><span class="l"><kbd>DEAD</kbd> <kbd>TAPE</kbd> <kbd>CRUSH</kbd></span><b>Kits: a towel-muted 70s kit, a warm soul session, a drum machine run hot. GEN's styles use all of these.</b></div>
     </section>
     <section class="h2c2"><h2>Installing safely</h2>
       <div class="warn"><b>Before any custom firmware</b>, we highly recommend installing <b>m-bootloader</b> with <b>M-Flasher</b> (github.com/jvitkauskas/m-flasher). If an install goes wrong, hold REC while switching on and the FM-1 waits in download mode.</div>
-      <div class="e" style="margin-top:3px"><span class="l"><kbd>Installer</kbd></span><b>tammygucci.github.io/valee in Chrome or Edge, USB straight to the computer.</b></div>
       <div class="e"><span class="l"><kbd>hold OCT− + OCT+ 5 s</kbd></span><b>The chip's boot mode, for recovery.</b></div>
     </section>
   </div>
