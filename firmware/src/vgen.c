@@ -46,11 +46,11 @@ static struct {
     uint16_t useq[NTRK];
     int16_t g_was[8];            /* the globals as they were (OCT-: back) */
     uint8_t song;                /* (Vallée) the last write a SONG (gen_song): its patterns gen_sid, the lists gen_lwas */
-} gen = {{0, 0, GV_HAZY, 60, GP_LOOP, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0}, 1, 0, 0, 0, 0, {0}, {0}, 0};
+} gen = {{0, 0, GV_HAZY, 60, GP_LOOP, 0, 0, 0, 2, 2, 2, 2, 2, 0, 0, 0}, 1, 0, 0, 0, 0, {0}, {0}, 0};
 static const uint8_t GEN_MAX[GK_N] = {GS_N - 1, 0, GV_N - 1, 100, GP_N - 1, 12, 121, 1, 3, 3, 3, 3, 3, 100, 101, 100};
-static const uint8_t GEN_DEF[GK_N] = {0, 0, GV_HAZY, 60, GP_LOOP, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0};
+static const uint8_t GEN_DEF[GK_N] = {0, 0, GV_HAZY, 60, GP_LOOP, 0, 0, 0, 2, 2, 2, 2, 2, 0, 0, 0};
 static void gen_reset(void)                            /* the knobs as at power-on (TEMPO, KEY, SWING: AUTO; (Vallée)
-                                                        * COLOR OFF, COMPLEX 0, HUMAN 0: turned up only by hand) */
+                                                        * COMPLEX 0, HUMAN 0: turned up only by hand) */
 {
     memcpy(gen.v, GEN_DEF, sizeof gen.v);
     gen.seed = 1;

@@ -10466,8 +10466,8 @@ static int test_gen(void)
         go_home();
         gen.made = 0; gen.nseq = 0; gen.song = 0; gen.win = 0;
         for (k = 0; k < GK_N; k++) gen.v[k] = GEN_DEF[k];
-        bad += check("(Vallée) GEN starts with COLOR OFF, COMPLEX 0, HUMAN 0, SWING AUTO (the user turns them up)",
-                     GEN_DEF[GK_COLOR] == 0u && GEN_DEF[GK_COMPLEX] == 0u && GEN_DEF[GK_SWING] == 0u &&
+        bad += check("(Vallée) GEN starts with COLOR ON, COMPLEX 0, HUMAN 0, SWING AUTO (the user turns them up)",
+                     GEN_DEF[GK_COLOR] == 2u && GEN_DEF[GK_COMPLEX] == 0u && GEN_DEF[GK_SWING] == 0u &&
                      GEN_DEF[GK_HUMAN] == 0u);
         gen.v[GK_COLOR] = 2;                              /* (all six tracks in this song) */
         trk[0].step[5] = mine;
