@@ -2257,6 +2257,10 @@ function makeMockDevice(opt = {}) {
                                                        (G_CMODE, G_CFDBK; G_DRLVL, G_DRREV before: inert since 1.0) */
     E("DLY MODE", ["MONO", "STEREO", "PING"], 1),   /* 27: (2.5) the DELAY's MODE (G_DMODE, a new id; SKF4 holds it by GSID;
                                                      * the unit: GLO > DELAY's PRESETS; STEREO new, MONO the older) */
+    E("DRIVE", ["SOFT", "HARD", "FOLD", "FUZZ"], 0), D("BLEND", F.PCT, 0, 127, 0),   /* 28 .. 35: (Vallée) GLO > ALEMBIC, */
+    E("MOTION", ["PHASR", "FLANG", "CHOR", "WOBBL"], 0), D("BLEND", F.PCT, 0, 127, 0),   /* the mix through four stages */
+    E("SPACE", ["ECHO", "VERB", "BOTH"], 0), D("BLEND", F.PCT, 0, 127, 0),               /* (alembic.c; new ids, SKF4 */
+    E("GRAIN", ["WOW", "DUST", "CRUSH", "FILTR"], 0), D("BLEND", F.PCT, 0, 127, 0),     /* holds them by GSID) */
   ];
   const NONE = D("-", F.INT, 0, 0, 0);
   const RATIO = [".5", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "14", "16"];
@@ -2515,7 +2519,7 @@ function makeMockDevice(opt = {}) {
   TP.push(D("STRUM", F.INT, 0, 100, 0, null, "ms"), E("DIR", ["DOWN", "UP", "ALT"], 0));   /* 138, 139: (2.5) STRUM (0
                                                     OFF), its DIR */
   TP.push(E("FILTER", ["CLASSIC", "MOOG", "OBERHEIM", "JUNO"], 0));   /* 140: (Vallée) ANALOG's FILTER */
-  const P_COUNT = 149, G_COUNT = 28, NSTEP = 64, P_E0 = 141, G_ENGSEL = 20, P_SLCR = 45;
+  const P_COUNT = 149, G_COUNT = 36, NSTEP = 64, P_E0 = 141, G_ENGSEL = 20, P_SLCR = 45;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const enumOrig = (d, v) => d.fmt === F.ENUM && d.names ? aliasOf(d.names, v - d.min) + d.min : v;   /* params.c enum_orig */
   /* six tracks (firmware v3; Skiff phase 6), a synth part each; engine / preset / p / step below are the selected track's */

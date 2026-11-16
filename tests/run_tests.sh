@@ -53,6 +53,9 @@
 # PERFORM (tests/perform_test.c): the FX hold layer (src/perform.c): 1/16 starts, stereo buffer effects, the
 #                   too-long REPEAT, the SLICER interplay, silent layer keys, idle bit-identical, cost; build/perform_demo/;
 #                   OCT UP / DN (the harmonizer): pitch, stereo, clicks, the shimmer bounded, cost; build/fx_demo/.
+# ALEMBIC (tests/alembic_test.c, Vallée): GLO > ALEMBIC (src/alembic.c), the mix through DRIVE MOTION SPACE GRAIN: BLEND 0
+#                   bit for bit, every flavour bounded with no DC and quiet once the input goes, the glides and a flavour
+#                   change, SPACE into the right sends, the pages, a project keeps it (one of 2.5 loads it off), the cost.
 # REVERB (tests/reverb_test.c): REVERB TYPE (src/fx.c): ROOM bit for bit as before, SPRING's decay against SIZE,
 #                   its chirp (group delay rising with frequency), stability at the corners, level, a model change
 #                   without a click, its cost against ROOM (+30 % at most); demos in build/fx_demo/.
@@ -286,6 +289,8 @@ if [ -f build/gen/felucca_tables.h ]; then
     run "1.3: Felucca's features (LFO 2, SEQ TOOLS, FOLLOW, MOMENTARY, LANE MUTES, STEP PREVIEW, PROGRAM CHANGE)" "$OUT/feat13_test"
     $CC -O1 -w -Ibuild/gen -Ifirmware/src -o "$OUT/insert_test" tests/insert_test.c -lm
     run "1.3: the INSERT (bit for bit off, every type bounded with no DC, MIX's glide, automation, stored)" "$OUT/insert_test"
+    $CC -O1 -w -Ibuild/gen -Ifirmware/src -o "$OUT/alembic_test" tests/alembic_test.c -lm
+    run "(Vallée) ALEMBIC: off bit for bit, every flavour bounded with no DC, glides, SPACE's sends, the pages, stored, cost" "$OUT/alembic_test"
     $CC -O1 -w -Ibuild/gen -Ifirmware/src -o "$OUT/ratchet_test" tests/ratchet_test.c -lm
     run "RATCH: x1..x4 in a step (notes, chords, drum hits), gates, chance, swing, projects (the converter's build), user presets, CHANCE page; FLAM" "$OUT/ratchet_test"
     $CC -O1 -w -Ibuild/gen -Ifirmware/src -o "$OUT/ties_test" tests/ties_test.c -lm

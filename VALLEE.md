@@ -14,6 +14,8 @@ SLICE engine is left out** (see [Room on the FM-1](#room-on-the-fm-1)). On top o
   of a part while it plays, and your arrangement recorded as you play it.
 - **Its own sounds**: MOOG, OBERHEIM and JUNO filters and presets, and the kits DEAD, TAPE and CRUSH, which GEN's
   styles are voiced with.
+- **ALEMBIC**: the whole mix through four effects in a row, DRIVE, MOTION, SPACE and GRAIN, each with a flavour and a
+  BLEND, on two GLO pages drawn as the Alchemist's four vessels.
 
 Vallée's first start sets the look it is made for, once, on a new unit and over Skiff's settings alike: THEME XENO,
 LARGE OFF (its big cards hide the deck and the creatures), ANIM ON, PLAYHEAD THEME, BPM LOCK ON (SELECT on HOME opens
@@ -35,6 +37,42 @@ SUB, MOOG FUNK, MOOG TAURUS, MOOG SWEEP, MOOG FLUTE; OBERHEIM, OBERHEIM PAD, OBE
 LEAD, OBERHEIM KEY; JUNO PAD, JUNO STRINGS, JUNO BASS, JUNO HOOVER, JUNO BRASS, JUNO KEYS, JUNO ARP, JUNO SWEEP. Voiced
 after those instruments by ear; no circuit or sample of theirs is in here, and Vallée is not affiliated with Moog,
 Oberheim or Roland.
+
+## ALEMBIC: the whole mix through four vessels
+
+Tap **GLO** past GLOBAL: **ALEMBIC** and **ALEMBIC 2**. The whole mix (every track, after its own effects) runs
+through four stages, always in this order, like a liquid poured from vessel to vessel:
+
+| Stage | Flavours (the first knob) | What it does |
+|---|---|---|
+| DRIVE | SOFT, HARD, FOLD, FUZZ | saturation; BLEND drives it harder and mixes more of it in |
+| MOTION | PHASR, FLANG, CHOR, WOBBL | a phaser, a flanger, a chorus (left and right swept apart: wide), or WOBBL, a vibrato |
+| SPACE | ECHO, VERB, BOTH | sends the whole mix into the delay, the reverb, or both |
+| GRAIN | WOW, DUST, CRUSH, FILTR | tape wow and flutter, record crackle, bits and rate taken away, a low-pass closing |
+
+| Page | KNOB 1 | KNOB 2 | KNOB 3 | KNOB 4 |
+|---|---|---|---|---|
+| ALEMBIC | DRIVE | BLEND | MOTION | BLEND |
+| ALEMBIC 2 | SPACE | BLEND | GRAIN | BLEND |
+
+- **BLEND** is how much of each stage you hear (and for DRIVE, WOW, CRUSH and FILTR how strong it is). **BLEND 0 is
+  off**: that stage does nothing at all, and the sound is exactly as without ALEMBIC.
+- Each stage's two knob cards are in its own colour: DRIVE green, MOTION blue, SPACE yellow, GRAIN pink (in TEEN, that
+  theme's colours).
+- **The screen**: four flasks in a row joined by a pipe, each as full as its BLEND, its flavour etched on the glass and
+  named under it. While the sound goes through, the liquid moves (DRIVE bubbles, MOTION sways, DUST sparks) and drops
+  run down the pipe while playing. An empty flask is a stage that is off. ANIM OFF keeps them still.
+- **SPACE uses the delay and reverb you set on GLO > DELAY and REVERB** (their time, feedback, type): it adds the whole
+  mix to what the tracks already send there.
+- Changing a flavour fades the old one out and the new one in (a few milliseconds), so turning KNOB 1 or 3 while
+  playing doesn't click.
+- **Saved with the project.** Songs made before ALEMBIC open with it off, and a Vallée project still opens on Skiff
+  (which ignores these settings).
+- Most of it is Skiff's own effects reused (the INSERT's shapers, sweeps, CRUSH and FILTR, the FX layer's VINYL
+  wobble and crackle, the delay and reverb). New sound code: WOBBL (the chorus line alone) and the tape WOW.
+- **Cost**: nothing while all four BLENDs are 0. All four on costs about as much as an INSERT on all six tracks
+  (tests/alembic_test.c measures it), and SPACE almost nothing (the delay and reverb run anyway). It uses about 3.8 KB
+  of RAM and leaves the memory pool's 8 KB spare untouched.
 
 ## Kits: DEAD, TAPE, CRUSH
 
@@ -332,6 +370,8 @@ What the tests run before a release (tests/run_tests.sh):
 
 - Skiff's whole suite: sound, sequencer, UI, saves, MIDI, USB, the editor, the web pages, sanitizer and fuzzer runs.
 - GEN: every style x part x vibe x seed written and checked (notes in key and on the chord, steps well formed).
+- ALEMBIC (tests/alembic_test.c): every flavour off bit for bit, every flavour at three BLENDs on a loud mix bounded,
+  no DC, quiet when the sound stops; the glides; SPACE into the right sends; the pages; saved; its cost.
 - tests/vallee_stress.c under AddressSanitizer and UndefinedBehaviorSanitizer: GEN with random knobs (and values
   past the knobs' ends), its undo, the songs played; a "monkey" pressing random buttons, knobs and keys over the
   whole UI; the creatures for every engine and sound number.
@@ -389,8 +429,11 @@ The ABOUT page and its QR point at this repo (`ui_menu.c`); a fork of your own: 
 | `firmware/src/ui_xeno.c` | XENO's deck and lanes; the creature box |
 | `firmware/src/ui_beast.c` | the creatures: their parts and how a sound picks them |
 | `firmware/src/ui_world.c` | THE SPELL: the song's map, the Alchemist, the figure |
+| `firmware/src/alembic.c` | ALEMBIC: the four stages on the mix (fx.c `mix_block` calls it) |
+| `firmware/src/ui_pgraph.c` `graph_alembic` | ALEMBIC's four vessels |
 | `tests/ui_test.c` `test_gen`, `test_beasts`, `test_world` | GEN's tests; the creatures (all different) and the box; THE SPELL |
 | `tests/vallee_stress.c` | the stress test: GEN fuzzed, a monkey on the whole UI, the creatures (ASan + UBSan) |
+| `tests/alembic_test.c` | ALEMBIC's tests |
 | `web/emu/emu_test.mjs` | the intro's test |
 
 ## Credits

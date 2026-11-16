@@ -238,7 +238,8 @@ static void draw_column_blocks(uint32_t c, const char *label, const char *val, c
                                int32_t ratio, uint32_t icon, int hot, int mot, int32_t kid, uint32_t kind)
 {
     uint16_t fill = hot ? (UX_QUARK ? T_THEME : T_ACCENT) : T_SURF;   /* ((Skiff Q2) QUARK: the hot cell cyan) */
-    uint32_t tk = icon - ICON_TRK < NTRK ? icon - ICON_TRK : song.sel;   /* whose card: a cushion's track, else the selected */
+    uint32_t tk = blk_tint >= 0 ? (uint32_t)blk_tint : icon - ICON_TRK < NTRK ? icon - ICON_TRK : song.sel;   /* whose
+                                                       * card: ((Vallée) ALEMBIC's stage,) a cushion's track, else the selected */
     int32_t room = COL_W - BK_L - BK_R;
     cv_begin(COL_W, COL_H, T_BG);
     if (UX_NEON && hot) {                             /* (Skiff N3) NEON: the hot card a dusk, framed; the others */

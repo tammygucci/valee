@@ -159,6 +159,10 @@ enum {                          /* global parameters */
                                  * (project.c proj_drums_to_part), then sets them 0 (proj_import) */
     G_DMODE,                    /* (2.5) the DELAY's MODE (DM_*, fx.c): MONO (every project before), STEREO (new ones), PING; the
                                  * chorus too in the stereo ones. GSID 27: SKF4 holds it, the fixed layouts don't */
+    G_ADRV, G_ADRVB,            /* (Vallée) GLO > ALEMBIC: the whole mix through four stages (alembic.c), each a flavour */
+    G_AMOV, G_AMOVB,            /* and its BLEND (0: the stage off, the mix bit for bit as before): DRIVE, MOTION, SPACE, */
+    G_ASPC, G_ASPCB,            /* GRAIN. GSID 28 .. 35: SKF4 holds them by GSID (a project of before: their defaults, */
+    G_AGRN, G_AGRNB,            /* all off; Skiff skips the ids it does not know) */
     G_COUNT
 };
 enum { DM_MONO, DM_STEREO, DM_PING };   /* G_DMODE */

@@ -991,12 +991,12 @@ static int32_t ins_lpk(int32_t c)
 static inline uint32_t ins_bits_sh(int32_t a) { return 15u - (uint32_t)(clamp(a, 0, 127) >> 3); }   /* BITS 1..16 */
 
 /* SOFT .. FUZZ: low cut -> DRIVE -> shape -> TONE -> LEVEL -> DC blocker; CRUSH: held sample -> bits -> LPF */
-static __attribute__((noinline)) void ins_drive(ins_t *s, const track_t *t, int32_t *b, uint32_t n, int32_t tw)
+static __attribute__((noinline)) void ins_drive(ins_t *s, const int16_t *pp, int32_t *b, uint32_t n, int32_t tw)
 {
-    uint32_t i, ty = s->type, crush = ty == IT_CRUSH, sh = ins_bits_sh(t->p[P_IA]);
-    uint32_t hold = INS_HOLD[clamp(t->p[P_IB], 0, 127) >> 3];
-    int32_t a = t->p[P_IA], g = 4096 + a * a * 3;       /* DRIVE, Q12: 1x .. 12.8x, gentle at first */
-    int32_t k = ins_lpk(crush ? t->p[P_IC] : t->p[P_IB]), lvl = crush ? 4096 : LEVEL_Q12[t->p[P_IC] & 127];
+    uint32_t i, ty = s->type, crush = ty == IT_CRUSH, sh = ins_bits_sh(pp[0]);
+    uint32_t hold = INS_HOLD[clamp(pp[1], 0, 127) >> 3];
+    int32_t a = pp[0], g = 4096 + a * a * 3;       /* DRIVE, Q12: 1x .. 12.8x, gentle at first */
+    int32_t k = ins_lpk(crush ? pp[2] : pp[1]), lvl = crush ? 4096 : LEVEL_Q12[pp[2] & 127];
     for (i = 0; i < n; i++) {
         int32_t x = b[i], y, v;
         s->w += clamp(tw - s->w, -SL_SLOPE, SL_SLOPE);
@@ -1030,10 +1030,10 @@ static __attribute__((noinline)) void ins_drive(ins_t *s, const track_t *t, int3
 }
 
 /* PHASR, FLANG, CHOR: the sweep at RATE (one LFO per track), DEPTH, FDBK */
-static __attribute__((noinline)) void ins_swept(ins_t *s, const track_t *t, int32_t *b, uint32_t n, int32_t tw)
+static __attribute__((noinline)) void ins_swept(ins_t *s, const int16_t *pp, int32_t *b, uint32_t n, int32_t tw)
 {
-    uint32_t i, inc = LFO_INC[clamp(t->p[P_IA], 0, 127)] / CTL, dep = (uint32_t)clamp(t->p[P_IB], 0, 127);
-    int32_t c = clamp(t->p[P_IC], 0, 127);
+    uint32_t i, inc = LFO_INC[clamp(pp[0], 0, 127)] / CTL, dep = (uint32_t)clamp(pp[1], 0, 127);
+    int32_t c = clamp(pp[2], 0, 127);
     if (s->type == IT_PHASER) {                         /* the coefficients a block at a time (at its middle) */
         uint32_t tr = ins_tri(s->ph + (n >> 1) * inc), q = 32768u + (uint32_t)(((int32_t)tr - 32768) * (int32_t)dep / 127);
         int32_t a = IN_PH_A[q >> 11] + (((IN_PH_A[(q >> 11) + 1u] - IN_PH_A[q >> 11]) * (int32_t)(q & 2047u)) >> 11);
@@ -1089,13 +1089,13 @@ static __attribute__((noinline)) void ins_swept(ins_t *s, const track_t *t, int3
  * at CUTOFF (A) and RES (B), its output by SHAPE (C): LP (0) into BP (64) into HP (127), the two beside it blended; BP
  * level-matched (k v1: at the cutoff as loud as LP's flat part), so a sweep of SHAPE keeps its level. The signal at a
  * half in it (its states within +-150000; RES's peak clips there, as ANALOG's); the states are lp1 and lp2: no new RAM */
-static __attribute__((noinline)) void ins_filter(ins_t *s, const track_t *t, int32_t *b, uint32_t n, int32_t tw)
+static __attribute__((noinline)) void ins_filter(ins_t *s, const int16_t *pp, int32_t *b, uint32_t n, int32_t tw)
 {
     tsvf_t c;
-    int32_t sh = clamp(t->p[P_IC], 0, 127), k = 8192 - clamp(t->p[P_IB], 0, 127) * 7600 / 127;   /* damping, Q12 */
+    int32_t sh = clamp(pp[2], 0, 127), k = 8192 - clamp(pp[1], 0, 127) * 7600 / 127;   /* damping, Q12 */
     int32_t wl = sh < 64 ? (64 - sh) * 64 : 0, wh = sh > 64 ? (sh - 64) * 4096 / 63 : 0, wb = 4096 - wl - wh;   /* Q12 */
     uint32_t i;
-    tsvf_coef_k(&c, clamp(t->p[P_IA], 0, 127) << 8, k);
+    tsvf_coef_k(&c, clamp(pp[0], 0, 127) << 8, k);
     for (i = 0; i < n; i++) {
         int32_t x = b[i], in = clamp(x, -262143, 262143) >> 1, v3 = in - s->lp2, v1, v2, bp;   /* (|HP| x 4096 < 2^31) */
         s->w += clamp(tw - s->w, -SL_SLOPE, SL_SLOPE);
@@ -1132,13 +1132,15 @@ static __attribute__((noinline)) void track_insert(track_t *t, int32_t *b, uint3
         s->type = (uint8_t)ty;
     }
     if (s->type == IT_FILTER)
-        ins_filter(s, t, b, n, tw);
+        ins_filter(s, &t->p[P_IA], b, n, tw);
     else if (s->type >= IT_PHASER)
-        ins_swept(s, t, b, n, tw);
+        ins_swept(s, &t->p[P_IA], b, n, tw);
     else
-        ins_drive(s, t, b, n, tw);
+        ins_drive(s, &t->p[P_IA], b, n, tw);
     t->ins_run = s->w != 0;                             /* (mix_part calls again while it fades) */
 }
+
+#include "alembic.c"                                 /* (Vallée) GLO > ALEMBIC: the mix through four stages */
 
 /* (Skiff 1.3, from Felucca's #148) SPREAD: a POLY or UNISON part whose SPREAD is above 0. Its voices start left and
  * right of PAN in turn (voice.c voice_start; UNISON's detuned voices alternate), at PAN -/+ SPREAD / 2 (127: hard left
@@ -1522,9 +1524,19 @@ static void mix_block(int32_t *out, uint32_t n)
         throw_off();                                    /* (Skiff) .. and off: nothing else sees them */
     if (perf)                                           /* ((2.5) a stereo delay: THROW and DUB left and right) */
         AUDIO_FAR(perf_pre)(mix_l, mix_r, send_d, song.g[G_DMODE] != DM_MONO ? send_e : 0, send_r, n);
+    if (alm_pre_on())                                   /* ((Vallée) ALEMBIC: DRIVE, MOTION, SPACE's sends) */
+        alm_pre(mix_l, mix_r, send_d, song.g[G_DMODE] != DM_MONO ? send_e : 0, send_r, n);
     fx_buses(send_c, send_d, send_e, send_r, wet, n);
     if (hl.side)
         rev_side_mix(mix_l, mix_r, n);                  /* HALL, (2.5) a stereo delay and chorus: stereo */
+    if (alm_post_on()) {                                /* ((Vallée) ALEMBIC's GRAIN: on the mix with the wet in it) */
+        for (i = 0; i < n; i++) {
+            mix_l[i] += wet[i];
+            mix_r[i] += wet[i];
+            wet[i] = 0;
+        }
+        alm_post(mix_l, mix_r, n);
+    }
     if (perf) {
         AUDIO_FAR(perf_master)(out, n);
         return;

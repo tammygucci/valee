@@ -75,6 +75,10 @@ static const char *const N_DASH[] = {"--"};
 static const char *const N_RTYPE[] = {"ROOM", "SPRING", "HALL"};   /* G_RTYPE: the reverb bus's model (fx.c) */
 static const char *const N_CMODE[] = {"CHORUS", "FLANGER", "PHASER"};   /* (Skiff phase 9) G_CMODE (fx.c cho_mode) */
 static const char *const N_DMODE[] = {"MONO", "STEREO", "PING"};        /* (2.5) G_DMODE: DM_MONO .. DM_PING (fx.c) */
+static const char *const N_ADRV[] = {"SOFT", "HARD", "FOLD", "FUZZ"};     /* (Vallée) ALEMBIC's stages (alembic.c) */
+static const char *const N_AMOV[] = {"PHASR", "FLANG", "CHOR", "WOBBL"};
+static const char *const N_ASPC[] = {"ECHO", "VERB", "BOTH"};
+static const char *const N_AGRN[] = {"WOW", "DUST", "CRUSH", "FILTR"};
 static const char *const N_GO[] = {"--", "GO"};
 static const char *const N_SLCR[] = {"OFF", "GATE", "STUT"};             /* SL_OFF .. SL_STUT (slicer.c) */
 static const char *const N_SLDIV[] = {"1/8", "1/16", "1/32", "8T", "16T", "32T"};   /* SL_DEN */
@@ -240,6 +244,15 @@ static const param_desc_t GP[G_COUNT] = {
     [G_DMODE] = PE("DLY MODE", N_DMODE, DM_STEREO), /* (GLO > DELAY's PRESETS: not a card; the editor's list: apart
                                                      * from the chorus's MODE, in its 8 letters, editor.c. STEREO
                                                      * new; a project before 2.5 loads MONO, as it played: project.c) */
+    /* (Vallée) GLO > ALEMBIC: each stage's flavour and BLEND (alembic.c); new ids, SKF4 holds them by GSID */
+    [G_ADRV] = PE("DRIVE", N_ADRV, 0),
+    [G_ADRVB] = PD("BLEND", F_PCT, 0, 127, 0),
+    [G_AMOV] = PE("MOTION", N_AMOV, 0),
+    [G_AMOVB] = PD("BLEND", F_PCT, 0, 127, 0),
+    [G_ASPC] = PE("SPACE", N_ASPC, 0),
+    [G_ASPCB] = PD("BLEND", F_PCT, 0, 127, 0),
+    [G_AGRN] = PE("GRAIN", N_AGRN, 0),
+    [G_AGRNB] = PD("BLEND", F_PCT, 0, 127, 0),
 };
 
 /* (Skiff 1.3, from Felucca 1.5) the INSERT's A B C as its TYPE means them (TP's ranges and defaults): the drives DRIVE
@@ -529,7 +542,8 @@ enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_FX, GR_ROLL, GR_
        GR_LMIX,                    /* (2.0, #36, the user's pick 1A) EDIT > LANE MIX: a kit's lane levels and pans */
        GR_FOLLOW,                  /* (2.1) SCL > FOLLOW: the chord it follows, as CHORD's (ui_graph.c graph_follow) */
        GR_FXDLY, GR_FXREV,         /* (2.5) FX > DELAY, REVERB: the track's send beside the bus's own (page_desc) */
-       GR_GEN };                   /* (Vallée) HOME > GEN: the song generator, a sheet (vgen.c) */
+       GR_GEN,                     /* (Vallée) HOME > GEN: the song generator, a sheet (vgen.c) */
+       GR_ALEM };                  /* (Vallée) GLO > ALEMBIC: the four vessels (ui_pgraph.c graph_alembic) */
 
 typedef struct {
     const char *title;
@@ -591,6 +605,8 @@ static const page_t PAGES[] = {
     {"REVERB", FAM_GLO, SC_GLOBAL, GR_REVERB, {G_RTYPE, G_RSIZE, G_RDAMP, 0xFF}},   /* TYPE: ROOM / SPRING / HALL */
     {"CHORUS", FAM_GLO, SC_GLOBAL, GR_CHORUS, {G_CRATE, G_CDEPTH, G_CMODE, G_CFDBK}},   /* ((phase 9) MODE, FEEDBACK) */
     {"GLOBAL", FAM_GLO, SC_GLOBAL, GR_GLOBAL, {G_BPM, G_SWING, 0xFF, 0xFF}},   /* ((U3, R8) CLK TUNE: the MENU's) */
+    {"ALEMBIC", FAM_GLO, SC_GLOBAL, GR_ALEM, {G_ADRV, G_ADRVB, G_AMOV, G_AMOVB}},     /* (Vallée) the whole mix through */
+    {"ALEMBIC 2", FAM_GLO, SC_GLOBAL, GR_ALEM, {G_ASPC, G_ASPCB, G_AGRN, G_AGRNB}},   /* DRIVE MOTION SPACE GRAIN */
     {"PRESETS", FAM_SAVE, SC_GLOBAL, GR_BROWSE, {0xFF, 0xFF, 0xFF, 0xFF}},   /* browser: PRESETS knob / KNOB 1 */
     {"USER", FAM_SAVE, SC_GLOBAL, GR_USER, {0xFF, 0xFF, 0xFF, 0xFF}},       /* user presets: SLOT LOAD ERASE SAVE */
     {"PATTERNS", FAM_SAVE, SC_GLOBAL, GR_BANK, {0xFF, 0xFF, 0xFF, 0xFF}},   /* (Skiff phase 5) the pool: PATTERN LEN USED CLEAR */

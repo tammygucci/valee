@@ -258,6 +258,9 @@ static uint32_t span_face(uint32_t c, const card_span_t *sp, uint32_t (*face)(co
     }
     return got[c];
 }
+static int8_t card_tint = -1;                           /* ((Vallée) ALEMBIC: this card in its stage's colour (T_TRK k),
+                                                         * the value and the gauge; draw_columns sets it, one card) */
+static int8_t blk_tint = -1;                            /* (.. draw_column_blocks', from draw_column) */
 #include "ui_blocks.c"                                 /* Skiff: STYLE BLOCKS' header and card (draw_head_blocks, draw_column_blocks) */
 
 static void draw_head(void) { draw_head_blocks(); }   /* (U2: BLOCKS, the only look: ui_blocks.c) */
@@ -414,8 +417,9 @@ static void draw_column(uint32_t c, const char *label, const char *val, const ch
 {
     char key[48];
     int hot = c == ui.hot_col && ui.hot_t, named = fmt_named, mot = card_mot_next && label[0], strip, snap;
-    uint16_t vc = vr == VR_LIVE ? (hot ? T_ACCENT : T_THEME) : vr == VR_DIM ? T_DIM : vr == VR_ACCENT ? T_ACCENT
-                : vr == VR_MID ? T_MID : T_THEME;
+    int32_t tint = card_tint;
+    uint16_t vc = vr == VR_LIVE ? (hot ? T_ACCENT : tint >= 0 ? T_TRK(tint) : T_THEME) : vr == VR_DIM ? T_DIM :
+                  vr == VR_ACCENT ? T_ACCENT : vr == VR_MID ? T_MID : T_THEME;
     uint32_t kind = large_kind();                       /* MENU > LARGE: tall (draw_column_tall), or the label in M */
     int blocks = kind != LK_TALL;                       /* Skiff: BLOCKS' tile (ui_blocks.c), its values snap; LARGE's
                                                          * tall card: the older one */
@@ -427,6 +431,8 @@ static void draw_column(uint32_t c, const char *label, const char *val, const ch
     int32_t kid = kc_tag(val, &kn);
     card_span_t sp = card_span;                         /* (Felucca #251: what the knob shows, this card only) */
     card_span.fn = 0;
+    card_tint = -1;                                     /* ((Vallée) the stage's colour: this card only) */
+    blk_tint = (int8_t)tint;
     fmt_named = 0;                                      /* (params.c: a name, for this card only) */
     card_mot_next = 0;                                  /* (the same: MOTION, this card only) */
     card_mot = (uint8_t)((card_mot & ~(1u << c)) | (uint32_t)mot << c);
@@ -1196,6 +1202,8 @@ static void draw_columns(void)
         param_format(d, *vp, val, &unit);
         card_mot_of(vp);                                /* (a global: never) */
         card_span_of(d);
+        if (cur_page()->graph == GR_ALEM)               /* ((Vallée) ALEMBIC: each stage's two cards in its colour) */
+            card_tint = (int8_t)((cur_page()->id[0] == G_ADRV ? 0 : 2) + c / 2u);
         draw_column(c, (cur_page()->graph == GR_LANES || cur_page()->graph == GR_LMIX) && c == 1u ? "LEVEL" : d->label,
                     val, unit,                          /* ((phase 9) TUNE DECAY; (2.0) LANE MIX's PAN) */
                     card_dead(cur_page(), c) ? VR_DIM : VR_LIVE,

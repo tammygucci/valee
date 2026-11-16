@@ -1031,7 +1031,8 @@ int main(void)
         for (i = 0; i < G_COUNT; i++)
             ok &= c.g[i] == (i < 20u ? a.g[i] : i == G_DMODE ? DM_MONO : GP[i].def);
         bad += check("  an older record (20 globals, 100 parameters on T2): the rest at their defaults (the delay MONO)", ok);
-        skf4_edit(&st2, &st, g0 + 1u + 2u * G_DMODE, -2, g0, -1);          /* ((2.5) 2.2's record: 27 globals */
+        skf4_edit(&st2, &st, g0 + 1u + 2u * G_DMODE, -2 * (int)(G_COUNT - G_DMODE), g0,   /* ((2.5) 2.2's record: */
+                  -(int)(G_COUNT - G_DMODE));                                     /* 27 globals; (Vallée) none after */
         ok = proj_import(&c, &st2, (int)PROJ_STORE4) && !memcmp(c.g, a.g, 2u * G_DMODE) && a.g[G_DMODE] != DM_MONO &&
              c.g[G_DMODE] == DM_MONO && st2.raw[g0] == 27u && GP[G_DMODE].def == DM_STEREO;
         bad += check("  (2.5) 2.2's record (27 globals): the delay MONO, as it played (a new project: STEREO)", ok);

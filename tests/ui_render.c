@@ -816,6 +816,7 @@ enum { S_HOME, S_HOME_IDLE, S_MESSAGE, S_MESSAGE_KEY, S_MESSAGE_NOFILE, S_PRESET
        S_SHIFT_SONG, S_HINT_FREE,                                                             /* (2.5) */
        S_GEN, S_GEN_PART, S_GEN_PARTS, S_GEN_FEEL, S_GEN_WRITTEN, S_GEN_STEELY, S_GEN_DEMARCO,  /* (Vallée) GEN */
        S_BEAST, S_BEAST_LONG, S_BEAST_HOOD, S_BEAST_MUTED, S_WORLD,                                  /* (Vallée) the creature box */
+       S_ALEM, S_ALEM_ON, S_ALEM2, S_ALEM2_DUST,                                                     /* (Vallée) GLO > ALEMBIC */
        S_MOCK_HOME, S_MOCK_PRESETS, S_MOCK_SEQ, S_MOCK_DRUM, S_MOCK_MIXER, S_MOCK_DIALOG, S_MOCK_MENU, S_COUNT };
 static const char *const S_NAME[S_COUNT] = {"home", "home_idle", "message", "message_key", "message_nofile", "presets", "presets_nofav", "user",
     "project", "lanes", "step", "pattern", "chance", "motion", "drum",
@@ -852,7 +853,7 @@ static const char *const S_NAME[S_COUNT] = {"home", "home_idle", "message", "mes
     "follow", "follow_scale", "follow_fit", "follow_off", "follow_wait", "free_take", "free_take_turned", "dly_mono", "dly_ping", "fx_delay", "fx_reverb", "fx_sends", "pattern_64", "song_strip", "project_new",
     "project_clear", "confirm_clear_song", "confirm_clear_trks", "insert_filter", "insert_filter_hp", "chord_strum",
     "chord_strum_alt", "shift_song", "hint_free_take", "gen", "gen_part", "gen_parts", "gen_feel", "gen_written",
-    "gen_steely", "gen_demarco", "beast", "beast_long", "beast_hood", "beast_muted", "world", "mock_home", "mock_presets", "mock_seq", "mock_drum", "mock_mixer", "mock_dialog", "mock_menu"};
+    "gen_steely", "gen_demarco", "beast", "beast_long", "beast_hood", "beast_muted", "world", "alembic", "alembic_on", "alembic_2", "alembic_2_dust", "mock_home", "mock_presets", "mock_seq", "mock_drum", "mock_mixer", "mock_dialog", "mock_menu"};
 
 /* the scenes of the UI design screens: the state the UI-redesign
  * prototype drew them from (its setup(): two pattern tracks, the drum pattern on track 4, a synthetic scope),
@@ -1743,6 +1744,25 @@ static void setup(int s)
         if (s == S_GEN_FEEL) gen.v[GK_SWING] = 34;
         go_page(GR_GEN);
         if (s == S_GEN_WRITTEN) gen_write();
+        break;
+    case S_ALEM: case S_ALEM_ON: case S_ALEM2: case S_ALEM2_DUST:   /* ((Vallée) GLO > ALEMBIC: the vessels empty; DRIVE
+                                                     * FUZZ and MOTION CHOR on, the sound going through (its peaks), KNOB 2
+                                                     * hot; page 2: SPACE BOTH, GRAIN WOW / DUST, playing, KNOB 4 hot */
+        if (s == S_ALEM_ON) {
+            song.g[G_ADRV] = 3; song.g[G_ADRVB] = 90; song.g[G_AMOV] = 2; song.g[G_AMOVB] = 50;
+            alm.lvl[0] = 3000; alm.lvl[1] = 900;
+        }
+        if (s == S_ALEM2 || s == S_ALEM2_DUST) {
+            song.g[G_ADRVB] = 127; song.g[G_ASPC] = 2; song.g[G_ASPCB] = 70;
+            song.g[G_AGRN] = s == S_ALEM2_DUST ? 1 : 0; song.g[G_AGRNB] = 40;
+            alm.lvl[2] = 2000; alm.lvl[3] = 1500;
+            song.playing = 1;
+        }
+        go_title(s == S_ALEM2 || s == S_ALEM2_DUST ? "ALEMBIC 2" : "ALEMBIC");
+        if (s != S_ALEM) {
+            ui.hot_col = s == S_ALEM_ON ? 1 : 3;
+            ui.hot_t = 30;
+        }
         break;
     case S_WORLD:                                   /* ((Vallée) HOME on HOME: THE WORLD (ui_world.c), a GEN song in it */
         gen_reset();

@@ -2206,8 +2206,10 @@ static int test_product_ux(void)
     press(B_GLO); frames(320); ok &= str_eq(cur_page()->title, "REVERB");
     press(B_GLO); frames(320); ok &= str_eq(cur_page()->title, "CHORUS");
     press(B_GLO); frames(320); ok &= str_eq(cur_page()->title, "GLOBAL");
+    press(B_GLO); frames(320); ok &= str_eq(cur_page()->title, "ALEMBIC");      /* ((Vallée) its two pages) */
+    press(B_GLO); frames(320); ok &= str_eq(cur_page()->title, "ALEMBIC 2");
     press(B_GLO); ok &= cur_page()->graph == GR_TRK;
-    bad += check("(U3) GLO cycles MIXER > DELAY > REVERB > CHORUS > GLOBAL > MIXER", ok);
+    bad += check("(U3) GLO cycles MIXER > DELAY > REVERB > CHORUS > GLOBAL > ALEMBIC > ALEMBIC 2 > MIXER", ok);
     go_home(); hold(B_SEQ);
     bad += check("(U2) long SEQ anywhere: the SEQ TOOLS map (a peek), no page", ui.home && !ui.layer);
     ui_power_on(); open_family(FAM_EDIT);
@@ -6314,7 +6316,8 @@ static int test_layer_lock(void)
     ok = str_eq(cur_page()->title, "DELAY") && !ui.lock;
     press(B_GLO); frames(400);
     ok &= str_eq(cur_page()->title, "REVERB") && !ui.lock && !ui.layer;
-    press(B_GLO); frames(400); press(B_GLO); frames(400); press(B_GLO);   /* (CHORUS, GLOBAL, MIXER) */
+    press(B_GLO); frames(400); press(B_GLO); frames(400); press(B_GLO); frames(400);   /* (CHORUS, GLOBAL, (Vallée) */
+    press(B_GLO); frames(400); press(B_GLO);                                            /* ALEMBIC 1 and 2, MIXER) */
     btn_down(B_GLO); frames(500);
     ok &= ui.layer == LAYER_GLO && !ui.lock;
     btn_up(B_GLO); frame();
@@ -8514,10 +8517,10 @@ static int test_u3(void)
     ui_power_on();                                      /* N6: GLO's count */
     press(B_GLO); frame();
     page_title(ti);
-    ok = str_eq(ti, "MIXER 1/5");
+    ok = str_eq(ti, "MIXER 1/7");                        /* ((Vallée) ALEMBIC's two: 7) */
     press(B_GLO); frame();
     page_title(ti);
-    bad += check("U3 N6: GLO's pages counted as one: MIXER 1/5, DELAY 2/5", ok && str_eq(ti, "DELAY 2/5"));
+    bad += check("U3 N6: GLO's pages counted as one: MIXER 1/7, DELAY 2/7", ok && str_eq(ti, "DELAY 2/7"));
     ui_power_on();                                      /* R8: the unit's TUNE */
     song.g[G_TUNE] = 7;
     project_save(1);

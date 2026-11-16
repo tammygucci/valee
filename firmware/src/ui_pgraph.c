@@ -820,3 +820,64 @@ static void graph_arp(const track_t *t, uint16_t c)
         }
     }
 }
+
+/* (Vallée) GLO > ALEMBIC: the mix's four vessels, left to right, a pipe into each from the one before (alembic.c):
+ * DRIVE, MOTION, SPACE, GRAIN, each in its colour (the elements', T_TRK 1 .. 4: the knob cards' too), full as its
+ * BLEND, its flavour's sigil etched on the glass (a star of 3 .. 6 points) and named under it. A stage at BLEND 0 is
+ * an empty flask, DIM. While the sound goes through (alembic.c's peaks) the liquid moves: DRIVE bubbles, MOTION
+ * sways, SPACE ripples, GRAIN's WOW rolls slowly, its DUST sparks; a drop runs along each pipe into a vessel that
+ * is on. ANIM OFF: still. Laid out by the canvas's height (MENU > LARGE's tall cards: a smaller row) */
+static const char *const *const ALM_NAMES[4] = {N_ADRV, N_AMOV, N_ASPC, N_AGRN};
+static void graph_alembic(uint16_t c)
+{
+    const int32_t H = (int32_t)cv_h, r = H - 40 > 75 ? 25 : (H - 40) / 3, cy = H - 18 - r, ny = cy - r - (r > 20 ? 18 : 12);
+    uint32_t k;
+    int anim = xe_anim();
+    (void)c;
+    if (ny >= 30)                                                     /* (room above: what it is) */
+        pg_text(12, 16, "THE MIX, FROM VESSEL TO VESSEL", T_MID);
+    cv_rect(4, ny + 1, 232, 3, ux_mix(T_LINE, T_SURF, 20));          /* the pipe, in at the left, out at the right */
+    for (k = 0; k < 4u; k++) {
+        int32_t cx = 30 + (int32_t)k * 60, b = clamp(song.g[G_ADRVB + 2u * k], 0, 127);
+        uint32_t f = (uint32_t)clamp(song.g[G_ADRV + 2u * k], 0, k == 2u ? 2 : 3), i, np = f + 3u;
+        int32_t lvl = b ? 1 + (alm.lvl[k] >> 10 > 3 ? 3 : alm.lvl[k] >> 10) : 0;   /* (how much it moves) */
+        int32_t top = cy + r - 2 - (2 * r - 4) * b / 127, x;
+        uint16_t col = b ? T_TRK(k) : T_DIM, liq = ux_mix(T_TRK(k), T_SURF, 35);
+        uint32_t ph = anim ? ui.frame * (k == 1u ? 0x0C000000u : k == 3u && f == 0u ? 0x03000000u : 0x06000000u) : 0u;
+        cv_rect(cx - 5, ny, 10, cy - r - ny + 2, T_SURF);                 /* the neck, open to the pipe */
+        cv_rect(cx - 6, ny, 1, cy - r - ny + 1, col);
+        cv_rect(cx + 5, ny, 1, cy - r - ny + 1, col);
+        for (x = -r + 1; b && x < r; x++) {                              /* the liquid, column by column */
+            int32_t h = xe_isqrt(r * r - x * x) - 1, s = top;
+            if (anim && lvl)
+                s += sine_i(ph + (uint32_t)(x + r) * 0x0B000000u) * lvl / 32768;
+            if (s < cy - h)
+                s = cy - h;
+            if (s <= cy + h)
+                cv_rect(cx + x, s, 1, cy + h - s + 1, liq);
+        }
+        xe_ring(cx, cy, r, col);                                          /* the glass */
+        cv_rect(cx - 5, cy - r, 10, 1, b ? liq : T_SURF);                  /* (open at the neck) */
+        for (i = 0; i < np; i++) {                                        /* the sigil: a star of np points */
+            uint32_t a = 0xC0000000u + i * (0xFFFFFFFFu / np), a2 = a + 2u * (0xFFFFFFFFu / np);
+            int32_t rs = r / 3 + 1;
+            cv_line(cx + sine_i(a + 0x40000000u) * rs / 32768, cy + 3 + sine_i(a) * rs / 32768,
+                    cx + sine_i(a2 + 0x40000000u) * rs / 32768, cy + 3 + sine_i(a2) * rs / 32768,
+                    b ? ux_mix(T_TRK(k), T_INK, 55) : T_DIM);
+        }
+        if (anim && lvl && k == 0u)                                       /* DRIVE: bubbles rising */
+            for (i = 0; i < 3u; i++) {
+                int32_t by = cy + r - 3 - (int32_t)((ui.frame * 2u + i * 11u) % (uint32_t)(cy + r - top + 1));
+                if (by > top + 2)
+                    cv_rect(cx - 7 + (int32_t)i * 6, by, 2, 2, ux_mix(T_TRK(k), T_INK, 30));
+            }
+        if (anim && lvl && k == 3u && f == 1u)                            /* DUST: sparks over it */
+            for (i = 0; i < 2u; i++) {
+                uint32_t h = (ui.frame / 3u + i * 7u) * 2654435761u;
+                cv_rect(cx - r / 2 + (int32_t)(h >> 27) * r / 32, top - 3 - (int32_t)((h >> 20) & 3u), 1, 1, T_TRK(k));
+            }
+        if (anim && b && song.playing)                                    /* a drop down the pipe into it */
+            cv_rect(cx - 30 + (int32_t)(ui.frame * 2u % 22u), ny + 1, 3, 3, T_TRK(k));
+        cv_text_in(cx - 28, H - 4 - AF_S.asc, 56, &AF_S, ALM_NAMES[k][f], b ? T_TEXT : T_DIM, T_SURF);
+    }
+}
