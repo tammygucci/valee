@@ -131,6 +131,8 @@ preset/DRUM/10_DEEP_DRUMS 2f411a093c6daf98
 preset/DRUM/11_SNAP_KIT e79c1febe2a0db4c
 preset/DRUM/12_PERC_KIT 27bde805553c8254
 preset/DRUM/13_DEAD_DRUMS 765ffc0f2b304afc
+preset/DRUM/14_TAPE_KIT b0a98ed3f0760e2c
+preset/DRUM/15_CRUSH_KIT 66521fa5fdbf2ed4
 preset/NOISE/00_WIND 3d56bfce7d3025d8
 preset/NOISE/01_RAIN 42a3ffd439e9a780
 preset/NOISE/02_ARCADE cc4e7a213c50f9b4
@@ -173,6 +175,8 @@ drums/kit_DEEP 31c33cbf17422dfc
 drums/kit_TIGHT 3887c749b3dbfc2c
 drums/kit_PERC e2e24877a4b5af44
 drums/kit_DEAD 932c834c3568ebc0
+drums/kit_TAPE d53083eaaf9352ac
+drums/kit_CRUSH 4c5e7755cfef3d40
 mode/ANALOG/POLY a7b0ce7f70273de9
 mode/ANALOG/MONO daa573b6eb057d82
 mode/ANALOG/LEGATO a802281e4b5e77b8

@@ -972,8 +972,9 @@ static void cost(void)
 }
 
 /* --------------------------------------------------------- the model kits --- */
-static const char *const KITN[DV_NKIT] = {"80", "10", "66", "55", "77", "DEEP", "TIGHT", "PERC", "DEAD"};
-#define KITV(k) ((k) < 8u ? DK_80 + (k) : DK_DEAD)   /* ((Vallée) a model's KIT value: DEAD after the user kits) */
+static const char *const KITN[DV_NKIT] = {"80", "10", "66", "55", "77", "DEEP", "TIGHT", "PERC", "DEAD", "TAPE", "CRUSH"};
+#define KITV(k) ((k) < 8u ? DK_80 + (k) : DK_DEAD + (k) - 8u)   /* ((Vallée) a model's KIT value: DEAD TAPE CRUSH after
+                                                         * the user kits) */
 static const char *const LANEN[DV_NLANE] = {"KICK", "SNARE", "CLAP", "HATCL", "HATOP", "TOM", "RIM", "BELL"};
 #define KLEN (FS * 6u)
 
@@ -1002,6 +1003,11 @@ static const float KTGT[DV_NKIT][DV_NLANE][2] = {
     /* (Vallée) DEAD: measured (a towel-muted kit: every lane short, the snare and toms dark) */
     {{0.100, 190}, {0.090, 2176}, {0.040, 5320}, {0.070, 6430},   /* DEAD */
      {0.290, 6393}, {0.170, 517}, {0.040, 851}, {0.150, 589}},
+    /* (Vallée) TAPE, CRUSH: measured (their pieces' sources, changed) */
+    {{0.200, 778}, {0.110, 5822}, {0.150, 4339}, {0.150, 9484},   /* TAPE */
+     {0.570, 9431}, {0.420, 1151}, {0.040, 851}, {2.830, 5233}},
+    {{0.710, 1809}, {0.080, 7928}, {0.230, 5906}, {0.090, 13073},   /* CRUSH */
+     {0.500, 13024}, {0.200, 3480}, {0.010, 2421}, {0.220, 1590}},
 };
 static const float KLVL[DV_NLANE] = {-14.5f, -18.2f, -24.2f, -27.4f, -23.8f, -13.6f, -22.5f, -21.0f};
 
@@ -1398,12 +1404,16 @@ static void retired(void)
             bad += v != DK_USR1 + i;
             v = param_turn(d, v, 1);
         }
-        bad += v != DK_DEAD || param_turn(d, DK_80, -1) != DK_STD || param_turn(d, DK_STD, -1) != DK_STD;
+        bad += v != DK_DEAD;                            /* ((Vallée) DEAD TAPE CRUSH, the last) */
+        v = param_turn(d, v, 1);
+        bad += v != DK_TAPE;
+        v = param_turn(d, v, 1);
+        bad += v != DK_CRUSH || param_turn(d, DK_80, -1) != DK_STD || param_turn(d, DK_STD, -1) != DK_STD;
     }
     for (r = 1; r < 4u; r++)
         bad += strcmp(d->names[r], d->names[MAP[r]]) != 0 || enum_orig(d, (int32_t)r) != MAP[r] ||
                param_fit(d, (int32_t)r) != MAP[r];
-    bad += param_fit(d, 99) != DK_DEAD || param_fit(d, -5) != DK_STD || enum_orig(d, DK_55) != DK_55;
+    bad += param_fit(d, 99) != DK_CRUSH || param_fit(d, -5) != DK_STD || enum_orig(d, DK_55) != DK_55;
     bad += param_fit(&TP[P_LEVEL], 77) != 77;
     {   /* a motion event of KIT 2 (CYM): stored and played as 10 */
         host_tracks_init();

@@ -76,7 +76,8 @@ enum {
 };
 /* a lane of a model kit as a type: the kit (1..DV_NKIT) in the high 4 bits, the lane in the low 3 (Felucca's own
  * types: 0 above). Its run (the DVT_* it plays through) is the kit's (DV_KIT) */
-#define DV_NKIT 9                                        /* (1.5.6, #216: DEEP TIGHT PERC after 77; (Vallée) DEAD) */
+#define DV_NKIT 11                                       /* (1.5.6, #216: DEEP TIGHT PERC after 77; (Vallée) DEAD TAPE
+                                                          * CRUSH) */
 #define DV_KITOF(t) ((uint32_t)(t) >> 4)
 #define DV_KTYPE(kit, lane) ((uint8_t)(((kit) << 4) | (lane)))
 
@@ -187,7 +188,7 @@ typedef struct {
     int16_t v[13];
 } dv_kit_t;
 /* the accent per kit: + (x / 16384) per accent step (75: +4 dB at full, as Felucca's own) */
-static const uint8_t DV_KIT_ACC[DV_NKIT] = {120, 45, 100, 40, 40, 80, 60, 70, 50};
+static const uint8_t DV_KIT_ACC[DV_NKIT] = {120, 45, 100, 40, 40, 80, 60, 70, 50, 60, 90};
 static const dv_kit_t DV_KIT[DV_NKIT][DV_NLANE] = {
     {   /* 80 */
         /* deep sine, a small drop, long decay */
@@ -347,6 +348,29 @@ static const dv_kit_t DV_KIT[DV_NKIT][DV_NLANE] = {
         {DVT_RIM, 40, 1092, 40, 4200, {80, 30000, 9000, 4096, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
         /* a rack tom on BELL: 140 Hz, as dead */
         {DVT_TOM, 53, 787, 130, 2060, {0, 90, 1250, 3500, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+    },
+    {   /* (Vallée) TAPE: a warm seventies soul session, the towels off: DEAD's kick let ring with a felt beater, 80's
+         * snare a semitone down and a little longer, 80's clap, 66's hats (noise, not squares) a touch shorter shut and
+         * longer open, 77's ringing tom, DEAD's cross-stick, 10's cymbal on BELL as a ride */
+        {DVT_PUNCH, 60, 531, 140, 3790, {70, 120, 0, 2400, 500, 1233, 900, 5000, 0, 0, 0, 0, 0}},
+        {DVT_SNARE, 40, 829, 150, 5690, {241, 0, 100, 53, 32767, 11000, 1678, 6827, 30, 0, 28000, 0, 1828}},
+        {DVT_CLAP, 48, 1331, 316, 13485, {0, 4096, 1678, 0, 2000, 30000, 35, 441, 3, 0, 0, 0, 0}},
+        {DVT_HATC, 45, 1907, 160, 5460, {1907, 1024, 1870, 2042, 0, 0, 7000, 3, 6, 0, 0, 0, 0}},
+        {DVT_HATO, 63, 1907, 420, 4350, {1907, 1024, 1870, 2042, 0, 0, 7000, 3, 6, 0, 0, 0, 0}},
+        {DVT_TOM, 53, 797, 377, 2858, {20, 180, 1523, 2500, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+        {DVT_RIM, 40, 1092, 40, 4200, {80, 30000, 9000, 4096, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+        {DVT_CYM, 53, 1014, 3773, 10841, {1766, 3413, 1729, 3413, 16384, 20000, 60, 19661, 0, 2, 0, 0, 0}},
+    },
+    {   /* (Vallée) CRUSH: a drum machine run too hot: 10's long kick driven hard (x 2.5), 55's snare and hats, 77's
+         * eight claps, 55's tom, 66's short rim, 80's cowbell on BELL; its preset adds the CRUSH */
+        {DVT_PUNCH, 60, 561, 464, 2140, {103, 180, 0, 0, 0, 1233, 2600, 10240, 0, 0, 0, 0, 0}},
+        {DVT_SNARE, 40, 942, 92, 5087, {0, 26, 180, 64, 0, 9000, 1809, 4096, 100, 32767, 32000, 0, 1828}},
+        {DVT_CLAP, 48, 1393, 281, 8368, {0, 6302, 1585, 1500, 8000, 30000, 52, 322, 6, 0, 0, 0, 0}},
+        {DVT_HATC, 45, 1909, 94, 2473, {1996, 5120, 1940, 2042, 4000, 11469, 18022, 3, 3, 0, 0, 0, 0}},
+        {DVT_HATO, 63, 1909, 354, 1662, {1996, 5120, 1940, 2042, 4000, 11469, 18022, 3, 3, 0, 0, 0, 0}},
+        {DVT_TOM, 53, 824, 179, 4091, {21, 600, 1523, 9000, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+        {DVT_RIM, 32, 1441, 13, 8636, {304, 26000, 1000, 4096, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+        {DVT_BELL, 50, 1161, 252, 2697, {109, 129, 3413, 30000, 45, 0, 0, 0, 0, 0, 0, 0, 0}},
     },
 };
 

@@ -10543,6 +10543,40 @@ static int test_gen(void)
                  h1 == h2 && gen.seed == seed % 999u + 1u && gen_hash() != h2);
     press(B_OCTDN);
     bad += check("(Vallée) GEN: OCT- after two writes: as before GEN", trk[0].step[5].note[0] == 41u && song.g[G_BPM] == bpm0);
+    {   /* (Vallée) every sound a style names is a preset of its engine (a name it lacks would load the first) */
+        uint32_t st2, ro, ch, i2;
+        ok = 1;
+        for (st2 = 0; st2 < GS_N; st2++)
+            for (ro = 0; ro < GR_NROLE; ro++)
+                for (ch = 0; ch < 3u; ch++) {
+                    const gsnd_t *g = &GSTY[st2].snd[ro][ch];
+                    const engine_t *en;
+                    int found = 0;
+                    if (!g->pre)
+                        continue;
+                    en = ENGINES[g->eng % NENGINES];
+                    for (i2 = 0; i2 < en->npresets; i2++)
+                        found |= str_eq(en->presets[i2].name, g->pre);
+                    if (!found) {
+                        printf("  %s: no %s on %s\n", GEN_STYLE[st2], g->pre, en->name);
+                        ok = 0;
+                    }
+                }
+        bad += check("(Vallée) GEN: every style's sounds are presets of their engines", ok);
+    }
+    {   /* (Vallée) the song's code: only the knobs set away from where GEN starts */
+        char cb[40];
+        uint8_t v0[GK_N];
+        memcpy(v0, gen.v, sizeof v0);
+        memcpy(gen.v, GEN_DEF, sizeof gen.v);
+        gen_code(cb, sizeof cb);
+        ok = cb[0] == 0;
+        gen.v[GK_ENERGY] = 80; gen.v[GK_KEY] = 10; gen.v[GK_DRUMS] = 3; gen.v[GK_COMPLEX] = 40; gen.v[GK_SWING] = 21;
+        gen_code(cb, sizeof cb);
+        ok &= str_eq(cb, "E80 IN A DR3 X40 S20");
+        memcpy(gen.v, v0, sizeof gen.v);
+        bad += check("(Vallée) GEN: the song's code, the knobs set otherwise only (E80 IN A DR3 X40 S20)", ok);
+    }
     turn(EN_SELECT, 3);
     bad += check("(Vallée) GEN: SELECT walks its four windows", gen.win == 3u && cur_page()->graph == GR_GEN);
     turn(EN_SELECT, -3);
