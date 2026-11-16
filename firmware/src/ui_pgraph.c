@@ -823,7 +823,8 @@ static void graph_arp(const track_t *t, uint16_t c)
 
 /* (Vallée) GLO > ALEMBIC: the mix's four vessels, left to right, a pipe into each from the one before (alembic.c):
  * DRIVE, MOTION, SPACE, GRAIN, each in its colour (the elements', T_TRK 1 .. 4: the knob cards' too), full as its
- * BLEND, its flavour's sigil etched on the glass (a star of 3 .. 6 points) and named under it. A stage at BLEND 0 is
+ * BLEND, its flavour's sigil etched on the glass (a star of 3 .. 5 points; the fourth flavour gold's sign, a circle
+ * and its point) and named under it. A stage at BLEND 0 is
  * an empty flask, DIM. While the sound goes through (alembic.c's peaks) the liquid moves: DRIVE bubbles, MOTION
  * sways, SPACE ripples, GRAIN's WOW rolls slowly, its DUST sparks; a drop runs along each pipe into a vessel that
  * is on. ANIM OFF: still. Laid out by the canvas's height (MENU > LARGE's tall cards: a smaller row) */
@@ -858,7 +859,11 @@ static void graph_alembic(uint16_t c)
         }
         xe_ring(cx, cy, r, col);                                          /* the glass */
         cv_rect(cx - 5, cy - r, 10, 1, b ? liq : T_SURF);                  /* (open at the neck) */
-        for (i = 0; i < np; i++) {                                        /* the sigil: a star of np points */
+        if (f == 3u) {                                                    /* the sigil: the fourth flavour gold's sign, */
+            xe_ring(cx, cy + 3, r / 3 + 1, b ? ux_mix(T_TRK(k), T_INK, 55) : T_DIM);   /* a circle and its point */
+            cv_rect(cx - 1, cy + 2, 2, 2, b ? ux_mix(T_TRK(k), T_INK, 55) : T_DIM);
+        } else
+        for (i = 0; i < np; i++) {                                        /* .. the others a star of np points */
             uint32_t a = 0xC0000000u + i * (0xFFFFFFFFu / np), a2 = a + 2u * (0xFFFFFFFFu / np);
             int32_t rs = r / 3 + 1;
             cv_line(cx + sine_i(a + 0x40000000u) * rs / 32768, cy + 3 + sine_i(a) * rs / 32768,

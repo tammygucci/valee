@@ -59,8 +59,8 @@ through four stages, always in this order, like a liquid poured from vessel to v
   off**: that stage does nothing at all, and the sound is exactly as without ALEMBIC.
 - Each stage's two knob cards are in its own colour: DRIVE green, MOTION blue, SPACE yellow, GRAIN pink (in TEEN, that
   theme's colours).
-- **The screen**: four flasks in a row joined by a pipe, each as full as its BLEND, its flavour etched on the glass and
-  named under it. While the sound goes through, the liquid moves (DRIVE bubbles, MOTION sways, DUST sparks) and drops
+- **The screen**: four flasks in a row joined by a pipe, each as full as its BLEND, its flavour etched on the glass (a
+  triangle, a cross, a pentagram, or the circle and point of the old sign for gold) and named under it. While the sound goes through, the liquid moves (DRIVE bubbles, MOTION sways, DUST sparks) and drops
   run down the pipe while playing. An empty flask is a stage that is off. ANIM OFF keeps them still.
 - **SPACE uses the delay and reverb you set on GLO > DELAY and REVERB** (their time, feedback, type): it adds the whole
   mix to what the tracks already send there.
