@@ -86,6 +86,9 @@ HOME.
 
 DRUMS, BASS, KEYS, LEAD and COLOR are each OFF, LITE, ON or BUSY. OFF leaves that track exactly as it is.
 
+GEN starts with **COLOR OFF, COMPLEX 0 and HUMAN 0** (SWING on AUTO): the plainest version of each style. Turn them
+up when you want more; COLOR OFF leaves track 5 as it is.
+
 **The buttons.**
 
 - **OCT+** writes the piece into the tracks.
