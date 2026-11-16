@@ -249,15 +249,15 @@ Until it comes in, the block blinks and the top line reads e.g. VERSE > CHORUS. 
 next one in the song. Stopped, a key moves the song there and PLAY starts from it. With SONG ON the song carries on from the part you jumped to; with SONG OFF each part loops until
 you press another key.
 
-**A jump comes in with a transition**: over what is left of the bar the mix thins (a high-pass rising), and its last
-beat rolls (REPEAT 1/16), gone exactly on the bar line as the new part lands. Hold HOME (SHIFT) as you press the key
-for a plain jump.
+**Transitions** (MENU › CONTROL › TRANSITIONS, OFF by default): pick any of the FX layer's effects (REPEAT 1/8 1/16
+1/32, REVERSE, LPF, HPF, TAPE STOP, FREEZE, OCT UP, OCT DN, GATE, DUB, FLANGE, VINYL) and every live jump plays it over
+the last beat before the new part, let go exactly on the bar line as the part lands. OFF: the part comes in plain.
 
 **The black keys** are the performance's controls, the same in every octave:
 
 | Key | What it does |
 |---|---|
-| F# | drops a jump that hasn't come in yet (and its transition) |
+| F# | drops a jump that hasn't come in yet |
 | G# | the next part of the song (after the one coming, if one is) |
 | A# | **a new take** of the part playing: GEN writes it again, live. The key, tempo, chords and sounds stay; the notes are new. Every bar but the one playing changes at once, that one once it has gone by, so it comes in on a bar line. The top line says e.g. CHORUS TAKE 2. Every time that part comes round it is the new take |
 | C# | a new take of the selected track's part only (ALGORITHM picks the track): just the bass, just the drums .. |

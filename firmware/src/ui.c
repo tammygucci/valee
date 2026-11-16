@@ -197,6 +197,10 @@ static const uint8_t *const mch_io = &ui_mch(0);
  * AUTO CHANNEL's in [1][1] bits 0..4 (DIGITAL's row: its stars byte 0 only, MIDI LEARN 2..31) */
 #define MIDI_BYTE (favorites.factory[15][17])
 #define PREF_KEEP_SENDS (32u << 16)              /* ((2.5) MENU > CONTROL > KEEP SENDS ON: [15][17] bit 5, free (not MIDI's: */
+/* ((Vallée) MENU > CONTROL > TRANSITIONS: [15][29], MENU > STYLE's byte before Skiff retired it (left as saved: 0..2).
+ * 0xA0 + 1..14: that FX effect (perform.c PF_* + 1); anything else, an old STYLE too: OFF, the default) */
+#define TRANS_BYTE (favorites.factory[15][29])
+static uint32_t trans_fx(void) { return (TRANS_BYTE & 0xF0u) == 0xA0u && (TRANS_BYTE & 15u) <= 14u ? TRANS_BYTE & 15u : 0u; }
 static const uint8_t *const ks_io = &MIDI_BYTE;   /* a settings byte the MENU's flags reach); params.c param_kept) */
 #define AUTO_BYTE (favorites.factory[ENGI_DIGITAL][1])
 static const uint8_t *const mset_io = &favorites.factory[0][0];

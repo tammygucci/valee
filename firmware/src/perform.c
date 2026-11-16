@@ -67,10 +67,12 @@ static volatile uint32_t kb_layer;    /* ISR: the keys held that are the layer's
 static volatile uint32_t perf_held;   /* ISR: the effects held (PF_*) */
 static volatile uint8_t perf_latch_on;   /* main: MENU > FX LATCH ON (#40): a key with FX toggles its effect */
 static volatile uint32_t perf_latched;   /* ISR: the effects latched (FX LATCH; main clears it: OCT-, the menu) */
-/* ((Vallée) THE SPELL's transition into a part a key sent the song to (ui_world.c wl_go): main sets the samples to the
- * bar line it comes in on, both; the ISR counts left down: a high-pass rising to 55 % over len, the last beat REPEAT
- * 1/16, all gone at 0, on the bar line. Main sets left 0 to drop it (the jump dropped) */
-static volatile uint32_t perf_auto_left, perf_auto_len;
+/* ((Vallée) THE SPELL's transition into a part a key sent the song to (ui_world.c wl_go; MENU > CONTROL > TRANSITIONS
+ * picks the effect): main sets fx (a PF_* of the white keys') and the samples to the bar line the part comes in on; the
+ * ISR counts left down and holds that effect over the last beat, let go at 0, on the bar line. Main sets left 0 to drop
+ * it (the jump dropped) */
+static volatile uint32_t perf_auto_left;
+static volatile uint8_t perf_auto_fx;
 static volatile uint32_t perf_act;    /* ISR: .. running (a 1/16 one from its start on) */
 static uint32_t perf_ord[PF_N], perf_seq;   /* press order: the last pressed buffer effect plays */
 
@@ -267,7 +269,7 @@ static __attribute__((noinline)) AUDIO_RAM int perf_begin(uint32_t n)
     if (al) {                                           /* ((Vallée) the transition: its last beat, the roll */
         perf_auto_left = al > n ? al - n : 0u;
         if (al <= AUDIO_FAR(beat_samples)())
-            aut = PF_BIT(PF_R16);
+            aut = PF_BIT(perf_auto_fx % PF_M1);
     }
     uint32_t held = perf_kill ? 0u : (perf_held | perf_latched | aut | (uint32_t)perf_cut << PF_M1 |
                     (perf_solo ? (~(uint32_t)perf_solo & ((1u << NTRK) - 1u)) << PF_M1 : 0u)) & AUDIO_FAR(perf_avail)();
@@ -316,12 +318,6 @@ static __attribute__((noinline)) AUDIO_RAM int perf_begin(uint32_t n)
             lt = PF_TOP + m * (PF_TOP - PF_LOW) / 100;
         if (pf.ht)                                  /* ((Vallée) at once, as the LPF) */
             ht = PF_TOP - PF_LOW;
-        if (al && !perf_kill) {                     /* ((Vallée) the transition's rise: 0 .. 55 % over its length */
-            uint32_t L = perf_auto_len >> 4, d = L > (al >> 4) ? L - (al >> 4) : 0u;
-            int32_t a = (int32_t)(d * (uint32_t)((PF_TOP - PF_LOW) * 55 / 100) / (L ? L : 1u));
-            if (a > ht)
-                ht = a;
-        }
         if (m > 0 && m * (PF_TOP - PF_LOW) / 100 > ht)
             ht = m * (PF_TOP - PF_LOW) / 100;
         pf.lc += clamp(lt - pf.lc, -1536, 1536);    /* ((Vallée) ~6 ms over the range (was ~45): no click, no fade */

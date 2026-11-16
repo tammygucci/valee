@@ -280,23 +280,20 @@ static int wl_keys_on(void)
     uint32_t kb, at;
     return wl_on() && !ui.menu && !ui.confirm && !ui.layer && song_at(&kb, &at);
 }
-/* the part the song goes to: its start at the next bar (stopped: there now). Playing, a transition into it (perform.c
- * perf_auto_*: a rise, the last beat rolled), unless SHIFT (HOME) is held */
+/* the part the song goes to: its start at the next bar (stopped: there now). Playing, with MENU > CONTROL > TRANSITIONS
+ * on an effect, that FX effect over the last beat before it (perform.c perf_auto_*); OFF (the default): plain */
 static void wl_go(uint32_t pick, const uint32_t *at0, const uint8_t *grp, uint32_t n, uint32_t pos)
 {
     char b[24];
-    int dry = shift_held();
-    if (dry)
-        shift_mark();
+    uint32_t fx = trans_fx();                          /* (MENU > CONTROL > TRANSITIONS, OFF the default) */
     if (song_part_go(at0[pick]))
         ui_message("NO ROOM: SAVE");
     wl_sec_name(b, pick, grp[pick], wl_gen_layout(grp, n));
     wl.cue = song.playing ? (uint8_t)(pick + 1u) : 0u;
     perf_auto_left = 0;
-    if (song.playing && !dry) {
-        uint32_t l = (192u - pos % 192u) * (beat_samples() / 48u);   /* (to the bar line it comes in on) */
-        perf_auto_len = l;
-        perf_auto_left = l;
+    if (song.playing && fx) {
+        perf_auto_fx = (uint8_t)(fx - 1u);
+        perf_auto_left = (192u - pos % 192u) * (beat_samples() / 48u);   /* (to the bar line it comes in on) */
     }
     ui_say(song.playing ? "NEXT BAR: " : "FROM ", b);
     ui.force = 1;

@@ -1589,7 +1589,7 @@ static int test_menu_tabs(void)
     bad += check("MENU tabs: DISPLAY CONTROL AUDIO SYSTEM MIDI ((1.3) MIDI appended), rows in a run, 6 shown fit the page; "
                  "tab gaps constant (S, LARGE)",
                  ok && MTAB_COUNT == 5u && str_eq(MTAB_NAME[0], "DISPLAY") && str_eq(MTAB_NAME[MTAB_MIDI], "MIDI") &&
-                 mtab_rows(MTAB_DISPLAY) == 7u && mtab_rows(MTAB_CONTROL) == 7u && mtab_rows(MTAB_AUDIO) == 6u &&   /* (#27; (2.0) RETURN; (2.5) KEEP SENDS) */
+                 mtab_rows(MTAB_DISPLAY) == 7u && mtab_rows(MTAB_CONTROL) == 8u && mtab_rows(MTAB_AUDIO) == 6u &&   /* (#27; (2.0) RETURN; (2.5) KEEP SENDS) */
                  mtab_rows(MTAB_SYSTEM) == 6u + FELUCCA_CDC && mtab_rows(MTAB_MIDI) == 16u);   /* ((Skiff) SYSTEM: CPU
                                                          * CLOCK; (Skiff 2.0) USB SERIAL with the console only; (2.2)
                                                          * MIDI: CLOCK OUT, AUTO CHANNEL, NOTES OUT, CC OUT, THRU, REMOTE) */
@@ -10415,21 +10415,43 @@ static int test_world(void)
         for (i = 0, cur = 0; i < n; i++)
             if (pos >= at0[i] && pos < at0[i] + len[i])
                 cur = i;
+        ok &= !menu_get(MI_TRANS) && MI_TAB[MI_TRANS] == MTAB_CONTROL && str_eq(MI_NAME[MI_TRANS], "TRANSITIONS");
+        TRANS_BYTE = 2u;                                /* (an old STYLE value in its byte: OFF) */
+        if (getenv("TRANS_SHOT")) {                     /* (a look at the row, its longest value) */
+            FILE *fp;
+            uint32_t q;
+            menu_put(MI_TRANS, 2);
+            ui.menu = 1; ui.menu_sel = MI_TRANS; ui.force = 1;
+            frame();
+            fp = fopen(getenv("TRANS_SHOT"), "wb");
+            fprintf(fp, "P6\n240 240\n255\n");
+            for (q = 0; q < 240u * 240u; q++) {
+                uint16_t c = swap16(host_screen[q]);
+                fputc((c >> 11) * 255 / 31, fp); fputc(((c >> 5) & 63) * 255 / 63, fp); fputc((c & 31) * 255 / 31, fp);
+            }
+            fclose(fp);
+            ui.menu = 0; menu_put(MI_TRANS, 0); TRANS_BYTE = 2u; frame();
+        }
+        ok &= !menu_get(MI_TRANS) && menu_n(MI_TRANS) == 15u && str_eq(menu_vname(MI_TRANS, 7), "TAPE STOP");
+        menu_put(MI_TRANS, 6);                          /* (MENU > CONTROL > TRANSITIONS HPF; OFF the default) */
+        ok &= menu_get(MI_TRANS) == 6u;
         wl_keys(1u << 3);                               /* (G#3: the next part) */
         a0 = perf_auto_left;
-        ok &= wl.cue == cur + 2u && a0 > 0u && a0 <= perf_auto_len && perf_auto_len <= 192u * (beat_samples() / 48u);
+        ok &= wl.cue == cur + 2u && a0 > 0u && a0 <= 192u * (beat_samples() / 48u) && perf_auto_fx == PF_HPF;
         world_play(6u);
-        ok &= perf_auto_left < a0 && pf.hc > 0;
-        bad += check("(Vallée) THE SPELL: G# the next part at the bar, a rising transition on its way", ok);
+        ok &= perf_auto_left < a0 && pf.hc == 0;        /* (not yet: its last beat only) */
+        while (perf_auto_left > beat_samples() / 2u)
+            world_play(1u);
+        ok &= pf.hc > 0 && wl.cue;                      /* (the last beat: the HPF up) */
+        bad += check("(Vallée) THE SPELL: G# the next part at the bar; TRANSITIONS HPF (OFF the default): the HPF over its last beat", ok);
         wl_keys(1u << 13);                              /* (F#4: dropped, the transition too) */
         ok = !wl.cue && perf_auto_left == 0u;
-        ui.home_t0 = 1u;                                /* (SHIFT held: no transition) */
+        menu_put(MI_TRANS, 0);                          /* (TRANSITIONS OFF, the default: a plain jump) */
         wl_keys(1u << 15);                              /* (G#4) */
         ok &= wl.cue != 0u && perf_auto_left == 0u;
-        ui.home_t0 = 0u;
         world_play(200u);
         ok &= !wl.cue && pf.hc == 0;
-        bad += check("(Vallée) THE SPELL: F# drops the jump and its transition; SHIFT + G#: the jump, no transition", ok);
+        bad += check("(Vallée) THE SPELL: F# drops the jump and its transition; TRANSITIONS OFF: the jump, plain", ok);
         stop_transport();
         frames(3);
         pi = gen_part_now();
