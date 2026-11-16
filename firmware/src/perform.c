@@ -67,12 +67,9 @@ static volatile uint32_t kb_layer;    /* ISR: the keys held that are the layer's
 static volatile uint32_t perf_held;   /* ISR: the effects held (PF_*) */
 static volatile uint8_t perf_latch_on;   /* main: MENU > FX LATCH ON (#40): a key with FX toggles its effect */
 static volatile uint32_t perf_latched;   /* ISR: the effects latched (FX LATCH; main clears it: OCT-, the menu) */
-/* ((Vallée) THE SPELL's transition into a part a key sent the song to (ui_world.c wl_go; MENU > CONTROL > TRANSITIONS
- * picks the effect): main sets fx (a PF_* of the white keys') and the samples to the bar line the part comes in on; the
- * ISR counts left down and holds that effect over the last beat, let go at 0, on the bar line. Main sets left 0 to drop
- * it (the jump dropped) */
-static volatile uint32_t perf_auto_left;
-static volatile uint8_t perf_auto_fx;
+/* ((Vallée) THE SPELL's transition key, its last white key (G5): held, the effect MENU > CONTROL > TRANSITION FX
+ * names plays (a PF_* of the white keys'), as the FX layer's keys do; let go, it ends (ui_world.c wl_poll: main) */
+static volatile uint8_t perf_auto_on, perf_auto_fx;
 static volatile uint32_t perf_act;    /* ISR: .. running (a 1/16 one from its start on) */
 static uint32_t perf_ord[PF_N], perf_seq;   /* press order: the last pressed buffer effect plays */
 
@@ -265,17 +262,12 @@ static void perf_buf_select(uint32_t e)
  * Returns 1 when a stage has something to do */
 static __attribute__((noinline)) AUDIO_RAM int perf_begin(uint32_t n)
 {
-    uint32_t al = perf_auto_left, aut = 0;
-    if (al) {                                           /* ((Vallée) the transition: its last beat, the roll */
-        perf_auto_left = al > n ? al - n : 0u;
-        if (al <= AUDIO_FAR(beat_samples)())
-            aut = PF_BIT(perf_auto_fx % PF_M1);
-    }
+    uint32_t aut = perf_auto_on ? PF_BIT(perf_auto_fx % PF_M1) : 0u;   /* ((Vallée) THE SPELL's transition key */
     uint32_t held = perf_kill ? 0u : (perf_held | perf_latched | aut | (uint32_t)perf_cut << PF_M1 |
                     (perf_solo ? (~(uint32_t)perf_solo & ((1u << NTRK) - 1u)) << PF_M1 : 0u)) & AUDIO_FAR(perf_avail)();
     uint32_t q, k, ph0, bnd;
     int32_t m;
-    if (!held && !al && !pf.busy && !(perf_k[0] | perf_k[1] | perf_k[2])) {   /* idle: the clock only */
+    if (!held && !pf.busy && !(perf_k[0] | perf_k[1] | perf_k[2])) {   /* idle: the clock only */
         pf.ph += n;
         pf.sync = 0;
         perf_act = 0;

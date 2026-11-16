@@ -240,18 +240,23 @@ as its bars, the same music in the same colour, named as GEN named them (INTRO, 
 C... in the order they first come. The playhead runs across it, the part it's in lights up, and its name and the bar
 (BAR 9 / 32) are above. With no lists it's one LOOP block.
 
-**Play the song live from the keys.** On THE SPELL the keys don't play notes: each white key is a part of the song,
-starting from the keyboard's first key on the left, in every octave. F is the first music in the song, G the second, A
-the third, and so on to the right (on a GEN song: F INTRO, G VERSE, A CHORUS, B BRIDGE, C OUTRO). Each block on the map shows its key's letter in its corner, and the
-keys light up: the part playing lit, the others breathing. Press one and every track jumps to that part **on the next
-bar line**, all together, so it always lands on the 1 and stays in time: you can press it anywhere in the bar before.
-Until it comes in, the block blinks and the top line reads e.g. VERSE > CHORUS. A part that comes more than once: the
-next one in the song. Stopped, a key moves the song there and PLAY starts from it. With SONG ON the song carries on from the part you jumped to; with SONG OFF each part loops until
-you press another key.
+**Play the song live from the keys.** On THE SPELL the keys don't play notes: each white key is one block of the song
+on the map, in order, from the keyboard's first key on the left: F the first block, G the second, A the third, and on
+up the keyboard (15 white keys, up to 15 blocks;
+the last white key is the transition key, below). A GEN song's eight blocks are F INTRO, G VERSE, A CHORUS, B VERSE,
+C CHORUS, D BRIDGE, E CHORUS, and the next F the OUTRO. Each block on the map shows its key's letter in its corner, and
+the keys light up: the block playing lit, the others breathing. Press one and every track jumps to the start of that
+block **on the next bar line**, all together, so it always lands on the 1 and stays in time: you can press it anywhere
+in the bar before. A key is always its block: press the key of the block that is playing and that block starts again.
+Until it comes in, the block blinks and the top line reads e.g. VERSE > CHORUS. Stopped, a key moves the song there
+and PLAY starts from it. With SONG ON the song carries on from the block you jumped to; with SONG OFF each block loops
+until you press another key.
 
-**Transitions** (MENU › CONTROL › TRANSITIONS, OFF by default): pick any of the FX layer's effects (REPEAT 1/8 1/16
-1/32, REVERSE, LPF, HPF, TAPE STOP, FREEZE, OCT UP, OCT DN, GATE, DUB, FLANGE, VINYL) and every live jump plays it over
-the last beat before the new part, let go exactly on the bar line as the part lands. OFF: the part comes in plain.
+**The transition key**: the keyboard's last white key (the top G, at the far right). Hold it and the effect set on
+MENU › CONTROL › TRANSITION FX plays, just as a key of the FX layer does; let go and it stops. Any of the FX layer's
+effects (REPEAT 1/8 1/16 1/32, REVERSE, LPF, HPF, TAPE STOP, FREEZE, OCT UP, OCT DN, GATE, DUB, FLANGE, VINYL);
+REPEAT 1/16 to start with. Use it when you want it, e.g. held over the last beat before the chorus comes in. It
+breathes while THE SPELL is up, lit while held, and the map says FX. Jumps themselves are always plain.
 
 **The black keys** are the performance's controls, the same in every octave:
 
@@ -264,8 +269,8 @@ the last beat before the new part, let go exactly on the bar line as the part la
 | D# | **REC ARRANGE**: on (the map says REC and counts), play the parts in the order you want, D# again (or let the song stop): that order is the song now, up to 16 parts, SONG ONCE, from the top. SHIFT + D# puts the arrangement back as it was |
 
 New takes are for a song GEN wrote in this session (after a restart, or once you edit its lists on SEQ > SONG, the
-keys still play its parts; A# and C# say GEN SONGS ONLY). In a GEN song the letters stay with the parts whatever order
-you arrange them in: F is always the INTRO, G a VERSE, A a CHORUS, B the BRIDGE, C the OUTRO.
+keys still play its parts; A# and C# say GEN SONGS ONLY). After REC ARRANGE the keys follow the new order: F its first
+block, G its second ..
 
 **Below, the Alchemist** (the head from the intro) conjures with your six tracks, each its own element:
 

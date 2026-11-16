@@ -10371,7 +10371,7 @@ static int test_world(void)
         bad += check("(Vallée) THE SPELL's keys: A stopped: every track on the CHORUS, the keys silent", ok);
         seq_start();
         world_play(30u);
-        wl_keys(1u << 14);                              /* (G, an octave up: the next VERSE, part 3) */
+        wl_keys(1u << 6);                               /* (B, the 4th white key: the 4th block, a VERSE) */
         for (j = 0, w = 0; j < NTRK; j++)
             w += launch_q[j].armed && launch_q[j].mode == LAUNCH_BAR && !launch_q[j].adv;
         ok = w >= 1u && wl.cue == 4u;
@@ -10380,14 +10380,20 @@ static int test_world(void)
         for (j = 0; j < NTRK; j++)
             ok &= !ent_at48(j, NENT) || lists.cur[j] == ent[3];
         ok &= !wl.cue && pos >= at0[3] && pos < at0[3] + len[3] && song.playing;
-        bad += check("(Vallée) THE SPELL's keys: G playing: the next VERSE comes in at the bar, all tracks together", ok);
-        wl_keys(1u << 6);                               /* (B: the BRIDGE ..) */
+        bad += check("(Vallée) THE SPELL's keys: B playing: the 4th block (a VERSE) comes in at the bar, all tracks together", ok);
+        wl_keys(1u << 6);                               /* (B again, on that VERSE: the same block again, not the next) */
+        ok = wl.cue == 4u;
+        world_play(160u);
+        n = wl_song(at0, len, grp, ent, &pos, &total);
+        ok &= !wl.cue && pos >= at0[3] && pos < at0[3] + len[3] && pos - at0[3] < 192u * 2u;
+        bad += check("(Vallée) THE SPELL's keys: the key of the block playing: that block from its start, not the next like it", ok);
+        wl_keys(1u << 9);                               /* (D: the 6th block, the BRIDGE ..) */
         ok = wl.cue == 6u;
         wl_keys(1u << 13);                              /* (.. F#, a black key: dropped) */
         for (j = 0, w = 0; j < NTRK; j++)
             w += launch_q[j].armed && !launch_q[j].adv;
         ok &= !wl.cue && !w;
-        wl_keys(1u << 21);                              /* (D: no sixth music in this song) */
+        wl_keys(1u << 21);                              /* (D5, the 13th white key: no 13th block in this song) */
         bad += check("(Vallée) THE SPELL's keys: F# drops the jump; a letter with no part: nothing", ok && !wl.cue);
         stop_transport();
         frames(5);
@@ -10415,7 +10421,7 @@ static int test_world(void)
         for (i = 0, cur = 0; i < n; i++)
             if (pos >= at0[i] && pos < at0[i] + len[i])
                 cur = i;
-        ok &= !menu_get(MI_TRANS) && MI_TAB[MI_TRANS] == MTAB_CONTROL && str_eq(MI_NAME[MI_TRANS], "TRANSITIONS");
+        ok &= MI_TAB[MI_TRANS] == MTAB_CONTROL && !perf_auto_on;
         TRANS_BYTE = 2u;                                /* (an old STYLE value in its byte: OFF) */
         if (getenv("TRANS_SHOT")) {                     /* (a look at the row, its longest value) */
             FILE *fp;
@@ -10432,26 +10438,26 @@ static int test_world(void)
             fclose(fp);
             ui.menu = 0; menu_put(MI_TRANS, 0); TRANS_BYTE = 2u; frame();
         }
-        ok &= !menu_get(MI_TRANS) && menu_n(MI_TRANS) == 15u && str_eq(menu_vname(MI_TRANS, 7), "TAPE STOP");
-        menu_put(MI_TRANS, 6);                          /* (MENU > CONTROL > TRANSITIONS HPF; OFF the default) */
-        ok &= menu_get(MI_TRANS) == 6u;
-        wl_keys(1u << 3);                               /* (G#3: the next part) */
-        a0 = perf_auto_left;
-        ok &= wl.cue == cur + 2u && a0 > 0u && a0 <= 192u * (beat_samples() / 48u) && perf_auto_fx == PF_HPF;
+        ok &= menu_get(MI_TRANS) == 1u && menu_n(MI_TRANS) == 14u && str_eq(menu_vname(MI_TRANS, 6), "TAPE STOP") &&
+              str_eq(menu_vname(MI_TRANS, 1), "REPEAT 1/16");   /* (an old STYLE value in the byte: REPEAT 1/16) */
+        menu_put(MI_TRANS, 5);                          /* (MENU > CONTROL > TRANSITION FX: HPF) */
+        ok &= menu_get(MI_TRANS) == 5u && str_eq(MI_NAME[MI_TRANS], "TRANSITION FX");
+        wl_keys(1u << 3);                               /* (G#3: the next part, plain: no effect of its own) */
+        ok &= wl.cue == cur + 2u && !perf_auto_on;
         world_play(6u);
-        ok &= perf_auto_left < a0 && pf.hc == 0;        /* (not yet: its last beat only) */
-        while (perf_auto_left > beat_samples() / 2u)
-            world_play(1u);
-        ok &= pf.hc > 0 && wl.cue;                      /* (the last beat: the HPF up) */
-        bad += check("(Vallée) THE SPELL: G# the next part at the bar; TRANSITIONS HPF (OFF the default): the HPF over its last beat", ok);
-        wl_keys(1u << 13);                              /* (F#4: dropped, the transition too) */
-        ok = !wl.cue && perf_auto_left == 0u;
-        menu_put(MI_TRANS, 0);                          /* (TRANSITIONS OFF, the default: a plain jump) */
-        wl_keys(1u << 15);                              /* (G#4) */
-        ok &= wl.cue != 0u && perf_auto_left == 0u;
+        ok &= pf.hc == 0;
+        fm1_in.notes |= 1u << 26;                       /* (G5, the transition key, held: HPF, as an FX layer key) */
+        world_play(6u);
+        ok &= perf_auto_on && perf_auto_fx == PF_HPF && pf.hc > 0 && ((wl_leds(0) >> 26) & 1u) && wl.cue;
+        bad += check("(Vallée) THE SPELL: G# the next part at the bar, plain; G5 held: TRANSITION FX (HPF) while held", ok);
+        fm1_in.notes &= ~(1u << 26);                    /* (let go: it ends) */
+        world_play(6u);
+        ok = !perf_auto_on && pf.hc == 0;
+        wl_keys(1u << 13);                              /* (F#4: the jump dropped) */
+        ok &= !wl.cue;
+        wl_keys(1u << 2);                               /* (G3: the 2nd block, a VERSE, for what follows) */
         world_play(200u);
-        ok &= !wl.cue && pf.hc == 0;
-        bad += check("(Vallée) THE SPELL: F# drops the jump and its transition; TRANSITIONS OFF: the jump, plain", ok);
+        bad += check("(Vallée) THE SPELL: G5 let go: the effect ends; F# drops the jump", ok);
         stop_transport();
         frames(3);
         pi = gen_part_now();
@@ -10498,7 +10504,7 @@ static int test_world(void)
         ok &= wl.rec_n == 1u;
         wl_keys(1u << 0);                               /* (F3: the INTRO, at the next bar) */
         world_play(170u);
-        wl_keys(1u << 6);                               /* (B3: the BRIDGE) */
+        wl_keys(1u << 9);                               /* (D4: the 6th block, the BRIDGE) */
         world_play(170u);
         ok &= wl.rec_n == 3u && wl.rec_e[1] == 0u && wl.rec_e[2] == 5u;
         wl_keys(1u << 10);                              /* (D#4: done: the lists so, from the top) */
@@ -10513,15 +10519,15 @@ static int test_world(void)
             char nm2[8];
             wl_sec_name(nm2, 2u, grp[2], wl_gen_layout(grp, n));
             ok &= grp[1] == 0u && grp[2] == 3u && str_eq(nm2, "BRIDGE");
-            wl_keys(1u << 6);                           /* (B, stopped: the tracks on the BRIDGE, now the third part) */
+            wl_keys(1u << 4);                           /* (A, stopped: the 3rd block, the BRIDGE now) */
             for (j = 0; j < NTRK; j++)
                 ok &= !ent_at48(j, NENT) || lists.cur[j] == 2u;
-            wl_keys(1u << 0);                           /* (F: the INTRO, the second) */
+            wl_keys(1u << 2);                           /* (G: the 2nd block, the INTRO now) */
             for (j = 0; j < NTRK; j++)
                 ok &= !ent_at48(j, NENT) || lists.cur[j] == 1u;
             (void)song_part_go(0);
         }
-        bad += check("(Vallée) THE SPELL: D# REC ARRANGE: the parts as played (3) become the lists, SONG ONCE; F and B still the INTRO and BRIDGE", ok);
+        bad += check("(Vallée) THE SPELL: D# REC ARRANGE: the parts as played (3) become the lists, SONG ONCE; the keys their blocks in the new order", ok);
         ui.home_t0 = 1u;
         wl_keys(1u << 10);                              /* (SHIFT + D#: as before) */
         ui.home_t0 = 0u;

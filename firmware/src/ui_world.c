@@ -156,12 +156,19 @@ static const uint16_t WL_SEC[8] = {WL_RGB(64, 200, 190), WL_RGB(240, 110, 90), W
                                    WL_RGB(150, 120, 255), WL_RGB(90, 170, 255), WL_RGB(150, 230, 90),
                                    WL_RGB(255, 130, 200), WL_RGB(220, 180, 140)};
 static uint32_t wl_strip_sig;
-/* (THE SPELL's keys) a part's music (its group, by first appearance) on the white keys from the left: F (the
- * keyboard's first key) the first, G the second .. E the seventh, in every octave; the black keys drop a jump still to
- * come */
+/* (THE SPELL's keys) ((Vallée, the user's way) the song's blocks on the white keys in order, from the left: F (the
+ * keyboard's first key) the first block, G the second, A the third .. up the keyboard (16 white keys, 16 blocks at
+ * most); a key is its block, every time (pressed again: that block again). The black keys: wl_keys */
 static const char WL_KEYN[7] = {'F', 'G', 'A', 'B', 'C', 'D', 'E'};
-static const int8_t WL_PC[12] = {4, -1, 5, -1, 6, 0, -1, 1, -1, 2, -1, 3};   /* (a key's name, 0 = C: its group) */
-static int32_t wl_key_grp(uint32_t k) { return WL_PC[(k + 5u) % 12u]; }      /* (key 0 is F: seq.c key_place) */
+static const int8_t WL_PC[12] = {4, -1, 5, -1, 6, 0, -1, 1, -1, 2, -1, 3};   /* (a key's letter, 0 = C: F 0 .. E 6) */
+/* key k's white key from the left (0 F3, 7 F4 ..), -1 a black key (key 0 is F: seq.c key_place); the last (G5, 15):
+ * the transition key, not a block (15 blocks on the keys): held, MENU > CONTROL > TRANSITION FX plays (wl_poll) */
+#define WL_KEY_TRANS 26u
+static int32_t wl_key_white(uint32_t k)
+{
+    int32_t g = WL_PC[(k + 5u) % 12u];
+    return g < 0 || k >= WL_KEY_TRANS ? -1 : (int32_t)(k / 12u) * 7 + g;
+}
 /* a key's letter, 3 x 5, on a part's block */
 static void wl_letter(int32_t x, int32_t y, uint32_t g, uint16_t c)
 {
@@ -196,7 +203,7 @@ static void wl_strip_at(int into)                  /* (into: the canvas as it is
         if (!w || !song.playing || wl.cue > n)
             wl.cue = 0;
     }
-    sig = (uint32_t)wl.rec * 131u + (uint32_t)wl.rec_n * 17u + (wl.rec ? (ui.frame / 15u) & 1u : 0u) * 5u +
+    sig = (uint32_t)perf_auto_on * 977u + (uint32_t)wl.rec * 131u + (uint32_t)wl.rec_n * 17u + (wl.rec ? (ui.frame / 15u) & 1u : 0u) * 5u +
           (uint32_t)wl.cue * 7717u + (wl.cue ? (ui.frame / 6u) & 1u : 0u) * 3u + (pos * 228u / (total ? total : 1u)) * 31u + n * 977u + cur * 7u + (uint32_t)song.playing * 5u + total;
     for (i = 0; i < n; i++)
         sig = sig * 31u + at0[i] + grp[i] * 13u + ent[i];
@@ -236,6 +243,8 @@ static void wl_strip_at(int into)                  /* (into: the canvas as it is
         str_cpy(b + str_len(b), " / ", sizeof b - str_len(b));
         fmt_int(b + str_len(b), (int32_t)bars);
         cv_text_r(232, 3, &AF_S, b, T_MID, T_SURF);
+        if (perf_auto_on)                              /* (the transition key held) */
+            cv_text_r(232 - text_w(&AF_S, b) - 8, 3, &AF_S, "FX", T_ACCENT, T_SURF);
     }
     if (!n) {
         cv_rect(X0, Y, W, H, ux_mix(T_SURF, T_THEME, 45));
@@ -252,8 +261,8 @@ static void wl_strip_at(int into)                  /* (into: the canvas as it is
                 if (text_w(&AF_S, s) <= x1 - x0 - 3)
                     cv_text_on(x0 + 2, Y + 2, &AF_S, s, i == cur ? T_BG : ux_mix(T_SURF, T_TEXT, 70), i == cur ? c : ux_mix(T_SURF, c, 55));
             }
-            if (grp[i] < 7u && x1 - x0 > 8)             /* (its key's letter, top right) */
-                wl_letter(x1 - 6, Y + 2, grp[i], i == cur ? T_BG : ux_mix(T_SURF, T_TEXT, 85));
+            if (i < 15u && x1 - x0 > 8)                 /* (its key's letter, top right: the i-th white key's) */
+                wl_letter(x1 - 6, Y + 2, i % 7u, i == cur ? T_BG : ux_mix(T_SURF, T_TEXT, 85));
             if (wl.cue == i + 1u && ((ui.frame / 6u) & 1u)) {   /* (the part a key sends it to: blinking) */
                 cv_rect(x0, Y - 2, x1 - x0 - 1, 1, T_TEXT);
                 cv_rect(x0, Y + H + 1, x1 - x0 - 1, 1, T_TEXT);
@@ -280,21 +289,15 @@ static int wl_keys_on(void)
     uint32_t kb, at;
     return wl_on() && !ui.menu && !ui.confirm && !ui.layer && song_at(&kb, &at);
 }
-/* the part the song goes to: its start at the next bar (stopped: there now). Playing, with MENU > CONTROL > TRANSITIONS
- * on an effect, that FX effect over the last beat before it (perform.c perf_auto_*); OFF (the default): plain */
+/* the part the song goes to: its start at the next bar (stopped: there now) */
 static void wl_go(uint32_t pick, const uint32_t *at0, const uint8_t *grp, uint32_t n, uint32_t pos)
 {
     char b[24];
-    uint32_t fx = trans_fx();                          /* (MENU > CONTROL > TRANSITIONS, OFF the default) */
     if (song_part_go(at0[pick]))
         ui_message("NO ROOM: SAVE");
     wl_sec_name(b, pick, grp[pick], wl_gen_layout(grp, n));
     wl.cue = song.playing ? (uint8_t)(pick + 1u) : 0u;
-    perf_auto_left = 0;
-    if (song.playing && fx) {
-        perf_auto_fx = (uint8_t)(fx - 1u);
-        perf_auto_left = (192u - pos % 192u) * (beat_samples() / 48u);   /* (to the bar line it comes in on) */
-    }
+    (void)pos;
     ui_say(song.playing ? "NEXT BAR: " : "FROM ", b);
     ui.force = 1;
 }
@@ -342,6 +345,15 @@ static void wl_poll(void)
 {
     uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n, i;
     uint8_t grp[WL_NSEC], ent[WL_NSEC];
+    {   /* the transition key (G5) held on THE SPELL: TRANSITION FX's effect, as an FX layer key's; let go: it ends */
+        uint8_t on = (uint8_t)(wl_keys_on() && ((fm1_in.notes >> WL_KEY_TRANS) & 1u));
+        if (on && !perf_auto_on)
+            perf_auto_fx = (uint8_t)(trans_fx() - 1u);
+        if (on != perf_auto_on) {
+            perf_auto_on = on;
+            ui.force = 1;
+        }
+    }
     if (!wl.rec)
         return;
     if (!(n = wl_song(at0, len, grp, ent, &pos, &total))) {
@@ -370,7 +382,7 @@ static void wl_poll(void)
  * REC ARRANGE on / off (SHIFT + D#: the lists as before it)) */
 static void wl_keys(uint32_t notes)
 {
-    uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n, k, i, pick, nb, pc, cur = 0;
+    uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n, k, i, pick, pc, cur = 0;
     uint8_t grp[WL_NSEC], ent[WL_NSEC];
     int32_t g;
     char b[24];
@@ -381,14 +393,15 @@ static void wl_keys(uint32_t notes)
     for (i = 0; i < n; i++)
         if (pos >= at0[i] && pos < at0[i] + len[i])
             cur = i;
-    if ((g = wl_key_grp(k)) < 0) {
+    if (k == WL_KEY_TRANS)                             /* (the transition key: held, its effect: wl_poll) */
+        return;
+    if ((g = wl_key_white(k)) < 0) {
         pc = (k + 5u) % 12u;                           /* (1 C#, 3 D#, 6 F#, 8 G#, 10 A#) */
         if (pc == 6u) {                                /* F#: the jump dropped */
             if (wl.cue) {
                 for (k = 0; k < NTRK; k++)
                     (void)bank_cancel(k);
                 wl.cue = 0;
-                perf_auto_left = 0;
                 ui_message("JUMP DROPPED");
             }
         } else if (pc == 8u) {                         /* G#: the next part (after the one coming, if one is) */
@@ -441,34 +454,29 @@ static void wl_keys(uint32_t notes)
         }
         return;
     }
-    nb = song.playing ? (pos / 192u + 1u) * 192u % total : pos;
-    for (i = 0, pick = n; i < n; i++)
-        if (grp[i] == (uint32_t)g && (pick == n || (at0[pick] < nb && at0[i] >= nb)))
-            pick = i;
-    if (pick == n) {
-        b[0] = WL_KEYN[g];
+    pick = (uint32_t)g;                                /* (the white key: its block) */
+    if (pick >= n) {
+        b[0] = WL_KEYN[g % 7];
         b[1] = 0;
-        ui_say(b, ": NO SUCH PART");
+        ui_say(b, ": NO PART THERE");
         return;
     }
     wl_go(pick, at0, grp, n, pos);
 }
-/* .. their LEDs: the part playing's letter lit, the song's other parts' breathing */
+/* .. their LEDs: the block playing's key lit (or the one a key sent it to), the song's other blocks' breathing */
 static uint32_t wl_leds(uint32_t *br)
 {
-    uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n, k, i, cur = 0, have = 0, lit = 0, b = 0;
+    uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n, k, i, cur = 0, lit = 0, b = 0;
     uint8_t grp[WL_NSEC], ent[WL_NSEC];
     int32_t g;
     n = wl_song(at0, len, grp, ent, &pos, &total);
-    for (i = 0; i < n; i++) {
-        have |= 1u << (grp[i] & 31u);
+    for (i = 0; i < n; i++)
         if (pos >= at0[i] && pos < at0[i] + len[i])
-            cur = grp[i];
-    }
+            cur = i;
     if (wl.cue)
-        cur = grp[(wl.cue - 1u) % WL_NSEC];
+        cur = (uint32_t)(wl.cue - 1u);
     for (k = 0; k < 27u; k++)
-        if ((g = wl_key_grp(k)) >= 0 && ((have >> g) & 1u)) {
+        if ((g = wl_key_white(k)) >= 0 && (uint32_t)g < n) {
             if ((uint32_t)g == cur)
                 lit |= 1u << k;
             else
@@ -476,6 +484,10 @@ static uint32_t wl_leds(uint32_t *br)
         }
     if (wl.rec)                                        /* ((Vallée) REC ARRANGE: D# lit */
         lit |= 1u << 10 | 1u << 22;
+    if (perf_auto_on)                                  /* (the transition key held: lit; else breathing) */
+        lit |= 1u << WL_KEY_TRANS;
+    else
+        b |= 1u << WL_KEY_TRANS;
     if (br)
         *br = b;
     return lit;
