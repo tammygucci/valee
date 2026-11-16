@@ -343,10 +343,9 @@ the elements go straight in.
 The FM-1's firmware has to fit a fixed slot of 581,564 bytes. Skiff 2.6 already filled all but about 4.5 KB of it
 (its released file: an image of about 577,000 bytes), and Vallée's additions need about 34 KB. So Vallée is built
 without Skiff's SLICE engine and its two built-in drum loops (`FELUCCA_SLICE=0`, a build switch Skiff already had),
-which frees about 50 KB: with everything (THE SPELL included) the image comes to roughly 565 KB, about 11-16 KB
-under the limit (an estimate from
-compiling Skiff 2.6 and Vallée the same way for a similar 32-bit chip, scaled by Skiff 2.6's real size; the build
-itself measures the real one).
+which frees about 50 KB: with everything (THE SPELL and ALEMBIC included) the release build measures an image of
+563,688 bytes, about 17.5 KB under the limit, and 88,984 bytes of the 94,208 of RAM (ALEMBIC took about 7.2 KB of the
+image and 3.8 KB of RAM; the development build, with its console, a little more of each).
 
 What that means for what you saved under Skiff:
 
