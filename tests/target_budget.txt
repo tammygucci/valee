@@ -2,6 +2,7 @@
 # function in build/felucca.dis, x4 per nesting level, divides x9. The check allows +10 %.
 # Rewritten by BUDGET_UPDATE=1.
 # (Vallée) analog_render: FILTER's test before the loops (analog_render_m its own function); analog_osc's loop unchanged
+# (Vallée) fm1_timer5_irq: the key / LED scan's static count grew with THE SPELL's keys and LEDs (26569, +10 % on 24139)
 analog_render 648
 phase_render 79
 lofi_render 123
@@ -41,7 +42,7 @@ dv_metal_mix 16
 slice_render 453
 slc_rev 120
 fm1_alnk0_irq 1266
-fm1_timer5_irq 24139
+fm1_timer5_irq 26569
 events_block 821
 keyboard_block 1244
 ep1_tx 40
