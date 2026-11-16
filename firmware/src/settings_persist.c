@@ -17,6 +17,9 @@
  * at [15][24]) as it is; another firmware's (Felucca's, JIANT's: no mark) for its own fields only, Skiff's at their
  * defaults. RAM keeps Skiff's settings in the favourites' spare bytes as before (ui.c's macros); nothing checks the
  * mark at run time: whatever reaches RAM is Skiff's or a default */
+#ifndef FXK_DECLARED
+static uint8_t fxk_set[8];                     /* ((Vallée) MENU > FX's keys: ui.c's; here without the UI (settings_test.c)) */
+#endif
 typedef struct {
     uint32_t magic, palette, lowcut, zoom;
     panel_t panel;
@@ -47,7 +50,7 @@ typedef struct {
     sks_skiff_t s;
     uint8_t cpal_cols[22];                     /* THEME CUSTOM's colours (ui.c CPAL_COLS: favorites.factory[14][8..29]) */
     uint8_t ml[30];                            /* MIDI LEARN's map (midi_learn.c ml_tab: favorites.factory[1][2..31]) */
-    uint8_t room[32];
+    uint8_t room[32];                          /* ((Vallée) [24..31]: MENU > FX's keys, ui.c fxk_set) */
 } sks_t;
 #define SKS_MAGIC 0x534B5331u                  /* "SKS1" */
 _Static_assert(sizeof(sks_skiff_t) == 32u && ENGI_DIGITAL == 1u, "SKS1: favorites.factory[15], MIDI LEARN in row 1");
@@ -161,6 +164,7 @@ static int settings_import(void *b, int n)
     memcpy(&p.favorites.factory[ENGI_DIGITAL][2], s->ml, sizeof s->ml);
     p.favorites.user = s->fav_user; p.favorites.filter = s->fav_filter;
     (void)settings_import_per(&p, sizeof p);
+    memcpy(fxk_set, s->room + 24, sizeof fxk_set);   /* ((Vallée) MENU > FX's keys: the room's last 8 (ui.c fxk_set)) */
     s->palette = p.palette;
     sks_pack(s, (const uint8_t (*)[32])p.favorites.factory, p.favorites.user, p.favorites.filter);
     return 1;
@@ -177,4 +181,5 @@ static void settings_export(sks_t *s)
     s->panel = panel;
     s->bold = hold_to_stored(s->bold, settings_hold);
     sks_pack(s, (const uint8_t (*)[32])favorites.factory, favorites.user, favorites.filter);
+    memcpy(s->room + 24, fxk_set, sizeof fxk_set);   /* ((Vallée) MENU > FX's keys; the rest kept as read) */
 }

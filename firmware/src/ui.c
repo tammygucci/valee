@@ -205,6 +205,24 @@ static uint32_t trans_fx(void)
 {
     return (TRANS_BYTE & 0xF0u) == 0xA0u && (TRANS_BYTE & 15u) >= 1u && (TRANS_BYTE & 15u) <= 14u ? TRANS_BYTE & 15u : 2u;
 }
+/* ((Vallée) MENU > FX: THE SPELL's other white keys, F3 .. F5 (w 0..14), each an FX layer effect it plays while held
+ * when it is no block of the song (ui_world.c wl_poll): a nibble each (0: its default, FXK_DEF; 1..14 the effect,
+ * PF_* + 1; 15 OFF), kept in SKS1's room [24..31] (settings_persist.c: 0 there in every older setting, the defaults).
+ * The defaults from the right: F5 REPEAT 1/8, E5 REPEAT 1/32, D5 REVERSE .. A3 VINYL, G3 and F3 REPEAT 1/16 */
+static uint8_t fxk_set[8];
+#define FXK_DECLARED 1                                 /* (settings_persist.c: its own without the UI, settings_test.c) */
+static const uint8_t FXK_DEF[15] = {2, 2, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 1};
+static uint32_t fxk_fx(uint32_t w)                     /* key w's effect + 1, 0 OFF */
+{
+    uint32_t v = (fxk_set[(w >> 1) & 7u] >> ((w & 1u) * 4u)) & 15u;
+    return w > 14u ? 0u : v == 0u ? FXK_DEF[w] : v == 15u ? 0u : v;
+}
+static void fxk_put(uint32_t w, uint32_t f)            /* .. set (f 0 OFF, 1..14) */
+{
+    uint32_t sh = (w & 1u) * 4u;
+    if (w <= 14u)
+        fxk_set[w >> 1] = (uint8_t)((fxk_set[w >> 1] & ~(15u << sh)) | (f ? f % 15u : 15u) << sh);
+}
 static const uint8_t *const ks_io = &MIDI_BYTE;   /* a settings byte the MENU's flags reach); params.c param_kept) */
 #define AUTO_BYTE (favorites.factory[ENGI_DIGITAL][1])
 static const uint8_t *const mset_io = &favorites.factory[0][0];
@@ -322,7 +340,7 @@ static struct {
     uint8_t hot_col, hot_t;      /* column whose knob was just turned (drawn white) */
     uint8_t menu;                /* 0 off, 1 list, 2 about + credits (HOME held) */
     uint8_t menu_sel;            /* MENU: the row (menu_items.c MI_*; its tab MI_TAB), kept while the device runs */
-    uint8_t menu_row[5];         /* MENU: the row last picked in each tab, from its first (ALGORITHM comes back to it) */
+    uint8_t menu_row[6];         /* MENU: the row last picked in each tab, from its first (ALGORITHM comes back to it) */
     uint32_t cc_last;            /* ((2.2) CC OUT: the last a knob sent, track << 16 | CC << 8 | value, + 1 (midi_learn.c) */
     volatile uint8_t mpc[NTRK];  /* ((1.3) MIDI Program Change per track, 0x80 | program, 0 none: midi_control.c mpc_io
                                   * notes it, midi_pc_poll loads it) */

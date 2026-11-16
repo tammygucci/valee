@@ -229,7 +229,8 @@ int main(void)
                s.s.rec == 0xD5u && s.s.prefs == 31u && s.s.layers == 32u);
         assert(s.cpal_cols[0] == 0x40u && s.cpal_cols[21] == 0x40u + 21u && s.ml[0] == 0x80u && s.ml[29] == 0x80u + 29u &&
                s.fav[14][0] == 0x0Fu && !s.fav[14][8] && !s.fav[14][29] && !s.fav[ENGI_DIGITAL][2] &&
-               !s.fav[ENGI_DIGITAL][31] && s.fav[8][0] == 1u && s.room[0] == 0x33u && s.room[31] == 0x33u);
+               !s.fav[ENGI_DIGITAL][31] && s.fav[8][0] == 1u && s.room[0] == 0x33u && s.room[23] == 0x33u &&
+               !memcmp(s.room + 24, fxk_set, 8));   /* ((Vallée) [24..31]: MENU > FX's keys) */
         memset(favorites.factory, 0, sizeof favorites.factory);
         t = s;
         assert(settings_import(&t, sizeof t) == 1 && !memcmp(&t, &s, sizeof t) &&

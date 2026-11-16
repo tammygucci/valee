@@ -216,16 +216,17 @@ static void menu_head(void)
  *                   CLOSE is in the header: the four would not fit in S (cv_key_row drops words, from the last)
  * Drawn in two bands (the canvas holds 124 rows) split in a gap between two rows; while the tabs slide only their
  * strip (24..58) is drawn again */
-static const uint16_t MTAB_ICON[MTAB_COUNT] = {ICON_X_EYE, ICON_X_KNOB, ICON_X_SPEAKER, ICON_X_COG, ICON_MIDI};
+static const uint16_t MTAB_ICON[MTAB_COUNT] = {ICON_X_EYE, ICON_X_KNOB, ICON_X_SPEAKER, ICON_X_COG, ICON_MIDI,
+                                               ICON_X_REPEAT};   /* ((Vallée) FX: THE SPELL's keys) */
 #define MT_Y 29                                        /* the tab bar */
 #define MT_H 24
-#define MT_IW 28                                       /* a cushion with its icon alone (the icon centred in it; (1.3) 28,
-                                                        * was 32: five tabs) */
-#define MT_NX 26                                       /* the name's pen in the one shown; 10 px after it */
+#define MT_IW 24                                       /* a cushion with its icon alone (the icon centred in it; (1.3) 28,
+                                                        * was 32: five tabs; (Vallée) 24: six) */
+#define MT_NX 23                                       /* the name's pen in the one shown; 10 px after it ((Vallée) 23) */
 #define MT_X0 6
 #define MT_X1 234
-#define MT_GAP 5                                       /* between two tabs, always (the bar centred in MT_X0..MT_X1; (1.3) 5,
-                                                        * was 8: five tabs) */
+#define MT_GAP 4                                       /* between two tabs, always (the bar centred in MT_X0..MT_X1; (1.3) 5,
+                                                        * was 8: five tabs; (Vallée) 4: six) */
 #define MT_ONE 64                                      /* mt.pos per tab */
 #define MP_Y 59                                        /* the rows' panel */
 #define MP_PAD 3

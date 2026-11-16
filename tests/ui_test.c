@@ -1586,10 +1586,11 @@ static int test_menu_tabs(void)
             }
     }
     ui_prefs = 0;
-    bad += check("MENU tabs: DISPLAY CONTROL AUDIO SYSTEM MIDI ((1.3) MIDI appended), rows in a run, 6 shown fit the page; "
-                 "tab gaps constant (S, LARGE)",
-                 ok && MTAB_COUNT == 5u && str_eq(MTAB_NAME[0], "DISPLAY") && str_eq(MTAB_NAME[MTAB_MIDI], "MIDI") &&
-                 mtab_rows(MTAB_DISPLAY) == 7u && mtab_rows(MTAB_CONTROL) == 8u && mtab_rows(MTAB_AUDIO) == 6u &&   /* (#27; (2.0) RETURN; (2.5) KEEP SENDS) */
+    bad += check("MENU tabs: DISPLAY CONTROL AUDIO SYSTEM MIDI ((1.3) MIDI appended; (Vallée) FX), rows in a run, 6 shown fit "
+                 "the page; tab gaps constant (S, LARGE)",
+                 ok && MTAB_COUNT == 6u && str_eq(MTAB_NAME[0], "DISPLAY") && str_eq(MTAB_NAME[MTAB_MIDI], "MIDI") &&
+                 str_eq(MTAB_NAME[MTAB_FX], "FX") && mtab_rows(MTAB_FX) == 16u &&   /* ((Vallée) G5, F5 .. F3 KEY) */
+                 mtab_rows(MTAB_DISPLAY) == 7u && mtab_rows(MTAB_CONTROL) == 7u + BOARD_SMK37 && mtab_rows(MTAB_AUDIO) == 6u &&   /* (#27; (2.0) RETURN; (2.5) KEEP SENDS) */
                  mtab_rows(MTAB_SYSTEM) == 6u + FELUCCA_CDC && mtab_rows(MTAB_MIDI) == 16u);   /* ((Skiff) SYSTEM: CPU
                                                          * CLOCK; (Skiff 2.0) USB SERIAL with the console only; (2.2)
                                                          * MIDI: CLOCK OUT, AUTO CHANNEL, NOTES OUT, CC OUT, THRU, REMOTE) */
@@ -1608,7 +1609,7 @@ static int test_menu_tabs(void)
     turn(EN_ALGO, 1); ok &= ui.menu_sel == MI_LOWCUT && menu_tab() == MTAB_AUDIO;
     turn(EN_ALGO, -1); ok &= ui.menu_sel == MI_BPMLOCK;   /* (back at the row left there) */
     turn(EN_ALGO, -1); ok &= ui.menu_sel == MI_SCROFF;
-    turn(EN_ALGO, -1); ok &= ui.menu_sel == MI_CLOCK && menu_tab() == MTAB_MIDI;   /* (wraps; (1.3) MIDI last) */
+    turn(EN_ALGO, -1); ok &= ui.menu_sel == MI_TRANS && menu_tab() == MTAB_FX;   /* (wraps; (Vallée) FX last) */
     turn(EN_ALGO, 1); ok &= ui.menu_sel == MI_SCROFF;
     bad += check("MENU: ALGORITHM steps between the tabs and wraps, each tab back at its last row", ok && ui.menu == 1);
     turn(EN_ALGO, 1); turn(EN_PRESET, -1);            /* CONTROL: from FX LATCH up to KNOB ACCEL */
@@ -10431,7 +10432,7 @@ static int test_world(void)
         for (i = 0, cur = 0; i < n; i++)
             if (pos >= at0[i] && pos < at0[i] + len[i])
                 cur = i;
-        ok &= MI_TAB[MI_TRANS] == MTAB_CONTROL && !perf_auto_on;
+        ok &= MI_TAB[MI_TRANS] == MTAB_FX && !perf_auto_on;
         TRANS_BYTE = 2u;                                /* (an old STYLE value in its byte: OFF) */
         if (getenv("TRANS_SHOT")) {                     /* (a look at the row, its longest value) */
             FILE *fp;
@@ -10450,8 +10451,8 @@ static int test_world(void)
         }
         ok &= menu_get(MI_TRANS) == 1u && menu_n(MI_TRANS) == 14u && str_eq(menu_vname(MI_TRANS, 6), "TAPE STOP") &&
               str_eq(menu_vname(MI_TRANS, 1), "REPEAT 1/16");   /* (an old STYLE value in the byte: REPEAT 1/16) */
-        menu_put(MI_TRANS, 5);                          /* (MENU > CONTROL > TRANSITION FX: HPF) */
-        ok &= menu_get(MI_TRANS) == 5u && str_eq(MI_NAME[MI_TRANS], "TRANSITION FX");
+        menu_put(MI_TRANS, 5);                          /* (MENU > FX > G5 KEY: HPF) */
+        ok &= menu_get(MI_TRANS) == 5u && str_eq(MI_NAME[MI_TRANS], "G5 KEY");
         wl_keys(1u << 3);                               /* (G#3: the next part, plain: no effect of its own) */
         ok &= wl.cue == cur + 2u && !perf_auto_on;
         world_play(6u);
@@ -10468,6 +10469,55 @@ static int test_world(void)
         wl_keys(1u << 2);                               /* (G3: the 2nd block, a VERSE, for what follows) */
         world_play(200u);
         bad += check("(Vallée) THE SPELL: G5 let go: the effect ends; F# drops the jump", ok);
+        {   /* (Vallée) MENU > FX: a white key past the song's blocks plays its own effect while held; OFF: none; a block's
+             * key never; the settings keep them (SKS1's room) */
+            sks_t st;
+            uint32_t nb = wl_song(at0, len, grp, ent, &pos, &total);
+            memset(fxk_set, 0, sizeof fxk_set);
+            ok = nb < 15u && str_eq(MI_NAME[MI_FXK0], "F5 KEY") && str_eq(MI_NAME[MI_FXK14], "F3 KEY") &&
+                 menu_n(MI_FXK0) == 15u && menu_get(MI_FXK0) == 1u && str_eq(menu_vname(MI_FXK0, 1), "REPEAT 1/8") &&
+                 str_eq(menu_vname(MI_FXK0, 0), "OFF") && menu_get(MI_FXK14) == 2u && MI_TAB[MI_FXK7] == MTAB_FX;
+            fm1_in.notes |= 1u << 24;                   /* (F5 held: no block there, REPEAT 1/8) */
+            world_play(6u);
+            ok &= perf_auto_on && perf_auto_fx == 0u && ((wl_leds(0) >> 24) & 1u) && !((wl_leds(0) >> 26) & 1u);
+            fm1_in.notes &= ~(1u << 24);
+            world_play(6u);
+            ok &= !perf_auto_on;
+            {
+                uint32_t br = 0;
+                (void)wl_leds(&br);
+                ok &= ((br >> 24) & 1u) && ((br >> 26) & 1u);   /* (FX keys and G5 breathing) */
+            }
+            menu_put(MI_FXK0, 8);                       /* (F5: FREEZE) */
+            fm1_in.notes |= 1u << 24;
+            world_play(6u);
+            ok &= perf_auto_on && perf_auto_fx == 7u;
+            fm1_in.notes |= 1u << 26;                   /* (G5 held too: G5 first, HPF) */
+            world_play(6u);
+            ok &= perf_auto_on && perf_auto_fx == PF_HPF;
+            fm1_in.notes &= ~(1u << 24 | 1u << 26);
+            world_play(6u);
+            menu_put(MI_FXK0, 0);                       /* (F5 OFF: nothing; a press says there's no part) */
+            fm1_in.notes |= 1u << 24;
+            world_play(6u);
+            ok &= !perf_auto_on;
+            fm1_in.notes &= ~(1u << 24);
+            wl_keys(1u << 24);
+            ok &= msg_is("F: NO PART THERE");
+            fm1_in.notes |= 1u;                         /* (F3, the first block: never an effect) */
+            world_play(6u);
+            ok &= !perf_auto_on;
+            fm1_in.notes &= ~1u;
+            world_play(6u);
+            menu_put(MI_FXK3, 4);                       /* (C5: REVERSE; kept by the settings) */
+            settings_export(&st);
+            memset(fxk_set, 0, sizeof fxk_set);
+            ok &= menu_get(MI_FXK3) == 5u;               /* (its default again: LPF) */
+            ok &= settings_import(&st, sizeof st) == 1 && menu_get(MI_FXK3) == 4u && menu_get(MI_FXK0) == 0u;
+            bad += check("(Vallée) MENU > FX: a white key past the song's blocks holds its effect (F5 REPEAT 1/8, set: "
+                         "FREEZE), G5 first, OFF none, a block's key never; kept by the settings", ok);
+            memset(fxk_set, 0, sizeof fxk_set);
+        }
         stop_transport();
         frames(3);
         pi = gen_part_now();

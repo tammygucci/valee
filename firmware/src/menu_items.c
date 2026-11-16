@@ -23,15 +23,17 @@
 /* (SMK-37 Pro, SMK37_UX.md) KEY VELOCITY in CONTROL (question 8); no LEDS row (button LEDs A: on or off only): MI_LEDS
  * past MI_COUNT, so its setting stays and no tab shows it */
 enum { MI_COLOR, MI_PHEAD, MI_LARGE, MI_ANIM, MI_SCROFF, MI_HINTS, MI_HOLD, MI_ACCEL, MI_BPMLOCK, MI_SCLLED, MI_PREVIEW,
-       MI_RETURN, MI_KEEPS, MI_TRANS, MI_KVEL, MI_LOWCUT, MI_USB, MI_CLICK, MI_CLKLVL, MI_COUNTIN, MI_TUNE, MI_CLOCK, MI_CLKOUT, MI_ROUTE,
+       MI_RETURN, MI_KEEPS, MI_KVEL, MI_LOWCUT, MI_USB, MI_CLICK, MI_CLKLVL, MI_COUNTIN, MI_TUNE, MI_CLOCK, MI_CLKOUT, MI_ROUTE,
        MI_AUTOCH, MI_TCH1, MI_TCH2, MI_TCH3, MI_TCH4, MI_TCH5, MI_TCH6, MI_NOTES, MI_CCOUT, MI_THRU, MI_REMOTE, MI_LEARN,
-       MI_LCLEAR, MI_SERIAL_IN MI_RESTORE, MI_CPU, MI_CLK, MI_PANEL, MI_RESET, MI_ABOUT, MI_COUNT, MI_LEDS MI_SERIAL_OUT };
+       MI_LCLEAR, MI_TRANS, MI_FXK0, MI_FXK1, MI_FXK2, MI_FXK3, MI_FXK4, MI_FXK5, MI_FXK6, MI_FXK7, MI_FXK8, MI_FXK9, MI_FXK10, MI_FXK11, MI_FXK12, MI_FXK13, MI_FXK14,
+       MI_SERIAL_IN MI_RESTORE, MI_CPU, MI_CLK, MI_PANEL, MI_RESET, MI_ABOUT, MI_COUNT, MI_LEDS MI_SERIAL_OUT };
 static const char *const KVEL_N[SMK_KV_N] = {"DYNAMIC", "SOFT", "HARD", "FIXED 64", "FIXED 100", "FIXED 127"};
 #else
 enum { MI_COLOR, MI_PHEAD, MI_LARGE, MI_ANIM, MI_LEDS, MI_SCROFF, MI_HINTS, MI_HOLD, MI_ACCEL, MI_BPMLOCK, MI_SCLLED,
-       MI_PREVIEW, MI_RETURN, MI_KEEPS, MI_TRANS, MI_LOWCUT, MI_USB, MI_CLICK, MI_CLKLVL, MI_COUNTIN, MI_TUNE, MI_CLOCK, MI_CLKOUT, MI_ROUTE,
+       MI_PREVIEW, MI_RETURN, MI_KEEPS, MI_LOWCUT, MI_USB, MI_CLICK, MI_CLKLVL, MI_COUNTIN, MI_TUNE, MI_CLOCK, MI_CLKOUT, MI_ROUTE,
        MI_AUTOCH, MI_TCH1, MI_TCH2, MI_TCH3, MI_TCH4, MI_TCH5, MI_TCH6, MI_NOTES, MI_CCOUT, MI_THRU, MI_REMOTE, MI_LEARN,
-       MI_LCLEAR, MI_SERIAL_IN MI_RESTORE, MI_CPU, MI_CLK, MI_PANEL, MI_RESET, MI_ABOUT, MI_COUNT MI_SERIAL_OUT };
+       MI_LCLEAR, MI_TRANS, MI_FXK0, MI_FXK1, MI_FXK2, MI_FXK3, MI_FXK4, MI_FXK5, MI_FXK6, MI_FXK7, MI_FXK8, MI_FXK9, MI_FXK10, MI_FXK11, MI_FXK12, MI_FXK13, MI_FXK14,
+       MI_SERIAL_IN MI_RESTORE, MI_CPU, MI_CLK, MI_PANEL, MI_RESET, MI_ABOUT, MI_COUNT MI_SERIAL_OUT };
 #endif   /* ((Skiff U4, A3) HINTS; RESET SETTINGS, a row with no value: its dialog) */   /* ((Skiff U3, R8, R2) CLOCK, MIDI IN, TUNE: the unit's, GLOBAL's and SYSTEM's before; CPU: read) */   /* (1.1: the metronome's rows in
                                                                                              * AUDIO; 1.2: RESTORE LAST in SYSTEM, SCALE LEDS
                                                                                              * in CONTROL) */
@@ -41,7 +43,7 @@ static const char *const MI_NAME[MI_COUNT] = {"THEME", "PLAYHEAD", "LARGE", "ANI
                                               "LEDS",
 #endif
                                               "SCREEN OFF", "HINTS", "HOLD", "KNOB ACCEL", "BPM LOCK",
-                                              "SCALE LEDS", "STEP PREVIEW", "RETURN", "KEEP SENDS", "TRANSITION FX",
+                                              "SCALE LEDS", "STEP PREVIEW", "RETURN", "KEEP SENDS",
 #if BOARD_SMK37
                                               "KEY VELOCITY",
 #endif
@@ -49,16 +51,18 @@ static const char *const MI_NAME[MI_COUNT] = {"THEME", "PLAYHEAD", "LARGE", "ANI
                                               "CLOCK", "CLOCK OUT", "MIDI IN", "AUTO CHANNEL",
                                               "T1 CHANNEL", "T2 CHANNEL", "T3 CHANNEL", "T4 CHANNEL", "T5 CHANNEL", "T6 CHANNEL",
                                               "NOTES OUT", "CC OUT", "THRU", "REMOTE", "MIDI LEARN", "LEARN CLEAR",
+                                              "G5 KEY", "F5 KEY", "E5 KEY", "D5 KEY", "C5 KEY", "B4 KEY", "A4 KEY",   /* ((Vallée) FX) */
+                                              "G4 KEY", "F4 KEY", "E4 KEY", "D4 KEY", "C4 KEY", "B3 KEY", "A3 KEY", "G3 KEY", "F3 KEY",
                                               MI_SERIAL_NAME "RESTORE LAST", "CPU", "CPU CLOCK", "CALIBRATION", "RESET SETTINGS",
                                               "ABOUT"};
 /* 1.0.5: the MENU's tabs (ui_menu.c: ALGORITHM steps between them, PRESETS among one tab's rows; the editor gets a
  * row's tab after its MENU_DESC reply). A tab's rows follow each other in MI order (tests/ui_test.c checks it); the
  * page shows MTAB_ROWS of them (ui_menu.c fits them; (1.3) MIDI's ten scroll, the cursor's row the last shown). A new
  * row joins a tab here, a new tab is appended (its index is what the editor is told) */
-enum { MTAB_DISPLAY, MTAB_CONTROL, MTAB_AUDIO, MTAB_SYSTEM, MTAB_MIDI, MTAB_COUNT };   /* ((Skiff 1.3) MIDI, appended: its
+enum { MTAB_DISPLAY, MTAB_CONTROL, MTAB_AUDIO, MTAB_SYSTEM, MTAB_MIDI, MTAB_FX, MTAB_COUNT };   /* ((Vallée) FX: THE SPELL's keys) */   /* ((Skiff 1.3) MIDI, appended: its
                                                          * rows sit before SYSTEM's in MI order, as value rows must) */
 #define MTAB_ROWS 6u
-static const char *const MTAB_NAME[MTAB_COUNT] = {"DISPLAY", "CONTROL", "AUDIO", "SYSTEM", "MIDI"};
+static const char *const MTAB_NAME[MTAB_COUNT] = {"DISPLAY", "CONTROL", "AUDIO", "SYSTEM", "MIDI", "FX"};
 static const uint8_t MI_TAB[MI_COUNT] = {
     MTAB_DISPLAY, MTAB_DISPLAY, MTAB_DISPLAY, MTAB_DISPLAY,                 /* COLOR (Skiff #27) PLAYHEAD LARGE ANIM */
 #if !BOARD_SMK37
@@ -73,7 +77,6 @@ static const uint8_t MI_TAB[MI_COUNT] = {
     MTAB_CONTROL,                                                           /* (Skiff 1.3) STEP PREVIEW */
     MTAB_CONTROL,                                                           /* (2.0, D 2A) RETURN */
     MTAB_CONTROL,                                                           /* (2.5) KEEP SENDS */
-    MTAB_CONTROL,                                                           /* (Vallée) TRANSITIONS */
 #if BOARD_SMK37
     MTAB_CONTROL,                                                           /* (SMK-37) KEY VELOCITY */
 #endif
@@ -86,6 +89,8 @@ static const uint8_t MI_TAB[MI_COUNT] = {
     MTAB_MIDI, MTAB_MIDI, MTAB_MIDI, MTAB_MIDI, MTAB_MIDI, MTAB_MIDI,       /* (1.3) T1..T6 CHANNEL */
     MTAB_MIDI, MTAB_MIDI, MTAB_MIDI, MTAB_MIDI,                             /* (2.2) NOTES OUT, CC OUT, THRU, REMOTE */
     MTAB_MIDI, MTAB_MIDI,                                                   /* (1.3) MIDI LEARN, LEARN CLEAR */
+    MTAB_FX, MTAB_FX, MTAB_FX, MTAB_FX, MTAB_FX, MTAB_FX, MTAB_FX, MTAB_FX,  /* ((Vallée) G5 KEY (the transition key, */
+    MTAB_FX, MTAB_FX, MTAB_FX, MTAB_FX, MTAB_FX, MTAB_FX, MTAB_FX, MTAB_FX,  /* TRANSITION FX before), F5 .. F3 KEY) */
     MI_SERIAL_TAB MTAB_SYSTEM, MTAB_SYSTEM, MTAB_SYSTEM,                    /* USB SERIAL, RESTORE LAST, (Skiff U3) CPU,
                                                                              * (Skiff) CPU CLOCK (SYSTEM's seven scroll) */
     MTAB_SYSTEM, MTAB_SYSTEM, MTAB_SYSTEM,                                  /* CALIBRATION, (U4) RESET SETTINGS, ABOUT */
@@ -109,6 +114,7 @@ static uint32_t mtab_rows(uint32_t t)                  /* .. and how many it has
  * midi_learn.c), LEARN CLEAR */
 static int menu_act(uint32_t row) { return row >= MI_VALUES || row == MI_LEARN || row == MI_LCLEAR; }
 #define MI_TCH(row) ((row) >= MI_TCH1 && (row) <= MI_TCH6)   /* (1.3) T1..T6 CHANNEL: 0..15, seq.c trk_midi_ch */
+#define MI_FXK(row) ((row) >= MI_FXK0 && (row) <= MI_FXK14)   /* ((Vallée) F5 .. F3 KEY: white key 14 - (row - MI_FXK0)) */
 /* the two-valued rows: a bit of ui_prefs (PREF_REC: of ui_rec_prefs, ui.c PREF_SCALE_LEDS) and its names (bit clear =
  * the default, bit set). A step up (a knob right,
  * OCT+) = ON on the ON / OFF rows (the switch's knob to the right; ANIM, USB SERIAL: their bit clears), else the
@@ -143,8 +149,8 @@ static const char *const SCROFF_N[5] = {"NEVER", "5 MIN", "15 MIN", "30 MIN", "6
 /* (2.0, D 2A) RETURN (ui.c ret_mode): MOMENTARY's values, FX's macros and PERFORM's throws come back at once or over
  * this long; 1 BAR the default */
 static const char *const RET_N[3] = {"SNAP", "1 BEAT", "1 BAR"};
-/* (Vallée) MENU > CONTROL > TRANSITION FX: the FX layer's effect THE SPELL's last white key (G5) plays while it is
- * held (ui_world.c wl_poll; perform.c PF_*'s order) */
+/* (Vallée) MENU > FX > G5 KEY (TRANSITION FX before, in CONTROL): the FX layer's effect THE SPELL's last white key (G5)
+ * plays while it is held (ui_world.c wl_poll; perform.c PF_*'s order); F5 .. F3 KEY the same names, OFF first */
 static const char *const TRANS_N[14] = {"REPEAT 1/8", "REPEAT 1/16", "REPEAT 1/32", "REVERSE", "LPF", "HPF",
                                         "TAPE STOP", "FREEZE", "OCT UP", "OCT DN", "GATE", "DUB", "FLANGE", "VINYL"};
 
@@ -180,7 +186,7 @@ static uint32_t menu_n(uint32_t row)
 {
     return row == MI_COLOR ? NPALETTES + (uint32_t)cpal_stored() :   /* ((Skiff #27) CUSTOM, while stored) */
            row == MI_LOWCUT || row == MI_RETURN || (row >= MI_CLICK && row <= MI_COUNTIN) ? 3u :
-           row == MI_HOLD ? 4u : row == MI_TRANS ? 14u : row == MI_LEDS ? LEDS_COUNT : row == MI_SCROFF ? NELEM(SCROFF_N) :
+           row == MI_HOLD ? 4u : row == MI_TRANS ? 14u : MI_FXK(row) ? 15u : row == MI_LEDS ? LEDS_COUNT : row == MI_SCROFF ? NELEM(SCROFF_N) :
            row == MI_CLOCK ? NELEM(N_CLOCK) : row == MI_TUNE ? 101u : row == MI_CPU ? 1u + FELUCCA_CPU2 :
            MI_TCH(row) ? 33u : row == MI_LEARN || row == MI_LCLEAR ? 1u :
            row == MI_AUTOCH || row == MI_REMOTE ? 17u : row == MI_NOTES ? 3u :
@@ -213,6 +219,9 @@ static uint32_t menu_get(uint32_t row)
     case MI_PREVIEW: return PREVIEW_SET ? 1u : 0u;
     case MI_RETURN: return ret_mode();
     case MI_TRANS: return trans_fx() - 1u;
+    case MI_FXK0: case MI_FXK1: case MI_FXK2: case MI_FXK3: case MI_FXK4: case MI_FXK5: case MI_FXK6: case MI_FXK7:
+    case MI_FXK8: case MI_FXK9: case MI_FXK10: case MI_FXK11: case MI_FXK12: case MI_FXK13: case MI_FXK14:
+        return fxk_fx(14u - (row - MI_FXK0));         /* ((Vallée) OFF, then the 14) */
     case MI_TUNE: return (uint32_t)clamp(song.g[G_TUNE] + 50, 0, 100);
 #if FELUCCA_CPU2
     case MI_CPU: return CPU2_SET ? 1u : 0u;            /* ((Skiff 1.3) 1 CORE, 2 CORES (BETA): from the next power-on) */
@@ -270,6 +279,9 @@ static const char *menu_vname(uint32_t row, uint32_t v)
     case MI_PREVIEW: return v & 1u ? "ON" : "OFF";
     case MI_RETURN: return RET_N[v % 3u];
     case MI_TRANS: return TRANS_N[v % 14u];
+    case MI_FXK0: case MI_FXK1: case MI_FXK2: case MI_FXK3: case MI_FXK4: case MI_FXK5: case MI_FXK6: case MI_FXK7:
+    case MI_FXK8: case MI_FXK9: case MI_FXK10: case MI_FXK11: case MI_FXK12: case MI_FXK13: case MI_FXK14:
+        return v ? TRANS_N[(v - 1u) % 14u] : "OFF";
     case MI_TUNE: case MI_CPU: {                       /* "+12 CT"; the audio's share of each half-buffer ("14 %") */
         static char b[20] __attribute__((section(".pool")));
         int32_t c = row == MI_TUNE ? (int32_t)v - 50 : (int32_t)ui_cpu;
@@ -353,6 +365,10 @@ static void menu_put(uint32_t row, uint32_t v)
         break;
     case MI_RETURN: RET_BYTE = (uint8_t)(RET_BAR - v % 3u); break;   /* ((2.0) ui.c ret_mode) */
     case MI_TRANS: TRANS_BYTE = (uint8_t)(0xA0u | (v % 14u + 1u)); break;
+    case MI_FXK0: case MI_FXK1: case MI_FXK2: case MI_FXK3: case MI_FXK4: case MI_FXK5: case MI_FXK6: case MI_FXK7:
+    case MI_FXK8: case MI_FXK9: case MI_FXK10: case MI_FXK11: case MI_FXK12: case MI_FXK13: case MI_FXK14:
+        fxk_put(14u - (row - MI_FXK0), v % 15u);
+        break;
 #if FELUCCA_CPU2
     case MI_CPU:                                       /* ((Skiff 1.3) the second core: started at power-on only, main.c) */
         CPU2_BYTE = (uint8_t)(v ? CPU2_BYTE | 1u : CPU2_BYTE & ~1u);
@@ -401,6 +417,7 @@ static void settings_reset(void)
     menu_put(MI_PREVIEW, 0);
     menu_put(MI_RETURN, RET_BAR);
     menu_put(MI_TRANS, 1);                             /* ((Vallée) REPEAT 1/16) */
+    memset(fxk_set, 0, sizeof fxk_set);                /* ((Vallée) MENU > FX's keys: their defaults) */
 #if FELUCCA_CPU2
     menu_put(MI_CPU, CPU2_DEFAULT);                    /* ((2.5) 2 CORES on the FM-1, 1 CORE on the SMK-37: ui.c) */
 #endif

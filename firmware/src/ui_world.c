@@ -164,6 +164,7 @@ static const int8_t WL_PC[12] = {4, -1, 5, -1, 6, 0, -1, 1, -1, 2, -1, 3};   /* 
 /* key k's white key from the left (0 F3, 7 F4 ..), -1 a black key (key 0 is F: seq.c key_place); the last (G5, 15):
  * the transition key, not a block (15 blocks on the keys): held, MENU > CONTROL > TRANSITION FX plays (wl_poll) */
 #define WL_KEY_TRANS 26u
+static uint8_t wl_fxkey;                               /* ((Vallée) the key whose effect plays (+ 1; 0 none): its LED lit */
 static int32_t wl_key_white(uint32_t k)
 {
     int32_t g = WL_PC[(k + 5u) % 12u];
@@ -203,7 +204,7 @@ static void wl_strip_at(int into)                  /* (into: the canvas as it is
         if (!w || !song.playing || wl.cue > n)
             wl.cue = 0;
     }
-    sig = (uint32_t)perf_auto_on * 977u + (uint32_t)wl.rec * 131u + (uint32_t)wl.rec_n * 17u + (wl.rec ? (ui.frame / 15u) & 1u : 0u) * 5u +
+    sig = (uint32_t)perf_auto_on * 977u + (uint32_t)perf_auto_fx * 7919u + (uint32_t)wl.rec * 131u + (uint32_t)wl.rec_n * 17u + (wl.rec ? (ui.frame / 15u) & 1u : 0u) * 5u +
           (uint32_t)wl.cue * 7717u + (wl.cue ? (ui.frame / 6u) & 1u : 0u) * 3u + (pos * 228u / (total ? total : 1u)) * 31u + n * 977u + cur * 7u + (uint32_t)song.playing * 5u + total;
     for (i = 0; i < n; i++)
         sig = sig * 31u + at0[i] + grp[i] * 13u + ent[i];
@@ -243,8 +244,8 @@ static void wl_strip_at(int into)                  /* (into: the canvas as it is
         str_cpy(b + str_len(b), " / ", sizeof b - str_len(b));
         fmt_int(b + str_len(b), (int32_t)bars);
         cv_text_r(232, 3, &AF_S, b, T_MID, T_SURF);
-        if (perf_auto_on)                              /* (the transition key held) */
-            cv_text_r(232 - text_w(&AF_S, b) - 8, 3, &AF_S, "FX", T_ACCENT, T_SURF);
+        if (perf_auto_on)                              /* (an FX key held: (Vallée) its effect's name) */
+            cv_text_r(232 - text_w(&AF_S, b) - 8, 3, &AF_S, TRANS_N[perf_auto_fx % 14u], T_ACCENT, T_SURF);
     }
     if (!n) {
         cv_rect(X0, Y, W, H, ux_mix(T_SURF, T_THEME, 45));
@@ -345,12 +346,26 @@ static void wl_poll(void)
 {
     uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n, i;
     uint8_t grp[WL_NSEC], ent[WL_NSEC];
-    {   /* the transition key (G5) held on THE SPELL: TRANSITION FX's effect, as an FX layer key's; let go: it ends */
-        uint8_t on = (uint8_t)(wl_keys_on() && ((fm1_in.notes >> WL_KEY_TRANS) & 1u));
-        if (on && !perf_auto_on)
-            perf_auto_fx = (uint8_t)(trans_fx() - 1u);
-        if (on != perf_auto_on) {
-            perf_auto_on = on;
+    {   /* the transition key (G5) held on THE SPELL: G5 KEY's effect, as an FX layer key's; let go: it ends. ((Vallée)
+         * MENU > FX) a white key that is no block of the song: its own (OFF: none). G5 first, else the highest held */
+        uint32_t held = wl_keys_on() ? fm1_in.notes : 0u, fx = 0, k, key = 0, nb = 0;
+        int32_t g;
+        if ((held >> WL_KEY_TRANS) & 1u) {
+            fx = trans_fx();
+            key = WL_KEY_TRANS + 1u;
+        } else if (held & ((1u << WL_KEY_TRANS) - 1u)) {
+            nb = wl_song(at0, len, grp, ent, &pos, &total);
+            for (k = WL_KEY_TRANS; k-- > 0u && !fx;)
+                if (((held >> k) & 1u) && (g = wl_key_white(k)) >= 0 && (uint32_t)g >= nb && fxk_fx((uint32_t)g)) {
+                    fx = fxk_fx((uint32_t)g);
+                    key = k + 1u;
+                }
+        }
+        if (fx && (fx - 1u != perf_auto_fx || !perf_auto_on))
+            perf_auto_fx = (uint8_t)(fx - 1u);
+        if ((fx != 0u) != (perf_auto_on != 0u) || key != wl_fxkey) {
+            perf_auto_on = (uint8_t)(fx != 0u);
+            wl_fxkey = (uint8_t)key;
             ui.force = 1;
         }
     }
@@ -455,6 +470,8 @@ static void wl_keys(uint32_t notes)
         return;
     }
     pick = (uint32_t)g;                                /* (the white key: its block) */
+    if (pick >= n && fxk_fx(pick))                     /* ((Vallée) no block: its FX, held (wl_poll)) */
+        return;
     if (pick >= n) {
         b[0] = WL_KEYN[g % 7];
         b[1] = 0;
@@ -481,10 +498,15 @@ static uint32_t wl_leds(uint32_t *br)
                 lit |= 1u << k;
             else
                 b |= 1u << k;
+        } else if (g >= 0 && fxk_fx((uint32_t)g)) {   /* ((Vallée) an FX key: breathing, lit while it plays) */
+            if (wl_fxkey == k + 1u)
+                lit |= 1u << k;
+            else
+                b |= 1u << k;
         }
     if (wl.rec)                                        /* ((Vallée) REC ARRANGE: D# lit */
         lit |= 1u << 10 | 1u << 22;
-    if (perf_auto_on)                                  /* (the transition key held: lit; else breathing) */
+    if (perf_auto_on && wl_fxkey == WL_KEY_TRANS + 1u)   /* (the transition key held: lit; else breathing) */
         lit |= 1u << WL_KEY_TRANS;
     else
         b |= 1u << WL_KEY_TRANS;

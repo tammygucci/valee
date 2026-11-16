@@ -817,6 +817,7 @@ enum { S_HOME, S_HOME_IDLE, S_MESSAGE, S_MESSAGE_KEY, S_MESSAGE_NOFILE, S_PRESET
        S_GEN, S_GEN_PART, S_GEN_PARTS, S_GEN_FEEL, S_GEN_WRITTEN, S_GEN_STEELY, S_GEN_DEMARCO,  /* (Vallée) GEN */
        S_BEAST, S_BEAST_LONG, S_BEAST_HOOD, S_BEAST_MUTED, S_WORLD,                                  /* (Vallée) the creature box */
        S_ALEM, S_ALEM_ON, S_ALEM2, S_ALEM2_DUST,                                                     /* (Vallée) GLO > ALEMBIC */
+       S_MENU_FX, S_WORLD_FX,                                                                       /* (Vallée) MENU > FX, a key held */
        S_MOCK_HOME, S_MOCK_PRESETS, S_MOCK_SEQ, S_MOCK_DRUM, S_MOCK_MIXER, S_MOCK_DIALOG, S_MOCK_MENU, S_COUNT };
 static const char *const S_NAME[S_COUNT] = {"home", "home_idle", "message", "message_key", "message_nofile", "presets", "presets_nofav", "user",
     "project", "lanes", "step", "pattern", "chance", "motion", "drum",
@@ -853,7 +854,7 @@ static const char *const S_NAME[S_COUNT] = {"home", "home_idle", "message", "mes
     "follow", "follow_scale", "follow_fit", "follow_off", "follow_wait", "free_take", "free_take_turned", "dly_mono", "dly_ping", "fx_delay", "fx_reverb", "fx_sends", "pattern_64", "song_strip", "project_new",
     "project_clear", "confirm_clear_song", "confirm_clear_trks", "insert_filter", "insert_filter_hp", "chord_strum",
     "chord_strum_alt", "shift_song", "hint_free_take", "gen", "gen_part", "gen_parts", "gen_feel", "gen_written",
-    "gen_steely", "gen_demarco", "beast", "beast_long", "beast_hood", "beast_muted", "world", "alembic", "alembic_on", "alembic_2", "alembic_2_dust", "mock_home", "mock_presets", "mock_seq", "mock_drum", "mock_mixer", "mock_dialog", "mock_menu"};
+    "gen_steely", "gen_demarco", "beast", "beast_long", "beast_hood", "beast_muted", "world", "alembic", "alembic_on", "alembic_2", "alembic_2_dust", "menu_fx", "world_fx", "mock_home", "mock_presets", "mock_seq", "mock_drum", "mock_mixer", "mock_dialog", "mock_menu"};
 
 /* the scenes of the UI design screens: the state the UI-redesign
  * prototype drew them from (its setup(): two pattern tracks, the drum pattern on track 4, a synthetic scope),
@@ -1004,6 +1005,8 @@ static void setup(int s)
     memset(kb_chn, 0, sizeof kb_chn);               /* no key held (roll_playing holds one) */
     fm1_in.buttons = 0;                             /* (no button held: momentary holds LFO) */
     memset(&scd, 0, sizeof scd);                    /* ((2.5) the scope's levels and notes: none, whatever came before) */
+    perf_auto_on = 0;                               /* ((Vallée) THE SPELL's FX keys: none held) */
+    memset(fxk_set, 0, sizeof fxk_set);
     if (s >= S_MOCK_HOME) {
         mock_state(s);
         return;
@@ -1764,6 +1767,10 @@ static void setup(int s)
             ui.hot_t = 30;
         }
         break;
+    case S_MENU_FX:                                 /* ((Vallée) MENU > FX: F5 KEY set to TAPE STOP, E5 OFF */
+        fxk_put(14, 7); fxk_put(13, 0);
+        ui.menu = 1; ui.menu_sel = MI_FXK1; break;
+    case S_WORLD_FX:                                /* ((Vallée) THE SPELL, an FX key held: REPEAT 1/16's name on the map */
     case S_WORLD:                                   /* ((Vallée) HOME on HOME: THE WORLD (ui_world.c), a GEN song in it */
         gen_reset();
         gen.seed = 3;
@@ -1772,6 +1779,10 @@ static void setup(int s)
         go_home();
         ui.msg_t = 0;
         ui.home_scope = 1;
+        if (s == S_WORLD_FX) {
+            perf_auto_on = 1;
+            perf_auto_fx = 1;
+        }
         break;
     case S_BEAST: case S_BEAST_LONG: case S_BEAST_HOOD: case S_BEAST_MUTED:   /* ((Vallée) PRESETS on HOME: the creature
                                                      * box; the longest name (PHYS HARPSICHORD), VOICE's hood, muted */
