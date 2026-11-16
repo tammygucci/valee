@@ -58,8 +58,10 @@ through four stages, always in this order, like a liquid poured from vessel to v
 - **BLEND** is how much of each stage you hear (and for DRIVE, WOW, CRUSH and FILTR how strong it is). **BLEND 0 is
   off**: that stage does nothing at all, and the sound is exactly as without ALEMBIC.
 - Each stage's two knob cards are in its own colour: DRIVE green, MOTION blue, SPACE yellow, GRAIN pink (in TEEN, that
-  theme's colours).
-- **The screen**: four flasks in a row joined by a pipe, each as full as its BLEND, its flavour etched on the glass (a
+  theme's colours: red, blue, white, violet).
+- **On TEEN** the page is plain instead: four round knobs on a thin line, each in its stage's colour, the pointer at
+  its BLEND and a scale of dots lit up to there, the flavour named under it (a stage that is off: an empty outline).
+- **The screen** (XENO): four flasks in a row joined by a pipe, each as full as its BLEND, its flavour etched on the glass (a
   triangle, a cross, a pentagram, or the circle and point of the old sign for gold) and named under it. While the sound goes through, the liquid moves (DRIVE bubbles, MOTION sways, DUST sparks) and drops
   run down the pipe while playing. An empty flask is a stage that is off. ANIM OFF keeps them still.
 - **SPACE uses the delay and reverb you set on GLO > DELAY and REVERB** (their time, feedback, type): it adds the whole
@@ -245,9 +247,10 @@ about 36 KB of the FM-1's flash; a unit on one of them comes up in XENO. THEME C
 editor) still works, over either.
 
 **HOME is a tape machine**, after the OP-1's tape (like the ORBIT and KARMA home screens). Two reels with turning
-hexagram hubs wind the tape from left to right as the pattern plays. The selected track's creature stands on the head and
+pentagram hubs wind the tape from left to right as the pattern plays. The selected track's creature stands on the head and
 sings (pink eyes, a halo) on its notes. There's a tape counter and one meter per track. Below the deck, each track is a
-lane of tape running past the head.
+lane of tape running past the head. As on TEEN, there are no knob cards on top: the deck and the taller lanes take
+their room, and turning a knob brings the cards back while you turn it.
 
 **Every sound has its own creature** (original pixel art, 12 x 12), of its **track's family**, the same six
 elements THE SPELL conjures with, each in its colour (XENO's track colours are these colours too):

@@ -1757,7 +1757,7 @@ static uint32_t graph_signature(void)
                                                       * page: PRESETS' MODE card, the echoes, the tail) */
         for (i = 0; i < G_COUNT; i++)
             h = (h ^ (uint16_t)song.g[i]) * 16777619u;
-    if (pg->graph == GR_ALEM && xe_anim() &&          /* ((Vallée) ALEMBIC: the liquid moving, a vessel on */
+    if (pg->graph == GR_ALEM && xe_anim() && !UX_TEEN && /* ((Vallée) ALEMBIC: the liquid moving, a vessel on */
         (song.g[G_ADRVB] | song.g[G_AMOVB] | song.g[G_ASPCB] | song.g[G_AGRNB]))
         h ^= (ui.frame / 2u + 1u) * 2654435761u + (uint32_t)song.playing;
     if (pg->graph == GR_VOICE2) {                    /* (Skiff U5) the voices sounding, the next one */

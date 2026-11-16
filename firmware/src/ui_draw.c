@@ -870,7 +870,7 @@ static void draw_columns(void)
             wl_strip();
         return;
     }
-    if (xe_teen_cards()) {                             /* ((Vallée) TEEN's HOME: the deck's top there, not the cards) */
+    if (xe_teen_cards()) {                             /* ((Vallée) TEEN's and XENO's HOME: the deck's top there, no cards) */
         xe_teen_top();
         return;
     }

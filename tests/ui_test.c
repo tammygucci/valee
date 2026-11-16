@@ -2047,7 +2047,8 @@ static int test_soak_cards(void)
             continue;                                   /* (the cards are not drawn) */
         for (c = 0; c < 5u; c++)
             old += ui.roll[c].from[0] && (uint8_t)(ui.frame - ui.roll[c].t0) >= ROLL_FRAMES;
-        if (quiet > 45u && !ui.hot_t && !ui.bpm_t && !ui.msg_t && SOAK_RND(8u) == 0u) {
+        if (quiet > 45u && !ui.hot_t && !ui.bpm_t && !ui.msg_t && !xe_teen_cards() && SOAK_RND(8u) == 0u) {   /* ((Vallée)
+                                                         * HOME tall: the deck in the cards' row, turning: no cards) */
             for (c = 0; c < 5u && !ui.roll[c].from[0]; c++) {}
             if (c < 5u)
                 continue;
@@ -2175,6 +2176,11 @@ static int test_presets_knob(void)
     return bad;
 }
 
+static void cards_frame(void)                   /* ((Vallée) HOME tall, XENO and TEEN: its cards while a knob turns) */
+{
+    ui.hot_t = 30;
+    frame();
+}
 static int test_product_ux(void)
 {
     int bad = 0, ok = 1;
@@ -2261,23 +2267,24 @@ static int test_product_ux(void)
     bad += check("motion-clear UNDO restores the recorded events", motion_count(TSEL) == 1);
     motion_full = 1; frame();
     bad += check("#93 the events used up: AUTOMATION FULL", msg_is("AUTOMATION FULL") && !motion_full);
-    {   /* #63: a card shows MOTION's icon while the track's motion changes its parameter */
+    {   /* #63: a card shows MOTION's icon while the track's motion changes its parameter ((Vallée) HOME's cards: shown
+         * while a knob is turned, cards_frame) */
         uint32_t id = ENGINES[TSEL->eng_req]->knob[0];
-        ui_power_on(); go_home(); frame();
+        ui_power_on(); go_home(); cards_frame();
         ok = !card_motion(0) && !card_motion(1);
-        song.rec = 1; seq_start(); go_home(); turn(EN_K1, 1); frame();
+        song.rec = 1; seq_start(); go_home(); turn(EN_K1, 1); cards_frame();
         ok &= card_motion(0) && !card_motion(1) && !card_motion(2) && !card_motion(3);
         bad += check("MOTION: a recorded knob marks its HOME card (and no other)", ok && motion_count(TSEL) == 1);
-        song.rec = 0; press(B_PLAY); events_block(32); frame();
+        song.rec = 0; press(B_PLAY); events_block(32); cards_frame();
         ok = card_motion(0);
-        auto_top(); turn(EN_K2, -1); go_home(); frame();
+        auto_top(); turn(EN_K2, -1); go_home(); cards_frame();
         ok &= !card_motion(0) && motion_count(TSEL) == 1;
         bad += check("MOTION: PLAY OFF takes the icon off the card, the events stay", ok);
-        auto_top(); turn(EN_K2, 1); go_home(); frame();
+        auto_top(); turn(EN_K2, 1); go_home(); cards_frame();
         ok = card_motion(0);
-        track_select(1); frame();
+        track_select(1); cards_frame();
         ok &= !card_motion(0);                           /* (another track: its own motion, none) */
-        track_select(0); frame();
+        track_select(0); cards_frame();
         ok &= card_motion(0);
         bad += check("MOTION: PLAY ON again shows it; only on the track that has the motion", ok);
         go_page(GR_TRK); frame();

@@ -162,7 +162,8 @@ static int xe_sings(const track_t *t)
 /* (Vallée) TEEN's deck, as an OP-1's tape: on black, two reels drawn in thin lines (the rim, a hub of two rings, three
  * short spokes turning), the tape from under each reel down round a row of rollers to the head (a square, the lanes'
  * window under it); between the reels the counter, the track in its box, PLAY's triangle and the tempo */
-static int xe_teen_tall(void) { return UX_TEEN && ui.home && !ui.home_scope && !ui.layer && large_kind() != LK_TALL; }
+static int xe_teen_tall(void) { return ui.home && !ui.home_scope && !ui.layer && large_kind() != LK_TALL; }   /* ((Vallée)
+                                                       * XENO too: its HOME tall the same way, no cards on top) */
 static void xe_deck_teen(int32_t D)
 {
     const track_t *t = TSEL;
@@ -246,7 +247,8 @@ static void xe_deck(int32_t D)
     }
     const track_t *t = TSEL;
     uint32_t len, cur = xe_pos(t, &len), k;
-    int32_t r = D / 2 - 3, cy = D / 2 - 1, ty = D - 4, lcx = 4 + r, rcx = 236 - r;
+    int32_t r = D / 2 - 3 > 27 ? 27 : D / 2 - 3, cy = D / 2 - 1, ty = D - 4, lcx = 4 + r, rcx = 236 - r;   /* ((Vallée)
+                                                       * tall: the reels no wider, the meters and counter keep room) */
     int32_t span = r - r / 2 - 3, prog = song.playing ? (int32_t)(cur * 1000u / len) : 0;
     int32_t lp = r / 2 + 2 + span * (1000 - prog) / 1000, rp = r / 2 + 2 + span * prog / 1000;
     uint32_t ph = song.playing && xe_anim() ? ui.frame * 0x03000000u : 0x08000000u;
@@ -287,7 +289,8 @@ static void xe_deck(int32_t D)
     }
     /* left of the head: a meter a track, lit while its step strikes; right: the tape counter (the step, 3 digits) */
     {
-        int32_t x0 = lcx + r + 6, x1 = XE_HEAD_X - 18, bw = (x1 - x0 - 5 * 3) / 6, bh = ty - 10, by = 5;
+        int32_t x0 = lcx + r + 6, x1 = XE_HEAD_X - 18, bw = (x1 - x0 - 5 * 3) / 6, bh = ty - 10 > 2 * r ? 2 * r : ty - 10,
+                by = ty - 10 > 2 * r ? cy - r : 5;     /* ((Vallée) tall: as tall as the reels, beside them) */
         if (bw > 6)
             bw = 6;
         for (k = 0; k < NTRK && bw > 1; k++) {
@@ -306,8 +309,9 @@ static void xe_deck(int32_t D)
         d[2] = (char)('0' + n % 10u);
         d[3] = 0;
         text_ink(&AF_M, d, b);
-        cv_text_on(x0 + (rcx - r - 6 - x0 - b[2]) / 2 - b[0], CAP_IN(M, ty - 2), &AF_M, d, song.playing ? T_THEME : T_MID,
-                   ux_mix(T_BG, T_SURF, 45));
+        cv_text_on(x0 + (rcx - r - 6 - x0 - b[2]) / 2 - b[0], xe_teen_tall() ? XE_TEEN_TOP + CAP_IN(M, ty - 2 - XE_TEEN_TOP) :
+                   CAP_IN(M, ty - 2), &AF_M, d, song.playing ? T_THEME : T_MID, ux_mix(T_BG, T_SURF, 45));   /* ((Vallée)
+                                                       * tall: under the seam, the cards' row's) */
     }
 }
 
@@ -397,7 +401,7 @@ static void xe_lanes(int32_t y, int32_t lh)
     }
 }
 
-/* ((Vallée) TEEN's HOME tall: no cards, the deck and the lanes from the cards' row down (XE_TEEN_TOP more rows), drawn
+/* ((Vallée) TEEN's HOME tall, and XENO's: no cards, the deck and the lanes from the cards' row down (XE_TEEN_TOP more rows), drawn
  * in two pieces, the top in the cards' row (ui_draw.c draw_columns), the rest in the panel; a knob turned brings the
  * cards back while it is (ui.hot_t). The lanes then 15 px, their names in M) */
 static int xe_teen_cards(void) { return xe_teen_tall() && !ui.hot_t; }   /* (the deck's top where the cards were) */
@@ -421,7 +425,8 @@ static void xe_home(void)
 }
 static void xe_home_in(int32_t gh)
 {
-    int32_t lh = UX_TEEN ? (xe_teen_tall() ? 15 : XE_LANE_TEEN) : XE_LANE_H, lanes = (int32_t)NTRK * (lh + 1) - 1, D;
+    int32_t lh = xe_teen_tall() ? 15 : UX_TEEN ? XE_LANE_TEEN : XE_LANE_H, lanes = (int32_t)NTRK * (lh + 1) - 1, D;   /* (tall,
+                                                       * either theme: 15) */
     if (gh - lanes < 36) {                            /* (no room for the deck: the lanes alone, as tall as fit) */
         lh = (gh - ((int32_t)NTRK - 1)) / (int32_t)NTRK;
         cv_rect(0, 0, 240, gh, T_BG);

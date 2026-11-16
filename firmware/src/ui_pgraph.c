@@ -827,14 +827,51 @@ static void graph_arp(const track_t *t, uint16_t c)
  * and its point) and named under it. A stage at BLEND 0 is
  * an empty flask, DIM. While the sound goes through (alembic.c's peaks) the liquid moves: DRIVE bubbles, MOTION
  * sways, SPACE ripples, GRAIN's WOW rolls slowly, its DUST sparks; a drop runs along each pipe into a vessel that
- * is on. ANIM OFF: still. Laid out by the canvas's height (MENU > LARGE's tall cards: a smaller row) */
+ * is on. ANIM OFF: still. (TEEN: graph_alembic_teen's knobs.) Laid out by the canvas's height (MENU > LARGE's tall cards: a smaller row) */
 static const char *const *const ALM_NAMES[4] = {N_ADRV, N_AMOV, N_ASPC, N_AGRN};
+/* (Vallée) TEEN: no flasks (its look is plain): four round knobs in a row on a thin line, each its stage's colour,
+ * its pointer at its BLEND (7 o'clock 0 .. 5 o'clock full), a scale of 11 dots round it lit up to there; the stage over
+ * it, its flavour under it. A stage at BLEND 0: the knob an outline, DIM. Still (nothing moves) */
+static void graph_alembic_teen(void)
+{
+    const int32_t H = (int32_t)cv_h, R = (H - 46) / 2 > 20 ? 20 : (H - 46) / 2, cy = 22 + (H - 46) / 2;
+    static const char *const ST[4] = {"DRIVE", "MOTION", "SPACE", "GRAIN"};
+    uint32_t k, i;
+    cv_rect(8, cy, 224, 1, T_LINE);                                   /* (the mix's path, knob to knob) */
+    for (k = 0; k < 4u; k++) {
+        int32_t cx = 30 + (int32_t)k * 60, b = clamp(song.g[G_ADRVB + 2u * k], 0, 127);
+        uint32_t f = (uint32_t)clamp(song.g[G_ADRV + 2u * k], 0, k == 2u ? 2 : 3);
+        uint32_t a = 0xA0000000u + (uint32_t)b * (0xC0000000u / 127u);   /* (-135 .. +135 degrees from the top) */
+        uint16_t col = b ? T_TRK(k) : T_DIM;
+        for (i = 0; i < 11u; i++) {                                   /* the scale */
+            uint32_t t = 0xA0000000u + i * (0xC0000000u / 10u);
+            cv_rect(cx + sine_i(t) * (R + 5) / 32768 - 1, cy - sine_i(t + 0x40000000u) * (R + 5) / 32768 - 1, 2, 2,
+                    b && i * 127u <= (uint32_t)b * 10u ? T_TRK(k) : T_LINE);
+        }
+        if (b)
+            xe_disc(cx, cy, R, T_TRK(k));                             /* the cap */
+        else {
+            xe_disc(cx, cy, R, T_BG);
+            xe_ring(cx, cy, R, T_DIM);
+        }
+        cv_line(cx + sine_i(a) * 4 / 32768, cy - sine_i(a + 0x40000000u) * 4 / 32768,     /* the pointer */
+                cx + sine_i(a) * (R - 3) / 32768, cy - sine_i(a + 0x40000000u) * (R - 3) / 32768, b ? T_BG : T_DIM);
+        cv_line(cx + sine_i(a) * 4 / 32768 + 1, cy - sine_i(a + 0x40000000u) * 4 / 32768,
+                cx + sine_i(a) * (R - 3) / 32768 + 1, cy - sine_i(a + 0x40000000u) * (R - 3) / 32768, b ? T_BG : T_DIM);
+        cv_text_in(cx - 28, cy - R - 9 - AF_S.asc, 56, &AF_S, ST[k], b ? T_TEXT : T_MID, T_BG);
+        cv_text_in(cx - 28, cy + R + 8, 56, &AF_S, ALM_NAMES[k][f], b ? col : T_DIM, T_BG);
+    }
+}
 static void graph_alembic(uint16_t c)
 {
     const int32_t H = (int32_t)cv_h, r = H - 40 > 75 ? 25 : (H - 40) / 3, cy = H - 18 - r, ny = cy - r - (r > 20 ? 18 : 12);
     uint32_t k;
     int anim = xe_anim();
     (void)c;
+    if (UX_TEEN) {                                                    /* (TEEN: knobs, not flasks) */
+        graph_alembic_teen();
+        return;
+    }
     if (ny >= 30)                                                     /* (room above: what it is) */
         pg_text(12, 16, "THE MIX, FROM VESSEL TO VESSEL", T_MID);
     cv_rect(4, ny + 1, 232, 3, ux_mix(T_LINE, T_SURF, 20));          /* the pipe, in at the left, out at the right */
