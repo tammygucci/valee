@@ -239,9 +239,12 @@ tempo between the reels; the tracks under it, their names big. No knob cards on 
 their room; turn a knob and the cards come back while you turn it (the same knobs, the same settings, also on the
 track's EDIT pages). No creatures; turning PRESETS pops up a box with the sound's name in big letters and its engine
 under it. HOME on HOME has the same song map and
-section keys, at the bottom, and above it, on black, a wire shape of a few thin lines that turns and bulges towards each track as it
-plays, its lines flashing in that track's colour; it takes a new build at every PLAY and new directions at every part,
-never the same twice. Pick one on MENU > DISPLAY > THEME.
+section keys, at the bottom, and above it, on black, THE BAND: six toys on a floor, one for each track in its colour
+(the bass a ball, the pad a soft square, the lead a triangle, the drums a drum with its stick, the colour a diamond, the
+percussion a bell), each with two eyes. A toy jumps on every note its track plays; a muted track's toy lies flat with
+MUTE under it; while you hold an FX key they all squint. Over them: the bar's four beats, the letter of the part playing,
+and, when a key has sent the song to another part, NEXT and that part's letter. With MENU > DISPLAY > ANIM off the toys
+don't jump: a note lights its toy instead. Pick one on MENU > DISPLAY > THEME.
 Skiff's other six (SKIFF, HI-CON, PAPER, CRYPT, NEON, QUARK) and their widgets and pixel font are gone, which freed
 about 36 KB of the FM-1's flash; a unit on one of them comes up in XENO. THEME CUSTOM (your own colours, from the web
 editor) still works, over either.

@@ -811,145 +811,172 @@ static void wl_visit(int32_t H, uint32_t now, uint16_t sky)
     }
 }
 
-/* (Vallée) THEME TEEN's HOME on HOME under the map: on black, a wire shape of thin lines (as the intro's grid), turning.
- * Rings of points round an axis, each pushed out towards the side its tracks pull: every track a direction, its hits
- * a pull that dies away, so the shape bulges where the song plays and the lines near flash in that track's colour.
- * Its build (how many rings, how many points, the twist) is new at every PLAY, the directions new at every part of the
- * song, the shape easing to them: never the same twice. ANIM OFF: still */
+/* (Vallée) THEME TEEN's HOME on HOME over the map: THE BAND ((the user's pick B of four), OP-1's way): on black, six
+ * toys on a floor, one a track in its colour, each its own shape (the bass a ball, the pad a soft square, the lead a
+ * triangle, the drums a drum and its stick, the colour a diamond, the percussion a bell), two eyes on it. A note of its
+ * track: it jumps (up and back in BD_JUMP ms, its shadow narrowing under it); muted: it lies flat, MUTE under it; an FX
+ * key held: every eye squints. Over them the bar's four beats, the part playing (its letter, its colour) and the part a
+ * key sends it to (NEXT). ANIM OFF: no jumps, a note lights its toy. bd_tick (the panel's piece) reads the song; the top
+ * piece draws the same state: both halves of one moment */
+#define BD_JUMP 230u                                    /* (ms: up and down) */
+#define BD_UP 30                                        /* (px at the top) */
 static struct {
-    uint32_t sig, a, p, seed;
-    int32_t en[NTRK];                                  /* each track's pull, 0..1000 */
-    int32_t lob[NTRK][3], to[NTRK][3];                 /* its direction (Q15), the one it eases to */
+    uint32_t hit[NTRK], now;                            /* (when each last struck; the moment drawn) */
     uint16_t idx[NTRK];
-    uint8_t nr, np, tw, was;
-} tg;
-static void tg_dirs(uint32_t s)
+    uint8_t beat, cur, next, n;                         /* (the beat 0..3; the part playing + 1, the cued + 1) */
+    uint8_t grp[2];                                     /* (their colours' groups) */
+    char cn[2], nn[2];                                  /* (their letters) */
+} bd;
+static void bd_tick(void)
 {
-    uint32_t k;
-    for (k = 0; k < NTRK; k++) {
-        uint32_t h = wl_h(s + k * 7919u), lo = h, la = (h >> 4) % 1610612736u - 805306368u;   /* (within 67 deg) */
-        int32_t cl = QK_COS(la);
-        tg.to[k][0] = cl * QK_COS(lo) / 32767;
-        tg.to[k][1] = QK_SIN(la);
-        tg.to[k][2] = cl * QK_SIN(lo) / 32767;
-    }
-}
-enum { TG_NR = 6, TG_NP = 10 };
-static int32_t tg_sx[TG_NR + 2][TG_NP], tg_sy[TG_NR + 2][TG_NP], tg_sz[TG_NR + 2][TG_NP], tg_kk[TG_NR + 2][TG_NP];
-#define sx tg_sx
-#define sy tg_sy
-#define sz tg_sz
-#define kk tg_kk
-static void wl_geo(int32_t H, int upd)              /* (upd: the song's moves and the points; else the lines alone, */
-{                                                   /* as the last ones: TEEN's top piece) */
-    const int anim = xe_anim();
-    const uint32_t now = anim ? fm1_ms : 0u;
-    int32_t R = H * 31 / 100, cx = 120, cy = H / 2 + 2;
-    uint32_t i, j, k, kb, pos, sig;
-    cv_rect(0, 0, 240, H, T_BG);
-    if (!upd && tg.nr)
-        goto lines;
-    if (song.playing && (!tg.was || !tg.nr)) {          /* PLAY: a new build */
-        tg.seed = wl_h(fm1_ms ^ ui.frame ^ wl.seed);
-        tg.nr = (uint8_t)(2u + tg.seed % 2u);           /* (few lines: 2 or 3 rings of 5 .. 7) */
-        tg.np = (uint8_t)(5u + (tg.seed >> 3) % 3u);
-        tg.tw = (uint8_t)((tg.seed >> 7) % 4u);
-        tg_dirs(tg.seed ^ 77u);
-        memcpy(tg.lob, tg.to, sizeof tg.lob);
-    }
-    if (!tg.nr) {
-        tg.nr = 2;
-        tg.np = 6;
-        tg_dirs(12345u);
-        memcpy(tg.lob, tg.to, sizeof tg.lob);
-    }
-    tg.was = song.playing;
-    (void)song_at(&kb, &pos);                           /* a new part of the song: new directions */
-    sig = song.playing ? lists.cur[kb % NTRK] + 1u + (uint32_t)lists.ent[kb % NTRK][lists.cur[kb % NTRK] % NENT][0] * 64u : 0u;
-    if (sig != tg.sig) {
-        tg.sig = sig;
-        tg.seed = wl_h(tg.seed ^ sig ^ fm1_ms);
-        tg_dirs(tg.seed);
-        for (k = 0; k < NTRK; k++)
-            tg.en[k] += 400;
-    }
-    for (k = 0; k < NTRK; k++) {                         /* the pulls: a hit, then dying away; easing to the new ways */
+    uint32_t at0[WL_NSEC], len[WL_NSEC], pos, total, n, i, k, cur = 0;
+    uint8_t grp[WL_NSEC], ent[WL_NSEC];
+    char nm[24];
+    bd.now = fm1_ms;
+    for (k = 0; k < NTRK; k++) {                        /* the strikes */
         const track_t *t = &trk[k];
-        uint32_t len = t->p[P_SLEN] > 0 ? (uint32_t)t->p[P_SLEN] : 16u, cur = t->seq_idx % len;
-        if (song.playing && cur != tg.idx[k] && !t->p[P_MUTE] && step_on(&t->step[cur]))
-            tg.en[k] = 1000;
-        tg.idx[k] = (uint16_t)cur;
-        tg.en[k] = tg.en[k] > 1000 ? 1000 : tg.en[k] * 9 / 10;
-        for (i = 0; i < 3u; i++)
-            tg.lob[k][i] += (tg.to[k][i] - tg.lob[k][i]) / 12;
+        uint32_t l = t->p[P_SLEN] > 0 ? (uint32_t)t->p[P_SLEN] : 16u, c = t->seq_idx % l;
+        if (song.playing && c != bd.idx[k] && !t->p[P_MUTE] && step_on(&t->step[c]))
+            bd.hit[k] = bd.now | 1u;
+        bd.idx[k] = (uint16_t)c;
     }
-    if (anim) {
-        int32_t e = 0;
-        for (k = 0; k < NTRK; k++)
-            e += tg.en[k];
-        tg.a += 0x00500000u + (uint32_t)e * 0x00000C00u;   /* (the more it plays, the faster it turns) */
-        tg.p = 0x14000000u + (uint32_t)(QK_SIN(now * 65536u) * 0x0C00);
+    n = wl_song(at0, len, grp, ent, &pos, &total);
+    bd.n = (uint8_t)n;
+    if (!n) {                                           /* (the LOOP: the selected track's steps) */
+        uint32_t l = TSEL->p[P_SLEN] > 0 ? (uint32_t)TSEL->p[P_SLEN] : 16u;
+        bd.beat = (uint8_t)(song.playing ? TSEL->seq_idx % l / 4u % 4u : 0u);
+        bd.cur = bd.next = 0;
+        return;
     }
-    for (i = 0; i < (uint32_t)tg.nr + 2u; i++)           /* the points: the poles (rows 0 and nr + 1), the rings */
-        for (j = 0; j < tg.np; j++) {
-            uint32_t la = i == 0 ? 3221225472u : i == tg.nr + 1u ? 1073741824u
-                                 : 3221225472u + i * (2147483648u / (tg.nr + 1u));
-            uint32_t lo = j * (4294967295u / tg.np) + i * (uint32_t)tg.tw * 0x08000000u;
-            int32_t v[3], cl = QK_COS(la), sum = 0, best = 0, r, x, y, z, ca, sa, cp, sp, x1, z1;
-            v[0] = cl * QK_COS(lo) / 32767;
-            v[1] = QK_SIN(la);
-            v[2] = cl * QK_SIN(lo) / 32767;
-            kk[i][j] = -1;
-            for (k = 0; k < NTRK; k++) {
-                int32_t d = (v[0] * tg.lob[k][0] + v[1] * tg.lob[k][1] + v[2] * tg.lob[k][2]) / 32767, c;
-                if (d <= 0)
-                    continue;
-                c = tg.en[k] * d / 32767 * d / 32767;     /* (a narrow pull: squared) */
-                sum += c;
-                if (c > best && c > 220)
-                    best = c, kk[i][j] = (int32_t)k;
-            }
-            r = R * (1000 + (sum > 1200 ? 1200 : sum) * 40 / 100 + (anim ? QK_SIN(now * 196608u + i * 0x2345678u + j * 0x9876543u) * 40 / 32767 : 0)) / 1000;
-            x = r * v[0] / 32767;
-            y = r * v[1] / 32767;
-            z = r * v[2] / 32767;
-            ca = QK_COS(tg.a), sa = QK_SIN(tg.a), cp = QK_COS(tg.p), sp = QK_SIN(tg.p);
-            x1 = (x * ca + z * sa) / 32767;
-            z1 = (-x * sa + z * ca) / 32767;
-            sz[i][j] = (y * sp + z1 * cp) / 32767;
-            sx[i][j] = cx + x1 * 260 / (260 + sz[i][j]);
-            sy[i][j] = cy + ((y * cp - z1 * sp) / 32767) * 260 / (260 + sz[i][j]);
-        }
-lines:
-    for (i = 0; i < (uint32_t)tg.nr + 2u; i++)           /* the lines: round each ring, and down to the next */
-        for (j = 0; j < tg.np; j++) {
-            uint32_t n2 = (j + 1u) % tg.np, m;
-            for (m = 0; m < 2u; m++) {
-                uint32_t bi = m ? i + 1u : i, bj = m ? j : n2;
-                int32_t z, kc;
-                uint16_t c;
-                if (bi > (uint32_t)tg.nr + 1u || (!m && (i == 0 || i == tg.nr + 1u)))
-                    continue;
-                z = (sz[i][j] + sz[bi][bj]) / 2;
-                kc = kk[i][j] >= 0 ? kk[i][j] : kk[bi][bj];
-                c = kc >= 0 ? T_TRK((uint32_t)kc) : T_THEME;
-                c = z > 0 ? ux_mix(c, T_BG, 30 + (z * 40 / (R + 1) > 40 ? 40 : z * 40 / (R + 1))) : c;
-                xe_line(sx[i][j], sy[i][j], sx[bi][bj], sy[bi][bj], c);
-            }
-        }
+    for (i = 0; i < n; i++)
+        if (pos >= at0[i] && pos < at0[i] + len[i])
+            cur = i;
+    bd.beat = (uint8_t)(pos % 192u / 48u);
+    bd.cur = (uint8_t)(cur + 1u);
+    bd.grp[0] = grp[cur];
+    wl_sec_name(nm, cur, grp[cur], wl_gen_layout(grp, n));
+    bd.cn[0] = nm[0];
+    bd.cn[1] = 0;
+    bd.next = wl.cue && wl.cue <= n ? wl.cue : 0u;
+    if (bd.next) {
+        bd.grp[1] = grp[bd.next - 1u];
+        wl_sec_name(nm, bd.next - 1u, grp[bd.next - 1u], wl_gen_layout(grp, n));
+        bd.nn[0] = nm[0];
+        bd.nn[1] = 0;
+    }
 }
-
-#undef sx
-#undef sy
-#undef sz
-#undef kk
-/* TEEN's HOME on HOME: the wire shape from the cards' row down (two pieces, as TEEN's HOME), the song's map under it */
+static void bd_oval(int32_t x0, int32_t y0, int32_t w, int32_t h, uint16_t c)   /* (filled, in the box) */
+{
+    int32_t y, a = w / 2, b = h / 2, cx = x0 + a, cy = y0 + b;
+    for (y = -b; y <= b; y++) {
+        int32_t xx = b ? a * xe_isqrt((b * b - y * y) * 256) / (b * 16) : a;
+        cv_rect(cx - xx, cy + y, 2 * xx + 1, 1, c);
+    }
+}
+static int bd_in(int32_t y, int32_t h) { return y + cv_oy >= 0 && y + h + cv_oy <= (int32_t)cv_h; }   /* (text: in this piece) */
+static void bd_toy(uint32_t k, int32_t x, int32_t foot, int32_t up, int lit, int squint)
+{
+    const track_t *t = &trk[k];
+    uint16_t col = lit ? T_TRK(k) : ux_mix(T_TRK(k), T_BG, 70), eye = T_BG;
+    int32_t y = foot - up, s = up > BD_UP / 2 ? 2 : 0, i, ey;   /* (s: stretched, up in the air) */
+    if (t->p[P_MUTE]) {                                  /* (asleep: flat on the floor) */
+        cv_rect(x - 13, foot - 6, 26, 6, T_DIM);
+        cv_rect(x - 7, foot - 4, 4, 1, T_BG);
+        cv_rect(x + 3, foot - 4, 4, 1, T_BG);
+        if (bd_in(foot + 3, 12)) {
+            int32_t b[4];
+            text_ink(&AF_S, "MUTE", b);
+            cv_text_on(x - b[2] / 2 - b[0], foot + 3, &AF_S, "MUTE", T_DIM, T_BG);
+        }
+        return;
+    }
+    {   /* its shadow: narrower the higher it is */
+        int32_t sw = 24 - up;
+        if (sw > 4)
+            cv_rect(x - sw / 2, foot + 1, sw, 2, T_SURF);
+    }
+    if (up > 6)                                          /* (the jump's lines) */
+        for (i = -6; i <= 6; i += 6)
+            cv_rect(x + i, y + 3, 1, up - 6, ux_mix(col, T_BG, 35));
+    ey = y - 15;
+    switch (k % 6u) {
+    case 0:                                              /* bass: a ball */
+        bd_oval(x - 13 + s, y - 26 - s, 26 - 2 * s, 26 + s, col);
+        ey = y - 17;
+        break;
+    case 1:                                              /* pad: a soft square */
+        cv_rrect(x - 12 + s / 2, y - 24 - s, 24 - s, 24 + s, 5, col, T_BG);
+        break;
+    case 2:                                              /* lead: a triangle */
+        for (i = 0; i < 24 + s; i++) {
+            int32_t hw = 1 + i * 13 / (24 + s);
+            cv_rect(x - hw, y - 24 - s + i, 2 * hw, 1, col);
+        }
+        ey = y - 9;
+        break;
+    case 3:                                              /* drums: a drum, its stick */
+        cv_rect(x - 13, y - 18, 26, 18, col);
+        bd_oval(x - 13, y - 23, 26, 10, ux_mix(T_TEXT, col, 70));
+        cv_line_t(x + 6, y - 21, x + (up ? 12 : 16), y - (up ? 36 : 33), T_TEXT, 2);
+        ey = y - 11;
+        break;
+    case 4:                                              /* colour: a diamond */
+        for (i = 0; i <= 28 + s; i++) {
+            int32_t m = (28 + s) / 2, hw = 12 * (i <= m ? i : 28 + s - i) / m;
+            cv_rect(x - hw, y - 28 - s + i, 2 * hw + 1, 1, col);
+        }
+        ey = y - 16;
+        break;
+    default:                                             /* percussion: a bell */
+        bd_oval(x - 11, y - 24 - s, 22, 26 + s, col);
+        cv_rect(x - 12, y - 11, 24, 11, T_BG);
+        cv_rect(x - 11, y - 12, 22, 8, col);
+        cv_rect(x - 13, y - 4, 26, 4, col);
+        ey = y - 17;
+        break;
+    }
+    if (squint) {                                        /* (an FX key held) */
+        cv_rect(x - 6, ey + 1, 4, 1, eye);
+        cv_rect(x + 2, ey + 1, 4, 1, eye);
+    } else if (!(xe_anim() && (bd.now / 16u + k * 397u) % 211u < 7u)) {   /* (a blink now and then) */
+        cv_rect(x - 5, ey, 2, 3, eye);
+        cv_rect(x + 3, ey, 2, 3, eye);
+    } else {
+        cv_rect(x - 5, ey + 1, 2, 1, eye);
+        cv_rect(x + 3, ey + 1, 2, 1, eye);
+    }
+}
+static void wl_band(int32_t H)
+{
+    const int anim = xe_anim();
+    int32_t foot = H - 22, k, b;
+    cv_rect(0, 0, 240, H, T_BG);
+    cv_rect(8, foot, 224, 1, T_LINE);
+    for (k = 0; k < (int32_t)NTRK; k++) {
+        uint32_t dt = bd.now - (bd.hit[k] & ~1u);
+        int32_t up = 0, lit = anim || (bd.hit[k] && dt < 120u);   /* (ANIM OFF: a note lights it) */
+        if (anim && bd.hit[k] && dt < BD_JUMP)            /* (a parabola: up, then down) */
+            up = (int32_t)(4u * BD_UP * dt * (BD_JUMP - dt) / (BD_JUMP * BD_JUMP));
+        bd_toy((uint32_t)k, 20 + k * 40, foot, up, lit, perf_auto_on != 0);
+    }
+    for (b = 0; b < 4; b++)                               /* the bar's beats */
+        cv_rrect(97 + b * 14, 4, 8, 8, 4, b == bd.beat && song.playing ? T_TEXT : T_LINE, T_BG);
+    if (!bd_in(0, 28))                                    /* (the letters: the top piece's) */
+        return;
+    if (bd.cur)
+        cv_text_on(8, 0, &AF_L, bd.cn, WL_SEC[bd.grp[0] % 8u], T_BG);
+    if (bd.next) {
+        cv_text_r(232, 0, &AF_S, "NEXT", T_DIM, T_BG);
+        cv_text_r(232, 12, &AF_M, bd.nn, WL_SEC[bd.grp[1] % 8u], T_BG);
+    }
+}
+/* TEEN's HOME on HOME: THE BAND from the cards' row down (two pieces, as TEEN's HOME), the song's map under it */
 #define WL_TEEN_TOP (Y_GRAPH - Y_LABEL)
 static int32_t wl_teen_h(void) { return WL_TEEN_TOP + (int32_t)graph_h() - 48; }
 static void wl_teen_top(void)
 {
     cv_begin(240, WL_TEEN_TOP, T_BG);
-    wl_geo(wl_teen_h(), 0);
+    wl_band(wl_teen_h());
     cv_blit(0, Y_LABEL);
 }
 static void wl_world(void)
@@ -959,9 +986,10 @@ static void wl_world(void)
     const uint32_t now = anim ? fm1_ms : 0u;
     const uint16_t sky = WL_RGB(14, 10, 28), floor = WL_RGB(24, 18, 40);
     int32_t lvl = 0, k, i, hx, hy;
-    if (UX_TEEN) {                                     /* (TEEN: the wire shape, no spell; the map under it) */
+    if (UX_TEEN) {                                     /* (TEEN: THE BAND, no spell; the map under it) */
+        bd_tick();
         cv_oy = -WL_TEEN_TOP;
-        wl_geo(wl_teen_h(), 1);
+        wl_band(wl_teen_h());
         cv_oy = H - 46;
         wl_strip_at(1);
         cv_oy = 0;

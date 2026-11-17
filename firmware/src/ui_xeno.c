@@ -13,7 +13,7 @@
 static void sound_name(const track_t *t, char *b);   /* (ui_draw.c) */
 /* (Vallée) THEME TEEN (its colours, CUSTOM's over it too): XENO's screens plain, no esoterica: a tape machine with
  * plain reels, no stars, no creatures (on the head, in the lanes, the preset box); HOME on HOME the song's map over a
- * wire shape that the song moves (ui_world.c wl_geo) */
+ * band of six toys that the song makes jump (ui_world.c wl_band) */
 #define UX_TEEN (ux.teen != 0)
 #define XE_LANE_H 13                                  /* a lane, 1 between them: the deck gets what is left (39 or more) */
 #define XE_TEEN_TOP (Y_GRAPH - Y_LABEL)              /* ((Vallée) TEEN's HOME tall: the cards' row's rows (xe_home) */
