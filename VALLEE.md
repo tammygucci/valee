@@ -373,7 +373,7 @@ build and the unit, along with the RAM checks (92 KB of RAM, at least 8 KB of th
 
 Nothing Vallée adds touches how the FM-1 is updated or recovered: the update loader, the hardware layer, the linker
 script, the update and USB code, and the save formats are Skiff 2.6's, byte for byte. So Skiff's ways back all work
-as they do for Skiff (README.md, "If the FM-1 does not start"), and one more is in the firmware itself: if it
+as they do for Skiff ([SKIFF.md, "If the FM-1 does not start"](SKIFF.md#if-the-fm-1-does-not-start)), and one more is in the firmware itself: if it
 crashes or hangs within 30 seconds of switching on twice in a row, the next start goes into the chip's own boot mode
 (a USB disk named WL82 UBOOT1.00) where it can be written again. After a start that failed (a crash or hang in its first 30 seconds) the next start skips the intro.
 
@@ -450,6 +450,6 @@ The ABOUT page and its QR point at this repo (`ui_menu.c`); a fork of your own: 
 ## Credits
 
 Vallée is a fork of Skiff by illuminus5, built on Felucca by Leo Kuroshita (Hügelton Instruments), with the FM-1
-community's work (README.md has the full credits). GEN's way of working (genre, seed, energy; OCT+ writes, OCT+ again
+community's work ([SKIFF.md](SKIFF.md#credits) has the full credits). GEN's way of working (genre, seed, energy; OCT+ writes, OCT+ again
 rolls) comes from JIANT FM's GENE by juanjiant-bit; Vallée's generator code and tables are its own. GPL-3.0. Not
 affiliated with M-VAVE, or with any artist a style is named after.
