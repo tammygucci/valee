@@ -864,14 +864,18 @@ static void draw_columns(void)
         return;
     }
     if (wl_on()) {                                     /* ((Vallée) THE SPELL: the song's map where the cards are; TEEN: */
-        if (UX_TEEN)                                   /* the wire shape's top there, the map at the bottom) */
-            wl_teen_top();
-        else
+        if (UX_TEEN) {                                 /* the wire shape's top there, the map at the bottom: drawn after */
+            if (ui.shift)                              /* the panel's piece, in draw_graph, as that piece turns the shape; */
+                wl_teen_top();                         /* SHIFT, which draws no panel, here) */
+        } else
             wl_strip();
         return;
     }
-    if (xe_teen_cards()) {                             /* ((Vallée) TEEN's and XENO's HOME: the deck's top there, no cards) */
-        xe_teen_top();
+    if (xe_teen_cards()) {                             /* ((Vallée) TEEN's and XENO's HOME: the deck's top there, no cards;
+                                                        * drawn with the panel's piece, in draw_graph, so the two halves of
+                                                        * the deck are always of one frame: SHIFT, which draws no panel, here) */
+        if (ui.shift)
+            xe_teen_top();
         return;
     }
     if (ui.home) {
