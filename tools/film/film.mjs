@@ -66,7 +66,7 @@ d.turn(EN.K1, 2, 120); d.turn(EN.K2, 50, 14); wait(600);
 d.turn(EN.K3, 1, 120); d.turn(EN.K4, 70, 14); wait(2600);
 
 // 6. TEEN
-cap("Two looks", "XENO, and TEEN: the same screens, kept plain");
+cap("Two looks", "XENO, and TEEN: plain, OP-1 style, a band of toys that play along");
 d.down(B.HOME); wait(1000); d.up(B.HOME); wait(500);
 d.tap(B.OCTUP); wait(700);
 d.tap(B.HOME); wait(3300);

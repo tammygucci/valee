@@ -5,7 +5,8 @@ or with --still N1,N2,... PNGs of those frames to build/film/still_N.png. Needs 
 import json, sys, textwrap
 from PIL import Image, ImageDraw, ImageFont
 
-OUT = "build/film"
+import os
+OUT = os.environ.get("FILM_OUT", "build/film")
 W, H, S = 1920, 1080, 4
 SX, SY = 1920 - 960 - 60, 60
 BG = (13, 14, 27)
