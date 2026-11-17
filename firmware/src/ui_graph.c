@@ -2772,7 +2772,7 @@ static void draw_graph(void)
     if (!ui.force && sig == ui.graph_sig)
         return;
     ui.graph_sig = sig;
-    if (xe_teen_cards())                             /* ((Vallée) TEEN's and XENO's HOME tall: the deck's top piece first, */
+    if (xe_teen_cards() && !fr.on)                   /* ((Vallée) TEEN's and XENO's HOME tall: the deck's top piece first, */
         xe_teen_top();                               /* then the panel's at once: one frame's, never a seam between two
                                                       * (it was drawn every frame with the cards, the panel only when it
                                                       * changed: a reel cut across, the creature ahead of its lane) */
@@ -2970,7 +2970,7 @@ static void draw_graph(void)
     else if (ui.beast_t && beast_box_fits())         /* ((Vallée) the creature box, ui_xeno.c) */
         beast_box_draw();
     cv_blit(0, graph_y());
-    if (wl_on() && UX_TEEN && !ui.shift)            /* ((Vallée) THE SPELL, TEEN: the wire shape's top piece, at once */
+    if (wl_on() && UX_TEEN && !ui.shift && !fr.on)  /* ((Vallée) THE SPELL, TEEN: the wire shape's top piece, at once */
         wl_teen_top();                               /* after the piece that turned it: both halves of one turn (drawn
                                                       * before it, every frame, it showed the turn before: the shape cut) */
 }

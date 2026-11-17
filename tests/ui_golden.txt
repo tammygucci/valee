@@ -125,8 +125,8 @@ d564948470993c78 CUSTOM_TEEN_head_play_rec
 72adea32cfdb17f7 CUSTOM_TEEN_hint_free_take
 478224bf460315f0 CUSTOM_TEEN_home
 9ea90876d8f90dc1 CUSTOM_TEEN_home_idle
-38556217dd5f1f7c CUSTOM_TEEN_home_scope
-9142d6cf48f245af CUSTOM_TEEN_home_scope_play
+1d6d7324be985ab2 CUSTOM_TEEN_home_scope
+6cd822d743d4c47e CUSTOM_TEEN_home_scope_play
 12a920969789fdd6 CUSTOM_TEEN_insert_crush
 dfacd23280ed9e29 CUSTOM_TEEN_insert_filter
 d0bed81ef817a9de CUSTOM_TEEN_insert_filter_hp
@@ -282,8 +282,8 @@ f82174fd4ce61736 CUSTOM_TEEN_undo_box
 6daedec88104355f CUSTOM_TEEN_voice_2
 ab092b4519a122bf CUSTOM_TEEN_voice_2_uni
 aec0acb49bd5c8dc CUSTOM_TEEN_voice_glide
-83a22e736aee96b5 CUSTOM_TEEN_world
-2635be4fe52d1691 CUSTOM_TEEN_world_fx
+543930cd4df7c51e CUSTOM_TEEN_world
+e388c69f4f23840e CUSTOM_TEEN_world_fx
 5f2336dbe17da12f CUSTOM_XENO_about
 b5088d883df79606 CUSTOM_XENO_about_credits
 9e340e5e1f64144a CUSTOM_XENO_about_end
@@ -1265,8 +1265,8 @@ cee27758e8f046ab TEEN_head_glo_turn
 93b2a84bbd2cac2c TEEN_hint_free_take
 4e4f88ca3588aeda TEEN_home
 16da1cdfb51d911f TEEN_home_idle
-effff7fbd2179b9d TEEN_home_scope
-3f8d03bbbf5688af TEEN_home_scope_play
+5fb38d91e5318d92 TEEN_home_scope
+5e0ea1c181993b84 TEEN_home_scope_play
 23a49a191d010b9d TEEN_insert_crush
 ca57b1aed85c3849 TEEN_insert_filter
 f87db205fdc748e7 TEEN_insert_filter_hp
@@ -1422,8 +1422,8 @@ d13d6043c9a05d4b TEEN_user_foot
 1bee8171ad6acdb8 TEEN_voice_2
 669e47cfaaa16b82 TEEN_voice_2_uni
 b26c933a254457cd TEEN_voice_glide
-db2fcfee2de93f45 TEEN_world
-425ce5f6cb6e7ce5 TEEN_world_fx
+82e7e059a1e6cdde TEEN_world
+e0beca4e29378816 TEEN_world_fx
 b232ff74920bab36 XENO_about
 e790edac0116d661 XENO_about_credits
 7bd83a3be0aa1ec2 XENO_about_end
