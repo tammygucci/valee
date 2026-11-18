@@ -132,7 +132,7 @@ static void sm_summoner(const track_t *t)
     xe_stars(W, H);
     for (k = 0; k < SM_NSIG; k++) {                     /* the eight signals: strands, each its own wobble */
         int32_t amp = 1 + sm.sig[k] / 300, py = 0;
-        uint32_t fr = 0x02000000u + k * 0x00900000u, ph = (anim ? ui.frame * (0x01400000u + k * 0x00300000u) : 0u) + k * 0x2F000000u;
+        uint32_t fr = (2u << 24) + k * (9u << 20), ph = (anim ? ui.frame * (0x01400000u + k * 0x00300000u) : 0u) + k * 0x2F000000u;
         uint16_t c = ux_mix(sig ? ink : T_THEME, sky, 25 + 8 * k);
         strong += sm.sig[k] > 600u;
         for (x = 6; x <= W - 8; x += 4) {
