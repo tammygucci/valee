@@ -99,6 +99,15 @@ in the FM-1's memory ([why](VALLEE.md#room-on-the-fm-1)).
 Skiff's). Vallée also has its own fallback: if it crashes twice in a row within 30 seconds of switching on, the next
 start goes into the chip's boot mode, where it can be written again.
 
+## Known issues
+
+- **The screen runs faster than Skiff's** (20 MHz instead of 12) so pages draw without tearing. Most units are fine
+  with it; if yours shows flickering, stray lines or garbled pictures, please open an issue.
+- **A SLICE preset loaded from your user slots becomes FM6's first sound**, and holding SAVE does not undo that load.
+  Don't save over that slot if you want to keep the SLICE sound for Skiff later.
+- **GEN SONG, then a single PART written while the song plays:** the song's patterns stay in the pool, unused. GEN
+  clears them by itself the next time it needs room (or SAVE > PATTERNS > CLEAR UNUSED).
+
 ## Learn it
 
 - **[VALLEE.md](VALLEE.md)**: everything Vallée adds, in full.

@@ -1252,7 +1252,9 @@ static void gen_write(void)
             if (sp == 1u) {
                 song.g[G_RSIZE] = 64; song.g[G_DMIX] = 30;
             } else if (sp == 2u) {
-                song.g[G_RSIZE] = 96; song.g[G_DTIME] = 100; song.g[G_DFDBK] = 72; song.g[G_DMIX] = 80;
+                song.g[G_RSIZE] = 96; song.g[G_DTIME] = 12; song.g[G_DFDBK] = 72; song.g[G_DMIX] = 80;
+                /* (TIME 12: 1/4D, params.c N_DTIME's last; it was 100, past its end: the delay played 8T while
+                 * the card said 1/4D, and a project saved and loaded again came back as 1/4D) */
             }
         }
     }

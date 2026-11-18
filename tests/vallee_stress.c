@@ -74,6 +74,10 @@ static void vs_check_tracks(uint32_t round)
     }
     if (song.g[G_BPM] < GP[G_BPM].min || song.g[G_BPM] > GP[G_BPM].max)
         vs_fail("tempo out of range", round, (uint32_t)song.g[G_BPM], 0);
+    for (i = 0; i < G_COUNT; i++)                       /* (every global inside its range: AKASHA's delay TIME was 100,
+                                                         * past N_DTIME's end, and a reload changed the song) */
+        if (GP[i].max > GP[i].min && (song.g[i] < GP[i].min || song.g[i] > GP[i].max))
+            vs_fail("global out of its range", round, i, (uint32_t)(int32_t)song.g[i]);
 }
 
 /* a bar through the mixer: finite, bounded */
