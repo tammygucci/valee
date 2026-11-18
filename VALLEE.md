@@ -370,7 +370,8 @@ From then on the track plays by itself whenever the song plays; you don't write 
 playing the most notes; drum kits never), takes only its steady core (the root, the third, the fifth; never a 7th,
 9th or tritone), and when the chord changes, what it holds that isn't in the new one lets go and the new root
 sounds. It also listens to every note the other tracks sound: it never starts a note a semitone or a tritone from
-one of theirs, and a note it holds lets go the moment one of theirs would rub against it. Before the song has played
+one of theirs, and a note it holds that one of theirs would rub against moves, within a few milliseconds, to the
+chord's nearest note that doesn't (a short one just lets go). Before the song has played
 a chord, it uses the key's triad (the ROOT and SCALE of the first track that has a SCALE, as GEN's songs do; with
 none, the key you pressed, minor). It plays from the octave of the key you pressed, and the key also seeds it: every
 key gives another part and another being. It starts as a drone on the chord's root, then adds its fifth, another of
@@ -400,9 +401,10 @@ rolled when it forms, 1 in 50 each; no SIGIL and SEAL can make one every time. W
 (`IT IS FORMING`).
 
 The being is all three numbers together: SIGIL, SEAL and **BEING** (page 2: the shape the song gave it and its
-kind; the song sets it, its knob does nothing: `THE SONG SETS IT`). They are saved with the project and kept when you
+kind; the song sets it, its knob does nothing: `THE SONG SETS IT`; its card says `NONE`, then the being's name). They are saved with the project and kept when you
 load another SUMMON preset, and the being stands on its track's lane on XENO's HOME. Turning SIGIL or SEAL after it
-has formed starts preparing the next summoning, so the being leaves (`THE BEING LEFT`). Page 2 never shows the being
+has formed starts preparing the next summoning, so the being leaves: the first turn only warns
+(`TURN AGAIN: IT LEAVES`), a second within three seconds lets it go (`THE BEING LEFT`). Page 2 never shows the being
 or its kind, only the two symbols: on XENO the sigil as a glyph and the seal as a glyph in a double ring with marks
 round it; on TEEN flat shapes in its colours (the sigil a shape with a smaller one on it, the seal a knob with a ring
 of lit dots and its pointer). Presets: CALLING, LOW HOST, VIGIL, SEANCE, EMPYREAN.

@@ -10885,8 +10885,13 @@ static int test_summon_knobs(void)
     sm.on = 0;
     sm.rq = 0;
     trk[2].p[P_E5] = 5;                                 /* (a being formed: a new starting point lets it go) */
+    a = trk[2].p[P_E6];
     turn(EN_K3, 1); frame();
-    bad += check("summon: SIGIL turned after it formed: the being leaves (BEING 0)", trk[2].p[P_E5] == 0);
+    bad += check("summon: SIGIL turned once after it formed: only a warning (the being stays)",
+                 trk[2].p[P_E5] == 5 && trk[2].p[P_E6] == a);
+    turn(EN_K3, 1); frame();
+    bad += check("summon: .. turned again: the being leaves (BEING 0), SIGIL moves", trk[2].p[P_E5] == 0 &&
+                 trk[2].p[P_E6] == a + 1);
     return bad;
 }
 

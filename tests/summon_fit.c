@@ -33,8 +33,9 @@ int main(void)
     gen_reset();
     for (st = 0; st < GS_N; st++)
         for (sd = 1; sd <= 2; sd++) {
-            uint32_t ls = 0, lc = 0, lo = 0, prev_clash = 0;   /* (a note another track starts inside a block: SUMMON
-                                                                    lets go at the next, 0.7 ms on; two blocks count) */
+            uint32_t ls = 0, lc = 0, lo = 0, prev_clash = 0;   /* (a note another track starts inside a block, or
+                                                                    slides into: SUMMON moves within 8 blocks, ~6 ms;
+                                                                    past 9 counts) */
             gen.v[GK_STYLE] = (uint8_t)st;
             gen.seed = (uint16_t)(sd * 37);
             gen_write();
@@ -60,7 +61,7 @@ int main(void)
                        outside: a note in no other track's sound nor in the chord the fullest track last played */
                     uint32_t ch = 0, cn = 0;
                     for (k = 0; k < NTRK; k++) if (k != 4 && !chord_kit(&trk[k]) && (uint32_t)__builtin_popcount(fol_src[k].pc) > cn) { cn = __builtin_popcount(fol_src[k].pc); ch = fol_src[k].pc; }
-                    if (clash(s & ~others, others) && prev_clash++) { sclash++; lc++; if (getenv("SM_VERBOSE")) { printf("  clash st %u sd %u block %u: summon %03x others %03x chord %03x |", st, sd, b, s, others, sm.hpc); for (k = 0; k < NTRK; k++) printf(" T%u %03x", k + 1, pcs_of(k, 1)); printf(" | held"); for (k = 0; k < 6; k++) if (sm.hl[k]) printf(" %u", sm.hn[k]); puts(""); } }
+                    if (clash(s & ~others, others) && ++prev_clash > 9u) { sclash++; lc++; if (getenv("SM_VERBOSE")) { printf("  clash st %u sd %u block %u: summon %03x others %03x chord %03x |", st, sd, b, s, others, sm.hpc); for (k = 0; k < NTRK; k++) printf(" T%u %03x", k + 1, pcs_of(k, 1)); printf(" | held"); for (k = 0; k < 6; k++) if (sm.hl[k]) printf(" %u", sm.hn[k]); puts(""); } }
                     if (!clash(s & ~others, others))
                         prev_clash = 0;
                     if (s & ~(others | ch)) { out++; lo++; }

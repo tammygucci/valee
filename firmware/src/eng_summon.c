@@ -44,7 +44,8 @@ static struct {
                                                            audio's block does it (summon_play.c sm_play) */
     uint16_t mask;                                      /* the song's scale (seq.c SCALE_MASK) */
     uint32_t acc, step, rng;                            /* samples to the next 16th; 16ths played; its dice */
-    uint8_t hn[6], hl[6];                               /* the notes it holds, 16ths left of each */
+    uint8_t hn[6], hl[6], hv[6];                        /* the notes it holds, 16ths left of each, their velocities */
+    uint8_t ohits, oblk;                                /* the other tracks' note-ons, summed, at its last look; blocks */
     uint16_t hpc;                                       /* the song's chord now: its pitch classes (bit i: i above C) */
     uint16_t hist[12];                                  /* the song while it forms: how often each pitch class sounded */
     uint32_t hn_lo, hn_hi;                              /* .. how often low (below middle C) and high */

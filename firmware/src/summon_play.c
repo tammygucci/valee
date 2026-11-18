@@ -122,6 +122,7 @@ static void sm_hit(uint32_t note, uint32_t vel, uint32_t len)
     }
     sm.hn[i] = (uint8_t)note;
     sm.hl[i] = (uint8_t)(len < 255u ? len : 255u);
+    sm.hv[i] = (uint8_t)(vel < 127u ? vel : 127u);
     trk_note_on(t, note, vel);
 }
 /* the song's chord this moment: the other tracks' (the fullest), else the one before, else the key's triad */
@@ -191,14 +192,26 @@ static __attribute__((noinline)) void sm_play(uint32_t n)   /* (out of events_bl
         sm.acc = 0;
         return;
     }
-    if (sm.hl[0] | sm.hl[1] | sm.hl[2] | sm.hl[3] | sm.hl[4] | sm.hl[5]) {   /* (every block: what it holds that now
-                                                         * rubs against the others, a passing note, a new chord: let go) */
-        uint32_t o = sm_others();
-        for (i = 0; i < 6u; i++)
-            if (sm.hl[i] && sm_rubs(sm.hn[i], o)) {
-                trk_note_off(t, sm.hn[i]);
-                sm.hl[i] = 0;
-            }
+    {   /* (a block where another track started a note (their note-on counts moved), and every 8th (~6 ms: a legato
+         * note slides to another without a note-on):
+         * what it holds that now rubs, a passing note or a new chord, moves to the chord's nearest note that does not,
+         * for what was left of it; a short one, or none to go to, lets go) */
+        uint32_t k, h = 0;
+        for (k = 0; k < NTRK; k++)
+            if (k != sm.ptrk)
+                h += trk[k].hits;
+        if ((uint8_t)h != sm.ohits || !(++sm.oblk & 7u)) {
+            uint32_t o = sm_others();
+            sm.ohits = (uint8_t)h;
+            for (i = 0; i < 6u; i++)
+                if (sm.hl[i] && sm_rubs(sm.hn[i], o)) {
+                    uint32_t nt = sm.hn[i], left = sm.hl[i], vel = sm.hv[i];
+                    trk_note_off(t, nt);
+                    sm.hl[i] = 0;
+                    if (left > 2u && sm.hpc)
+                        sm_hit(sm_ct(nt > 2u ? nt - 2u : nt, 0), vel, left);   /* (sm_hit: never onto a rub) */
+                }
+        }
     }
     q = beat_samples() / 4u;                            /* a 16th */
     if (sm.acc > n) {

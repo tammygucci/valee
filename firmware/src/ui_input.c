@@ -1513,7 +1513,15 @@ static void edit_param(uint32_t slot, int32_t steps)
     }
     if (pg->scope == SC_ENGINE && ENGINES[TSEL->eng_req % NENGINES] == &ENG_SUMMON && slot < 4u &&
         (pg->id[slot] == P_E6 || pg->id[slot] == P_E7) && TSEL->p[P_E5]) {
-        TSEL->p[P_E5] = 0;                              /* ((Vallée) a new starting point: the being it had leaves */
+        static uint32_t warned;                         /* ((Vallée) a new starting point lets the being it had go: the
+                                                         * first turn only warns; another within 3 s lets it go */
+        if (!warned || fm1_ms - warned > 3000u) {
+            warned = fm1_ms | 1u;
+            ui_message("TURN AGAIN: IT LEAVES");
+            return;
+        }
+        warned = 0;
+        TSEL->p[P_E5] = 0;
         ui_message("THE BEING LEFT");
     }
     if (pg->graph == GR_FEEL) {                           /* (Skiff 2.0) FEEL: CHANCE RATCHET NUDGE TYPE of the selection */

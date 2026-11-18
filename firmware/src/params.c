@@ -386,6 +386,17 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
 {
     *unit = "";
     fmt_named = d->fmt == F_ENUM;
+    if (d == &ENG_SUMMON.edit[5]) {                 /* ((Vallée) SUMMON's BEING: NONE, or the being's name (its SIGIL
+                                                     * and SEAL the selected track's: the cards are its) */
+        fmt_named = 1;
+        char nm[16];                                /* (its name, at most 7 letters: the smallest caller's 8 bytes) */
+        if (v > 0)
+            sm_name(sm_id(sm_pick(&trk[song.sel % NTRK]), (uint32_t)v), nm);
+        else
+            str_cpy(nm, "NONE", sizeof nm);
+        str_cpy(val, nm, 8);
+        return;
+    }
     switch (d->fmt) {
     case F_PCT:                                     /* a 0..100 range (SWG) is its value, others a share of 127 */
         fmt_int(val, d->max == 100 ? v : (v * 100 + 63) / 127);

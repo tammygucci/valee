@@ -1,5 +1,6 @@
 // (Vallée) SUMMON's clip (web/brand/vallee_summon.mp4): a key starts it, it plays in the song's chords and forms over
-// the song (filmed 4x faster, its sound in four 10 s pieces from along the way), its sigil and seal, a key fades it;
+// the song (filmed 4x faster, its sound in four 10 s pieces from along the way): its sigil and seal chosen first,
+// its name kept on page 2, a key fades it;
 // TEEN's AURA.
 // node tools/film/summon.mjs OUT [teen]: OUT/screen.rgb (the frames kept), OUT/audio.f32 (theirs), OUT/captions.json
 import fs from "fs";
@@ -38,15 +39,19 @@ d.tap(B.EDIT); wait(300);
 d.tap(B.PLAY); wait(300);
 if (!teen) {
   cap("SUMMON", "an ambient engine with a being in it");
-  wait(2500);
-  cap("Press any key", "it plays by itself, only ever in the song's chords; each key a different part and being");
+  wait(2000);
+  d.tap(B.EDIT); wait(300);
+  cap("Choose its sigil and seal", "page 2: your starting point, two symbols");
+  d.turn(EN.K3, 20, 60); wait(400); d.turn(EN.K4, 40, 60); wait(1800);
+  d.tap(B.EDIT); wait(250); d.tap(B.EDIT); wait(250); d.tap(B.EDIT); wait(300);
+  cap("Press any key", "it plays by itself, only ever in the song's chords");
   d.key(K.A3); wait(6000);
-  cap("It forms over the song", "while PLAY runs: a drone, then a fifth, a line, sparks (shown 4x faster)");
+  cap("The song shapes it", "what the song plays decides what it becomes (shown 4x faster)");
   fast(156000, [0, 50000, 100000, 146000]);
-  cap("The being arrives", "its name in the header; one in fifty is a demon, one in fifty an angel");
+  cap("The being arrives", "its name in the header; one in fifty is a demon, one in fifty an angel, by chance alone");
   wait(6500);
   d.tap(B.EDIT); wait(300);
-  cap("Its sigil and seal", "page 2: the being kept as two symbols, set by the song alone");
+  cap("Kept with the song", "BEING: its name; the same sigil and seal over the same song grow it again");
   wait(5000);
   d.tap(B.EDIT); wait(250); d.tap(B.EDIT); wait(250); d.tap(B.EDIT); wait(250);
   cap("A key again: it fades", "");
