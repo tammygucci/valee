@@ -143,6 +143,33 @@ static uint32_t sm_show(const track_t *t, uint32_t *step)
     return sm_sigil(t);
 }
 
+/* text centred on cx (noinline: one copy for every screen here) */
+static __attribute__((noinline)) void sm_ctext(int32_t cx, int32_t y, const void *f, const char *s, uint16_t c, uint16_t bg)
+{
+    int32_t b[4];
+    text_ink(f, s, b);
+    cv_text_on(cx - b[2] / 2 - b[0], y, f, s, c, bg);
+}
+/* a line from radius r0 to r1 at angle a round (cx, cy) */
+static __attribute__((noinline)) void sm_spoke(int32_t cx, int32_t cy, uint32_t a, int32_t r0, int32_t r1, uint16_t c)
+{
+    int32_t co = QK_COS(a), si = QK_SIN(a);
+    xe_line(cx + r0 * co / 32767, cy + r0 * si / 32767, cx + r1 * co / 32767, cy + r1 * si / 32767, c);
+}
+/* SIGIL n and SEAL n under their pictures, and the kind over them (page 2) */
+static __attribute__((noinline)) void sm_labels(int32_t lx, int32_t rx, int32_t y, uint32_t sg, uint32_t se, int32_t kind,
+                                                uint16_t c, uint16_t kc, uint16_t bg)
+{
+    char txt[12];
+    str_cpy(txt, "SIGIL ", sizeof txt);
+    fmt_int(txt + 6, (int32_t)sg);
+    sm_ctext(lx, y, &AF_S, txt, c, bg);
+    str_cpy(txt, "SEAL ", sizeof txt);
+    fmt_int(txt + 5, (int32_t)se);
+    sm_ctext(rx, y, &AF_S, txt, c, bg);
+    if (kind > 0)
+        sm_ctext((lx + rx) / 2, 6, &AF_S, kind == 1 ? "A DEMON" : "AN ANGEL", kc, bg);
+}
 static void sm_summoner(const track_t *t)
 {
     const int32_t W = 240, H = (int32_t)cv_h, cx = 120, fy = H - 13, anim = xe_anim();
@@ -194,29 +221,20 @@ static void sm_summoner(const track_t *t)
             }
         }
         sm_being(sig, 16, px);
-        for (y = 0; y < 16; y++) {
-            if ((uint32_t)(16 - y) > rows)
-                continue;
-            for (x = 0; x < 16; x++) {
-                uint32_t v = px[y][x];
-                if (!v)
-                    continue;
-                cv_rect(bx + x * z - 1, by + y * z - 1, z + 2, z + 2, line);
-            }
-        }
-        for (y = 0; y < 16; y++) {
-            if ((uint32_t)(16 - y) > rows)
-                continue;
-            for (x = 0; x < 16; x++) {
-                uint32_t v = px[y][x];
-                if (v)
-                    cv_rect(bx + x * z, by + y * z, z, z, v == 2u && done ? eye : ux_mix(body, line, 100 - y * 2));
-            }
-        }
+        for (k = 0; k < 2u; k++)                        /* (an outline, then the body over it) */
+            for (y = 16 - (int32_t)(rows < 16u ? rows : 16u); y < 16; y++)
+                for (x = 0; x < 16; x++) {
+                    uint32_t v = px[y][x];
+                    if (!v)
+                        continue;
+                    if (!k)
+                        cv_rect(bx + x * z - 1, by + y * z - 1, z + 2, z + 2, line);
+                    else
+                        cv_rect(bx + x * z, by + y * z, z, z, v == 2u && done ? eye : ux_mix(body, line, 100 - y * 2));
+                }
     } else {
         int32_t b[4];
-        text_ink(&AF_M, "A KEY: SUMMON", b);
-        cv_text_on(cx - b[2] / 2 - b[0], H / 2 - 8, &AF_M, "A KEY: SUMMON", T_MID, sky);
+        sm_ctext(cx, H / 2 - 8, &AF_M, "A KEY: SUMMON", T_MID, sky);
     }
     for (k = 0; k < SM_CANDLES; k++) {                  /* the candles round it, lit one by one */
         int32_t x0 = cx - 70 + (int32_t)k * 28, on = sig && k < lit;
@@ -231,8 +249,7 @@ static void sm_summoner(const track_t *t)
     if (sig && done) {                                  /* its name, over it */
         int32_t b[4];
         sm_name(sig, nm);
-        text_ink(&AF_M, nm, b);
-        cv_text_on(cx - b[2] / 2 - b[0], 31, &AF_M, nm, ink, sky);
+        sm_ctext(cx, 31, &AF_M, nm, ink, sky);
     }
     if (reveal && kind > 0) {
         cv_text_on(8, 48, &AF_M, kind == 1 ? "A DEMON" : "AN ANGEL", kind == 1 ? SM_RED : SM_GOLD, sky);
@@ -258,8 +275,7 @@ static void sm_aura(const track_t *t)
     if (reveal && kind == 2) {                          /* an angel: a gold sun, its rays */
         for (k = 0; k < 24u; k++) {
             uint32_t a = k * 178956971u + (anim ? ui.frame * 0x00400000u : 0u);
-            xe_line(cx + 22 * QK_COS(a) / 32767, cy + 22 * QK_SIN(a) / 32767, cx + 56 * QK_COS(a) / 32767,
-                    cy + 56 * QK_SIN(a) / 32767, k & 1u ? SM_GOLD : ux_mix(SM_GOLD, T_BG, 45));
+            sm_spoke(cx, cy, a, 22, 56, k & 1u ? SM_GOLD : ux_mix(SM_GOLD, T_BG, 45));
         }
         xe_disc(cx, cy, 17, SM_GOLD);
         xe_ring(cx, cy, 28, T_TEXT);
@@ -279,21 +295,18 @@ static void sm_aura(const track_t *t)
             xe_disc(cx, cy, 3, T_TEXT);
         else {
             int32_t b[4];
-            text_ink(&AF_M, "A KEY: AURA", b);
-            cv_text_on(cx - b[2] / 2 - b[0], cy - 8, &AF_M, "A KEY: AURA", T_MID, T_BG);
+            sm_ctext(cx, cy - 8, &AF_M, "A KEY: AURA", T_MID, T_BG);
         }
     }
     if (reveal && kind > 0) {
         int32_t b[4];
         const char *s = kind == 1 ? "A DEMON" : "AN ANGEL";
-        text_ink(&AF_M, s, b);
-        cv_text_on(cx - b[2] / 2 - b[0], 2, &AF_M, s, c, T_BG);
+        sm_ctext(cx, 2, &AF_M, s, c, T_BG);
     } else if (sig && done) {
         char nm[24];
         int32_t b[4];
         sm_name(sig, nm);
-        text_ink(&AF_M, nm, b);
-        cv_text_on(cx - b[2] / 2 - b[0], 2, &AF_M, nm, T_TEXT, T_BG);
+        sm_ctext(cx, 2, &AF_M, nm, T_TEXT, T_BG);
     }
     for (k = 0; k < SM_NSIG; k++) {                     /* the signals: eight small bars */
         int32_t h = 2 + (int32_t)sm.sig[k] / 70;
@@ -322,7 +335,6 @@ static void sm_seals(const track_t *t)
     uint16_t sky = WL_RGB(14, 10, 28), ink = UX_TEEN ? T_TEXT : kind == 1 ? SM_RED : kind == 2 ? SM_GOLD :
                                                  sig ? SM_HUE[(sig >> 3) % 8u] : T_MID;
     uint16_t hi = ux_mix(WL_RGB(255, 255, 255), ink, 55), dim = ux_mix(ink, UX_TEEN ? T_BG : sky, 45);
-    char txt[12];
     if (UX_TEEN)
         sky = T_BG;
     cv_rect(0, 0, W, H, sky);
@@ -338,19 +350,7 @@ static void sm_seals(const track_t *t)
         cv_rect(rx + (QK_COS(a) * (r + 4) >> 15) - 1, cy + (QK_SIN(a) * (r + 4) >> 15) - 1, 3, 3, hi);
     }
     sm_glyph(se * 2u, rx - 3 * z - z / 2, cy - 3 * z - z / 2, z / 2 + 1 > 3 ? 3 : z / 2 + 1, ink, hi);
-    str_cpy(txt, "SIGIL ", sizeof txt);
-    fmt_int(txt + 6, (int32_t)sg);
-    text_ink(&AF_S, txt, b);
-    cv_text_on(lx - b[2] / 2 - b[0], H - 18, &AF_S, txt, dim, sky);
-    str_cpy(txt, "SEAL ", sizeof txt);
-    fmt_int(txt + 5, (int32_t)se);
-    text_ink(&AF_S, txt, b);
-    cv_text_on(rx - b[2] / 2 - b[0], H - 18, &AF_S, txt, dim, sky);
-    if (kind > 0) {
-        const char *w = kind == 1 ? "A DEMON" : "AN ANGEL";
-        text_ink(&AF_S, w, b);
-        cv_text_on(W / 2 - b[2] / 2 - b[0], 6, &AF_S, w, ink, sky);
-    }
+    sm_labels(lx, rx, H - 18, sg, se, kind, dim, ink, sky);
 }
 /* ((Vallée) TEEN's page 2: no glyphs; flat shapes as its tape machine draws: the SIGIL a shape with another on it
    (a disc, a square, a ring or a pill; the small one placed by the number), the SEAL a knob with a ring of twelve
@@ -363,7 +363,6 @@ static void sm_teen_seals(const track_t *t)
     const uint16_t TC[4] = {T_TRK(0), T_TRK(1), T_TRK(2), T_TRK(3)};
     uint16_t c1 = TC[h >> 30], c2 = TC[((h >> 30) + 1u + ((h >> 28) & 1u)) & 3u], knob = ux_mix(T_TEXT, T_BG, 25);
     int32_t kind = sm_kind(sig), b[4], ox = 0, oy = 0;
-    char txt[12];
     cv_rect(0, 0, W, H, T_BG);
     cv_bg = T_BG;
     switch (sg % 4u) {                                  /* the sigil: its shape */
@@ -398,19 +397,7 @@ static void sm_teen_seals(const track_t *t)
         xe_line(rx, cy, rx + (QK_COS(a) * 20 >> 15), cy + (QK_SIN(a) * 20 >> 15), T_TEXT);
         xe_disc(rx, cy, 4, T_TEXT);
     }
-    str_cpy(txt, "SIGIL ", sizeof txt);
-    fmt_int(txt + 6, (int32_t)sg);
-    text_ink(&AF_S, txt, b);
-    cv_text_on(lx - b[2] / 2 - b[0], H - 18, &AF_S, txt, T_MID, T_BG);
-    str_cpy(txt, "SEAL ", sizeof txt);
-    fmt_int(txt + 5, (int32_t)se);
-    text_ink(&AF_S, txt, b);
-    cv_text_on(rx - b[2] / 2 - b[0], H - 18, &AF_S, txt, T_MID, T_BG);
-    if (kind > 0) {
-        const char *w = kind == 1 ? "A DEMON" : "AN ANGEL";
-        text_ink(&AF_S, w, b);
-        cv_text_on(W / 2 - b[2] / 2 - b[0], 6, &AF_S, w, T_TEXT, T_BG);
-    }
+    sm_labels(lx, rx, H - 18, sg, se, kind, T_MID, T_TEXT, T_BG);
 }
 static void graph_summon(const track_t *t)
 {
