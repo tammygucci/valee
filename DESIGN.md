@@ -688,4 +688,4 @@ read every 400 ms while it is there. No firmware of its own and no setting: it w
 | MENU › LARGE (2.5, #97, the user's 8C) | Under the tall cards the strip names the six sounds, two columns of three, the selected one a band of its colour, each theme's lanes as HOME's (`ui_graph.c` `graph_names`); HOME tapped: the scope, as before. Redrawn on a change (`home_sig`), not every other frame as the scope. Before, LARGE showed the scope there and the footer named the selected sound only: a reporter lost the instrument list |
 
 **Still open:**
-- the 20 MHz LCD clock, `LCD_BAUD=2`, to try on hardware.
+- (Vallée) the 20 MHz LCD clock, `LCD_BAUD=2`, is the default since 2026-11-17 (12 MHz tore visibly on the tall HOME).

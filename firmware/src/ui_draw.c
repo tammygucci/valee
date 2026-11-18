@@ -269,8 +269,16 @@ static void draw_frame(void)
 {
     uint32_t i, ch = card_h(), gy = graph_y(), gh = graph_h();   /* (MENU > LARGE: tall cards, a strip) */
     lcd_fill(0, H_HEAD, 240, Y_LABEL - H_HEAD, T_BG);
-    lcd_fill(0, Y_LABEL + ch, 240, gy - Y_LABEL - ch, T_BG);
     lcd_fill(0, gy + gh, 240, foot_y() - gy - gh, T_BG);
+    if (!ui.layer && !ui.shift && !fr.on && (xe_teen_cards() || wl_on())) {   /* ((Vallée) the cards' row is a picture */
+        if (wl_on() && !UX_TEEN)                        /* there (HOME tall: the deck's top; THE SPELL: the map or the shape):
+                                                         * its gaps painted black on every redraw (a track or a sound turned)
+                                                         * cut black lines across the reels on the unit, a frame long. XENO's
+                                                         * map is 46 rows: the two under it, which nothing else draws */
+            lcd_fill(0, Y_LABEL + 46u, 240, gy - Y_LABEL - 46u, T_BG);
+        return;
+    }
+    lcd_fill(0, Y_LABEL + ch, 240, gy - Y_LABEL - ch, T_BG);
     lcd_fill(0, Y_LABEL, (uint32_t)CARD_X(0), ch, T_BG);
     for (i = 0; i < 4u; i++)                            /* right of each card */
         lcd_fill((uint32_t)(CARD_X(i) + CARD_W), Y_LABEL, i < 3u ? (uint32_t)(CARD_X(i + 1u) - CARD_X(i) - CARD_W) :

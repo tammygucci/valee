@@ -8,7 +8,8 @@
  * while the last strip of a frame goes out. */
 /* pins and SPI1: hal/fm1_lcd_hw.h */
 #ifndef LCD_BAUD
-#define LCD_BAUD 4u                /* lsb/(BAUD+1): 4 = 12 MHz */
+#define LCD_BAUD 2u                /* lsb/(BAUD+1): 2 = 20 MHz ((Vallée) was 4, 12 MHz: a frame took ~70 ms, the
+                                    * panel showing half the old picture as long; DESIGN.md, the open item) */
 #endif
 
 #if FELUCCA_CAST
