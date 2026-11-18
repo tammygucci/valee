@@ -352,11 +352,74 @@ static void sm_seals(const track_t *t)
         cv_text_on(W / 2 - b[2] / 2 - b[0], 6, &AF_S, w, ink, sky);
     }
 }
+/* ((Vallée) TEEN's page 2: no glyphs; flat shapes as its tape machine draws: the SIGIL a shape with another on it
+   (a disc, a square, a ring or a pill; the small one placed by the number), the SEAL a knob with a ring of twelve
+   dots, the number's lit, and its pointer. Its tracks' four colours */
+static void sm_teen_seals(const track_t *t)
+{
+    const int32_t W = 240, H = (int32_t)cv_h, cy = H / 2 - 6, lx = 62, rx = 178;
+    uint32_t sg = (uint32_t)t->p[P_E6] & 127u, se = (uint32_t)t->p[P_E7] & 127u, sig = sg << 7 | se;
+    uint32_t h = (sg + 1u) * 2654435761u, g = (se + 1u) * 2246822519u, k;
+    const uint16_t TC[4] = {T_TRK(0), T_TRK(1), T_TRK(2), T_TRK(3)};
+    uint16_t c1 = TC[h >> 30], c2 = TC[((h >> 30) + 1u + ((h >> 28) & 1u)) & 3u], knob = ux_mix(T_TEXT, T_BG, 25);
+    int32_t kind = sm_kind(sig), b[4], ox = 0, oy = 0;
+    char txt[12];
+    cv_rect(0, 0, W, H, T_BG);
+    cv_bg = T_BG;
+    switch (sg % 4u) {                                  /* the sigil: its shape */
+    case 0: xe_disc(lx, cy, 30, c1); break;
+    case 1: cv_rect(lx - 28, cy - 28, 56, 56, c1); break;
+    case 2: for (k = 0; k < 6u; k++) xe_ring(lx, cy, 30 - (int32_t)k, c1); break;
+    default: cv_rect(lx - 18, cy - 16, 36, 32, c1); xe_disc(lx - 18, cy, 16, c1); xe_disc(lx + 18, cy, 16, c1); break;
+    }
+    switch ((sg >> 4) % 4u) {                           /* .. where the small one sits */
+    case 1: ox = -10; oy = -10; break;
+    case 2: ox = 12; break;
+    case 3: oy = 12; break;
+    default: break;
+    }
+    switch ((sg >> 2) % 4u) {                           /* .. and what it is */
+    case 0: xe_disc(lx + ox, cy + oy, 10, c2); break;
+    case 1: cv_rect(lx + ox - 9, cy + oy - 9, 18, 18, c2); break;
+    case 2: cv_rect(lx - 22, cy + oy - 3, 44, 7, c2); break;
+    default: xe_disc(lx - 10 + ox / 2, cy + oy, 6, c2); xe_disc(lx + 10 + ox / 2, cy + oy, 6, c2); break;
+    }
+    xe_disc(rx, cy, 26, knob);                          /* the seal: a knob */
+    for (k = 0; k < 12u; k++) {                         /* .. twelve dots round it, the number's lit */
+        uint32_t a = k * 357913941u + 3221225472u;
+        int32_t dx = QK_COS(a) * 36 >> 15, dy = QK_SIN(a) * 36 >> 15;
+        if ((g >> (k + 8u)) & 1u)
+            xe_disc(rx + dx, cy + dy, 3, TC[(k + (g >> 4)) & 3u]);
+        else
+            cv_rect(rx + dx - 1, cy + dy - 1, 2, 2, ux_mix(T_TEXT, T_BG, 30));
+    }
+    {
+        uint32_t a = se * 33818640u + 3221225472u;     /* .. its pointer: the number round the dial */
+        xe_line(rx, cy, rx + (QK_COS(a) * 20 >> 15), cy + (QK_SIN(a) * 20 >> 15), T_TEXT);
+        xe_disc(rx, cy, 4, T_TEXT);
+    }
+    str_cpy(txt, "SIGIL ", sizeof txt);
+    fmt_int(txt + 6, (int32_t)sg);
+    text_ink(&AF_S, txt, b);
+    cv_text_on(lx - b[2] / 2 - b[0], H - 18, &AF_S, txt, T_MID, T_BG);
+    str_cpy(txt, "SEAL ", sizeof txt);
+    fmt_int(txt + 5, (int32_t)se);
+    text_ink(&AF_S, txt, b);
+    cv_text_on(rx - b[2] / 2 - b[0], H - 18, &AF_S, txt, T_MID, T_BG);
+    if (kind > 0) {
+        const char *w = kind == 1 ? "A DEMON" : "AN ANGEL";
+        text_ink(&AF_S, w, b);
+        cv_text_on(W / 2 - b[2] / 2 - b[0], 6, &AF_S, w, T_TEXT, T_BG);
+    }
+}
 static void graph_summon(const track_t *t)
 {
     cv_oy = 0;
-    if (cur_page()->id[0] != P_E0) {                    /* (page 2: SIGIL SEAL, the symbols) */
-        sm_seals(t);
+    if (cur_page()->id[0] != P_E0) {                    /* (page 2: SIGIL SEAL: symbols on XENO, shapes on TEEN) */
+        if (UX_TEEN)
+            sm_teen_seals(t);
+        else
+            sm_seals(t);
         return;
     }
     if (UX_TEEN)

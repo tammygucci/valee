@@ -383,7 +383,8 @@ the next key starts a new summoning. Putting another sound on its track ends it 
 
 The being is kept on page 2 as **SIGIL** and **SEAL** (two numbers that together are the being). That page shows
 them as symbols, not as the being: the sigil as a glyph, the seal as a glyph in a double ring with marks round it,
-red for a demon and gold for an angel. They are saved with the
+red for a demon and gold for an angel. On TEEN they are flat shapes instead, in its colours: the sigil a shape
+with a smaller one on it, the seal a knob with a ring of lit dots and its pointer. They are saved with the
 project and in presets, and it stands on its track's lane on XENO's HOME. Loading another SUMMON preset keeps it;
 turn SIGIL and SEAL to call a being back by its numbers. Presets: CALLING, LOW HOST, VIGIL, SEANCE, EMPYREAN.
 
