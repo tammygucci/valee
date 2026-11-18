@@ -2,7 +2,7 @@
 
 ## 0.9 alpha
 
-the first public test version. Firmware for the M-VAVE FM-1 that writes you a song, then lets you perform it. Built on [Skiff](https://github.com/illuminus5/skiff) 2.6 by illuminus5.
+The first public test version. Firmware for the M-VAVE FM-1 that writes you a song, then lets you perform it. Built on [Skiff](https://github.com/illuminus5/skiff) 2.6 by illuminus5.
 
 This is an alpha: it works on my FM-1 and passes the full test suite, but it hasn't been on many units yet. The installer backs up your music first, and you can always go back ([how](https://github.com/tammygucci/valee#going-back)). Please [report anything odd](https://github.com/tammygucci/valee/issues/new/choose).
 
@@ -15,7 +15,7 @@ This is an alpha: it works on my FM-1 and passes the full test suite, but it has
 - **New sounds**: MOOG, OBERHEIM and JUNO filters for ANALOG, three drum kits, and SUMMON, an ambient engine that plays along in your song's chords.
 - **Its own look**: the XENO and TEEN themes, and an opening intro.
 
-### Fixed since the last test builds
+### Fixed before release
 - An AKASHA song from GEN could change its echo after you saved and reloaded it. The delay time now stays the same.
 
 ### Known issues
