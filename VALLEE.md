@@ -14,6 +14,8 @@ SLICE engine is left out** (see [Room on the FM-1](#room-on-the-fm-1)). On top o
   of a part while it plays, and your arrangement recorded as you play it.
 - **Its own sounds**: MOOG, OBERHEIM and JUNO filters and presets, and the kits DEAD, TAPE and CRUSH, which GEN's
   styles are voiced with.
+- **SUMMON**: an ambient engine of its own: on its EDIT page OCT+ starts a ceremony that calls a being, different
+  every time, shown as SUMMONER on XENO and AURA on TEEN. One in fifty is a demon, one in fifty an angel.
 - **ALEMBIC**: the whole mix through four effects in a row, DRIVE, MOTION, SPACE and GRAIN, each with a flavour and a
   BLEND, on two GLO pages drawn as the Alchemist's four vessels.
 
@@ -213,7 +215,7 @@ names are Vallée's own; the "After" column says what each one leans toward.
 | LOTUS | Mac DeMarco | Slacker jazz-pop, 72–96 BPM: a lazy rimshot beat behind the grid, major sevenths and ii–V turns, a wobbly chorused keyboard (tape wobble), a jangling pick |
 | ZETA | Daft Punk | French house, 118–126 BPM: four on the floor, offbeat filtered stabs ducked under the kick, an octave bass, a robot-voice riff |
 | ORACLE | Radiohead | Frantic Kid A electronics (think "Idioteque"), 132–140 BPM: a stuttering drum machine carrying the track, snares and claps ratcheting x2–x4, sub hits under the kick, dark sustained pad chords a bar each (augmented and add9 colours), a chant-like vocal lead on one or two notes, Geiger-counter glitches |
-| AKASHA | Brian Eno | Ambient, 60–78 BPM: no beat (ENERGY above half: a soft pulse), drones, cloud pads, bells and keys on loops of their own odd lengths (53 and 37 steps) drifting over each other |
+| AKASHA | Brian Eno | Ambient, 54–80 BPM: no beat (ENERGY above half: a soft pulse), drones, pads (grain cloud, choir or Oberheim), bells and keys on loops of their own odd lengths drifting over each other. The seed picks the progression (seven), the lines (eight), the loop lengths (47–61 and 29–43 steps), the pad and, with SOUNDS NEW, the room (hall, small room or long echo), so no two seeds sound alike |
 | SIGIL | Steely Dan | The bright jazz-funk of "Peg", 124–132 BPM: a crisp 16th groove with a little lilt and ghosted snares, a popped octave bass, tine electric piano comping in syncopated 16ths, "mu" and 9sus chords over moving basses, stacked background voices holding the changes, a guitar answering at the bar ends |
 | LEMURIA | yacht rock | The classic yacht-rock intro groove ("What a Fool Believes"), 116–124 BPM: a piano bouncing on syncopated eighths, landing each chord a 16th ahead of the bar, upper triads over a walking bass, 16th hats accented on the eighths, the kick dancing around the backbeat, a soulful lead and strings |
 | ASTRAL | LCD Soundsystem | The slow, lovesick synth-pop of "Oh Baby", 86–100 BPM: a plain drum machine ticking, a pulsing eighth-note analog bass, big synth chords swelling a bar or two at a time, a crooned lead on long notes, a shimmering 16th arp; sweet and sad |
@@ -353,6 +355,29 @@ crystals a crown, sigils a rune ring, herbs vines. Other sounds, other parts, an
 song from the top: the same one. Every PLAY starts a new spell; stopped, the figure stays. With ANIM OFF nothing flies:
 the elements go straight in.
 
+## SUMMON: a being called from the room
+
+SUMMON (engine 15, after NOISE in the lists) is an ambient voice: up to three slow partials per note (VOICES), each a
+sine with a little of its octave, that drift apart (DRIFT), breathe (AIR) and brighten as the room comes NEAR. What
+moves it are the FM-1's own signals: the tiny jitter of its timer, and every key, button and MIDI note you play.
+Play and the room comes near; leave it alone and it drifts FAR. (The FM-1 has no radio under Vallée, so it listens to
+itself rather than to Bluetooth.)
+
+Its first EDIT page is the ceremony, **SUMMONER** on XENO and **AURA** on TEEN. Press **OCT+** there (it breathes on
+this page) to begin: six candles light one by one, faster the nearer the room, while the being forms from its feet up
+out of eight signal strands; on TEEN, rings close in around a point instead. When the last candle lights, the being
+arrives with a name, shown in the header (`KASHIAX CAME`). Its body, colours, eyes and name come from the signals of
+that moment, so every summoning is different. **One in fifty is a demon** (red, horned, winged; darker intervals) and
+**one in fifty an angel** (gold, haloed; fifths and octaves); the header says `A DEMON ANSWERED` or
+`AN ANGEL ANSWERED`. PLAY never starts a ceremony: only OCT+ on that page.
+
+The being is kept on page 2 as **SIGIL** and **SEAL** (two numbers that together are the being), saved with the
+project and in presets, and it stands on its track's lane on XENO's HOME. Loading another SUMMON preset keeps it;
+turn SIGIL and SEAL to call a being back by its numbers. Presets: CALLING, LOW HOST, VIGIL, SEANCE, EMPYREAN.
+
+Because SUMMON adds an engine key, the EDIT layer's keys after NOISE move up one: SUMMON is on C5, DRUM on D5, DRUM-X on
+E5 and INIT on F5.
+
 ## A project to a file (the editor)
 
 On the editor's **Projects** tab each slot (A to D) has **Save to file** and **Load file**, beside LOAD, SAVE and
@@ -465,5 +490,6 @@ The ABOUT page and its QR point at this repo (`ui_menu.c`); a fork of your own: 
 
 Vallée is a fork of Skiff by illuminus5, built on Felucca by Leo Kuroshita (Hügelton Instruments), with the FM-1
 community's work ([SKIFF.md](SKIFF.md#credits) has the full credits). GEN's way of working (genre, seed, energy; OCT+ writes, OCT+ again
-rolls) comes from JIANT FM's GENE by juanjiant-bit; Vallée's generator code and tables are its own. GPL-3.0. Not
+rolls) comes from JIANT FM's GENE by juanjiant-bit; Vallée's generator code and tables are its own. SUMMON's idea (a sound and a being called up by the signals around
+the unit) was inspired by JIANT's SWARM; none of its code is used. GPL-3.0. Not
 affiliated with M-VAVE, or with any artist a style is named after.

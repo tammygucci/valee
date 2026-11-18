@@ -18,7 +18,8 @@
 <p align="center">
   <a href="https://tammygucci.github.io/valee/webapp/installer/brand/vallee_demo.mp4"><img src="web/brand/poster.jpg" alt="Watch the demo" width="420"></a>
   <a href="https://tammygucci.github.io/valee/webapp/installer/brand/vallee_perform.mp4"><img src="web/brand/poster_perform.jpg" alt="Watch a performance" width="420"></a>
-  <br><sub>The demo and a live performance (click to play)</sub>
+  <br><a href="https://tammygucci.github.io/valee/webapp/installer/brand/vallee_summon.mp4"><img src="web/brand/poster_summon.jpg" alt="Watch SUMMON" width="420"></a>
+  <br><sub>The demo, a live performance and SUMMON (click to play)</sub>
 </p>
 
 Vallée is built on [Skiff](https://github.com/illuminus5/skiff) 2.6 by illuminus5, a six-track groovebox firmware for
@@ -63,6 +64,9 @@ with the sound.
 - **MOOG, OBERHEIM and JUNO filters** for the ANALOG engine, with 21 presets voiced after those instruments.
 - **Three drum kits**: DEAD (a seventies studio kit damped with towels), TAPE (warm soul session) and CRUSH (a drum
   machine run too hot).
+- **SUMMON**, an ambient engine that listens to the unit itself (its timer's jitter, every key and MIDI note). On its
+  EDIT page, OCT+ starts a ceremony: candles light while a being forms, a different one every time (SUMMONER on XENO,
+  AURA on TEEN). One in fifty is a demon; one in fifty an angel.
 
 ### Its own look
 
@@ -115,7 +119,7 @@ Vallée is a fork of **[Skiff](https://github.com/illuminus5/skiff)** by illumin
 **[Felucca](https://github.com/hugelton/Felucca)** by Leo Kuroshita (Hügelton Instruments), with the work of the
 FM-1 community ([full credits](SKIFF.md#credits)). GEN's way of working (genre, seed, energy) comes from
 **GENE** in [JIANT FM](https://github.com/juanjiant-bit/JIANT) by juanjiant-bit, while Vallée's generator code is
-its own. If Vallée is useful to you, please [support Felucca's author](https://github.com/sponsors/hugelton).
+its own. SUMMON was inspired by the idea of **SWARM** in JIANT; none of its code is used. If Vallée is useful to you, please [support Felucca's author](https://github.com/sponsors/hugelton).
 
 ## Licence
 
