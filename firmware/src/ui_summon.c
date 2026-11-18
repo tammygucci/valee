@@ -300,9 +300,65 @@ static void sm_aura(const track_t *t)
         cv_rect(8 + (int32_t)k * 5, H - 4 - h, 3, h, reveal && kind > 0 ? c : T_TRK(k % NTRK));
     }
 }
+/* ((Vallée) page 2, SIGIL and SEAL: the two symbols, not the being: the sigil a glyph of its number (ui_beast.c
+   xb_sigil), the seal another inside a double ring, as many marks round it as the number says; under each its name
+   and number. Its kind's colour once the being has come (a demon red, an angel gold) */
+static void sm_glyph(uint32_t c, int32_t x0, int32_t y0, int32_t z, uint16_t ink, uint16_t hi)
+{
+    uint8_t px[12][12];
+    int32_t x, y;
+    memset(px, 0, sizeof px);
+    xb_sigil(c, px);
+    for (y = 0; y < 12; y++)
+        for (x = 0; x < 12; x++)
+            if (px[y][x])
+                cv_rect(x0 + x * z, y0 + y * z, z, z, px[y][x] == 4u ? hi : ink);
+}
+static void sm_seals(const track_t *t)
+{
+    const int32_t W = 240, H = (int32_t)cv_h, z = H >= 120 ? 6 : 5, gy = (H - 12 * z) / 2 - 4, lx = 60, rx = 180;
+    uint32_t sg = (uint32_t)t->p[P_E6] & 127u, se = (uint32_t)t->p[P_E7] & 127u, sig = sg << 7 | se, k, n;
+    int32_t kind = sm_kind(sig), b[4], r = 6 * z + 2 * z / 2 + 4, cy = gy + 6 * z;
+    uint16_t sky = WL_RGB(14, 10, 28), ink = UX_TEEN ? T_TEXT : kind == 1 ? SM_RED : kind == 2 ? SM_GOLD :
+                                                 sig ? SM_HUE[(sig >> 3) % 8u] : T_MID;
+    uint16_t hi = ux_mix(WL_RGB(255, 255, 255), ink, 55), dim = ux_mix(ink, UX_TEEN ? T_BG : sky, 45);
+    char txt[12];
+    if (UX_TEEN)
+        sky = T_BG;
+    cv_rect(0, 0, W, H, sky);
+    cv_bg = sky;
+    if (!UX_TEEN)
+        xe_stars(W, H);
+    sm_glyph(sg * 2u + 1u, lx - 6 * z, gy, z, ink, hi);                 /* the sigil */
+    xe_ring(rx, cy, r, ink);                                            /* the seal: a glyph in a double ring */
+    xe_ring(rx, cy, r - 3, dim);
+    n = 3u + se % 9u;
+    for (k = 0; k < n; k++) {                                           /* (its marks round it) */
+        uint32_t a = k * (4294967295u / n);
+        cv_rect(rx + (QK_COS(a) * (r + 4) >> 15) - 1, cy + (QK_SIN(a) * (r + 4) >> 15) - 1, 3, 3, hi);
+    }
+    sm_glyph(se * 2u, rx - 3 * z - z / 2, cy - 3 * z - z / 2, z / 2 + 1 > 3 ? 3 : z / 2 + 1, ink, hi);
+    str_cpy(txt, "SIGIL ", sizeof txt);
+    fmt_int(txt + 6, (int32_t)sg);
+    text_ink(&AF_S, txt, b);
+    cv_text_on(lx - b[2] / 2 - b[0], H - 18, &AF_S, txt, dim, sky);
+    str_cpy(txt, "SEAL ", sizeof txt);
+    fmt_int(txt + 5, (int32_t)se);
+    text_ink(&AF_S, txt, b);
+    cv_text_on(rx - b[2] / 2 - b[0], H - 18, &AF_S, txt, dim, sky);
+    if (kind > 0) {
+        const char *w = kind == 1 ? "A DEMON" : "AN ANGEL";
+        text_ink(&AF_S, w, b);
+        cv_text_on(W / 2 - b[2] / 2 - b[0], 6, &AF_S, w, ink, sky);
+    }
+}
 static void graph_summon(const track_t *t)
 {
     cv_oy = 0;
+    if (cur_page()->id[0] != P_E0) {                    /* (page 2: SIGIL SEAL, the symbols) */
+        sm_seals(t);
+        return;
+    }
     if (UX_TEEN)
         sm_aura(t);
     else
