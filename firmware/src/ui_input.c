@@ -1505,6 +1505,11 @@ static void edit_param(uint32_t slot, int32_t steps)
     const page_t *pg = cur_page();
     const param_desc_t *d;
     int32_t v;
+    if (pg->scope == SC_ENGINE && ENGINES[TSEL->eng_req % NENGINES] == &ENG_SUMMON && slot < 4u &&
+        (pg->id[slot] == P_E6 || pg->id[slot] == P_E7)) {   /* ((Vallée) SUMMON: SIGIL and SEAL are the song's to set */
+        ui_message("THE SONG SETS IT");
+        return;
+    }
     if (pg->graph == GR_FEEL) {                           /* (Skiff 2.0) FEEL: CHANCE RATCHET NUDGE TYPE of the selection */
         follow_hold();                                    /* ((1.3) the edited steps stay on the screen) */
         feel_turn(TSEL, slot, steps);

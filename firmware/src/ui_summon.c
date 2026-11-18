@@ -157,8 +157,8 @@ static __attribute__((noinline)) void sm_spoke(int32_t cx, int32_t cy, uint32_t 
     xe_line(cx + r0 * co / 32767, cy + r0 * si / 32767, cx + r1 * co / 32767, cy + r1 * si / 32767, c);
 }
 /* SIGIL n and SEAL n under their pictures, and the kind over them (page 2) */
-static __attribute__((noinline)) void sm_labels(int32_t lx, int32_t rx, int32_t y, uint32_t sg, uint32_t se, int32_t kind,
-                                                uint16_t c, uint16_t kc, uint16_t bg)
+static __attribute__((noinline)) void sm_labels(int32_t lx, int32_t rx, int32_t y, uint32_t sg, uint32_t se, uint16_t c,
+                                                uint16_t bg)
 {
     char txt[12];
     str_cpy(txt, "SIGIL ", sizeof txt);
@@ -167,14 +167,12 @@ static __attribute__((noinline)) void sm_labels(int32_t lx, int32_t rx, int32_t 
     str_cpy(txt, "SEAL ", sizeof txt);
     fmt_int(txt + 5, (int32_t)se);
     sm_ctext(rx, y, &AF_S, txt, c, bg);
-    if (kind > 0)
-        sm_ctext((lx + rx) / 2, 6, &AF_S, kind == 1 ? "A DEMON" : "AN ANGEL", kc, bg);
 }
 static void sm_summoner(const track_t *t)
 {
     const int32_t W = 240, H = (int32_t)cv_h, cx = 120, fy = H - 13, anim = xe_anim();
     uint32_t step, sig = sm_show(t, &step), k, lit = step / 16u, done = step >= SM_CANDLES * 16u, strong = 0;
-    int32_t kind = sm_kind(sig), reveal = sig && (lit + 1u >= SM_CANDLES), x, y;
+    int32_t kind = sm_kind(sig), reveal = sig && done, x, y;   /* (nothing of what it is before it has formed) */
     uint16_t sky = WL_RGB(14, 10, 28), ink = kind == 1 && reveal ? SM_RED : kind == 2 && reveal ? SM_GOLD :
                                                  sig ? SM_HUE[(sig >> 3) % 8u] : T_MID;
     char nm[24];
@@ -267,7 +265,7 @@ static void sm_aura(const track_t *t)
 {
     const int32_t W = 240, H = (int32_t)cv_h, cx = 120, cy = H / 2 + 6, anim = xe_anim();
     uint32_t step, sig = sm_show(t, &step), k, done = step >= SM_CANDLES * 16u;
-    int32_t kind = sm_kind(sig), reveal = sig && (step / 16u + 1u >= SM_CANDLES);
+    int32_t kind = sm_kind(sig), reveal = sig && done;
     uint32_t rings = !sig ? 0u : done || !anim ? SM_NSIG : step * SM_NSIG / (SM_CANDLES * 16u);
     uint16_t c = kind == 1 ? SM_RED : SM_GOLD;
     cv_rect(0, 0, W, H, T_BG);
@@ -332,8 +330,7 @@ static void sm_seals(const track_t *t)
     const int32_t W = 240, H = (int32_t)cv_h, z = H >= 120 ? 6 : 5, gy = (H - 12 * z) / 2 - 4, lx = 60, rx = 180;
     uint32_t sg = (uint32_t)t->p[P_E6] & 127u, se = (uint32_t)t->p[P_E7] & 127u, sig = sg << 7 | se, k, n;
     int32_t kind = sm_kind(sig), b[4], r = 6 * z + 2 * z / 2 + 4, cy = gy + 6 * z;
-    uint16_t sky = WL_RGB(14, 10, 28), ink = UX_TEEN ? T_TEXT : kind == 1 ? SM_RED : kind == 2 ? SM_GOLD :
-                                                 sig ? SM_HUE[(sig >> 3) % 8u] : T_MID;
+    uint16_t sky = WL_RGB(14, 10, 28), ink = sig ? SM_HUE[(sig >> 3) % 8u] : T_MID;   /* (never its kind's colour) */
     uint16_t hi = ux_mix(WL_RGB(255, 255, 255), ink, 55), dim = ux_mix(ink, UX_TEEN ? T_BG : sky, 45);
     if (UX_TEEN)
         sky = T_BG;
@@ -350,7 +347,7 @@ static void sm_seals(const track_t *t)
         cv_rect(rx + (QK_COS(a) * (r + 4) >> 15) - 1, cy + (QK_SIN(a) * (r + 4) >> 15) - 1, 3, 3, hi);
     }
     sm_glyph(se * 2u, rx - 3 * z - z / 2, cy - 3 * z - z / 2, z / 2 + 1 > 3 ? 3 : z / 2 + 1, ink, hi);
-    sm_labels(lx, rx, H - 18, sg, se, kind, dim, ink, sky);
+    sm_labels(lx, rx, H - 18, sg, se, dim, sky);
 }
 /* ((Vallée) TEEN's page 2: no glyphs; flat shapes as its tape machine draws: the SIGIL a shape with another on it
    (a disc, a square, a ring or a pill; the small one placed by the number), the SEAL a knob with a ring of twelve
@@ -397,12 +394,21 @@ static void sm_teen_seals(const track_t *t)
         xe_line(rx, cy, rx + (QK_COS(a) * 20 >> 15), cy + (QK_SIN(a) * 20 >> 15), T_TEXT);
         xe_disc(rx, cy, 4, T_TEXT);
     }
-    sm_labels(lx, rx, H - 18, sg, se, kind, T_MID, T_TEXT, T_BG);
+    sm_labels(lx, rx, H - 18, sg, se, T_MID, T_BG);
 }
 static void graph_summon(const track_t *t)
 {
     cv_oy = 0;
     if (cur_page()->id[0] != P_E0) {                    /* (page 2: SIGIL SEAL: symbols on XENO, shapes on TEEN) */
+        if (!(t->p[P_E6] | t->p[P_E7])) {               /* (none formed yet: nothing to show) */
+            uint16_t bg = UX_TEEN ? T_BG : WL_RGB(14, 10, 28);
+            cv_rect(0, 0, 240, (int32_t)cv_h, bg);
+            cv_bg = bg;
+            if (!UX_TEEN)
+                xe_stars(240, (int32_t)cv_h);
+            sm_ctext(120, (int32_t)cv_h / 2 - 8, &AF_M, "NOT YET FORMED", T_MID, bg);
+            return;
+        }
         if (UX_TEEN)
             sm_teen_seals(t);
         else
