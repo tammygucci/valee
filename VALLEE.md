@@ -15,7 +15,7 @@ SLICE engine is left out** (see [Room on the FM-1](#room-on-the-fm-1)). On top o
 - **Its own sounds**: MOOG, OBERHEIM and JUNO filters and presets, and the kits DEAD, TAPE and CRUSH, which GEN's
   styles are voiced with.
 - **SUMMON**: an ambient engine of its own: on its EDIT page any key starts a ceremony that calls a being, different
-  every time, which plays its own part in the song's key and grows over the song, shown as SUMMONER on XENO and AURA on TEEN. One in fifty is a demon, one in fifty an angel.
+  every time, which plays its own part in the song's chords and grows over the song, shown as SUMMONER on XENO and AURA on TEEN. One in fifty is a demon, one in fifty an angel.
 - **ALEMBIC**: the whole mix through four effects in a row, DRIVE, MOTION, SPACE and GRAIN, each with a flavour and a
   BLEND, on two GLO pages drawn as the Alchemist's four vessels.
 
@@ -358,25 +358,32 @@ the elements go straight in.
 ## SUMMON: a being called from the room
 
 SUMMON (engine 15, after NOISE in the lists) is an ambient voice: up to three slow partials per note (VOICES), each a
-sine with a little of its octave, that drift apart (DRIFT), breathe (AIR) and brighten as the room comes NEAR. What
+sine with a little of its octave, all of them octaves of the note (so they are in whatever chord the note is in),
+with a slight chorus between them (DRIFT, a few cents at most: never out of tune), breathe (AIR) and brighten as the room comes NEAR. What
 moves it are the FM-1's own signals: the tiny jitter of its timer, and every key, button and MIDI note you play.
 Play and the room comes near; leave it alone and it drifts FAR. (The FM-1 has no radio under Vallée, so it listens to
 itself rather than to Bluetooth.)
 
 Its first EDIT page is the ceremony, **SUMMONER** on XENO and **AURA** on TEEN. **Press any key there** to begin.
-From then on the track plays by itself whenever the song plays; you don't write anything into its steps. It plays in
-the song's key (the ROOT and SCALE of the first track that has a SCALE, as GEN's songs do; with none, the key you
-pressed, minor), from the octave of the key you pressed, and the key also seeds it: every key gives another part and
-another being. It starts as a drone on the root, then adds the fifth, a third, a slow line over them, and at the end
-sparks high up, louder as it goes.
+From then on the track plays by itself whenever the song plays; you don't write anything into its steps. It plays
+**only the notes of the chord the song is playing that moment**: it reads the chord from the other tracks (the one
+playing the most notes; drum kits never), takes only its steady core (the root, the third, the fifth; never a 7th,
+9th or tritone), and when the chord changes, what it holds that isn't in the new one lets go and the new root
+sounds. It also listens to every note the other tracks sound: it never starts a note a semitone or a tritone from
+one of theirs, and a note it holds lets go the moment one of theirs would rub against it. Before the song has played
+a chord, it uses the key's triad (the ROOT and SCALE of the first track that has a SCALE, as GEN's songs do; with
+none, the key you pressed, minor). It plays from the octave of the key you pressed, and the key also seeds it: every
+key gives another part and another being. It starts as a drone on the chord's root, then adds its fifth, another of
+its notes, a slow line on its notes, and at the end sparks high up, louder as it goes. (A test plays it against GEN's
+songs in every style, tests/summon_fit.c: it adds no clash to any of them.)
 
 It grows only while the song plays: about 25 seconds a candle, six candles, so the being has formed after about two
 and a half minutes (sooner the more you play the unit). Jump around the song on THE SPELL, go back to the start: as
 long as PLAY runs it keeps growing. STOP pauses it, and the next PLAY carries on. The being forms from its feet up
 across all six candles out of eight signal strands; on TEEN, rings close in around a point instead. When the last
 candle lights, it arrives with a name in the header (`KASHIAX CAME`) and keeps playing its full part. **One in fifty
-is a demon** (red, horned, winged; darker intervals) and **one in fifty an angel** (gold, haloed; fifths and
-octaves); the header says `A DEMON ANSWERED` or `AN ANGEL ANSWERED`.
+is a demon** (red, horned, winged; its partials an octave or two below) and **one in fifty an angel** (gold,
+haloed; its partials octaves above); the header says `A DEMON ANSWERED` or `AN ANGEL ANSWERED`.
 
 **A key on that page while it plays fades it out** (`IT FADED` if the being hadn't come yet, `IT RESTS` if it had);
 the next key starts a new summoning. Putting another sound on its track ends it too.

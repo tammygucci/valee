@@ -1,5 +1,6 @@
-// (Vallée) SUMMON's clip (web/brand/vallee_summon.mp4): a key starts it, it plays and forms over the song (filmed 4x
-// faster, its sound in four 10 s pieces from along the way), a demon and an angel, a key fades it; TEEN's AURA.
+// (Vallée) SUMMON's clip (web/brand/vallee_summon.mp4): a key starts it, it plays in the song's chords and forms over
+// the song (filmed 4x faster, its sound in four 10 s pieces from along the way), its sigil and seal, a key fades it;
+// TEEN's AURA.
 // node tools/film/summon.mjs OUT [teen]: OUT/screen.rgb (the frames kept), OUT/audio.f32 (theirs), OUT/captions.json
 import fs from "fs";
 import { device, B, EN, K, rgb } from "./dev.mjs";
@@ -38,18 +39,15 @@ d.tap(B.PLAY); wait(300);
 if (!teen) {
   cap("SUMMON", "an ambient engine with a being in it");
   wait(2500);
-  cap("Press any key", "it plays by itself, in the song's key; each key a different part and being");
+  cap("Press any key", "it plays by itself, only ever in the song's chords; each key a different part and being");
   d.key(K.A3); wait(6000);
   cap("It forms over the song", "while PLAY runs: a drone, then a fifth, a line, sparks (shown 4x faster)");
   fast(156000, [0, 50000, 100000, 146000]);
   cap("The being arrives", "its name in the header; one in fifty is a demon, one in fifty an angel");
   wait(6500);
-  d.tap(B.EDIT); wait(300); d.turn(EN.K3, -127, 4); d.turn(EN.K4, -127, 4); d.turn(EN.K4, 13, 40); wait(300);
-  cap("A demon", "darker intervals (SIGIL 0, SEAL 13)");
-  wait(4500);
-  d.turn(EN.K4, 3, 60); wait(300);
-  cap("An angel", "fifths and octaves (SIGIL 0, SEAL 16)");
-  wait(4500);
+  d.tap(B.EDIT); wait(300);
+  cap("Its sigil and seal", "page 2: the being kept as two symbols, set by the song alone");
+  wait(5000);
   d.tap(B.EDIT); wait(250); d.tap(B.EDIT); wait(250); d.tap(B.EDIT); wait(250);
   cap("A key again: it fades", "");
   d.key(K.C4); wait(4500);

@@ -325,6 +325,9 @@ if [ -f build/gen/felucca_tables.h ]; then
     run "UI: sounds keep steps, undo, recording, MIDI overflow, pending saves, panel recovery, drum grid, song chain, GREY gray, MONO neutral" "$OUT/ui_test"
     $CC -w $LEGACY -Ibuild/gen -Ifirmware/src -o "$OUT/ui_test_legacy" tests/ui_test.c -lm
     run "UI, the converter's build (FELUCCA_LEGACY): DIGITAL sounds, SAMPLE PERC and old GM projects converted as 1.x did" "$OUT/ui_test_legacy"
+    $CC -O2 -w -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/summon_fit" tests/summon_fit.c -lm
+    run "(Vallée) SUMMON fits the song: GEN's songs, every style, its notes against the other tracks' (no clash it adds)" \
+        "$OUT/summon_fit"
     $CC -w -DFELUCCA_CDC=0 -Ibuild/gen -Ifirmware/src -o "$OUT/ui_test_rel" tests/ui_test.c -lm
     run "UI as a release builds it (FELUCCA_CDC=0, build.py --release): no USB SERIAL row, the rest as above" "$OUT/ui_test_rel"
     FV=$(sed -n 's/^#define FELUCCA_VERSION "\([^"]*\)".*/\1/p' firmware/src/felucca.c)   # (the splash, ABOUT: the real version)

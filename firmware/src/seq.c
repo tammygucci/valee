@@ -2110,13 +2110,14 @@ static __attribute__((noinline)) void events_block(uint32_t n)
         seq_audition();                               /* ((1.3) STEP PREVIEW: a step sounds, stopped) */
     for (i = 0, ord = fol_order(); i < NTRK; i++, ord >>= 4)   /* ((2.1) the tracks followed first: follow.c) */
         seq_tick(&trk[ord & 15u], seq_n);
-    sm_play(clock_mode ? seq_n : n);                  /* ((Vallée) SUMMON's being: its part, in the song's key */
     if (cin_flush)
         cin_record();
     if (song.playing)
         click_tick(seq_n);
     for (i = 0; i < NPART; i++)
         arp_step(&trk[i], clock_mode ? seq_n : n, clock_mode && song.playing ? seq_n : n);
+    sm_play(clock_mode ? seq_n : n);                  /* ((Vallée) SUMMON's being: its part, in the song's chords;
+                                                       * after every other note of the block, the ARP's too) */
     if (pulse)
         mo_block_end(pulse);                          /* ((2.2) CLOCK OUT: a pulse later in the block, after its notes) */
     beat_pos += clock_mode ? seq_n : n;               /* the beat the ARP LED flashes on (ui_leds) */

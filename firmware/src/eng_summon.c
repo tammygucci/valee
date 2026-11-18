@@ -45,6 +45,8 @@ static struct {
     uint16_t mask;                                      /* the song's scale (seq.c SCALE_MASK) */
     uint32_t acc, step, rng;                            /* samples to the next 16th; 16ths played; its dice */
     uint8_t hn[6], hl[6];                               /* the notes it holds, 16ths left of each */
+    uint16_t hpc;                                       /* the song's chord now: its pitch classes (bit i: i above C) */
+    uint8_t hroot, line;                                /* .. its root (a pitch class); where the line is in its notes */
 } sm;
 static void sm_touch(uint32_t n)
 {
@@ -96,8 +98,10 @@ static void sm_room(uint32_t ms)                        /* (ui_summon.c sm_tick,
 }
 
 /* the intervals (semitones) a partial may take: an ordinary being's, a demon's, an angel's */
-static const int8_t SM_IV[3][8] = {{0, 7, 12, 19, 24, 14, -12, 5}, {0, -12, 6, 1, 13, -24, 18, -5},
-                                   {12, 19, 24, 28, 31, 36, 7, 16}};
+/* the partials a note may have (semitones): octaves only, so whatever chord the note is in, they are in it too (an
+   ordinary being's round the note, a demon's below it, an angel's above) */
+static const int8_t SM_IV[3][8] = {{0, 12, -12, 24, 12, 0, -12, 24}, {0, -12, -24, -12, 0, 12, -24, -12},
+                                   {12, 24, 36, 12, 24, 0, 36, 24}};
 static void summon_note_on(track_t *t, voice_t *v)
 {
     uint32_t sig = sm_sigil(t), k;
@@ -120,7 +124,7 @@ static void summon_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
     tsvf_t f;
     for (k = 0; k < 3u; k++) {                          /* per block: each partial's pitch and level, wandering */
         int32_t sg = (int32_t)sm.sig[(k + (uint32_t)v->s[7]) % SM_NSIG] - 512;
-        int32_t ct = sg * drift / 1300;                 /* (up to ~ +-50 cents) */
+        int32_t ct = sg * drift / 10000;                /* (up to ~ +-6 cents: a chorus, never out of tune) */
         int32_t lfo = sine_i(slow * (k + 1u) + k * 1431655765u);
         inc[k] = cents_inc(m->pitch16 + v->s[4 + k], ct, m->fine);
         ph[k] = v->ph[k];
