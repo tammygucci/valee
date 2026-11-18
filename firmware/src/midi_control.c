@@ -224,6 +224,7 @@ static const uint8_t MIDI_CC_ENG[NENGINES] = {
     0x80, 0x30, 0x30, 0x34, 0x30,                     /* GRAIN TONE, PHYS BRIT, DRUM TONE, NOISE FREQ RES, FM6 MLVL */
     FELUCCA_SLICE ? 0x80 : 0x00,                      /* SLICE TONE */
     0x30,                                             /* DRUM-X TONE */
+    0x50,                                             /* (Vallée) SUMMON TONE */
 };
 /* a CC sets parameter id of track t as a knob would: 0..127 over its range */
 static void midi_cc_set(track_t *t, uint32_t id, uint32_t value)
@@ -448,8 +449,11 @@ static void __attribute__((noinline)) midi_event(uint32_t st, uint32_t ch, uint3
     if (!song.g[G_ROUTE] && midi_slot(ch) < 0 && ch + 1u != mset_ch(MSET(1, 1) & 31u))   /* (CH1-6: a channel no */
         return;                                    /* track is set to; (2.2) AUTO CHANNEL's plays the selected one) */
     mn.quiet = 1;                                  /* ((2.2) what MIDI IN plays is never sent back out: seq.c mo_note) */
-    if (st == 0x90u || st == 0x80u)
+    if (st == 0x90u || st == 0x80u) {
+        if (st == 0x90u && d2)                          /* ((Vallée) SUMMON: a note from the room) */
+            sm_touch(1);
         midi_note_event(ch, d1, st == 0x90u ? d2 : 0);
+    }
     else if (st == 0xE0u) {
         midi_channel(ch)->bend = (int16_t)((int32_t)(d1 | (d2 << 7)) - 8192);
         midi_expression_channel(ch);

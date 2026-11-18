@@ -4521,7 +4521,7 @@ static int test_fm4_retired(void)
                  eng_step(ENGI_FM6, -1) == 0u && eng_step(0, -1) == ENGI_DRUMX && eng_step(ENGI_DRUMX, -1) == ENGI_DRUM);
     {   /* the display order (engines.c ENGINE_ORDER): every engine one can pick once; the PRESETS list follows it */
         static const char *const ORDER[] = {"ANALOG", "FM6", "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL", "GRAIN",
-                                            "PHYS", "NOISE",
+                                            "PHYS", "NOISE", "SUMMON",   /* ((Vallée) 15) */
 #if FELUCCA_SLICE                                      /* ((Vallée) off by default, core.h) */
                                             "SLICE",
 #endif
@@ -4540,7 +4540,7 @@ static int test_fm4_retired(void)
             last = e;
             r++;
         }
-        bad += check("engines shown ANALOG FM6 PHASE ... NOISE SLICE DRUM DRUM-X (ENGINE_ORDER); PRESETS lists them so",
+        bad += check("engines shown ANALOG FM6 PHASE ... NOISE SUMMON SLICE DRUM DRUM-X (ENGINE_ORDER); PRESETS lists them so",
                      ok && r == NENG_SHOWN);
     }
 #if FELUCCA_LEGACY                                     /* ((2.0) the converter's: fm4_convert.c) */

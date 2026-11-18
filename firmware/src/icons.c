@@ -302,6 +302,7 @@ static uint32_t engine_icon(const char *name)
         {"DRUM", ICON_DRUM},
         {"DRUM-X", ICON_DRUM},
         {"NOISE", ICON_NOISE},
+        {"SUMMON", ICON_GRAIN},               /* ((Vallée) a cloud of partials, as GRAIN's) */
         {"FM6", ICON_MOD},                    /* (symbol_modular: six operators patched; a glyph of its own wanted) */
     };
     uint32_t i;

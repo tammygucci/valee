@@ -213,19 +213,29 @@ static const char *const HEA_C[3] = {"X---------------", "X---------------", "X-
 static const char *const HEA_L_[3] = {"n.n.n-..n.n.n-..n.n.n-..n-n-n---", "n-n-n---....n-n-n-n-n---........",
                                       "..n.n.n-..n.n.n-..n.n.n-n-------"};
 /* ENO: ambient: no beat (an ENERGY above half: a soft pulse), drones, loops of their own odd lengths, bells */
-static const gprog_t ENO_D[] = {
-    P4(C_(0, Q_MIN9), C_(0, Q_MIN9), C_(8, Q_MAJ7), C_(8, Q_MAJ7)),
-    P4(C_(0, Q_MADD9), C_(10, Q_SUS2), C_(8, Q_MAJ7), C_(3, Q_ADD9))};
+static const gprog_t ENO_D[] = {                    /* ((Vallée) five more each: a drone that shifts between two */
+    P4(C_(0, Q_MIN9), C_(0, Q_MIN9), C_(8, Q_MAJ7), C_(8, Q_MAJ7)),   /* chords, the long minor, the Phrygian fall) */
+    P4(C_(0, Q_MADD9), C_(10, Q_SUS2), C_(8, Q_MAJ7), C_(3, Q_ADD9)),
+    P4(C_(0, Q_MIN11), C_(0, Q_MIN11), C_(0, Q_MIN11), C_(5, Q_SUS2)),
+    P4(C_(0, Q_MIN9), C_(3, Q_MAJ7), C_(0, Q_MIN9), C_(10, Q_SUS4)),
+    P4(C_(0, Q_SUS2), C_(1, Q_MAJ7), C_(0, Q_SUS2), C_(1, Q_MAJ7)),
+    P4(C_(0, Q_MADD9), C_(8, Q_MAJ7S11), C_(5, Q_MIN9), C_(0, Q_MADD9)),
+    P4(C_(0, Q_MIN7), C_(10, Q_MAJ9), C_(8, Q_MAJ7), C_(5, Q_MIN11))};
 static const gprog_t ENO_L[] = {
     P4(C_(0, Q_ADD9), C_(5, Q_ADD9), C_(0, Q_ADD9), C_(7, Q_SUS4)),
     P4(C_(0, Q_MAJ7), C_(0, Q_MAJ7), C_(9, Q_MIN7), C_(9, Q_MIN7)),
-    P4(C_(0, Q_SUS2), C_(2, Q_MIN7), C_(5, Q_MAJ7), C_(0, Q_SUS2))};
+    P4(C_(0, Q_SUS2), C_(2, Q_MIN7), C_(5, Q_MAJ7), C_(0, Q_SUS2)),
+    P4(C_(0, Q_MAJ9), C_(0, Q_MAJ9), C_(2, Q_ADD9), C_(2, Q_ADD9)),
+    P4(C_(0, Q_MAJ7S11), C_(7, Q_SUS2), C_(9, Q_MIN9), C_(5, Q_MAJ9)),
+    P4(C_(5, Q_MAJ9), C_(0, Q_ADD9), C_(5, Q_MAJ9), C_(7, Q_9SUS4)),
+    P4(C_(0, Q_ADD9), C_(4, Q_MIN7), C_(9, Q_MIN9), C_(2, Q_SUS2)),
+    P4(C_(0, Q_SUS4), C_(0, Q_SUS2), C_(10, Q_ADD9), C_(0, Q_SUS2))};
 static const gdrum_t ENO_DR[2] = {
     {{"o...............", 0, 0, 0, 0, 0, "........o.......", 0}},
     {{"x.......o.......", 0, 0, 0, 0, "............o...", "....o.......o...", 0}}};
 static const gdrum_t ENO_PC = {{0, 0, 0, 0, 0, 0, 0, 0}};
-static const char *const ENO_B[3] = {"R---------------", "R---------------", "R-------5-------"};
-static const char *const ENO_C[3] = {"X---------------", "X---------------", "X---------------"};
+static const char *const ENO_B[3] = {"R---------------", "R-------5-------", "R-----------O---"};
+static const char *const ENO_C[3] = {"X---------------", "X-------X-------", "X-----------X---"};
 static const char *const ENO_L_[3] = {"n-------........................", "........n-------................",
                                       "n-----------................n---"};
 /* STEELY: the polished jazz-funk of Aja's "Peg": a bright major key, a crisp sixteenth groove with a little lilt
@@ -418,9 +428,9 @@ static const gstyle_t GSTY[GS_N] = {
       {{E_DRUM, "SNAP KIT"}, {E_DRUM, "RHYTHM BOX"}, {0, 0}}},
      0, 70, 11, 50, 50, 0, {6, 34, 30, 8, 30, 16}, {0, 10, 30, 0, 24, 18}, 0, 0, 0},
     /* ENO */
-    {60, 78, 0, 1, 0, {3, 2, 4, 9}, 3, 9, ENO_D, ENO_L, 2, 3, ENO_DR, &ENO_PC, ENO_B, ENO_C, ENO_L_, XC_BELLS, 67, 91,
+    {54, 80, 0, 1, 0, {3, 2, 4, 9}, 3, 9, ENO_D, ENO_L, 7, 8, ENO_DR, &ENO_PC, ENO_B, ENO_C, ENO_L_, XC_BELLS, 67, 91,
      {{{E_ANALOG, "SUB BASS"}, {E_WHEEL, "PEDAL BASS"}, {E_FM6, "PAD"}},
-      {{E_GRAIN, "CLOUD PAD"}, {E_GRAIN, "SHIMMER"}, {E_GRAIN, "FROZEN"}},
+      {{E_GRAIN, "CLOUD PAD"}, {E_VOICE, "DREAM CHOIR"}, {E_ANALOG, "OBERHEIM PAD"}},   /* ((Vallée) not three grains) */
       {{E_FM6, "GLASS BELL"}, {E_PHYS, "KALIMBA"}, {E_SAMPLE, "MUSIC BOX"}},
       {{E_DRUM, "DEEP DRUMS"}, {E_DRUM, "LOFI KIT"}, {0, 0}},
       {{E_FM6, "GLASS KEYS"}, {E_SAMPLE, "FLUTE PAD"}, {E_LOFI, "CHIP BELL"}},
@@ -995,6 +1005,7 @@ static void g_color(step_t *w, const gplan_t *p, grng_t *r, uint32_t amt, uint32
     }
 }
 /* ENO: the bells and the second voice play loops of their own odd lengths over the chords: a note or two each */
+static const uint8_t ENO_LL[4] = {47, 53, 59, 61}, ENO_CL[4] = {29, 37, 41, 43};   /* ((Vallée) the seed picks */
 static uint32_t g_eno_loop(step_t *w, const gplan_t *p, grng_t *r, uint32_t len, uint32_t notes, int32_t lo)
 {
     uint32_t i, k;
@@ -1144,8 +1155,8 @@ static uint32_t gen_role_steps(uint32_t role, uint32_t part, const gplan_t *p, s
     case GR_BASS: g_bass(w, p, &r, amt, part); break;
     case GR_KEYS: g_keys(w, p, &r, amt, part); break;
     case GR_LEAD:
-        if (sty == GS_ENO)
-            len = g_eno_loop(w, p, &r, 53, 2u + amt, s->lead_lo);
+        if (sty == GS_ENO)                              /* ((Vallée) the loops' odd lengths the seed's) */
+            len = g_eno_loop(w, p, &r, ENO_LL[g_n(&r, 4)], 2u + amt, s->lead_lo);
         else
             g_lead(w, p, amt, part);
         break;
@@ -1156,7 +1167,7 @@ static uint32_t gen_role_steps(uint32_t role, uint32_t part, const gplan_t *p, s
         break;
     case GR_COLOR:
         if (sty == GS_ENO)
-            len = g_eno_loop(w, p, &r, 37, 2u + amt, 72);
+            len = g_eno_loop(w, p, &r, ENO_CL[g_n(&r, 4)], 2u + amt, 72);
         else
             g_color(w, p, &r, amt, part);
         break;
@@ -1234,6 +1245,16 @@ static void gen_write(void)
         song.g[G_DFDBK] = s->dfdbk;
         song.g[G_DMIX] = s->dmix;
         song.g[G_CMODE] = s->cmode;
+        if (sty == GS_ENO) {                            /* ((Vallée) AKASHA: the seed's room: the hall as before, a close
+                                                         * dry one, or the delay leading) */
+            grng_t rr = g_stream('R', 0);
+            uint32_t sp = g_n(&rr, 3);
+            if (sp == 1u) {
+                song.g[G_RSIZE] = 64; song.g[G_DMIX] = 30;
+            } else if (sp == 2u) {
+                song.g[G_RSIZE] = 96; song.g[G_DTIME] = 100; song.g[G_DFDBK] = 72; song.g[G_DMIX] = 80;
+            }
+        }
     }
     gen.made = 1;
     gen.dirty = 0;

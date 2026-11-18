@@ -31,6 +31,15 @@ static void xe_track_art(const track_t *t, uint8_t *art)
 {
     uint32_t e = t->eng_req % NENGINES, n = ENGINES[e]->npresets ? t->preset % ENGINES[e]->npresets : 0u;
     char name[20];
+    if (e == ENGI_SUMMON && sm_sigil(t)) {             /* ((Vallée) SUMMON: the being its ceremony summoned */
+        uint8_t big[16][16], px[12][12];
+        uint32_t y;
+        sm_being(sm_sigil(t), 12, big);
+        for (y = 0; y < 12u; y++)
+            memcpy(px[y], big[y], 12);
+        xb_pack(px, art);
+        return;
+    }
     sound_name(t, name);
     n = !ENGINES[e]->npresets || !str_eq(ENGINES[e]->presets[n].name, name) ? xb_hash(name) : n + e * 53u;
     xe_beast_art(trk_index(t), n, art);   /* ((Vallée) of the track's family: ui_beast.c) */

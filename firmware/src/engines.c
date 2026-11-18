@@ -18,6 +18,7 @@ static void *eng_part(const track_t *t);
 #include "eng_drum.c"           /* DRUM: the 8-lane kit (drum_voice.c) */
 #include "eng_drumx.c"          /* (Skiff) DRUM-X: JIANT FM's drum engine (drumx_voice.c, GPL-3.0-only) */
 #include "eng_noise.c"
+#include "eng_summon.c"          /* (Vallée) SUMMON: SUMMONER (XENO), AURA (TEEN) */
 #include "eng_fm6.c"            /* FM6: 6-operator FM, msfa ported (fm6_core.c, Apache-2.0) */
 #include "fm4_convert.c"        /* DIGITAL's tables, and its sounds -> FM6 */
 #if FELUCCA_FM4
@@ -95,6 +96,7 @@ static const engine_t *const ENGINES[NENGINES] = {
     &ENG_FM4_GONE,               /* 13: reserved (FELUCCA_SLICE=0 builds without SLICE: never offered, eng_ok) */
 #endif
     &ENG_DRUMX,                  /* 14 (ENGI_DRUMX, Skiff) */
+    &ENG_SUMMON,                 /* 15 (ENGI_SUMMON, Vallée) */
 };
 
 /* a track's engine number as an index (the audio paths: a compare, cheaper than % NENGINES; a bad number: 0) */
@@ -132,6 +134,7 @@ static const uint8_t ENGINE_ORDER[NENG_SHOWN] = {
 #endif
     2, 3, 4, 5, 6, 7, 8, 9,      /* PHASE LOFI SAMPLE VOICE TRIO WHEEL GRAIN PHYS */
     11,                          /* NOISE */
+    15,                          /* (Vallée) SUMMON */
 #if FELUCCA_SLICE
     13,                          /* SLICE */
 #endif

@@ -60,11 +60,9 @@ static void xe_beast_px(uint32_t k, uint32_t n, uint8_t px[12][12])
 }
 /* packed as a sprite (ui_sprite): w, h, 3 bits a pixel, a spare byte */
 #define XB_ART_N (3u + (12u * 12u * 3u + 7u) / 8u + 1u)
-static void xe_beast_art(uint32_t k, uint32_t n, uint8_t *out)
+static void xb_pack(const uint8_t px[12][12], uint8_t *out)   /* (as gen_sprites.py packs: 3 bits a cell) */
 {
-    uint8_t px[12][12];
     uint32_t acc = 0, nb = 0, o = 3, j, i;
-    xe_beast_px(k, n, px);
     out[0] = 12;
     out[1] = 12;
     out[2] = 3;
@@ -80,6 +78,12 @@ static void xe_beast_art(uint32_t k, uint32_t n, uint8_t *out)
     if (nb)
         out[o++] = (uint8_t)(acc << (8u - nb));
     out[o] = 0;
+}
+static void xe_beast_art(uint32_t k, uint32_t n, uint8_t *out)
+{
+    uint8_t px[12][12];
+    xe_beast_px(k, n, px);
+    xb_pack(px, out);
 }
 /* a name's number for a sound that is not a factory one */
 static uint32_t xb_hash(const char *s)

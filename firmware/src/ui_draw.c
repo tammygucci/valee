@@ -1681,6 +1681,7 @@ static void ui_draw(void)
         ui.take_t--;
     if (ui.beast_t)                                     /* ((Vallée) the creature box, ui_xeno.c) */
         ui.beast_t--;
+    sm_tick();                                          /* ((Vallée) SUMMON's ceremony, wherever the page is: ui_summon.c) */
     if (ui.undo_w)                                      /* (Skiff: the undo window, ui.c undo_step) */
         ui.undo_w--;
     if (ui.edge_t)                                      /* ((Skiff U4, F7) SELECT's end cue) */

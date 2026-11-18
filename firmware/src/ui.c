@@ -1373,7 +1373,8 @@ static const char *page_head(void)
         return sh->title();
     if (pg->scope == SC_ENGINE)                         /* ((Skiff U4, L5) EDIT: the engine's own name (OSC, KIT), the
                                                          * footer only where it is (n/m); the footer said it before) */
-        return ENGINES[TSEL->eng_req % NENGINES]->page_title[pg->id[0] != P_E0];
+        return ENGINES[TSEL->eng_req % NENGINES] == &ENG_SUMMON && pg->id[0] == P_E0 ? (ux.teen ? "AURA" : "SUMMONER") :
+               ENGINES[TSEL->eng_req % NENGINES]->page_title[pg->id[0] != P_E0];   /* ((Vallée) SUMMON: its screen's name) */
     if (!(step_page(pg->graph) || pg->graph == GR_FEEL))
         return pg->title;
     off = step_off(&all, 1);                            /* ((2.0, #44) a chain's steps counted on: NOTES 69) */
@@ -2086,7 +2087,15 @@ static void apply_preset_to(track_t *t, uint32_t pi)
     }
     pi = preset_orig(e, pi % e->npresets);
     t->preset = (uint8_t)pi;
-    preset_fill(t->p, e, pi);
+    {
+        int16_t sg = t->p[P_E6], sl = t->p[P_E7];
+        int keep = e == &ENG_SUMMON && t->engine == ENGI_SUMMON;   /* ((Vallée) SUMMON: another of its sounds keeps */
+        preset_fill(t->p, e, pi);                     /* the being the ceremony summoned, SIGIL and SEAL) */
+        if (keep) {
+            t->p[P_E6] = sg;
+            t->p[P_E7] = sl;
+        }
+    }
     if (kit)                                          /* ((Skiff phase 9) DRUM-X: the preset's kit, the project's: */
         memcpy(dx_kit, DX_KITS[kit - 1u], sizeof dx_kit);   /* one undo copy holds it, as INIT's: sound_init) */
     fm6_track_loaded(t);                              /* FM6: the preset's patch (its SLOT) */

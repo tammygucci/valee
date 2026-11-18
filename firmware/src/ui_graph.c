@@ -1697,6 +1697,8 @@ static uint32_t graph_signature(void)
     h ^= (uint32_t)pg->graph * 131u + TSEL->eng_req + song.sel * 7777u + ui.page * 1291u;
     if (strip_kind() == SK_TITLE)                    /* MENU > LARGE: the page's title (its engine, its number) */
         return h ^ 0x5A17u;
+    if (pg->scope == SC_ENGINE && ENGINES[t->eng_req % NENGINES] == &ENG_SUMMON)   /* ((Vallée) the ceremony, its */
+        return h ^ sm_sig() * 2654435761u;              /* strands and flames) */
     if ((pg->graph == GR_NONE && !analog_page(pg, t)) || pg->graph == GR_SMIX) h ^= ui.frame / 2u;   /* the scope; (#21)
                                                       * SAMPLES' waveform as EDIT's */
     for (i = 0; i < P_COUNT; i++)
@@ -1816,7 +1818,7 @@ static const char *eng_abbr(const char *name)
                                        {"PHASE", "PHAS"}, {"LOFI", "LOFI"},
                                        {"SAMPLE", "SMPL"}, {"VOICE", "VOCL"}, {"TRIO", "TRIO"}, {"WHEEL", "WHEL"},
                                        {"GRAIN", "GRAN"}, {"PHYS", "PHYS"}, {"DRUM", "DRUM"},
-                                       {"NOISE", "NOIS"}, {"FM6", "FM6"}, {"SLICE", "SLCE"}, {"DRUM-X", "DRMX"}};
+                                       {"NOISE", "NOIS"}, {"FM6", "FM6"}, {"SLICE", "SLCE"}, {"DRUM-X", "DRMX"}, {"SUMMON", "SUMN"}};
     uint32_t i;
     for (i = 0; i < sizeof A / sizeof A[0]; i++)
         if (str_eq(name, A[i][0]))
@@ -2674,6 +2676,7 @@ static void sk_sea(void)
 /* oscilloscope of the output, triggered on a rising zero crossing: a RAISE centre line, the trace 2 px (in silence
  * a flat line on it; MENU > SCREEN OFF keeps it from staying on the panel for hours) */
 #include "ui_world.c"                                /* (Vallée) THE WORLD: HOME on HOME */
+#include "ui_summon.c"                               /* (Vallée) SUMMON's pages: SUMMONER, AURA */
 static void graph_scope(uint16_t c)
 {
     static int16_t snap[SCOPE_N];
@@ -2942,7 +2945,8 @@ static void draw_graph(void)
             break;
 #endif
         default:
-            if (pg->scope == SC_ENGINE && ENGINES[t->eng_req % NENGINES] == &ENG_WHEEL) graph_wheel(t, c);
+            if (pg->scope == SC_ENGINE && ENGINES[t->eng_req % NENGINES] == &ENG_SUMMON) graph_summon(t);   /* (Vallée) */
+            else if (pg->scope == SC_ENGINE && ENGINES[t->eng_req % NENGINES] == &ENG_WHEEL) graph_wheel(t, c);
             else if ((pg->scope == SC_ENGINE || pg->graph == GR_SMIX) && ENGINES[t->eng_req % NENGINES] == &ENG_SAMPLE &&
                      sample_wave.ready) graph_sample(c);   /* ((#21) SAMPLES: the sample's) */
             else if (pg->scope == SC_ENGINE && t->eng_req % NENGINES == ENGI_FM6) graph_fm6(t, c);   /* EDIT 1 and 2 */
