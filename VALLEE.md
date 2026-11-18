@@ -163,7 +163,7 @@ DEAD DRUMS (AETHER, LOTUS, HEX), TAPE KIT (LEMURIA, SIGIL), CRUSH KIT (WRAITH, O
   put back, OCT− goes HOME.
 - Leaving the page keeps what was written. SAVE held still undoes it later, one track at a time ("GEN").
 
-**The panel** shows the seed's sigil (every seed draws its own) and the piece before you write it: style, vibe, part,
+**The panel** shows the seed's sigil (every seed draws its own; on TEEN flat shapes on a grid in its colours instead) and the piece before you write it: style, vibe, part,
 key, scale, tempo and its chords, for example `Am9 Dm9 Cmaj9 Bm7b5 E9`.
 
 **The tracks** it writes:

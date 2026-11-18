@@ -1692,6 +1692,29 @@ static void gen_sigil(int32_t cx, int32_t cy, int32_t rad, uint16_t c, uint16_t 
     xe_ring(cx, cy, rad / 4, c);
     cv_rect(cx - 1, cy - 1, 3, 3, T_TEXT);
 }
+/* ((Vallée) TEEN: no star; the seed as flat shapes on a 3 x 3 grid, as its tape machine draws (a disc, a square, a
+   ring, a pill, a small dot, or none), each in one of its tracks' four colours: its own for every seed */
+static void gen_teen_mark(int32_t cx, int32_t cy, int32_t rad)
+{
+    grng_t r = g_stream('Z', 0);
+    const int32_t cell = (2 * rad) / 3, q = cell / 2 - 3;
+    uint32_t i, empty = g_n(&r, 9);                     /* (one place left empty: room in it) */
+    for (i = 0; i < 9u; i++) {
+        int32_t x = cx - cell + (int32_t)(i % 3u) * cell, y = cy - cell + (int32_t)(i / 3u) * cell;
+        uint32_t k = g_n(&r, 5);
+        uint16_t col = T_TRK(g_n(&r, 4));
+        if (i == empty)
+            continue;
+        switch (k) {
+        case 0: xe_disc(x, y, q, col); break;
+        case 1: cv_rect(x - q, y - q, 2 * q + 1, 2 * q + 1, col); break;
+        case 2: xe_ring(x, y, q, col); xe_ring(x, y, q - 1, col); xe_ring(x, y, q - 2, col); break;
+        case 3: cv_rect(x - q / 2, y - q / 2, q + 1, q + 1, col); xe_disc(x, y - q / 2, q / 2, col);
+                xe_disc(x, y + q / 2, q / 2, col); break;
+        default: xe_disc(x, y, q / 3 + 1, col); break;
+        }
+    }
+}
 /* ((Vallée) the song's code: the knobs set away from where GEN starts, short (the style, vibe, part and seed are the
  * lines above it). The same code on any Vallée of this version writes the same song: ENERGY E, KEY IN, TEMPO BPM,
  * SOUNDS KEEP, the parts' amounts DR BA KY LD CO (0 OFF .. 3 BUSY), COMPLEX X, SWING S, HUMAN H; "" all as GEN starts */
@@ -1731,7 +1754,10 @@ static void graph_gen(const track_t *t, uint16_t c)
     (void)t;                                            /* of the box, up and down) */
     (void)c;
     gen_plan(&p);
-    gen_sigil(10 + rad + 4, cy, rad, T_THEME, T_LINE);
+    if (UX_TEEN)
+        gen_teen_mark(10 + rad + 4, cy, rad);           /* ((Vallée) TEEN: shapes, no star */
+    else
+        gen_sigil(10 + rad + 4, cy, rad, T_THEME, T_LINE);
     for (i = 0; i < GEN_NWIN; i++)                      /* the windows: SELECT's place */
         cv_rect(10 + rad + 4 - 15 + (int32_t)i * 9, cy + rad + 6, 6, 3, i == w ? T_ACCENT : T_RAISE);
     y = top;
