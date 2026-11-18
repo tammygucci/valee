@@ -473,7 +473,7 @@ The FM-1 firmware is built with JieLi's toolchain. The easiest way is GitHub Act
 3. Actions > **Vallée build** > Run workflow.
 
 It builds the firmware, runs every test (host, UI, web, emulator), then makes the release
-`vallee-2.6-vallee.fwsc` and the browser emulator, and publishes your site:
+`vallee-0.9-alpha.fwsc` and the browser emulator, and publishes your site:
 
 - the web installer, `/webapp/installer/` (Chrome or Edge, USB)
 - the editor, `/webapp/editor/`
@@ -481,18 +481,18 @@ It builds the firmware, runs every test (host, UI, web, emulator), then makes th
 
 The package and a one-file emulator page (`vallee-web.html`) are kept as downloads on the run.
 
-**Identity.** A release answers **FM-1_56XY** (2.6: `FM-1_5626`), Vallée's own number, not Skiff's FM-1_7XY, so
-The Firmware Hub can tell the two apart. Push a tag `v*` (e.g. `v2.6-vallee`) and the build also makes a GitHub
+**Identity.** A release answers **FM-1_56XY** (0.9: `FM-1_5609`), Vallée's own number, not Skiff's FM-1_7XY, so
+The Firmware Hub can tell the two apart. Push a tag `v*` (e.g. `v0.9-alpha`) and the build also makes a GitHub
 release with the package attached; `fmhub.json` in the root is the hub's card (its text, picture and links).
 
 To build locally, see `BUILDING.md`:
 
 ```
 ./build.sh && sh tests/run_tests.sh        # the development build and the tests
-./build.sh --release 2.6-vallee           # the package
-EMU_PREVIEW=0 EMU_VERSION=v2.6-vallee web/emu/build_clang.sh   # the emulator: plain clang, no Emscripten
+./build.sh --release 0.9-alpha            # the package
+EMU_PREVIEW=0 EMU_VERSION=v0.9-alpha web/emu/build_clang.sh   # the emulator: plain clang, no Emscripten
 python3 web/emu/bundle_single.py          # .. as one HTML file
-python3 web/make_site.py build/vallee-2.6-vallee.fwsc 2.6-vallee site
+python3 web/make_site.py build/vallee-0.9-alpha.fwsc 0.9-alpha site
 ```
 
 **Flash space.** The FM-1's app slot is 581,564 bytes ([Room on the FM-1](#room-on-the-fm-1)). If the image doesn't

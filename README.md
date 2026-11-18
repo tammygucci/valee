@@ -22,10 +22,31 @@
   <br><sub>The demo, a live performance and SUMMON (click to play)</sub>
 </p>
 
+> **This is an alpha (0.9).** Everything here works on my own FM-1 and passes the full test suite, but it hasn't been
+> on many units yet. Back up anything you care about first (the installer does this for you), expect a few rough
+> edges, and please [report what you find](https://github.com/tammygucci/valee/issues/new/choose). You can always
+> go back: see [Going back](#going-back) below.
+
 Vallée is built on [Skiff](https://github.com/illuminus5/skiff) 2.6 by illuminus5, a six-track groovebox firmware for
-the FM-1. Skiff's engines, sequencer, editor and saves all work the same way here. Vallée adds a song generator, a
-way to play a whole song live from the keys, an effects chain across the master mix, new synth voices and drum kits,
-and its own look.
+the FM-1. Skiff's engines, sequencer, editor and saves all work the same way here. On top of that, Vallée adds a song
+generator, a way to play a whole song live from the keys, an effects chain across the whole mix, new synth sounds and
+drum kits, and its own look.
+
+## Going back
+
+You can leave Vallée at any time, and your music comes with you.
+
+- **To the official M-VAVE firmware:** open the [Vallée installer](https://tammygucci.github.io/valee/webapp/installer/)
+  in Chrome or Edge, connect the FM-1 by USB and choose the official firmware. It saves a full backup of your music
+  first. Your FM-1 goes back to the version it had before (V15 or V16), and the page tells you which one it needs.
+  You can also use M-VAVE's own updater. Afterwards, pair any Bluetooth devices again.
+- **To Skiff:** install Skiff with the [Skiff installer](https://illuminus5.github.io/skiff/webapp/installer/), the
+  same way. Your projects, sounds and samples carry over, and Skiff simply ignores ALEMBIC. **One exception:** Skiff
+  has no SUMMON, so it won't open a project with a SUMMON track (or a sound saved from SUMMON). Before you switch,
+  change those tracks to another sound and save, or first use **Save backup** (Complete backup) in the [Vallée editor](https://tammygucci.github.io/valee/webapp/editor/). Nothing is erased: the
+  projects open again if you come back to Vallée.
+
+If the FM-1 won't start at all, see [If the FM-1 won't start](#install) below.
 
 ## What Vallée adds
 
@@ -101,6 +122,7 @@ start goes into the chip's boot mode, where it can be written again.
 
 ## Known issues
 
+- **Skiff can't open a project with a SUMMON track** (see [Going back](#going-back)).
 - **The screen runs faster than Skiff's** (20 MHz instead of 12) so pages draw without tearing. Most units are fine
   with it; if yours shows flickering, stray lines or garbled pictures, please open an issue.
 - **A SLICE preset loaded from your user slots becomes FM6's first sound**, and holding SAVE does not undo that load.

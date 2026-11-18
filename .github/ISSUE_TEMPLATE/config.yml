@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Skiff (the firmware Vallée is built on)
+    url: https://github.com/illuminus5/skiff
+    about: Something that also happens on Skiff itself. Bugs on Vallée belong here, please.
   - name: Felucca (the firmware Skiff is built on)
     url: https://github.com/hugelton/Felucca
-    about: Felucca's own behaviour, on Felucca. Please report Skiff's here, not there.
+    about: Felucca's own behaviour, on Felucca.

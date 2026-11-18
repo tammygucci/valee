@@ -1,31 +1,45 @@
 name: Bug report
-description: Something in Skiff doesn't work as it should (one bug per issue)
+description: Something in Vallée doesn't work as it should (one bug per report)
 labels: [bug]
 body:
   - type: markdown
     attributes:
       value: |
-        One reproducible bug per issue, on Skiff (not Felucca). Ideas and questions are welcome as issues too: say which it is in the title.
+        Thanks for trying the Vallée alpha! One bug per report, please. Ideas and questions are welcome too: say which it is in the title.
   - type: input
     id: version
     attributes:
-      label: Skiff version
-      description: Hold HOME > ABOUT on the FM-1
-      placeholder: "v1.0"
+      label: Vallée version
+      description: On the FM-1, hold HOME for the MENU, then open ABOUT. It also shows on the start-up screen.
+      placeholder: "v0.9-alpha"
+    validations:
+      required: true
+  - type: dropdown
+    id: theme
+    attributes:
+      label: Theme
+      description: MENU > THEME
+      options:
+        - XENO (the default)
+        - TEEN
+        - Not sure
     validations:
       required: true
   - type: input
-    id: system
+    id: where
     attributes:
-      label: Computer, OS and browser (if the editor, installer or USB is involved)
-      placeholder: "macOS 15.6, Chrome 140"
+      label: Where on the FM-1
+      description: Which screen or feature (GEN, THE SPELL, SUMMON, ALEMBIC, a sound engine, the sequencer, the editor, the installer ...)
+      placeholder: "THE SPELL, while a GEN song plays"
   - type: textarea
     id: steps
     attributes:
-      label: Steps to reproduce
+      label: Steps to make it happen
+      description: The buttons and keys you pressed, in order, starting from switching on if you can.
       placeholder: |
         1. ...
         2. ...
+        3. ...
     validations:
       required: true
   - type: textarea
@@ -37,7 +51,22 @@ body:
   - type: textarea
     id: actual
     attributes:
-      label: What happened
-      description: A photo or short video helps.
+      label: What happened instead
+      description: A photo or short video helps a lot, especially for screen or sound problems.
     validations:
       required: true
+  - type: dropdown
+    id: often
+    attributes:
+      label: Does it happen every time?
+      options:
+        - Every time I follow the steps
+        - Sometimes
+        - It happened once
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Computer, OS and browser (only if the editor, installer or USB is involved)
+      placeholder: "macOS 15.6, Chrome 140"
