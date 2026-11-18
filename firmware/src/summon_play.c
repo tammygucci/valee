@@ -46,6 +46,9 @@ static void sm_play_begin(uint32_t note, uint32_t tk)
     sm.step = 0;
     sm.hpc = 0;
     sm.line = 2;
+    for (i = 0; i < 12u; i++)                           /* (the song it forms over: from now) */
+        sm.hist[i] = 0;
+    sm.hn_lo = sm.hn_hi = 0;
 }
 /* scale degree d (0 the root; may go below 0) from the base */
 static uint32_t sm_deg(int32_t d)
@@ -207,6 +210,24 @@ static __attribute__((noinline)) void sm_play(uint32_t n)   /* (out of events_bl
         if (sm.hl[i] && !--sm.hl[i])
             trk_note_off(t, sm.hn[i]);
     sm_harmony();
+    if (sm.cer) {                                       /* (while it forms: what the song sounds, for its shape) */
+        uint32_t k, o = 0;
+        for (k = 0; k < NTRK; k++)
+            if (k != sm.ptrk && !chord_kit(&trk[k]))
+                for (i = 0; i < NVOICE; i++) {
+                    const voice_t *w = &trk[k].v[i];
+                    if (w->active && w->gate && w->stage && w->stage < 3u) {
+                        o |= 1u << (w->note % 12u);
+                        if (w->note < 60u)
+                            sm.hn_lo++;
+                        else
+                            sm.hn_hi++;
+                    }
+                }
+        for (i = 0; i < 12u; i++)
+            if (((o >> i) & 1u) && sm.hist[i] < 65535u)
+                sm.hist[i]++;
+    }
     s = sm.step++;
     g = sm.cer ? sm.prog * 64u / (SM_CANDLES * SM_STEP_MS) : 64u;   /* how grown: 0..64 */
     v = 60u + g;                                        /* (louder as it grows) */

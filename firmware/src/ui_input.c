@@ -1506,8 +1506,9 @@ static void edit_param(uint32_t slot, int32_t steps)
     const param_desc_t *d;
     int32_t v;
     if (pg->scope == SC_ENGINE && ENGINES[TSEL->eng_req % NENGINES] == &ENG_SUMMON && slot < 4u &&
-        (pg->id[slot] == P_E6 || pg->id[slot] == P_E7)) {   /* ((Vallée) SUMMON: SIGIL and SEAL are the song's to set */
-        ui_message("THE SONG SETS IT");
+        (pg->id[slot] == P_E5 || ((pg->id[slot] == P_E6 || pg->id[slot] == P_E7) && sm.cer && sm.trk == song.sel))) {
+        /* ((Vallée) SUMMON: BEING is the song's; SIGIL and SEAL yours, but not while it forms) */
+        ui_message(pg->id[slot] == P_E5 ? "THE SONG SETS IT" : "IT IS FORMING");
         return;
     }
     if (pg->graph == GR_FEEL) {                           /* (Skiff 2.0) FEEL: CHANCE RATCHET NUDGE TYPE of the selection */

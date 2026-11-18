@@ -10856,6 +10856,37 @@ static int test_gen(void)
 #ifndef UI_TEST_MAIN                                    /* ((Vallée) tests/vallee_stress.c: its own main) */
 #define UI_TEST_MAIN main
 #endif
+/* ((Vallée) SUMMON's page 2: SIGIL and SEAL are yours before it forms, held while it forms; BEING is the song's) */
+static int test_summon_knobs(void)
+{
+    int bad = 0;
+    int16_t a, b;
+    ui_power_on();
+    frame();
+    track_select(2);
+    set_engine_of(&trk[2], ENGI_SUMMON);
+    trk[2].engine = ENGI_SUMMON;
+    trk[2].eng_req = ENGI_SUMMON;
+    press(B_EDIT); frame(); press(B_EDIT); frame();
+    bad += check("summon: page 2 is TONE BEING SIGIL SEAL", cur_page()->id[0] == P_E4 && cur_page()->id[1] == P_E5 &&
+                 cur_page()->id[2] == P_E6);
+    a = trk[2].p[P_E6];
+    turn(EN_K3, 3); frame();
+    bad += check("summon: SIGIL turns before it forms", trk[2].p[P_E6] == a + 3);
+    b = trk[2].p[P_E5];
+    turn(EN_K2, 4); frame();
+    bad += check("summon: BEING never turns (the song sets it)", trk[2].p[P_E5] == b);
+    sm_start(57); frame();
+    a = trk[2].p[P_E6];
+    turn(EN_K3, 5); frame();
+    turn(EN_K4, -5); frame();
+    bad += check("summon: SIGIL and SEAL held while it forms", trk[2].p[P_E6] == a && trk[2].p[P_E7] == 0);
+    sm.cer = 0;
+    sm.on = 0;
+    sm.rq = 0;
+    return bad;
+}
+
 int UI_TEST_MAIN(void)
 {
     setvbuf(stdout, NULL, _IONBF, 0);
@@ -10968,6 +10999,7 @@ int UI_TEST_MAIN(void)
     bad += test_screen_off();
     bad += test_playhead_line();
     bad += test_fm6_charts();
+    bad += test_summon_knobs();
 #if FELUCCA_FM4
     bad += test_fm_charts();                        /* (DIGITAL's charts: built with FELUCCA_FM4=1 only) */
 #else

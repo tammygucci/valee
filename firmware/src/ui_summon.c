@@ -68,12 +68,13 @@ static void sm_tick(void)
         sm.cer = 0;
         return;
     }
-    if (sm.lit >= SM_CANDLES) {
-        int32_t kind = sm_kind(sm.next);
+    if (sm.lit >= SM_CANDLES) {                         /* (formed: its shape from the song, its kind rolled now) */
+        uint32_t r = (sm.ent ^ fm1_ticks()) * 2654435761u >> 8, b = sm_shape(t) - 1u;
+        int32_t kind = r % 50u == 7u ? 1 : r % 50u == 31u ? 2 : 0;
+        sm.next = 1u + b + (uint32_t)kind * SM_BODY;
         sm.lit = SM_CANDLES;
         sm.cer = 0;
-        t->p[P_E6] = (int16_t)(sm.next >> 7);
-        t->p[P_E7] = (int16_t)(sm.next & 127u);
+        t->p[P_E5] = (int16_t)sm.next;
         if (kind == 1)
             ui_message("A DEMON ANSWERED");
         else if (kind == 2)
@@ -92,7 +93,8 @@ static void sm_tick(void)
 /* the canvas changes: the strands and flames move, a ceremony runs (draw_graph's signature) */
 static uint32_t sm_sig(void)
 {
-    return (sm.cer ? sm.prog * 64u / SM_STEP_MS + 1u : 0u) * 7919u + sm_sigil(TSEL) * 31u + (xe_anim() ? ui.frame / 2u : 0u);
+    return (sm.cer ? sm.prog * 64u / SM_STEP_MS + 1u + sm_shape(TSEL) * 131u : 0u) * 7919u + sm_sigil(TSEL) * 31u +
+           sm_pick(TSEL) * 17u + (xe_anim() ? ui.frame / 2u : 0u);
 }
 
 static void sm_ellipse(int32_t cx, int32_t cy, int32_t rx, int32_t ry, uint16_t c)
@@ -137,7 +139,7 @@ static uint32_t sm_show(const track_t *t, uint32_t *step)
 {
     if (sm.cer && sm.trk == trk_index(t)) {
         *step = sm.prog * 16u / SM_STEP_MS;
-        return sm.next;
+        return sm_shape(t);                             /* (as the song has made it so far: never its kind) */
     }
     *step = SM_CANDLES * 16u;
     return sm_sigil(t);
@@ -400,15 +402,6 @@ static void graph_summon(const track_t *t)
 {
     cv_oy = 0;
     if (cur_page()->id[0] != P_E0) {                    /* (page 2: SIGIL SEAL: symbols on XENO, shapes on TEEN) */
-        if (!(t->p[P_E6] | t->p[P_E7])) {               /* (none formed yet: nothing to show) */
-            uint16_t bg = UX_TEEN ? T_BG : WL_RGB(14, 10, 28);
-            cv_rect(0, 0, 240, (int32_t)cv_h, bg);
-            cv_bg = bg;
-            if (!UX_TEEN)
-                xe_stars(240, (int32_t)cv_h);
-            sm_ctext(120, (int32_t)cv_h / 2 - 8, &AF_M, "NOT YET FORMED", T_MID, bg);
-            return;
-        }
         if (UX_TEEN)
             sm_teen_seals(t);
         else

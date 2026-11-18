@@ -6,11 +6,11 @@
  * your hands). Those touches are its nearness too: played much, the sound goes to NEAR's colour, left alone it
  * drifts back to FAR's.
  *
- * A note sounds up to three partials (VOICES), each an interval over it that the signals and the being pick, each
- * with a second harmonic as bright as NEAR or FAR says, wandering in pitch and level as DRIFT allows; AIR adds
- * breath; all through a gentle low-pass (TONE). The being the ceremony summoned (SIGIL and SEAL: its number,
- * 1..16383, 0 none) chooses the intervals: an ordinary one fifths and octaves and ninths, a demon (1 in 50) tritones,
- * seconds and a sub-octave, an angel (1 in 50) octaves, fifths and thirds high up.
+ * A note sounds up to three partials (VOICES), each an octave of it that the signals and the being pick (so in any
+ * chord the note is in), each with a second harmonic as bright as NEAR or FAR says, a chorus of a few cents and a
+ * wander in level as DRIFT allows; all through a gentle low-pass (TONE). The being the song formed (BEING, the song
+ * sets it; its starting point SIGIL and SEAL, yours) chooses them: an ordinary one round the note, a demon (1 in 50)
+ * below it, an angel (1 in 50) above.
  *
  * The ceremony (sm_start: OCT+ on its EDIT page; sm_tick, every UI frame): the being's number taken from the
  * signals, then SM_CANDLES candles lit one by one, over a song, as its track plays (faster the busier), the being built up as they
@@ -46,6 +46,8 @@ static struct {
     uint32_t acc, step, rng;                            /* samples to the next 16th; 16ths played; its dice */
     uint8_t hn[6], hl[6];                               /* the notes it holds, 16ths left of each */
     uint16_t hpc;                                       /* the song's chord now: its pitch classes (bit i: i above C) */
+    uint16_t hist[12];                                  /* the song while it forms: how often each pitch class sounded */
+    uint32_t hn_lo, hn_hi;                              /* .. how often low (below middle C) and high */
     uint8_t hroot, line;                                /* .. its root (a pitch class); where the line is in its notes */
 } sm;
 static void sm_touch(uint32_t n)
@@ -54,16 +56,39 @@ static void sm_touch(uint32_t n)
     sm.ent = (sm.ent ^ SM_CLOCK()) * 2654435761u + n;
     sm.to[sm.ent % SM_NSIG] = (uint16_t)(640u + (sm.ent >> 23) % 384u);   /* (a touch: a signal stronger) */
 }
-/* its kind: 0 a being, 1 a demon, 2 an angel (1 in 50 each over the numbers), -1 none */
-static int32_t sm_kind(uint32_t sig)
+/* ((Vallée) the being, as its track keeps it in BEING (P_E5, set by the song alone): 0 none; else 1 + its body
+   (0..8191) + its kind x 8192. Its kind: 0 a being, 1 a demon, 2 an angel (rolled when it forms: 1 in 50 each,
+   whatever its SIGIL and SEAL), -1 none */
+#define SM_BODY 8192u
+static int32_t sm_kind(uint32_t b)
 {
-    uint32_t h;
-    if (!sig)
+    uint32_t k;
+    if (!b)
         return -1;
-    h = (sig * 2654435761u) >> 16;
-    return h % 50u == 7u ? 1 : h % 50u == 31u ? 2 : 0;
+    k = (b - 1u) / SM_BODY;
+    return k < 3u ? (int32_t)k : 0;
 }
-static uint32_t sm_sigil(const track_t *t) { return ((uint32_t)t->p[P_E6] & 127u) << 7 | ((uint32_t)t->p[P_E7] & 127u); }
+static uint32_t sm_sigil(const track_t *t) { return (uint32_t)t->p[P_E5] & 32767u; }
+/* its starting point: the SIGIL and SEAL you chose (each 0..127) */
+static uint32_t sm_pick(const track_t *t) { return ((uint32_t)t->p[P_E6] & 127u) << 7 | ((uint32_t)t->p[P_E7] & 127u); }
+/* what the song has made of it so far: the starting point and the song's notes while it forms (how often each pitch
+   class sounded, summon_play.c: the three it played most, in order, and how high it sits), an ordinary being. The
+   same SIGIL and SEAL over the same song grow the same; over another song, another */
+static uint32_t sm_shape(const track_t *t)
+{
+    uint32_t i, j, fp = 0, top[3] = {12u, 12u, 12u}, h;
+    for (j = 0; j < 3u; j++)
+        for (i = 0; i < 12u; i++)
+            if (sm.hist[i] && i != top[0] && i != top[1] && (top[j] == 12u || sm.hist[i] > sm.hist[top[j]]))
+                top[j] = i;
+    for (j = 0; j < 3u; j++)
+        fp = fp * 13u + top[j];
+    fp = fp * 4u + (sm.hn_lo > sm.hn_hi * 2u ? 0u : sm.hn_hi > sm.hn_lo * 2u ? 2u : 1u);   /* (low, middle, high) */
+    h = (sm_pick(t) * 2654435761u) ^ (fp * 2246822519u);
+    h ^= h >> 15;
+    h *= 2654435761u;
+    return 1u + (h >> 19) % SM_BODY;
+}
 
 /* the room: one step of what the signals do (an audio block's worth, 32 samples). Run from the UI's frame (sm_room),
    never from a track's render: both cores read sig[] and near while they mix, and nothing they render may depend on
@@ -118,7 +143,7 @@ static void summon_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
 {
     const int16_t *p = t->p;
     int32_t near = sm.near, bright = (p[P_E0] * near + p[P_E1] * (32767 - near)) >> 15;   /* 0..127 */
-    int32_t drift = p[P_E2], nv = 1 + clamp(p[P_E3], 0, 2), air = p[P_E5];
+    int32_t drift = p[P_E2], nv = 1 + clamp(p[P_E3], 0, 2);
     int32_t amp[3], ic1 = v->s[1], ic2 = v->s[2], rng = v->s[0], hb = bright * 200;   /* (the 2nd harmonic, Q15) */
     uint32_t inc[3], ph[3], i, k, slow = (uint32_t)v->s[3];
     tsvf_t f;
@@ -140,8 +165,6 @@ static void summon_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
             ph[k] += inc[k];
             y += (sine_i(ph[k]) + ((sine_i(ph[k] << 1) * hb) >> 15)) * amp[k] >> 15;
         }
-        if (air)
-            y += (((int32_t)noise32(&rng) >> 18) * air) >> 5;
         y = tsvf_lp(&f, y, &ic1, &ic2);
         out[i] += voice_amp(y, m, i);
     }
@@ -224,13 +247,13 @@ static void sm_name(uint32_t sig, char *b)
     str_cpy(b + str_len(b), EN[kind][(h >> 13) % 4u], 16 - str_len(b));
 }
 
-/* {NEAR, FAR, DRIFT, VOICES, TONE, AIR, SIGIL, SEAL} (SIGIL SEAL 0: no being yet: the circle empty) */
+/* {NEAR, FAR, DRIFT, VOICES, TONE, BEING, SIGIL, SEAL} (BEING 0: none yet, the song sets it) */
 static const preset_t SUMMON_PRESETS[] = {
-    {"CALLING", {96, 30, 50, 2, 80, 16, 0, 0}, {90, 90, 120, 100}, 0, 0, FX(0, 20, 30, 90), TAG(PT_PAD)},
-    {"LOW HOST", {70, 10, 40, 1, 60, 8, 0, 0}, {80, 90, 127, 110}, 0, 0, FX(0, 10, 20, 80), TAG(PT_PAD)},
-    {"VIGIL", {110, 60, 70, 2, 96, 30, 0, 0}, {100, 90, 120, 110}, 0, 0, FX(0, 30, 40, 100), TAG(PT_PAD)},
-    {"SEANCE", {80, 20, 100, 2, 70, 60, 0, 0}, {110, 90, 110, 120}, 0, 0, FX(0, 20, 50, 100), TAG(PT_FX)},
-    {"EMPYREAN", {127, 90, 30, 2, 110, 10, 0, 0}, {100, 90, 127, 120}, 0, 0, FX(0, 40, 30, 110), TAG(PT_PAD)},
+    {"CALLING", {96, 30, 50, 2, 80, 0, 0, 0}, {90, 90, 120, 100}, 0, 0, FX(0, 20, 30, 90), TAG(PT_PAD)},
+    {"LOW HOST", {70, 10, 40, 1, 60, 0, 0, 0}, {80, 90, 127, 110}, 0, 0, FX(0, 10, 20, 80), TAG(PT_PAD)},
+    {"VIGIL", {110, 60, 70, 2, 96, 0, 0, 0}, {100, 90, 120, 110}, 0, 0, FX(0, 30, 40, 100), TAG(PT_PAD)},
+    {"SEANCE", {80, 20, 100, 2, 70, 0, 0, 0}, {110, 90, 110, 120}, 0, 0, FX(0, 20, 50, 100), TAG(PT_FX)},
+    {"EMPYREAN", {127, 90, 30, 2, 110, 0, 0, 0}, {100, 90, 127, 120}, 0, 0, FX(0, 40, 30, 110), TAG(PT_PAD)},
 };
 static const char *const N_SM_VOICES[] = {"1", "2", "3"};
 static const engine_t ENG_SUMMON = {
@@ -242,7 +265,7 @@ static const engine_t ENG_SUMMON = {
         {"DRIFT", 0, 0, 127, 50, F_PCT, 0},
         {"VOICES", N_SM_VOICES, 0, 2, 2, F_ENUM, 0},
         {"TONE", 0, 0, 127, 80, F_CUTOFF, 0},
-        {"AIR", 0, 0, 127, 16, F_PCT, 0},
+        {"BEING", 0, 0, 32767, 0, F_INT, 0},   /* (the song sets it: sm_kind) */
         {"SIGIL", 0, 0, 127, 0, F_INT, 0},
         {"SEAL", 0, 0, 127, 0, F_INT, 0},
     },

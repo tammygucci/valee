@@ -359,7 +359,7 @@ the elements go straight in.
 
 SUMMON (engine 15, after NOISE in the lists) is an ambient voice: up to three slow partials per note (VOICES), each a
 sine with a little of its octave, all of them octaves of the note (so they are in whatever chord the note is in),
-with a slight chorus between them (DRIFT, a few cents at most: never out of tune), breathe (AIR) and brighten as the room comes NEAR. What
+with a slight chorus between them (DRIFT, a few cents at most: never out of tune), and brighten as the room comes NEAR. What
 moves it are the FM-1's own signals: the tiny jitter of its timer, and every key, button and MIDI note you play.
 Play and the room comes near; leave it alone and it drifts FAR. (The FM-1 has no radio under Vallée, so it listens to
 itself rather than to Bluetooth.)
@@ -391,12 +391,19 @@ the next key starts a new summoning. Putting another sound on its track ends it 
 Nothing of the being shows before the song has formed it: its body builds up plainly, and its name, and whether it
 is a demon or an angel, appear only when the last candle lights.
 
-The being is kept on page 2 as **SIGIL** and **SEAL** (two numbers that together are the being). Only the song sets
-them: turning those knobs does nothing (`THE SONG SETS IT`). That page shows them as symbols, never the being or
-what kind it is: the sigil as a glyph, the seal as a glyph in a double ring with marks round it; on TEEN, flat shapes
-in its colours (the sigil a shape with a smaller one on it, the seal a knob with a ring of lit dots and its pointer).
-Before any being has formed it says `NOT YET FORMED`. They are saved with the project and in presets, and the being
-stands on its track's lane on XENO's HOME. Loading another SUMMON preset keeps it. Presets: CALLING, LOW HOST, VIGIL, SEANCE, EMPYREAN.
+**You choose its starting point; the song decides what it becomes.** Before you summon, turn **SIGIL** and **SEAL**
+on page 2 (two symbols, each 0..127): each pair is a starting point of its own, and the page shows the two symbols
+as you turn. While it forms, the song shapes it: which notes the song plays most and how high it sits decide what the
+starting point grows into. The same SIGIL and SEAL over the same song grow the same being; over another song, another.
+Whether it becomes a demon or an angel is chance alone, rolled when it forms, 1 in 50 each; no SIGIL and SEAL can
+make one every time. While it forms, SIGIL and SEAL hold (`IT IS FORMING`); once it has formed you can turn them for
+the next.
+
+The being it formed is kept in **BEING** (page 2; the song sets it, its knob does nothing: `THE SONG SETS IT`), saved
+with the project and kept when you load another SUMMON preset; it stands on its track's lane on XENO's HOME. Page 2
+never shows the being or its kind, only the two symbols: on XENO the sigil as a glyph and the seal as a glyph in a
+double ring with marks round it; on TEEN flat shapes in its colours (the sigil a shape with a smaller one on it, the
+seal a knob with a ring of lit dots and its pointer). Presets: CALLING, LOW HOST, VIGIL, SEANCE, EMPYREAN.
 
 Because SUMMON adds an engine key, the EDIT layer's keys after NOISE move up one: SUMMON is on C5, DRUM on D5, DRUM-X on
 E5 and INIT on F5.

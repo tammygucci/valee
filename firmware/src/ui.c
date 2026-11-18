@@ -2088,12 +2088,13 @@ static void apply_preset_to(track_t *t, uint32_t pi)
     pi = preset_orig(e, pi % e->npresets);
     t->preset = (uint8_t)pi;
     {
-        int16_t sg = t->p[P_E6], sl = t->p[P_E7];
+        int16_t sg = t->p[P_E6], sl = t->p[P_E7], bg = t->p[P_E5];
         int keep = e == &ENG_SUMMON && t->engine == ENGI_SUMMON;   /* ((Vallée) SUMMON: another of its sounds keeps */
         preset_fill(t->p, e, pi);                     /* the being the ceremony summoned, SIGIL and SEAL) */
         if (keep) {
             t->p[P_E6] = sg;
             t->p[P_E7] = sl;
+            t->p[P_E5] = bg;
         }
     }
     if (kit)                                          /* ((Skiff phase 9) DRUM-X: the preset's kit, the project's: */
