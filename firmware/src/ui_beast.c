@@ -44,12 +44,76 @@ static void xb_put(uint8_t px[12][12], int32_t y, const uint8_t *b, int on)
             px[y][11u - i] = (uint8_t)c;
         }
 }
+/* ((Vallée) track 5's family: sigils drawn as sigils, lines on a staff, no creature; never two triangles (no hexagram)) */
+static void xb_ln(uint8_t px[12][12], int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint8_t v)
+{
+    int32_t dx = x1 > x0 ? x1 - x0 : x0 - x1, dy = y1 > y0 ? y0 - y1 : y1 - y0, sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+    int32_t e = dx + dy, e2;
+    for (;;) {
+        if (x0 >= 0 && x0 < 12 && y0 >= 0 && y0 < 12)
+            px[y0][x0] = v;
+        if (x0 == x1 && y0 == y1)
+            return;
+        e2 = 2 * e;
+        if (e2 >= dy) { e += dy; x0 += sx; }
+        if (e2 <= dx) { e += dx; y0 += sy; }
+    }
+}
+static void xb_arc(uint8_t px[12][12], int32_t cx, int32_t cy, int32_t r, uint32_t half, uint8_t v)   /* half: 1 top 2 bottom 3 all */
+{
+    int32_t x = r, y = 0, e = 1 - r;
+    while (x >= y) {
+        const int32_t P[8][2] = {{x, y}, {y, x}, {-y, x}, {-x, y}, {-x, -y}, {-y, -x}, {y, -x}, {x, -y}};
+        uint32_t i;
+        for (i = 0; i < 8u; i++) {
+            int32_t u = cx + P[i][0], w = cy + P[i][1];
+            if (((P[i][1] <= 0 && (half & 1u)) || (P[i][1] >= 0 && (half & 2u))) && u >= 0 && u < 12 && w >= 0 && w < 12)
+                px[w][u] = v;
+        }
+        y++;
+        if (e < 0) e += 2 * y + 1;
+        else { x--; e += 2 * (y - x) + 1; }
+    }
+}
+static void xb_sigil(uint32_t c, uint8_t px[12][12])
+{
+    switch (c & 3u) {                                   /* what holds it: nothing, a ring, a bowl, one triangle */
+    case 1: xb_arc(px, 5, 6, 5, 3, 1); break;
+    case 2: xb_arc(px, 5, 5, 5, 2, 1); break;
+    case 3: xb_ln(px, 5, 0, 0, 10, 1); xb_ln(px, 5, 0, 10, 10, 1); xb_ln(px, 0, 10, 10, 10, 1); break;
+    default: break;
+    }
+    xb_ln(px, 5, 2, 5, 10, 1);                          /* the staff */
+    switch ((c >> 2) & 3u) {                            /* across it: a bar, two, a chevron, a cross */
+    case 0: xb_ln(px, 2, 5, 8, 5, 1); break;
+    case 1: xb_ln(px, 3, 4, 7, 4, 1); xb_ln(px, 2, 7, 8, 7, 1); break;
+    case 2: xb_ln(px, 2, 4, 5, 7, 1); xb_ln(px, 8, 4, 5, 7, 1); break;
+    default: xb_ln(px, 3, 5, 7, 9, 1); xb_ln(px, 7, 5, 3, 9, 1); break;
+    }
+    switch ((c >> 4) & 3u) {                            /* its head: a small ring, an arrow, horns, a fork */
+    case 0: xb_arc(px, 5, 1, 1, 3, 4); break;
+    case 1: xb_ln(px, 3, 3, 5, 1, 4); xb_ln(px, 7, 3, 5, 1, 4); xb_ln(px, 5, 1, 5, 2, 1); break;
+    case 2: xb_arc(px, 5, 0, 2, 2, 4); break;
+    default: xb_ln(px, 5, 3, 3, 1, 4); xb_ln(px, 5, 3, 7, 1, 4); break;
+    }
+    switch ((c >> 6) & 3u) {                            /* its marks: none, two points, a foot, a hook */
+    case 1: px[8][2] = 4; px[8][8] = 4; break;
+    case 2: xb_ln(px, 3, 9, 7, 9, 4); break;
+    case 3: xb_ln(px, 5, 11, 8, 11, 1); xb_ln(px, 8, 11, 8, 9, 4); break;
+    default: break;
+    }
+}
+
 /* the creature of track k's family for sound n */
 static void xe_beast_px(uint32_t k, uint32_t n, uint8_t px[12][12])
 {
     uint32_t c = n % 256u, j, p;
     k %= NTRK;
     memset(px, 0, 144);
+    if (k == 4u) {
+        xb_sigil(c, px);
+        return;
+    }
     for (j = 0; j < 12u; j++)
         xb_put(px, (int32_t)j, XB_B[k][c % 4u][j], 0);
     for (p = 0; p < 3u; p++) {                      /* the eyes, what is round it, its mark */

@@ -14,8 +14,8 @@ SLICE engine is left out** (see [Room on the FM-1](#room-on-the-fm-1)). On top o
   of a part while it plays, and your arrangement recorded as you play it.
 - **Its own sounds**: MOOG, OBERHEIM and JUNO filters and presets, and the kits DEAD, TAPE and CRUSH, which GEN's
   styles are voiced with.
-- **SUMMON**: an ambient engine of its own: on its EDIT page OCT+ starts a ceremony that calls a being, different
-  every time, shown as SUMMONER on XENO and AURA on TEEN. One in fifty is a demon, one in fifty an angel.
+- **SUMMON**: an ambient engine of its own: on its EDIT page any key starts a ceremony that calls a being, different
+  every time, which plays its own part in the song's key and grows over the song, shown as SUMMONER on XENO and AURA on TEEN. One in fifty is a demon, one in fifty an angel.
 - **ALEMBIC**: the whole mix through four effects in a row, DRIVE, MOTION, SPACE and GRAIN, each with a flavour and a
   BLEND, on two GLO pages drawn as the Alchemist's four vessels.
 
@@ -266,7 +266,7 @@ elements THE SPELL conjures with, each in its colour (XENO's track colours are t
 | 2 | blue cryptids | bigfoot, mothman, a wendigo, a yeti |
 | 3 | yellow psi orbs | a great orb, a ring, a small orb, one lit from above |
 | 4 | pink crystals | a spire, a diamond, a cluster, a geode |
-| 5 | purple sigils | the eye's triangle, a seal, an ankh, a chaos star |
+| 5 | purple sigils | not creatures: glyphs on a staff, inside nothing, a ring, a bowl or one triangle, with bars, a head and marks |
 | 6 | orange mythic herbs | a mandrake, a mushroom, a flower, a sprout |
 
 The sound decides the rest: which body, its eyes, what's on or round it (antennae, ears, rays, sparks, facets..) and a
@@ -363,13 +363,23 @@ moves it are the FM-1's own signals: the tiny jitter of its timer, and every key
 Play and the room comes near; leave it alone and it drifts FAR. (The FM-1 has no radio under Vallée, so it listens to
 itself rather than to Bluetooth.)
 
-Its first EDIT page is the ceremony, **SUMMONER** on XENO and **AURA** on TEEN. Press **OCT+** there (it breathes on
-this page) to begin: six candles light one by one, faster the nearer the room, while the being forms from its feet up
-out of eight signal strands; on TEEN, rings close in around a point instead. When the last candle lights, the being
-arrives with a name, shown in the header (`KASHIAX CAME`). Its body, colours, eyes and name come from the signals of
-that moment, so every summoning is different. **One in fifty is a demon** (red, horned, winged; darker intervals) and
-**one in fifty an angel** (gold, haloed; fifths and octaves); the header says `A DEMON ANSWERED` or
-`AN ANGEL ANSWERED`. PLAY never starts a ceremony: only OCT+ on that page.
+Its first EDIT page is the ceremony, **SUMMONER** on XENO and **AURA** on TEEN. **Press any key there** to begin.
+From then on the track plays by itself whenever the song plays; you don't write anything into its steps. It plays in
+the song's key (the ROOT and SCALE of the first track that has a SCALE, as GEN's songs do; with none, the key you
+pressed, minor), from the octave of the key you pressed, and the key also seeds it: every key gives another part and
+another being. It starts as a drone on the root, then adds the fifth, a third, a slow line over them, and at the end
+sparks high up, louder as it goes.
+
+It grows only while the song plays: about 25 seconds a candle, six candles, so the being has formed after about two
+and a half minutes (sooner the more you play the unit). Jump around the song on THE SPELL, go back to the start: as
+long as PLAY runs it keeps growing. STOP pauses it, and the next PLAY carries on. The being forms from its feet up
+across all six candles out of eight signal strands; on TEEN, rings close in around a point instead. When the last
+candle lights, it arrives with a name in the header (`KASHIAX CAME`) and keeps playing its full part. **One in fifty
+is a demon** (red, horned, winged; darker intervals) and **one in fifty an angel** (gold, haloed; fifths and
+octaves); the header says `A DEMON ANSWERED` or `AN ANGEL ANSWERED`.
+
+**A key on that page while it plays fades it out** (`IT FADED` if the being hadn't come yet, `IT RESTS` if it had);
+the next key starts a new summoning. Putting another sound on its track ends it too.
 
 The being is kept on page 2 as **SIGIL** and **SEAL** (two numbers that together are the being), saved with the
 project and in presets, and it stands on its track's lane on XENO's HOME. Loading another SUMMON preset keeps it;

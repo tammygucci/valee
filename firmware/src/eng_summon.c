@@ -13,7 +13,7 @@
  * seconds and a sub-octave, an angel (1 in 50) octaves, fifths and thirds high up.
  *
  * The ceremony (sm_start: OCT+ on its EDIT page; sm_tick, every UI frame): the being's number taken from the
- * signals, then SM_CANDLES candles lit one by one, sooner the more the room is played, the being built up as they
+ * signals, then SM_CANDLES candles lit one by one, over a song, as its track plays (faster the busier), the being built up as they
  * light; at the last its number goes into the track's SIGIL and SEAL (the sound turns to it, a project keeps it).
  *
  * Voice state: ph[0..2] the partials' phases; s[0] the noise, s[1] s[2] the filter, s[3] the slow phase, s[4..6] the
@@ -27,7 +27,8 @@ static uint32_t fm1_ticks(void);                       /* table dumps have none)
 static uint32_t sm_sig(void);                          /* (ui_summon.c: draw_graph's signature) */
 #define SM_NSIG 8u
 #define SM_CANDLES 6u
-#define SM_STEP_MS 1500u                               /* a candle a step: 1.5 s alone, half that played to */
+#define SM_STEP_MS 25000u                              /* ((Vallée) a candle: 25 s of the song playing (sooner played to):
+                                                          the six over 2.5 minutes, a song */
 static struct {
     uint32_t ent, last_t, seen, blocks;
     volatile uint32_t touch;                            /* (the UI and MIDI IN count here: sm_touch) */
@@ -37,6 +38,13 @@ static struct {
     uint16_t next;                                      /* the number being summoned */
     uint32_t prog;                                      /* ms of the ceremony done (to SM_CANDLES x SM_STEP_MS) */
     uint32_t t0, rt;                                    /* (the ceremony's last frame; the room's) */
+    /* ((Vallée) the being's part (summon_play.c): a key on its EDIT page starts it; it plays with the song */
+    uint8_t on, key, root, base, ptrk;                  /* playing; the key pressed; the song's key; its low note; its track */
+    volatile uint8_t rq, rq_note, rq_trk;               /* the UI asks (1 begin from that key on that track, 2 fade); the
+                                                           audio's block does it (summon_play.c sm_play) */
+    uint16_t mask;                                      /* the song's scale (seq.c SCALE_MASK) */
+    uint32_t acc, step, rng;                            /* samples to the next 16th; 16ths played; its dice */
+    uint8_t hn[6], hl[6];                               /* the notes it holds, 16ths left of each */
 } sm;
 static void sm_touch(uint32_t n)
 {

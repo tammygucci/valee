@@ -64,9 +64,9 @@ with the sound.
 - **MOOG, OBERHEIM and JUNO filters** for the ANALOG engine, with 21 presets voiced after those instruments.
 - **Three drum kits**: DEAD (a seventies studio kit damped with towels), TAPE (warm soul session) and CRUSH (a drum
   machine run too hot).
-- **SUMMON**, an ambient engine that listens to the unit itself (its timer's jitter, every key and MIDI note). On its
-  EDIT page, OCT+ starts a ceremony: candles light while a being forms, a different one every time (SUMMONER on XENO,
-  AURA on TEEN). One in fifty is a demon; one in fifty an angel.
+- **SUMMON**, an ambient engine. Press any key on its EDIT page and it plays its own part in the song's key, growing
+  fuller over the song while candles light and a being forms, a different one for every key and every time (SUMMONER
+  on XENO, AURA on TEEN). One in fifty is a demon; one in fifty an angel. Another key fades it out.
 
 ### Its own look
 

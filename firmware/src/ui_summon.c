@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* (Vallée) SUMMON's EDIT pages (eng_summon.c): SUMMONER on THEME XENO, AURA on TEEN. OCT+ there begins a ceremony
- * (sm_start); sm_tick, every UI frame, lights its candles (SM_CANDLES, a step each SM_STEP_MS, sooner the more the
+/* (Vallée) SUMMON's EDIT pages (eng_summon.c): SUMMONER on THEME XENO, AURA on TEEN. a key there begins a ceremony
+ * (sm_start); sm_tick, every UI frame, lights its candles (SM_CANDLES, a step each SM_STEP_MS of its track playing, sooner the busier the
  * room is played) and at the last puts the being's number into the track's SIGIL and SEAL; a demon's or an angel's
  * arrival is said in the header on any page.
  *   SUMMONER: the eight signals as strands across the top, the circle on the floor with its five points and its
@@ -14,9 +14,9 @@ static int sm_page(void)
     const page_t *pg = cur_page();
     return !ui.home && pg->scope == SC_ENGINE && ENGINES[TSEL->eng_req % NENGINES] == &ENG_SUMMON;
 }
-static void sm_start(void)
+static void sm_start(uint32_t note)
 {
-    uint32_t h = sm.ent ^ fm1_ticks(), k;
+    uint32_t h = (sm.ent ^ fm1_ticks()) + note * 0x9E3779B9u, k;
     for (k = 0; k < SM_NSIG; k++)
         h = (h ^ sm.sig[k]) * 16777619u;
     h ^= h >> 13;
@@ -26,8 +26,29 @@ static void sm_start(void)
     sm.lit = 0;
     sm.t0 = fm1_ms;
     sm.cer = 1;
+    sm.rq_note = (uint8_t)note;                         /* (its part, from this key: summon_play.c, in the audio's block) */
+    sm.rq_trk = sm.trk;
+    sm.on = 1;
+    sm.rq = 1;
     sm_touch(1);
     ui.force = 1;
+}
+/* a key on its page: it begins; going (its track, playing its part): it fades (the notes let go; a ceremony not yet
+   done ends without a being, one done keeps it) */
+static void sm_key(uint32_t note)
+{
+    if (sm.on && sm.trk == song.sel) {
+        sm.on = 0;
+        sm.rq = 2;
+        if (sm.cer) {
+            sm.cer = 0;
+            ui_message("IT FADED");
+        } else
+            ui_message("IT RESTS");
+        ui.force = 1;
+        return;
+    }
+    sm_start(note);
 }
 static void sm_tick(void)
 {
@@ -40,7 +61,8 @@ static void sm_tick(void)
     sm.t0 = now;
     if (dt > 200u)
         dt = 200u;
-    sm.prog += dt + dt * (uint32_t)sm.near / 32768u;   /* (played to: up to twice as fast) */
+    if (song.playing && sm.on)                          /* ((Vallée) it forms over a song: while the song plays, */
+        sm.prog += dt + dt * (uint32_t)sm.near / 65536u;   /* up to half again as fast played to) */
     sm.lit = (uint8_t)(sm.prog / SM_STEP_MS);
     if (t->eng_req % NENGINES != ENGI_SUMMON) {        /* (the track's sound changed meanwhile: no ceremony) */
         sm.cer = 0;
@@ -70,7 +92,7 @@ static void sm_tick(void)
 /* the canvas changes: the strands and flames move, a ceremony runs (draw_graph's signature) */
 static uint32_t sm_sig(void)
 {
-    return (sm.cer ? sm.prog / 40u + 1u : 0u) * 7919u + sm_sigil(TSEL) * 31u + (xe_anim() ? ui.frame / 2u : 0u);
+    return (sm.cer ? sm.prog * 64u / SM_STEP_MS + 1u : 0u) * 7919u + sm_sigil(TSEL) * 31u + (xe_anim() ? ui.frame / 2u : 0u);
 }
 
 static void sm_ellipse(int32_t cx, int32_t cy, int32_t rx, int32_t ry, uint16_t c)
@@ -154,7 +176,7 @@ static void sm_summoner(const track_t *t)
     if (sig) {                                          /* the being, from its feet up as the candles light */
         uint8_t px[16][16];
         int32_t z = H >= 110 ? 4 : 3, bx = cx - 8 * z, by = fy - 4 - 16 * z;
-        uint32_t rows = !anim && !done ? 0u : done ? 16u : step;
+        uint32_t rows = !anim && !done ? 0u : done ? 16u : step / SM_CANDLES;   /* (feet first, across all the candles) */
         uint16_t body = kind == 1 && reveal ? WL_RGB(200, 30, 40) : kind == 2 && reveal ? WL_RGB(255, 240, 200) : ink;
         uint16_t line = ux_mix(body, sky, 45), eye = kind == 1 && reveal ? WL_RGB(255, 230, 60) : T_TEXT;
         if (reveal && kind == 1) {                      /* a demon: wings of skin, horns */
@@ -193,8 +215,8 @@ static void sm_summoner(const track_t *t)
         }
     } else {
         int32_t b[4];
-        text_ink(&AF_M, "OCT+: SUMMON", b);
-        cv_text_on(cx - b[2] / 2 - b[0], H / 2 - 8, &AF_M, "OCT+: SUMMON", T_MID, sky);
+        text_ink(&AF_M, "A KEY: SUMMON", b);
+        cv_text_on(cx - b[2] / 2 - b[0], H / 2 - 8, &AF_M, "A KEY: SUMMON", T_MID, sky);
     }
     for (k = 0; k < SM_CANDLES; k++) {                  /* the candles round it, lit one by one */
         int32_t x0 = cx - 70 + (int32_t)k * 28, on = sig && k < lit;
@@ -257,8 +279,8 @@ static void sm_aura(const track_t *t)
             xe_disc(cx, cy, 3, T_TEXT);
         else {
             int32_t b[4];
-            text_ink(&AF_M, "OCT+: AURA", b);
-            cv_text_on(cx - b[2] / 2 - b[0], cy - 8, &AF_M, "OCT+: AURA", T_MID, T_BG);
+            text_ink(&AF_M, "A KEY: AURA", b);
+            cv_text_on(cx - b[2] / 2 - b[0], cy - 8, &AF_M, "A KEY: AURA", T_MID, T_BG);
         }
     }
     if (reveal && kind > 0) {

@@ -145,8 +145,8 @@ static uint32_t oct_leds(void)
         return 1u | (ui.confirm || act_ready() ? OCT_BREATH : 0u);
     if (ui.ml.on)                                       /* ((1.3) MIDI LEARN: OCT+ done, OCT- with a CC to clear */
         return OCT_BREATH | (ui.ml.pick && ml_cc_of(ui.ml.trk, ui.ml.id) ? 1u : 0u);
-    if (keep_ready() || (sm_page() && !layer_open()))   /* ((1.3) MOMENTARY: OCT+ keeps the changes; (2.0) FX's macros; */
-        return (song.octave < 0 ? 1u : 0u) | OCT_BREATH;   /* (Vallée) SUMMON's pages: OCT+ summons) */
+    if (keep_ready())                                   /* ((1.3) MOMENTARY: OCT+ keeps the changes; (2.0) FX's macros) */
+        return (song.octave < 0 ? 1u : 0u) | OCT_BREATH;
     return (song.octave < 0 ? 1u : 0u) | (song.octave > 0 ? 2u : 0u);
 }
 
@@ -2231,11 +2231,8 @@ static void ui_input(void)
         pressed &= ~(1u << panel.btn[B_OCTUP]);         /* FX's macros, PERFORM's throws too) */
         ui_message("KEPT");
     }
-    if (((pressed >> panel.btn[B_OCTUP]) & 1u) && sm_page() && !layer_open() && !ui.menu && !ui.confirm &&
-        !name_on()) {                                   /* ((Vallée) SUMMON's pages: OCT+ begins the ceremony, no octave */
-        pressed &= ~(1u << panel.btn[B_OCTUP]);
-        sm_start();
-    }
+    if (notes && sm_page() && !layer_open() && !ui.menu && !ui.confirm && !name_on() && !song.grid)
+        sm_key(kb_map(TSEL, (uint32_t)__builtin_ctz(notes)));   /* ((Vallée) SUMMON's pages: a key begins it, or */
     home = btn_hold(&ui.home_t0, B_HOME, now, !ui.confirm && !name_on());   /* ((Skiff U2) held over a dialog or NAME:
                                                          * no MENU, which threw them away) */
     if (home_long && !((fm1_in.buttons >> panel.btn[B_HOME]) & 1u)) {   /* (Skiff) HOME let go after its hold: the */

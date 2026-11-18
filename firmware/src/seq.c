@@ -1719,6 +1719,8 @@ static __attribute__((noinline)) void seq_nudge(track_t *t, uint32_t period, uin
 
 #include "launch.c"                                 /* Skiff: live pattern switching (the bank's, at launch points) */
 
+#include "summon_play.c"                             /* ((Vallée) SUMMON's being plays its part */
+
 static void seq_tick(track_t *t, uint32_t n)
 {
     uint32_t period, len;
@@ -2108,6 +2110,7 @@ static __attribute__((noinline)) void events_block(uint32_t n)
         seq_audition();                               /* ((1.3) STEP PREVIEW: a step sounds, stopped) */
     for (i = 0, ord = fol_order(); i < NTRK; i++, ord >>= 4)   /* ((2.1) the tracks followed first: follow.c) */
         seq_tick(&trk[ord & 15u], seq_n);
+    sm_play(clock_mode ? seq_n : n);                  /* ((Vallée) SUMMON's being: its part, in the song's key */
     if (cin_flush)
         cin_record();
     if (song.playing)
