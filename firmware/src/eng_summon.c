@@ -36,7 +36,7 @@ static struct {
     uint8_t cer, trk, lit;                              /* ceremony: running; its track; candles lit */
     uint16_t next;                                      /* the number being summoned */
     uint32_t prog;                                      /* ms of the ceremony done (to SM_CANDLES x SM_STEP_MS) */
-    uint32_t t0;
+    uint32_t t0, rt;                                    /* (the ceremony's last frame; the room's) */
 } sm;
 static void sm_touch(uint32_t n)
 {
@@ -55,11 +55,12 @@ static int32_t sm_kind(uint32_t sig)
 }
 static uint32_t sm_sigil(const track_t *t) { return ((uint32_t)t->p[P_E6] & 127u) << 7 | ((uint32_t)t->p[P_E7] & 127u); }
 
-static void summon_block(track_t *t)
+/* the room: one step of what the signals do (an audio block's worth, 32 samples). Run from the UI's frame (sm_room),
+   never from a track's render: both cores read sig[] and near while they mix, and nothing they render may depend on
+   which core rendered which track (tests/dualcore_test.c) */
+static void sm_room_step(uint32_t d)
 {
-    uint32_t now = SM_CLOCK(), d = now - sm.last_t, k, tc = sm.touch;
-    (void)t;
-    sm.last_t = now;
+    uint32_t k, tc = sm.touch;
     sm.ent = (sm.ent ^ d ^ (d << 11) ^ (uint32_t)song.batt_raw << 19) * 2654435761u + 0x7F4A7C15u;
     sm.ent ^= sm.ent >> 15;
     if (tc != sm.seen) {                                /* touched: nearer */
@@ -69,7 +70,7 @@ static void summon_block(track_t *t)
     sm.near -= (sm.near >> 9) + 1;                      /* (~6 s back to far) */
     if (sm.near < 0)
         sm.near = 0;
-    k = sm.blocks++ % SM_NSIG;                          /* a signal a block: gliding to where the static sends it, */
+    k = sm.blocks++ % SM_NSIG;                          /* a signal a step: gliding to where the static sends it, */
     if ((sm.ent & 1023u) < 3u + (uint32_t)(sm.near >> 12))   /* somewhere new every second or two (sooner played) */
         sm.to[k] = (uint16_t)(sm.ent >> 22);
     {
@@ -77,6 +78,13 @@ static void summon_block(track_t *t)
         s += ((int32_t)sm.to[k] - s) / 64;
         sm.sig[k] = (uint16_t)clamp(s, 0, 1023);
     }
+}
+static void sm_room(uint32_t ms)                        /* (ui_summon.c sm_tick, every frame: ~1378 steps a second) */
+{
+    uint32_t now = SM_CLOCK(), d = now - sm.last_t, n = (ms > 100u ? 100u : ms) * 11u / 8u;
+    sm.last_t = now;
+    while (n--)
+        sm_room_step(d += 0x9E37u);
 }
 
 /* the intervals (semitones) a partial may take: an ordinary being's, a demon's, an angel's */
@@ -230,7 +238,7 @@ static const engine_t ENG_SUMMON = {
     .npresets = NELEM(SUMMON_PRESETS),
     .note_on = summon_note_on,
     .render = summon_render,
-    .block = summon_block,
+    .block = 0,
     .knob = {P_E0, P_E1, P_E2, P_E4},
     .poly = 4,
     .keep = 0x06,                /* the filter */

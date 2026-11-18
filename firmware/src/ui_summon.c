@@ -33,6 +33,8 @@ static void sm_tick(void)
 {
     uint32_t now = fm1_ms, dt = now - sm.t0;
     track_t *t = &trk[sm.trk % NTRK];
+    sm_room(now - sm.rt);                               /* (the signals move here, between mixes: eng_summon.c) */
+    sm.rt = now;
     if (!sm.cer)
         return;
     sm.t0 = now;
