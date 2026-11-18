@@ -84,7 +84,7 @@ static void sm_hit(uint32_t note, uint32_t vel, uint32_t len)
     trk_note_on(t, note, vel);
 }
 /* every sequencer block: n samples */
-static void sm_play(uint32_t n)
+static __attribute__((noinline)) void sm_play(uint32_t n)   /* (out of events_block: its budget, tests/target_budget.txt) */
 {
     track_t *t;
     uint32_t q, i, s, g, v, r, rq = sm.rq;
