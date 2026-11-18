@@ -393,17 +393,19 @@ is a demon or an angel, appear only when the last candle lights.
 
 **You choose its starting point; the song decides what it becomes.** Before you summon, turn **SIGIL** and **SEAL**
 on page 2 (two symbols, each 0..127): each pair is a starting point of its own, and the page shows the two symbols
-as you turn. While it forms, the song shapes it: which notes the song plays most and how high it sits decide what the
-starting point grows into. The same SIGIL and SEAL over the same song grow the same being; over another song, another.
-Whether it becomes a demon or an angel is chance alone, rolled when it forms, 1 in 50 each; no SIGIL and SEAL can
-make one every time. While it forms, SIGIL and SEAL hold (`IT IS FORMING`); once it has formed you can turn them for
-the next.
+as you turn. While it forms, the song shapes it: the note the song plays most and how high it sits push it toward
+one of 42 shapes. The same SIGIL and SEAL over the same song grow the same being; over another song, another (a test
+plays GEN's songs twice each: the same shape every time). Whether it becomes a demon or an angel is chance alone,
+rolled when it forms, 1 in 50 each; no SIGIL and SEAL can make one every time. While it forms, SIGIL and SEAL hold
+(`IT IS FORMING`).
 
-The being it formed is kept in **BEING** (page 2; the song sets it, its knob does nothing: `THE SONG SETS IT`), saved
-with the project and kept when you load another SUMMON preset; it stands on its track's lane on XENO's HOME. Page 2
-never shows the being or its kind, only the two symbols: on XENO the sigil as a glyph and the seal as a glyph in a
-double ring with marks round it; on TEEN flat shapes in its colours (the sigil a shape with a smaller one on it, the
-seal a knob with a ring of lit dots and its pointer). Presets: CALLING, LOW HOST, VIGIL, SEANCE, EMPYREAN.
+The being is all three numbers together: SIGIL, SEAL and **BEING** (page 2: the shape the song gave it and its
+kind; the song sets it, its knob does nothing: `THE SONG SETS IT`). They are saved with the project and kept when you
+load another SUMMON preset, and the being stands on its track's lane on XENO's HOME. Turning SIGIL or SEAL after it
+has formed starts preparing the next summoning, so the being leaves (`THE BEING LEFT`). Page 2 never shows the being
+or its kind, only the two symbols: on XENO the sigil as a glyph and the seal as a glyph in a double ring with marks
+round it; on TEEN flat shapes in its colours (the sigil a shape with a smaller one on it, the seal a knob with a ring
+of lit dots and its pointer). Presets: CALLING, LOW HOST, VIGIL, SEANCE, EMPYREAN.
 
 Because SUMMON adds an engine key, the EDIT layer's keys after NOISE move up one: SUMMON is on C5, DRUM on D5, DRUM-X on
 E5 and INIT on F5.

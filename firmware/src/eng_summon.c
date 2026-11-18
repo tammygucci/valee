@@ -85,19 +85,17 @@ static uint32_t sm_id(uint32_t pick, uint32_t code)
 static uint32_t sm_pick(const track_t *t) { return ((uint32_t)t->p[P_E6] & 127u) << 7 | ((uint32_t)t->p[P_E7] & 127u); }
 static uint32_t sm_sigil(const track_t *t) { return sm_id(sm_pick(t), (uint32_t)t->p[P_E5]); }   /* (the being it has) */
 /* what the song has made of it so far: which of the SM_SHAPES the song's notes while it forms push it to (how often
-   each pitch class sounded, summon_play.c: the three it played most, in order, and how high it sits). The same SIGIL
+   each pitch class sounded, summon_play.c: the one it played most, and how high it sits). The same SIGIL
    and SEAL over the same song grow the same; over another song, another */
 static uint32_t sm_song_shape(void)
 {
-    uint32_t i, j, fp = 0, top[3] = {12u, 12u, 12u};
-    for (j = 0; j < 3u; j++)
-        for (i = 0; i < 12u; i++)
-            if (sm.hist[i] && i != top[0] && i != top[1] && (top[j] == 12u || sm.hist[i] > sm.hist[top[j]]))
-                top[j] = i;
-    for (j = 0; j < 3u; j++)
-        fp = fp * 13u + top[j];
-    fp = fp * 4u + (sm.hn_lo > sm.hn_hi * 2u ? 0u : sm.hn_hi > sm.hn_lo * 2u ? 2u : 1u);   /* (low, middle, high) */
-    fp *= 2654435761u;
+    uint32_t i, top = 0, fp;
+    for (i = 1; i < 12u; i++)                           /* (the note it played most: a song's chance steps rarely move
+                                                         * it, as they would the next ones) */
+        if (sm.hist[i] > sm.hist[top])
+            top = i;
+    fp = top * 3u + (sm.hn_lo > sm.hn_hi * 2u ? 0u : sm.hn_hi > sm.hn_lo * 2u ? 2u : 1u);   /* (low, middle, high) */
+    fp = (fp + 1u) * 2654435761u;
     return (fp ^ fp >> 16) % SM_SHAPES;
 }
 /* .. as an ordinary being (what the screen builds while it forms: never its kind) */
