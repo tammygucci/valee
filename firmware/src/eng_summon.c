@@ -56,9 +56,12 @@ static void sm_touch(uint32_t n)
     sm.ent = (sm.ent ^ SM_CLOCK()) * 2654435761u + n;
     sm.to[sm.ent % SM_NSIG] = (uint16_t)(640u + (sm.ent >> 23) % 384u);   /* (a touch: a signal stronger) */
 }
-/* ((Vallée) the being, as its track keeps it in BEING (P_E5, set by the song alone): 0 none; else 1 + its body
-   (0..8191) + its kind x 8192. Its kind: 0 a being, 1 a demon, 2 an angel (rolled when it forms: 1 in 50 each,
-   whatever its SIGIL and SEAL), -1 none */
+/* ((Vallée) the being: its SIGIL and SEAL (the starting point, yours) and BEING (P_E5, the song's: 0 none; else
+   1 + the shape the song pushed it to (0..SM_SHAPES-1) + its kind x SM_SHAPES; a sound slot keeps a parameter in a
+   byte, so BEING stays within 0..127). As the rest of SUMMON draws and plays it, one number: 0 none, else
+   1 + its body (0..8190) + its kind x SM_BODY. Its kind: 0 a being, 1 a demon, 2 an angel (rolled when it forms:
+   1 in 50 each, whatever its SIGIL and SEAL), -1 none */
+#define SM_SHAPES 42u
 #define SM_BODY 8192u
 static int32_t sm_kind(uint32_t b)
 {
@@ -68,15 +71,25 @@ static int32_t sm_kind(uint32_t b)
     k = (b - 1u) / SM_BODY;
     return k < 3u ? (int32_t)k : 0;
 }
-static uint32_t sm_sigil(const track_t *t) { return (uint32_t)t->p[P_E5] & 32767u; }
+static uint32_t sm_id(uint32_t pick, uint32_t code)
+{
+    uint32_t h;
+    if (!code || code > 3u * SM_SHAPES)
+        return 0;
+    h = (pick * SM_SHAPES + (code - 1u) % SM_SHAPES) * 2654435761u;
+    h ^= h >> 15;
+    h *= 2246822519u;
+    return 1u + (h >> 16) % (SM_BODY - 1u) + (code - 1u) / SM_SHAPES * SM_BODY;
+}
 /* its starting point: the SIGIL and SEAL you chose (each 0..127) */
 static uint32_t sm_pick(const track_t *t) { return ((uint32_t)t->p[P_E6] & 127u) << 7 | ((uint32_t)t->p[P_E7] & 127u); }
-/* what the song has made of it so far: the starting point and the song's notes while it forms (how often each pitch
-   class sounded, summon_play.c: the three it played most, in order, and how high it sits), an ordinary being. The
-   same SIGIL and SEAL over the same song grow the same; over another song, another */
-static uint32_t sm_shape(const track_t *t)
+static uint32_t sm_sigil(const track_t *t) { return sm_id(sm_pick(t), (uint32_t)t->p[P_E5]); }   /* (the being it has) */
+/* what the song has made of it so far: which of the SM_SHAPES the song's notes while it forms push it to (how often
+   each pitch class sounded, summon_play.c: the three it played most, in order, and how high it sits). The same SIGIL
+   and SEAL over the same song grow the same; over another song, another */
+static uint32_t sm_song_shape(void)
 {
-    uint32_t i, j, fp = 0, top[3] = {12u, 12u, 12u}, h;
+    uint32_t i, j, fp = 0, top[3] = {12u, 12u, 12u};
     for (j = 0; j < 3u; j++)
         for (i = 0; i < 12u; i++)
             if (sm.hist[i] && i != top[0] && i != top[1] && (top[j] == 12u || sm.hist[i] > sm.hist[top[j]]))
@@ -84,11 +97,11 @@ static uint32_t sm_shape(const track_t *t)
     for (j = 0; j < 3u; j++)
         fp = fp * 13u + top[j];
     fp = fp * 4u + (sm.hn_lo > sm.hn_hi * 2u ? 0u : sm.hn_hi > sm.hn_lo * 2u ? 2u : 1u);   /* (low, middle, high) */
-    h = (sm_pick(t) * 2654435761u) ^ (fp * 2246822519u);
-    h ^= h >> 15;
-    h *= 2654435761u;
-    return 1u + (h >> 19) % SM_BODY;
+    fp *= 2654435761u;
+    return (fp ^ fp >> 16) % SM_SHAPES;
 }
+/* .. as an ordinary being (what the screen builds while it forms: never its kind) */
+static uint32_t sm_shape(const track_t *t) { return sm_id(sm_pick(t), 1u + sm_song_shape()); }
 
 /* the room: one step of what the signals do (an audio block's worth, 32 samples). Run from the UI's frame (sm_room),
    never from a track's render: both cores read sig[] and near while they mix, and nothing they render may depend on
@@ -265,7 +278,7 @@ static const engine_t ENG_SUMMON = {
         {"DRIFT", 0, 0, 127, 50, F_PCT, 0},
         {"VOICES", N_SM_VOICES, 0, 2, 2, F_ENUM, 0},
         {"TONE", 0, 0, 127, 80, F_CUTOFF, 0},
-        {"BEING", 0, 0, 32767, 0, F_INT, 0},   /* (the song sets it: sm_kind) */
+        {"BEING", 0, 0, 127, 0, F_INT, 0},   /* (the song sets it: sm_id) */
         {"SIGIL", 0, 0, 127, 0, F_INT, 0},
         {"SEAL", 0, 0, 127, 0, F_INT, 0},
     },

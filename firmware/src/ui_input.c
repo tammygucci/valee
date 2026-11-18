@@ -1511,6 +1511,11 @@ static void edit_param(uint32_t slot, int32_t steps)
         ui_message(pg->id[slot] == P_E5 ? "THE SONG SETS IT" : "IT IS FORMING");
         return;
     }
+    if (pg->scope == SC_ENGINE && ENGINES[TSEL->eng_req % NENGINES] == &ENG_SUMMON && slot < 4u &&
+        (pg->id[slot] == P_E6 || pg->id[slot] == P_E7) && TSEL->p[P_E5]) {
+        TSEL->p[P_E5] = 0;                              /* ((Vallée) a new starting point: the being it had leaves */
+        ui_message("THE BEING LEFT");
+    }
     if (pg->graph == GR_FEEL) {                           /* (Skiff 2.0) FEEL: CHANCE RATCHET NUDGE TYPE of the selection */
         follow_hold();                                    /* ((1.3) the edited steps stay on the screen) */
         feel_turn(TSEL, slot, steps);

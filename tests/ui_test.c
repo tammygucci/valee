@@ -10884,6 +10884,9 @@ static int test_summon_knobs(void)
     sm.cer = 0;
     sm.on = 0;
     sm.rq = 0;
+    trk[2].p[P_E5] = 5;                                 /* (a being formed: a new starting point lets it go) */
+    turn(EN_K3, 1); frame();
+    bad += check("summon: SIGIL turned after it formed: the being leaves (BEING 0)", trk[2].p[P_E5] == 0);
     return bad;
 }
 

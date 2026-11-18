@@ -69,12 +69,13 @@ static void sm_tick(void)
         return;
     }
     if (sm.lit >= SM_CANDLES) {                         /* (formed: its shape from the song, its kind rolled now) */
-        uint32_t r = (sm.ent ^ fm1_ticks()) * 2654435761u >> 8, b = sm_shape(t) - 1u;
+        uint32_t r = (sm.ent ^ fm1_ticks()) * 2654435761u >> 8, code;
         int32_t kind = r % 50u == 7u ? 1 : r % 50u == 31u ? 2 : 0;
-        sm.next = 1u + b + (uint32_t)kind * SM_BODY;
+        code = 1u + sm_song_shape() + (uint32_t)kind * SM_SHAPES;
         sm.lit = SM_CANDLES;
         sm.cer = 0;
-        t->p[P_E5] = (int16_t)sm.next;
+        t->p[P_E5] = (int16_t)code;
+        sm.next = (uint16_t)sm_sigil(t);
         if (kind == 1)
             ui_message("A DEMON ANSWERED");
         else if (kind == 2)

@@ -2066,7 +2066,7 @@ static void sweep_columns(void)
                         mask |= 1u << sp_face[c];
                     }
                     if (v - d->min > 300 && v < d->max - 1) v = d->max - 1;   /* wide ranges: the ends ((Vallée) once:
-                                                         * at max - 1 it looped there, SUMMON's BEING the first that wide) */
+                                                         * at max - 1 it looped there) */
                 }
                 *vp = (int16_t)v0;
                 sp_nknob += mask != 0u;
