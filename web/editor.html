@@ -77,8 +77,10 @@
   .row select { width: 100%; }
   .browser { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
   .browser select[size] { min-width: 150px; }
-  .slots { display: grid; grid-template-columns: auto auto auto auto; gap: 3px 8px; align-items: center; justify-content: start; }
-  .slots.named { grid-template-columns: auto auto auto auto auto; }   /* ((Skiff W3) RENAME too) */
+  .slots { display: grid; grid-template-columns: repeat(4, auto); gap: 3px 8px; align-items: center; justify-content: start; }
+  .slots.named { grid-template-columns: repeat(5, auto); }   /* ((Skiff W3) RENAME too) */
+  .slots.files { grid-template-columns: repeat(6, auto); }   /* ((Vallée) a project to a file and back */
+  .slots.named.files { grid-template-columns: repeat(7, auto); }
   /* ((Skiff W3) the Song tab: an entry, a pattern: the one a track is on filled, the one staged dashed, the one picked
      ringed; empty dim; a pattern nothing uses dashed and dim) */
   .lists td { padding: 2px 1px; }   /* ((2.0, #44, the chain sheet's A) round its tile: a chain's box, its tiles on it, the
@@ -471,6 +473,8 @@
     <p class="bar" id="projnamebar" hidden><label><span data-t="projName"></span> <input id="projname" maxlength="12"
       spellcheck="false" autocomplete="off" style="text-transform: uppercase"></label></p>
     <div class="slots" id="slots"></div>
+    <input id="projfile" type="file" accept=".json,application/json" hidden>
+    <p class="dim" id="projfilehelp" data-t="projFileHelp" style="margin-top:8px"></p>
     <div id="backup-panel" style="margin-top:16px">
       <h2 data-t="backupTitle"></h2>
       <p class="bar"><button id="backup-export" data-t="backupExport"></button>
@@ -3636,6 +3640,10 @@ const TEXT = {
     bankConnect: "FM-1 を接続すると本体のユーザープリセットも扱えます。", bankNone: "このファームウェアにはユーザープリセットがありません。",
     mixer: "ミキサー", mixHelp: "本体の MIXER ページと同じ全トラック。フェーダーはレベル。パンはどのトラックも選択を変えずに書き込みます（0.8 のファームウェアでは一瞬そのトラックを選びます）。REC は本体での録音待機の表示です。",
     level: "レベル", pan: "パン", rev: "REV", mute: "ミュート", rec: "REC", selectTrack: "選択", selectedTrack: "選択中",
+    projToFile: "ファイルに保存", projFromFile: "ファイルを読み込む",
+    projFileHelp: "ファイルに保存: プロジェクトを、使うパターンごとこのパソコンへ保存（保管や共有に）。ファイルを読み込む: プロジェクトファイルをそのスロットへ。パターンは本体にある同じものを使い、なければプールの空きへ入ります。他は変わりません。先に再生を止めてください。",
+    projFileWorking: "プロジェクトファイル ", projFileEmpty: "そのスロットは空です", projFileSaved: "プロジェクトをファイルに保存: ", projFileLoaded: "プロジェクトファイルを読み込み: ",
+    projFileBad: "Vallée のプロジェクトファイルではありません。", projFileConfirm: "「{name}」（パターン {p}）を {n} に読み込みますか？", projFileConfirmUsed: "「{name}」（パターン {p}）を {n} に読み込みますか？ {n} のプロジェクトは置き換わります。",
     projHelp: "プロジェクト（A〜D）は、全トラックの音色、各トラックのリスト（どのパターンを何回）、シーン、DRUM-X キット、グローバル設定を保存します。パターンそのものは全プロジェクト共通の 64 個のプール（本体の SAVE › PATTERNS）にあり、プロジェクトには入りません。パターンを変えると、それを使うすべてのプロジェクトで変わります。",
     slot: "スロット",
     system: "システム", firmware: "ファームウェア", sync: "同期", tracksN: "トラック", stepsN: "ステップ数", enginesL: "エンジン",
@@ -3790,6 +3798,10 @@ const TEXT = {
     bankConnect: "Connect the FM-1 to see its user presets too.", bankNone: "This firmware has no user presets.",
     mixer: "Mixer", mixHelp: "Every track of the device's MIXER page. The fader is the level. Pan is written to any track without changing the selection (firmware 0.8: by selecting it for a moment). REC shows a track armed for live recording on the device.",
     level: "Level", pan: "Pan", rev: "REV", mute: "Mute", rec: "REC", selectTrack: "Select", selectedTrack: "Selected",
+    projToFile: "Save to file", projFromFile: "Load file",
+    projFileHelp: "Save to file: one project, with the patterns it plays, to this computer, to keep or to share. Load file: a project file into that slot. Its patterns go to the same ones the unit already has, or else to empty places in the pool; nothing else changes. Stop playback first.",
+    projFileWorking: "Project file ", projFileEmpty: "That slot is empty", projFileSaved: "Saved project to a file: ", projFileLoaded: "Loaded project file into ",
+    projFileBad: "Not a Vallée project file.", projFileConfirm: "Load “{name}” ({p} patterns) into {n}?", projFileConfirmUsed: "Load “{name}” ({p} patterns) into {n}? It replaces the project in {n}.",
     projHelp: "A project (A to D) keeps every track's sound, each track's list (which patterns it plays, how many times), the scenes, the DRUM-X kit and the global settings. The patterns themselves live in one pool of 64 that every project shares (SAVE › PATTERNS on the device): a project doesn't hold them, and changing a pattern changes it in every project that uses it.",
     slot: "Slot",
     system: "System", firmware: "Firmware", sync: "Sync", tracksN: "Tracks", stepsN: "Steps", enginesL: "Engines",
@@ -4785,6 +4797,9 @@ function renderSlots() {
   if (pn) $("projnow").textContent = `${t("projNow")}: ${pn.cur >= 0 ? slotL(pn.cur) : "—"} · ${pn.name || t("noName")}` +
     (pn.changed ? ` · ${t("projChanged")}` : "");
   box.classList.toggle("named", !!pn);
+  const files = (dev?.info?.backupCaps & 3) === 3;   /* ((Vallée) a project to a file and back: the backup's objects */
+  box.classList.toggle("files", files);
+  $("projfilehelp").hidden = !files;
   $("projnamebar").hidden = !pn;
   if (pn && !$("projname").dataset.edited) $("projname").value = pn.name;
   box.replaceChildren();
@@ -4794,9 +4809,48 @@ function renderSlots() {
       el("span", { class: x && x.used ? null : "dim", text: x ? (x.used ? x.name || t("noName") : t("empty")) : u == null ? t("unknown") : t(u ? "used" : "empty") }),
       el("button", { ic: "symbol_folder_open", onclick: () => project(0, i) }, t("load")),
       el("button", { ic: "port_disk", onclick: () => project(1, i) }, t("save")),
-      ...(pn ? [el("button", { disabled: !x.used, onclick: () => renameProject(i) }, t("rename"))] : []));
+      ...(pn ? [el("button", { disabled: !x.used, onclick: () => renameProject(i) }, t("rename"))] : []),
+      ...(files ? [el("button", { ic: "symbol_download", disabled: !(x ? x.used : u), onclick: () => projectToFile(i) }, t("projToFile")),
+        el("button", { ic: "symbol_upload", onclick: () => projectFromFile(i) }, t("projFromFile"))] : []));
   }
 }
+/* ((Vallée) one project to a file and back: web/fm1project.js, over the backup's objects; it holds the patterns it plays) */
+const projectModule = () => import("./fm1project.js");
+let projFileSlot = 0;
+function projectToFile(slot) {
+  const d = dev;
+  op(async () => {
+    const { exportProject } = await projectModule();
+    assertSession(d);
+    const file = await exportProject((r, o) => sessionRequest(d, r, o), slot, d.info.version,
+      (k, n) => sayK("projFileWorking", `${Math.round(k / Math.max(1, n) * 100)}%`));
+    if (!file) throw new Error(t("projFileEmpty"));
+    const nm = (file.name || `project-${slotL(slot)}`).replace(/[^A-Za-z0-9 _-]+/g, "").trim().replace(/ +/g, "-") || slotL(slot);
+    download(`Vallee-${nm}.json`, file);
+    sayK("projFileSaved", `${slotL(slot)} (${file.patterns.length})`);
+  });
+}
+function projectFromFile(slot) { projFileSlot = slot; $("projfile").click(); }
+$("projfile").addEventListener("change", () => {
+  const f = $("projfile").files[0], d = dev, slot = projFileSlot; $("projfile").value = "";
+  if (!f || !d) return;
+  op(async () => {
+    if (f.size > 400000) throw new Error(t("projFileBad"));
+    const { readProject, importProject } = await projectModule();
+    const text = await f.text(); let p;
+    try { p = readProject(text); } catch (e) { throw new Error(`${t("projFileBad")} ${e.message}`); }
+    const used = d.proj ? d.proj.slots[slot].used : d.slotUsed[slot];
+    if (!confirm(t(used ? "projFileConfirmUsed" : "projFileConfirm").replace("{name}", p.name || t("noName"))
+      .replace("{n}", slotL(slot)).replace("{p}", p.ids.length))) return;
+    assertSession(d);
+    const r = await importProject((q, o) => sessionRequest(d, q, o), text, slot,
+      (k, n) => sayK("projFileWorking", `${Math.round(k / Math.max(1, n) * 100)}%`));
+    d.slotUsed[slot] = true;
+    await readProj(d);
+    if (d.info.song2) readSong(d).catch(() => {});
+    sayK("projFileLoaded", `${slotL(slot)}: ${r.name || t("noName")} (${r.written} + ${r.shared})`);
+  });
+});
 $("projname").addEventListener("input", () => { $("projname").dataset.edited = "1"; });
 async function renameProject(slot) {
   const d = dev, name = $("projname").value;

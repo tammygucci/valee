@@ -353,6 +353,17 @@ crystals a crown, sigils a rune ring, herbs vines. Other sounds, other parts, an
 song from the top: the same one. Every PLAY starts a new spell; stopped, the figure stays. With ANIM OFF nothing flies:
 the elements go straight in.
 
+## A project to a file (the editor)
+
+On the editor's **Projects** tab each slot (A to D) has **Save to file** and **Load file**, beside LOAD, SAVE and
+RENAME. Save to file writes that one project to your computer, with the patterns it plays (a project only names its
+patterns: they live in the pool all four share), as a small `.json` file to keep or send to someone. Load file puts a
+project file into that slot, replacing what it held. Each of its patterns goes to the same pattern if the unit already
+has it, or else to an empty place in the pool that no project uses; nothing else on the unit changes. If the pool
+hasn't room it says how many places it needs and writes nothing (free some on SAVE > PATTERNS). Stop playback first.
+Entries that switch to one of your user presets use the preset in that slot on the unit you load it on. The
+complete backup under it still saves and restores everything at once.
+
 ## Room on the FM-1
 
 The FM-1's firmware has to fit a fixed slot of 581,564 bytes. Skiff 2.6 already filled all but about 4.5 KB of it

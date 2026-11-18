@@ -106,7 +106,7 @@ def main(pkg, version, out, *more):
     for doc in ("LICENSE", "LICENSING.md"):
         shutil.copy(HERE.parent / doc, fw / doc)
     shutil.copy(HERE / "editor.html", ed / "index.html")
-    for f in ("fukiai.ttf", "FUKIAI-LICENSE.txt", "fm1backup.js"):
+    for f in ("fukiai.ttf", "FUKIAI-LICENSE.txt", "fm1backup.js", "fm1project.js"):   # ((Vallée) fm1project.js: a project to a file
         if (HERE / f).exists():
             shutil.copy(HERE / f, ed / f)
     cast = HERE.parent / "build" / "cast" / "felucca_cast.wasm"   # ((Skiff Studio) the Screen tab's copy: web/emu/build.sh's

@@ -521,6 +521,9 @@ run "(#21) sample upload CLI: mix (a sound's LEVEL REV DLY) against a fake devic
 if command -v node >/dev/null 2>&1; then
     run "web pages: editor protocol + samples, package builder, update protocol" node web/test_web.mjs
     run "web backup: capture, validation before writes, restore order" node web/test_backup.mjs
+    $CC -w -Ibuild/gen -Ifirmware/src -o "$OUT/proj_dev" tests/proj_dev.c -lm
+    run "(Vallée) a project to a file and back: its patterns shared or written where free, the pool full refused first" \
+        node web/test_project.mjs "$OUT/proj_dev"
 else
     echo "== skip web tests (no node)"
 fi
