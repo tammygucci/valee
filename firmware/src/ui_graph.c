@@ -2767,15 +2767,10 @@ static void draw_graph(void)
         sample_wave_tick(t);
     sig = fr.on ? steps_hash(t) + (uint32_t)t->p[P_SLEN] * 7u + (song.playing ? t->seq_idx + 1u : 0u) * 977u + 0xF7EEu
                 : graph_signature() + (ui.take_t ? take_box.gen * 2654435761u + 0x7A6Bu : 0u)   /* (Skiff: the TAKE box) */
-                  + (ui.beast_t && beast_box_fits() ? beast_sig() * 40503u + 0xB3A5u : 0u)    /* ((Vallée) the creature box) */
-                  + (xe_teen_cards() ? 0x5EA4u : 0u);   /* ((Vallée) the deck's top in the cards' row, or the cards) */
+                  + (ui.beast_t && beast_box_fits() ? beast_sig() * 40503u + 0xB3A5u : 0u);   /* ((Vallée) the creature box) */
     if (!ui.force && sig == ui.graph_sig)
         return;
     ui.graph_sig = sig;
-    if (xe_teen_cards() && !fr.on)                   /* ((Vallée) TEEN's and XENO's HOME tall: the deck's top piece first, */
-        xe_teen_top();                               /* then the panel's at once: one frame's, never a seam between two
-                                                      * (it was drawn every frame with the cards, the panel only when it
-                                                      * changed: a reel cut across, the creature ahead of its lane) */
     cv_begin(240, graph_h(), T_BG);
     if (UX_CRYPT) {                                  /* (Skiff C3) CRYPT: stone in a double frame */
         cr_stone(3, 0, 234, (int32_t)graph_h(), T_SURF);
