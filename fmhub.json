@@ -7,7 +7,7 @@
   "play": "https://tammygucci.github.io/valee/try/",
   "editor": "https://tammygucci.github.io/valee/webapp/editor/",
   "cheat": "https://tammygucci.github.io/valee/webapp/installer/brand/vallee_cheatsheet.pdf",
-  "image": "docs/card.png",
+  "image": "docs/card_intro.png",
   "color": "#5AFF6E",
   "sounds": "CC0: Versilian Studios VSCO-2 CE and VCSL (assets/samples-cc0); assets/breaks: Skiff's SLICE loops made with YuE2 (see its ATTRIBUTION.txt), not in Vallée's build"
 }
