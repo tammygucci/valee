@@ -814,7 +814,7 @@ enum { S_HOME, S_HOME_IDLE, S_MESSAGE, S_MESSAGE_KEY, S_MESSAGE_NOFILE, S_PRESET
        S_INS_FILTER, S_INS_FILTER_HP,                                                         /* (2.5, 6B) */
        S_CHORD_STRUM, S_CHORD_STRUM_ALT,                                                      /* (2.5, 7B) */
        S_SHIFT_SONG, S_HINT_FREE,                                                             /* (2.5) */
-       S_GEN, S_GEN_PART, S_GEN_PARTS, S_GEN_FEEL, S_GEN_WRITTEN, S_GEN_STEELY, S_GEN_DEMARCO, S_GEN_CHORDS, S_GEN_CHORDS_AUTO,  /* (Vallée) GEN */
+       S_GEN, S_GEN_PART, S_GEN_PARTS, S_GEN_FEEL, S_GEN_WRITTEN, S_GEN_STEELY, S_GEN_DEMARCO, S_GEN_CHORDS, S_GEN_CHORDS_AUTO, S_GEN_CHORDS_SONG,  /* (Vallée) GEN */
        S_BEAST, S_BEAST_LONG, S_BEAST_HOOD, S_BEAST_MUTED, S_WORLD,                                  /* (Vallée) the creature box */
        S_ALEM, S_ALEM_ON, S_ALEM2, S_ALEM2_DUST,                                                     /* (Vallée) GLO > ALEMBIC */
        S_MENU_FX, S_WORLD_FX,                                                                       /* (Vallée) MENU > FX, a key held */
@@ -854,7 +854,7 @@ static const char *const S_NAME[S_COUNT] = {"home", "home_idle", "message", "mes
     "follow", "follow_scale", "follow_fit", "follow_off", "follow_wait", "free_take", "free_take_turned", "dly_mono", "dly_ping", "fx_delay", "fx_reverb", "fx_sends", "pattern_64", "song_strip", "project_new",
     "project_clear", "confirm_clear_song", "confirm_clear_trks", "insert_filter", "insert_filter_hp", "chord_strum",
     "chord_strum_alt", "shift_song", "hint_free_take", "gen", "gen_part", "gen_parts", "gen_feel", "gen_written",
-    "gen_steely", "gen_demarco", "gen_chords", "gen_chords_auto", "beast", "beast_long", "beast_hood", "beast_muted", "world", "alembic", "alembic_on", "alembic_2", "alembic_2_dust", "menu_fx", "world_fx", "mock_home", "mock_presets", "mock_seq", "mock_drum", "mock_mixer", "mock_dialog", "mock_menu"};
+    "gen_steely", "gen_demarco", "gen_chords", "gen_chords_auto", "gen_chords_song", "beast", "beast_long", "beast_hood", "beast_muted", "world", "alembic", "alembic_on", "alembic_2", "alembic_2_dust", "menu_fx", "world_fx", "mock_home", "mock_presets", "mock_seq", "mock_drum", "mock_mixer", "mock_dialog", "mock_menu"};
 
 /* the scenes of the UI design screens: the state the UI-redesign
  * prototype drew them from (its setup(): two pattern tracks, the drum pattern on track 4, a synthetic scope),
@@ -1737,7 +1737,7 @@ static void setup(int s)
     case S_ROLL_EMPTY: case S_ROLL_ACID: case S_ROLL_CHORDS: case S_ROLL_TIES: case S_ROLL_LEN32: case S_ROLL_HIGH:
     case S_ROLL_LOW: case S_ROLL_WIDE: case S_ROLL_PLAYING: roll_scene(s); break;
     case S_GEN: case S_GEN_PART: case S_GEN_PARTS: case S_GEN_FEEL: case S_GEN_WRITTEN: case S_GEN_STEELY:
-    case S_GEN_DEMARCO: case S_GEN_CHORDS: case S_GEN_CHORDS_AUTO:   /* ((Vallée) HOME > GEN: its windows; written; the
+    case S_GEN_DEMARCO: case S_GEN_CHORDS: case S_GEN_CHORDS_AUTO: case S_GEN_CHORDS_SONG:   /* ((Vallée) HOME > GEN: its windows; written; the
                                                      * long names; CHORDS: the CHORUS's own, ii V7 I, BAR 2; AUTO */
         gen_reset();
         gen.v[GK_STYLE] = s == S_GEN_STEELY ? GS_STEELY : s == S_GEN_DEMARCO ? GS_DEMARCO : GS_IMPALA;
@@ -1747,6 +1747,20 @@ static void setup(int s)
         if (s == S_GEN_PARTS) gen.v[GK_COLOR] = 0;
         if (s == S_GEN_FEEL) gen.v[GK_SWING] = 34;
         memset(gch, 0, sizeof gch);
+        if (s == S_GEN_CHORDS_SONG) {               /* (SONG: VERSE IV V vi, CHORUS ii V I) */
+            gen.win = GC_WIN;
+            gen.v[GK_KEY] = 1;
+            gen.v[GK_PART] = GP_VERSE;
+            gen_chord_key(0);
+            gen_chord_key(2);
+            gen_chord_key(4);
+            gen.v[GK_PART] = GP_CHORUS;
+            gen.v[GK_BAR] = 0;
+            gen_chord_key(9);
+            gen_chord_key(2);
+            gen_chord_key(7);
+            gen.v[GK_PART] = GP_SONG;
+        }
         if (s == S_GEN_CHORDS || s == S_GEN_CHORDS_AUTO) {
             gen.win = GC_WIN;
             gen.v[GK_KEY] = 1;

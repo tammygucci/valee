@@ -550,9 +550,9 @@ static uint32_t gc_n(uint32_t part)
     return n;
 }
 static int gc_mine(uint32_t part) { return part < GC_NPART && gch[part].on && gch[part].r[0]; }
-static void gc_chord(gplan_t *p, uint32_t part, uint32_t i)
+static void gc_chord_code(gplan_t *p, uint32_t i, uint32_t code, uint32_t q)
 {
-    uint32_t m = SCALE_MASK[p->scale < NELEM(SCALE_MASK) ? p->scale : 1u], code = gch[part].r[i], k, n = 0, d = 7, r, a, b;
+    uint32_t m = SCALE_MASK[p->scale < NELEM(SCALE_MASK) ? p->scale : 1u], k, n = 0, d = 7, r, a, b;
     uint8_t pc[7];
     if (__builtin_popcount(m) != 7)                     /* (the modes GEN plays are all of seven) */
         m = SCALE_MASK[1];
@@ -567,9 +567,10 @@ static void gc_chord(gplan_t *p, uint32_t part, uint32_t i)
     b = d < 7u ? (pc[(d + 4u) % 7u] + 12u - r) % 12u : 7u;
     k = a == 3u ? (b == 6u ? Q_DIM : Q_MIN) : b == 8u ? Q_AUG : Q_MAJ;
     p->ch[i][0] = (uint8_t)r;
-    p->ch[i][1] = (uint8_t)(gch[part].q[i] ? (gch[part].q[i] - 1u) % Q_N : q_ext(k, p->ext));
+    p->ch[i][1] = (uint8_t)(q ? (q - 1u) % Q_N : q_ext(k, p->ext));
     p->ch[i][2] = 0;
 }
+static void gc_chord(gplan_t *p, uint32_t part, uint32_t i) { gc_chord_code(p, i, gch[part].r[i], gch[part].q[i]); }
 static void gen_plan(gplan_t *p)
 {
     const gstyle_t *s = g_sty();
@@ -1679,6 +1680,13 @@ static void gc_from_plan(uint32_t part)
         gch[part].q[i] = (uint8_t)(p.ch[c][1] % Q_N + 1u);
     }
 }
+static uint32_t gc_song_mine(void)                      /* (the SONG's parts, INTRO .. OUTRO, that play their own) */
+{
+    uint32_t pt, n = 0;
+    for (pt = GP_INTRO; pt <= GP_OUTRO; pt++)
+        n += (uint32_t)gc_mine(pt);
+    return n;
+}
 static int gc_editable(void)
 {
     if (gc_part() < GC_NPART)
@@ -1767,7 +1775,13 @@ static void gen_value(uint32_t id, char *val, const char **unit)
         *unit = gen.v[id] ? "%" : "";
         break;
     case GK_ENERGY: case GK_COMPLEX: case GK_HUMAN: fmt_int(val, gen.v[id]); *unit = "%"; break;
-    case GK_CHORDS: str_cpy(val, gc_mine(gc_part()) ? "MINE" : "AUTO", 12); break;
+    case GK_CHORDS:                                     /* (SONG: how many of its parts play their own) */
+        if (gc_part() == GP_SONG && gc_song_mine()) {
+            fmt_int(val, (int32_t)gc_song_mine());
+            str_cpy(val + str_len(val), " MINE", 8);
+        } else
+            str_cpy(val, gc_mine(gc_part()) ? "MINE" : "AUTO", 12);
+        break;
     case GK_BAR: case GK_TYPE:                          /* (AUTO: neither means anything) */
         if (!gc_mine(gc_part())) {
             str_cpy(val, "-", 12);
@@ -1796,7 +1810,8 @@ static void gen_cards(void)
         uint32_t id = GEN_WIN[gen.win % GEN_NWIN][k], mx = GEN_MAX[id];
         char val[12];
         const char *unit;
-        int32_t v = id == GK_SEED ? gen.seed : id == GK_CHORDS ? gc_mine(gc_part()) : id == GK_TYPE ? (int32_t)gc_type()
+        int32_t v = id == GK_SEED ? gen.seed : id == GK_CHORDS ? (gc_mine(gc_part()) || (gc_part() == GP_SONG &&
+                    gc_song_mine())) : id == GK_TYPE ? (int32_t)gc_type()
                     : gen.v[id];
         gen_value(id, val, &unit);
         draw_column(k, GEN_LABEL[id], val, unit, (id >= GK_DRUMS && id <= GK_COLOR && !gen.v[id]) ||
@@ -1917,7 +1932,7 @@ static void graph_gen(const track_t *t, uint16_t c)
     cv_free_text(x0, y - AF_S_CAP_Y, &AF_S, b, T_MID, cv_bg, 232 - x0);
     y += 16;
     gen_code(b, 22);                                    /* ((Vallée) the knobs set otherwise: the song's code */
-    if (b[0]) {
+    if (b[0] && w != GC_WIN) {                          /* ((CHORDS: not there, the room the chords') */
         cv_free_text(x0, y - AF_S_CAP_Y, &AF_S, b, T_ACCENT, cv_bg, 232 - x0);
         y += 14;
     }
@@ -1925,10 +1940,40 @@ static void graph_gen(const track_t *t, uint16_t c)
     str_cpy(b + str_len(b), " ", sizeof b - str_len(b));
     str_cpy(b + str_len(b), N_SCALE[p.scale % NELEM(N_SCALE)], sizeof b - str_len(b));
     str_cpy(b + str_len(b), "  ", sizeof b - str_len(b));
-    fmt_int(b + str_len(b), p.bpm);
-    str_cpy(b + str_len(b), " BPM", sizeof b - str_len(b));
+    if (w == GC_WIN) {                                  /* ((Vallée) CHORDS: what the C key plays, the I there */
+        gplan_t t = p;
+        gc_chord_code(&t, 0, 1, 0);
+        g_chord_name(&t, 0, nm);
+        str_cpy(b + str_len(b), "C KEY ", sizeof b - str_len(b));
+        str_cpy(b + str_len(b), nm, sizeof b - str_len(b));
+    } else {
+        fmt_int(b + str_len(b), p.bpm);
+        str_cpy(b + str_len(b), " BPM", sizeof b - str_len(b));
+    }
     cv_free_text(x0, y - AF_S_CAP_Y, &AF_S, b, T_THEME, cv_bg, 232 - x0);
     y += 18;
+    if (w == GC_WIN && gc_part() == GP_SONG) {          /* ((Vallée) CHORDS on SONG: each part's own, a line each */
+        uint32_t pt, was = gen.v[GK_PART], j;
+        for (pt = GP_INTRO; pt <= GP_OUTRO && y + 12 <= h; pt++) {
+            gplan_t q;
+            if (!gc_mine(pt))
+                continue;
+            gen.v[GK_PART] = (uint8_t)pt;
+            gen_plan(&q);
+            gen.v[GK_PART] = (uint8_t)was;
+            str_cpy(b, GEN_PART[pt], sizeof b);
+            for (j = 0; j < q.n; j++) {
+                g_chord_name(&q, j, nm);
+                str_cpy(b + str_len(b), " ", sizeof b - str_len(b));
+                str_cpy(b + str_len(b), nm, sizeof b - str_len(b));
+            }
+            cv_free_text(x0, y - AF_S_CAP_Y, &AF_S, b, T_TEXT, cv_bg, 232 - x0);
+            y += 14;
+        }
+        if (!gc_song_mine())
+            cv_free_text(x0, y - AF_S_CAP_Y, &AF_S, "ALL GEN'S OWN", T_MID, cv_bg, 232 - x0);
+        return;
+    }
     if (w == GC_WIN && gc_mine(gc_part())) {            /* ((Vallée) CHORDS, MINE: a bar each, BAR lit (two a line; */
         uint32_t bar = gen.v[GK_BAR] & 3u;              /* the bar after the last: "+") */
         for (i = 0; i < 4u && i <= p.n && y + 12 <= h; i++) {

@@ -170,6 +170,10 @@ own), then press keys:
 - **CHORDS AUTO** gives the part back to GEN; your chords are kept for when you turn it to MINE again. The first time
   you turn it to MINE, it starts from GEN's chords.
 
+The panel shows the key and what the C key plays there (`C DOR  C KEY Cm`): KEY AUTO picks the key from the style,
+so the C key is often Am or Cm. Set KEY to C and the white keys play the chords their names say. On PART SONG the
+page shows how many parts have their own chords (`2 MINE`) and lists them, a line each.
+
 On PART SONG each part uses its own chords. They are saved with the project. Skiff and Vallée 0.9 open such a
 project as ever and play GEN's parts as written; only the chords page is new.
 
