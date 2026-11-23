@@ -129,7 +129,7 @@ and Felucca, with the licence, are on MENU > ABOUT.
 use **SHIFT + SELECT** instead: hold HOME and turn SELECT. Turning SELECT back past GEN's first page of knobs returns to
 HOME.
 
-**The knobs.** There are four pages of four knobs, and SELECT moves between them. PRESETS always turns STYLE.
+**The knobs.** There are five pages of four knobs, and SELECT moves between them. PRESETS always turns STYLE.
 
 | Page | KNOB 1 | KNOB 2 | KNOB 3 | KNOB 4 |
 |---|---|---|---|---|
@@ -137,6 +137,7 @@ HOME.
 | 2 | PART (LOOP INTRO VERSE CHORUS BRIDGE OUTRO SONG) | KEY (AUTO, C … B) | TEMPO (AUTO, 60–180) | SOUNDS (NEW / KEEP) |
 | 3 | DRUMS | BASS | KEYS | LEAD |
 | 4 | COLOR | COMPLEX | SWING (AUTO, 0–100) | HUMAN |
+| 5 | CHORDS (AUTO / MINE) | PART | BAR (1–4) | TYPE (END, AUTO, MAJ, MIN, 7, MAJ7, M7, SUS2, SUS4, DIM, M7B5, ADD9, 9) |
 
 DRUMS, BASS, KEYS, LEAD and COLOR are each OFF, LITE, ON or BUSY. OFF leaves that track exactly as it is.
 
@@ -153,6 +154,24 @@ No third line: everything else is as GEN starts.
 likely as each other, is Vallée's own where the style has one: the MOOG, OBERHEIM and JUNO presets (AETHER's Moog bass
 and lead and Juno pad, ZETA's Moog funk bass and Oberheim stabs, ASTRAL's Juno pads, strings and arp ..) and its kits:
 DEAD DRUMS (AETHER, LOTUS, HEX), TAPE KIT (LEMURIA, SIGIL), CRUSH KIT (WRAITH, ORACLE, ASTRAL).
+
+**Your own chords (page 5, CHORDS).** Choose the chords of a part yourself, one a bar, and GEN writes the bass, keys,
+lead, colour and drums over them. Turn PART to the part (LOOP, INTRO, VERSE, CHORUS, BRIDGE or OUTRO: each keeps its
+own), then press keys:
+
+- **White keys** are the chords of the part's key and mode, by position: C is I, D is II, E is III, F is IV, G is V,
+  A is VI, B is VII. In C major, D G C plays Dm G C (ii V I). The mode is the style's and the vibe's: in a minor or
+  Dorian one, C is Cm. WARM and BRIGHT are usually major.
+- **Black keys** are the chords outside the key, by their root: A# is the ♭VII (B♭ in C), G# the ♭VI, D# the ♭III.
+- Each key fills a bar and moves BAR on. A key on **bar 1 starts a new progression**: the bars after it go. Three keys
+  make a part of **three bars**, which loops as three; up to four.
+- **TYPE** changes the chord on BAR: AUTO is the mode's own chord there (with the style's sevenths and ninths), or
+  pick one. **END** on a bar ends the part before it (to shorten it).
+- **CHORDS AUTO** gives the part back to GEN; your chords are kept for when you turn it to MINE again. The first time
+  you turn it to MINE, it starts from GEN's chords.
+
+On PART SONG each part uses its own chords. They are saved with the project. Skiff and Vallée 0.9 open such a
+project as ever and play GEN's parts as written; only the chords page is new.
 
 **The buttons.**
 

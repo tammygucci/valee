@@ -34,8 +34,8 @@ enum { GR_BASS, GR_KEYS, GR_LEAD, GR_DRUMS, GR_COLOR, GR_PERC, GR_NROLE };   /* 
 
 /* ---------------------------------------------------------------- the knobs --- */
 enum { GK_STYLE, GK_SEED, GK_VIBE, GK_ENERGY, GK_PART, GK_KEY, GK_TEMPO, GK_SOUNDS, GK_DRUMS, GK_BASS, GK_KEYS,
-       GK_LEAD, GK_COLOR, GK_COMPLEX, GK_SWING, GK_HUMAN, GK_N };
-#define GEN_NWIN 4u
+       GK_LEAD, GK_COLOR, GK_COMPLEX, GK_SWING, GK_HUMAN, GK_CHORDS, GK_BAR, GK_TYPE, GK_N };
+#define GEN_NWIN 5u                                     /* ((Vallée) the fifth: CHORDS, a part's own (gch) */
 static struct {
     uint8_t v[GK_N];             /* the knobs' values (TEMPO 0: AUTO, else 40 + its BPM - 60; SWING 0: AUTO, else 1 + %) */
     uint16_t seed;               /* 1 .. 999 */
@@ -46,9 +46,14 @@ static struct {
     uint16_t useq[NTRK];
     int16_t g_was[8];            /* the globals as they were (OCT-: back) */
     uint8_t song;                /* (Vallée) the last write a SONG (gen_song): its patterns gen_sid, the lists gen_lwas */
-} gen = {{0, 0, GV_HAZY, 60, GP_LOOP, 0, 0, 0, 2, 2, 2, 2, 2, 0, 0, 0}, 1, 0, 0, 0, 0, {0}, {0}, 0};
-static const uint8_t GEN_MAX[GK_N] = {GS_N - 1, 0, GV_N - 1, 100, GP_N - 1, 12, 121, 1, 3, 3, 3, 3, 3, 100, 101, 100};
-static const uint8_t GEN_DEF[GK_N] = {0, 0, GV_HAZY, 60, GP_LOOP, 0, 0, 0, 2, 2, 2, 2, 2, 0, 0, 0};
+} gen = {{0, 0, GV_HAZY, 60, GP_LOOP, 0, 0, 0, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0}, 1, 0, 0, 0, 0, {0}, {0}, 0};
+#define GC_NT 12u                                       /* (CHORDS' TYPE: END, AUTO, then GC_Q's) */
+static const uint8_t GEN_MAX[GK_N] = {GS_N - 1, 0, GV_N - 1, 100, GP_N - 1, 12, 121, 1, 3, 3, 3, 3, 3, 100, 101, 100,
+                                      1, 3, GC_NT};
+static const uint8_t GEN_DEF[GK_N] = {0, 0, GV_HAZY, 60, GP_LOOP, 0, 0, 0, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0};
+/* ((Vallée) MINE: a part's own chords, a bar each, the part as many bars as it has (gen_chords.h) */
+#include "gen_chords.h"
+_Static_assert(GC_NPART == GP_OUTRO + 1u, "gch: a part's own chords for each part but SONG");
 static void gen_reset(void)                            /* the knobs as at power-on (TEMPO, KEY, SWING: AUTO; (Vallée)
                                                         * COMPLEX 0, HUMAN 0: turned up only by hand) */
 {
@@ -87,7 +92,7 @@ static grng_t g_stream(uint32_t id, uint32_t part)
 
 /* ------------------------------------------------------------- the harmony --- */
 enum { Q_MAJ, Q_MIN, Q_MAJ7, Q_MIN7, Q_DOM7, Q_MAJ9, Q_MIN9, Q_DOM9, Q_SUS2, Q_SUS4, Q_ADD9, Q_MADD9, Q_M7B5, Q_POW,
-       Q_MIN11, Q_DOM13, Q_9SUS4, Q_MAJ7S11, Q_MU, Q_MIN6, Q_7S9, Q_AUG, Q_N };
+       Q_MIN11, Q_DOM13, Q_9SUS4, Q_MAJ7S11, Q_MU, Q_MIN6, Q_7S9, Q_AUG, Q_DIM, Q_N };
 static const struct { uint8_t n, iv[5]; const char *sfx; } CQ[Q_N] = {
     {3, {0, 4, 7}, ""},           {3, {0, 3, 7}, "m"},           {4, {0, 4, 7, 11}, "maj7"},
     {4, {0, 3, 7, 10}, "m7"},     {4, {0, 4, 7, 10}, "7"},       {5, {0, 4, 7, 11, 14}, "maj9"},
@@ -96,7 +101,7 @@ static const struct { uint8_t n, iv[5]; const char *sfx; } CQ[Q_N] = {
     {4, {0, 3, 6, 10}, "m7b5"},   {3, {0, 7, 12}, "5"},          {5, {0, 3, 7, 10, 17}, "m11"},
     {5, {0, 4, 10, 14, 21}, "13"}, {5, {0, 5, 7, 10, 14}, "9sus"}, {5, {0, 4, 7, 11, 18}, "maj7#11"},
     {4, {0, 2, 4, 7}, "add2"},    {4, {0, 3, 7, 9}, "m6"},       {5, {0, 4, 7, 10, 15}, "7#9"},
-    {3, {0, 4, 8}, "+"},
+    {3, {0, 4, 8}, "+"},          {3, {0, 3, 6}, "dim"},
 };
 /* a progression: n chords over the four bars (4: a bar each, 8: two), each {root above the key, quality, the bass:
  * semitones above the root it plays (0: the root; a slash chord, F/G: root 5, bass 2)} */
@@ -534,6 +539,37 @@ static uint32_t q_ext(uint32_t q, int32_t lv)
     }
     return q;
 }
+/* ((Vallée) MINE) a part's own chord i into p->ch[i]: a white key's degree of the plan's mode (its own chord there), a
+ * black key's root (the mode's chord if the root is in it, else major); TYPE's quality, else the mode's at the style's
+ * extensions (q_ext) */
+static uint32_t gc_n(uint32_t part)
+{
+    uint32_t n = 0;
+    while (part < GC_NPART && n < 4u && gch[part].r[n])
+        n++;
+    return n;
+}
+static int gc_mine(uint32_t part) { return part < GC_NPART && gch[part].on && gch[part].r[0]; }
+static void gc_chord(gplan_t *p, uint32_t part, uint32_t i)
+{
+    uint32_t m = SCALE_MASK[p->scale < NELEM(SCALE_MASK) ? p->scale : 1u], code = gch[part].r[i], k, n = 0, d = 7, r, a, b;
+    uint8_t pc[7];
+    if (__builtin_popcount(m) != 7)                     /* (the modes GEN plays are all of seven) */
+        m = SCALE_MASK[1];
+    for (k = 0; k < 12u; k++)
+        if ((m >> k) & 1u)
+            pc[n++] = (uint8_t)k;
+    r = code <= 7u ? pc[(code + 6u) % 7u] : (code - 8u) % 12u;
+    for (k = 0; k < 7u; k++)
+        if (pc[k] == r)
+            d = k;
+    a = d < 7u ? (pc[(d + 2u) % 7u] + 12u - r) % 12u : 4u;   /* the third and the fifth the mode has there */
+    b = d < 7u ? (pc[(d + 4u) % 7u] + 12u - r) % 12u : 7u;
+    k = a == 3u ? (b == 6u ? Q_DIM : Q_MIN) : b == 8u ? Q_AUG : Q_MAJ;
+    p->ch[i][0] = (uint8_t)r;
+    p->ch[i][1] = (uint8_t)(gch[part].q[i] ? (gch[part].q[i] - 1u) % Q_N : q_ext(k, p->ext));
+    p->ch[i][2] = 0;
+}
 static void gen_plan(gplan_t *p)
 {
     const gstyle_t *s = g_sty();
@@ -584,9 +620,18 @@ static void gen_plan(gplan_t *p)
         p->ch[p->n - 1u][1] = p->ch[0][1];
         p->ch[p->n - 1u][2] = p->ch[0][2];
     }
+    if (gc_mine(part)) {                                /* ((Vallée) MINE: the part's own, a bar each, as long as they */
+        p->n = p->bars = (uint8_t)gc_n(part);
+        for (i = 0; i < p->n; i++)
+            gc_chord(p, part, i);
+    }
 }
 /* the chord at step i of 64 */
-static uint32_t g_chord_at(const gplan_t *p, uint32_t i) { return (i % 64u) * p->n / 64u; }
+static uint32_t g_chord_at(const gplan_t *p, uint32_t i)   /* ((Vallée) MINE: the part's bars, round again after */
+{
+    uint32_t l = p->bars * 16u;
+    return (i % 64u % l) * p->n / l;
+}
 /* a chord's name, "Dm7" */
 static void g_chord_name(const gplan_t *p, uint32_t c, char *b)
 {
@@ -1178,7 +1223,7 @@ static uint32_t gen_role_steps(uint32_t role, uint32_t part, const gplan_t *p, s
             g_drums(w, s->perc, &r, energy, 0, len, part == GP_INTRO);
         break;
     }
-    return len;
+    return len == 64u ? p->bars * 16u : len;            /* ((Vallée) MINE: as many bars as the part's chords) */
 }
 
 /* write the piece into the tracks */
@@ -1599,9 +1644,65 @@ static int gen_back(void)
 
 /* -------------------------------------------------------- the sheet's hooks --- */
 static const uint8_t GEN_WIN[GEN_NWIN][4] = {{GK_STYLE, GK_SEED, GK_VIBE, GK_ENERGY}, {GK_PART, GK_KEY, GK_TEMPO, GK_SOUNDS},
-                                             {GK_DRUMS, GK_BASS, GK_KEYS, GK_LEAD}, {GK_COLOR, GK_COMPLEX, GK_SWING, GK_HUMAN}};
+                                             {GK_DRUMS, GK_BASS, GK_KEYS, GK_LEAD}, {GK_COLOR, GK_COMPLEX, GK_SWING, GK_HUMAN},
+                                             {GK_CHORDS, GK_PART, GK_BAR, GK_TYPE}};
 static const char *const GEN_LABEL[GK_N] = {"STYLE", "SEED", "VIBE", "ENERGY", "PART", "KEY", "TEMPO", "SOUNDS", "DRUMS",
-                                            "BASS", "KEYS", "LEAD", "COLOR", "COMPLEX", "SWING", "HUMAN"};
+                                            "BASS", "KEYS", "LEAD", "COLOR", "COMPLEX", "SWING", "HUMAN", "CHORDS", "BAR",
+                                            "TYPE"};
+/* ((Vallée) CHORDS' TYPE: 0 END (the part ends before this bar), 1 AUTO (the mode's), then these */
+static const uint8_t GC_Q[GC_NT - 1u] = {Q_MAJ, Q_MIN, Q_DOM7, Q_MAJ7, Q_MIN7, Q_SUS2, Q_SUS4, Q_DIM, Q_M7B5, Q_ADD9,
+                                         Q_DOM9};
+static const char *const GC_QN[GC_NT - 1u] = {"MAJ", "MIN", "7", "MAJ7", "M7", "SUS2", "SUS4", "DIM", "M7B5", "ADD9",
+                                              "9"};
+#define GC_WIN 4u                                       /* (the fifth window: CHORDS) */
+static uint32_t gc_part(void) { return gen.v[GK_PART] % GP_N; }
+static uint32_t gc_type(void)                           /* TYPE's place at BAR: END, AUTO, GC_Q's (not one: AUTO's) */
+{
+    uint32_t part = gc_part(), b = gen.v[GK_BAR] & 3u, k;
+    if (part >= GC_NPART || !gch[part].r[b])
+        return 0;
+    for (k = 0; k + 1u < GC_NT; k++)
+        if (gch[part].q[b] == GC_Q[k] + 1u)
+            return k + 2u;
+    return 1;
+}
+/* CHORDS turned MINE the first time: GEN's own chords there to start from, as they sound */
+static void gc_from_plan(uint32_t part)
+{
+    gplan_t p;
+    uint32_t i;
+    gch[part].on = 0;
+    gen_plan(&p);
+    for (i = 0; i < 4u; i++) {
+        uint32_t c = p.n == 8u ? i * 2u : i;
+        gch[part].r[i] = (uint8_t)(i < p.n || p.n == 8u ? 8u + p.ch[c][0] % 12u : 0u);
+        gch[part].q[i] = (uint8_t)(p.ch[c][1] % Q_N + 1u);
+    }
+}
+static int gc_editable(void)
+{
+    if (gc_part() < GC_NPART)
+        return 1;
+    ui_message("PICK A PART, NOT SONG");
+    return 0;
+}
+/* a key on CHORDS: the chord for BAR (a white key the mode's degree, C I .. B VII; a black key its root), BAR on to the
+ * next. At bar 1 a new progression: the bars after it go */
+static void gen_chord_key(uint32_t k)
+{
+    uint32_t part = gc_part(), b = gen.v[GK_BAR] & 3u, pc = (k + 5u) % 12u, i;   /* (key 0: F) */
+    static const uint8_t WD[12] = {1, 0, 2, 0, 3, 4, 0, 5, 0, 6, 0, 7};
+    if (!gc_editable())
+        return;
+    if (b == 0u)
+        for (i = 1; i < 4u; i++)
+            gch[part].r[i] = 0;
+    gch[part].r[b] = (uint8_t)(WD[pc] ? WD[pc] : 8u + pc);
+    gch[part].q[b] = 0;
+    gch[part].on = 1;
+    gen.v[GK_BAR] = (uint8_t)((b + 1u) & 3u);
+    gen.dirty = 1;
+}
 static const char *gen_title(void) { return "GEN"; }
 static const char *gen_act_name(void) { return gen.made && !gen.dirty ? "NEW SEED" : "WRITE"; }
 static int gen_can_back(void) { return gen.made && gen_copies_top(); }
@@ -1612,8 +1713,28 @@ static void gen_pick(int32_t s)                       /* PRESETS: the style */
 }
 static void gen_knob(uint32_t k, int32_t s)
 {
-    uint32_t id = GEN_WIN[gen.win % GEN_NWIN][k & 3u];
-    if (id == GK_SEED)
+    uint32_t id = GEN_WIN[gen.win % GEN_NWIN][k & 3u], part = gc_part(), b = gen.v[GK_BAR] & 3u, t;
+    if (id == GK_CHORDS) {                              /* ((Vallée) AUTO / MINE */
+        if (!gc_editable())
+            return;
+        if (s > 0 && !gch[part].r[0])
+            gc_from_plan(part);
+        gch[part].on = s > 0;
+    } else if (id == GK_BAR) {                          /* (up to the bar after the last: one more) */
+        t = gc_n(part) < 4u ? gc_n(part) : 3u;
+        gen.v[GK_BAR] = (uint8_t)clamp((int32_t)b + (s > 0 ? 1 : -1), 0, part < GC_NPART ? (int32_t)t : 3);
+        return;
+    } else if (id == GK_TYPE) {
+        if (!gc_editable())
+            return;
+        t = (uint32_t)clamp((int32_t)gc_type() + (s > 0 ? 1 : -1), 0, GC_NT);
+        if (t && !gch[part].r[b])                       /* (END turned on: the chord before it, or the root's) */
+            gch[part].r[b] = b && gch[part].r[b - 1u] ? gch[part].r[b - 1u] : 1u;
+        if (!t)
+            gch[part].r[b] = 0;
+        gch[part].q[b] = (uint8_t)(t >= 2u ? GC_Q[t - 2u] + 1u : 0u);
+        gch[part].on = gch[part].r[0] != 0;
+    } else if (id == GK_SEED)
         gen.seed = (uint16_t)clamp((int32_t)gen.seed + accel(EN_K1 + k, s, 999), 1, 999);
     else if (GEN_MAX[id] >= 100u)
         gen.v[id] = (uint8_t)clamp((int32_t)gen.v[id] + accel(EN_K1 + k, s, GEN_MAX[id]), 0, GEN_MAX[id]);
@@ -1646,6 +1767,22 @@ static void gen_value(uint32_t id, char *val, const char **unit)
         *unit = gen.v[id] ? "%" : "";
         break;
     case GK_ENERGY: case GK_COMPLEX: case GK_HUMAN: fmt_int(val, gen.v[id]); *unit = "%"; break;
+    case GK_CHORDS: str_cpy(val, gc_mine(gc_part()) ? "MINE" : "AUTO", 12); break;
+    case GK_BAR: case GK_TYPE:                          /* (AUTO: neither means anything) */
+        if (!gc_mine(gc_part())) {
+            str_cpy(val, "-", 12);
+            break;
+        }
+        if (id == GK_BAR) {
+            fmt_int(val, (gen.v[id] & 3u) + 1u);
+            break;
+        }
+        {
+            uint32_t t = gc_type(), q = gch[gc_part()].q[gen.v[GK_BAR] & 3u];
+            str_cpy(val, !t ? "END" : t >= 2u ? GC_QN[t - 2u] : q ? (CQ[(q - 1u) % Q_N].sfx[0] ? CQ[(q - 1u) % Q_N].sfx
+                    : "MAJ") : "AUTO", 12);
+        }
+        break;
     default: str_cpy(val, GEN_AMT[gen.v[id] & 3u], 12); break;
     }
 }
@@ -1653,23 +1790,28 @@ static void gen_cards(void)
 {
     static const uint8_t ICON[GK_N] = {ICON_X_EYE, ICON_X_STAR, ICON_TONE, ICON_LEVEL, ICON_X_SONG, ICON_SCALE, ICON_TEMPO,
                                        ICON_LOAD, ICON_DRUM, ICON_SUB, ICON_DRAWBAR, ICON_VOICE, ICON_ARP, ICON_ALGORITHM,
-                                       ICON_SWING, ICON_GLIDE};
+                                       ICON_SWING, ICON_GLIDE, ICON_TRIO, ICON_STEPS, ICON_SHAPE};
     uint32_t k;
     for (k = 0; k < 4u; k++) {
         uint32_t id = GEN_WIN[gen.win % GEN_NWIN][k], mx = GEN_MAX[id];
         char val[12];
         const char *unit;
-        int32_t v = id == GK_SEED ? gen.seed : gen.v[id];
+        int32_t v = id == GK_SEED ? gen.seed : id == GK_CHORDS ? gc_mine(gc_part()) : id == GK_TYPE ? (int32_t)gc_type()
+                    : gen.v[id];
         gen_value(id, val, &unit);
-        draw_column(k, GEN_LABEL[id], val, unit, (id >= GK_DRUMS && id <= GK_COLOR && !gen.v[id]) ? VR_DIM : VR_LIVE,
+        draw_column(k, GEN_LABEL[id], val, unit, (id >= GK_DRUMS && id <= GK_COLOR && !gen.v[id]) ||
+                    ((id == GK_BAR || id == GK_TYPE) && !gc_mine(gc_part())) ? VR_DIM : VR_LIVE,
                     id == GK_SEED ? v * 1000 / 999 : mx ? v * 1000 / (int32_t)mx : -1, ICON[id]);
     }
 }
 static uint32_t gen_sig(void)
 {
     uint32_t h = 2166136261u ^ gen.seed * 131u ^ gen.win * 977u ^ gen.made * 7u, k;
+    const uint8_t *c = (const uint8_t *)gch;
     for (k = 0; k < GK_N; k++)
         h = (h ^ gen.v[k]) * 16777619u;
+    for (k = 0; k < sizeof gch; k++)                    /* ((Vallée) CHORDS' too */
+        h = (h ^ c[k]) * 16777619u;
     return h;
 }
 
@@ -1761,7 +1903,8 @@ static void graph_gen(const track_t *t, uint16_t c)
     else
         gen_sigil(10 + rad + 4, cy, rad, T_THEME, T_LINE);
     for (i = 0; i < GEN_NWIN; i++)                      /* the windows: SELECT's place */
-        cv_rect(10 + rad + 4 - 15 + (int32_t)i * 9, cy + rad + 6, 6, 3, i == w ? T_ACCENT : T_RAISE);
+        cv_rect(10 + rad + 4 - ((int32_t)GEN_NWIN * 9 - 3) / 2 + (int32_t)i * 9, cy + rad + 6, 6, 3,
+                i == w ? T_ACCENT : T_RAISE);                /* ((Vallée) five now: centred under the sigil) */
     y = top;
     str_cpy(b, GEN_STYLE[gen.v[GK_STYLE] % GS_N], sizeof b);
     cv_free_text(x0, y - AF_M_CAP_Y, &AF_M, b, T_TEXT, cv_bg, 232 - x0);
@@ -1786,6 +1929,21 @@ static void graph_gen(const track_t *t, uint16_t c)
     str_cpy(b + str_len(b), " BPM", sizeof b - str_len(b));
     cv_free_text(x0, y - AF_S_CAP_Y, &AF_S, b, T_THEME, cv_bg, 232 - x0);
     y += 18;
+    if (w == GC_WIN && gc_mine(gc_part())) {            /* ((Vallée) CHORDS, MINE: a bar each, BAR lit (two a line; */
+        uint32_t bar = gen.v[GK_BAR] & 3u;              /* the bar after the last: "+") */
+        for (i = 0; i < 4u && i <= p.n && y + 12 <= h; i++) {
+            b[0] = (char)('1' + i);
+            b[1] = ' ';
+            b[2] = 0;
+            if (i < p.n)
+                g_chord_name(&p, i, b + 2);
+            else
+                str_cpy(b + 2, "+", sizeof b - 2u);
+            cv_free_text(x0 + (int32_t)(i & 1u) * 62, y - AF_S_CAP_Y, &AF_S, b, i == bar ? T_ACCENT : T_TEXT, cv_bg, 60);
+            y += (int32_t)(i & 1u) * 14;
+        }
+        return;
+    }
     for (i = 0; i < p.n && y + 12 <= h; i += 2u) {     /* the chords, two a line */
         g_chord_name(&p, i, nm);
         str_cpy(b, nm, sizeof b);

@@ -100,6 +100,91 @@ static void vs_play(uint32_t round, uint32_t blocks)
         vs_fail("mixer level runaway", round, (uint32_t)peak, 0);
 }
 
+/* ((Vallée) CHORDS, as issue #1 asks: the keys D G C on the CHORUS give ii V I, a bar each, a part of 3 bars; the white
+ * keys the mode's chords (C major: Dm G C, B dim; C minor: D dim), a black key its root's; END shortens the part */
+static void vs_own_chords(void)
+{
+    gplan_t p;
+    uint32_t i;
+    static const uint8_t KEY_D = 9, KEY_G = 2, KEY_C = 7, KEY_BB = 5;   /* (key 0: F) */
+    ui_power_on();
+    gen_reset();
+    memset(gch, 0, sizeof gch);
+    gen.v[GK_PART] = GP_CHORUS;
+    gen.v[GK_KEY] = 1;                                      /* (C) */
+    gen.v[GK_BAR] = 0;
+    gen_chord_key(KEY_D);
+    gen_chord_key(KEY_G);
+    gen_chord_key(KEY_C);
+    if (!gc_mine(GP_CHORUS) || gc_n(GP_CHORUS) != 3u || gen.v[GK_BAR] != 3u)
+        vs_fail("CHORDS: three keys, three bars", 0, gc_n(GP_CHORUS), gen.v[GK_BAR]);
+    gen_plan(&p);
+    p.scale = 1;                                            /* (as a C major style plans it) */
+    p.ext = 0;
+    for (i = 0; i < 3u; i++)
+        gc_chord(&p, GP_CHORUS, i);
+    if (p.n != 3u || p.bars != 3u || p.ch[0][0] != 2u || p.ch[0][1] != Q_MIN || p.ch[1][0] != 7u ||
+        p.ch[1][1] != Q_MAJ || p.ch[2][0] != 0u || p.ch[2][1] != Q_MAJ)
+        vs_fail("CHORDS: ii V I in C", 0, p.ch[0][0] * 100u + p.ch[0][1], p.ch[1][0] * 100u + p.ch[2][0]);
+    for (i = 0; i < 64u; i++)                               /* (a bar each, round again after the third) */
+        if (g_chord_at(&p, i) != (i % 48u) / 16u)
+            vs_fail("CHORDS: the chord at a step", 0, i, g_chord_at(&p, i));
+    gch[GP_CHORUS].r[3] = 7;                                /* (B: vii, dim in major) */
+    gc_chord(&p, GP_CHORUS, 3);
+    if (p.ch[3][0] != 11u || p.ch[3][1] != Q_DIM)
+        vs_fail("CHORDS: B dim in C major", 0, p.ch[3][0], p.ch[3][1]);
+    p.scale = 2;                                            /* (C minor: D the dim one) */
+    gc_chord(&p, GP_CHORUS, 0);
+    if (p.ch[0][0] != 2u || p.ch[0][1] != Q_DIM)
+        vs_fail("CHORDS: D dim in C minor", 0, p.ch[0][0], p.ch[0][1]);
+    gen.v[GK_BAR] = 0;
+    gen_chord_key(KEY_BB);                                  /* (bar 1 again: a new progression; Bb, the bVII) */
+    p.scale = 1;
+    gc_chord(&p, GP_CHORUS, 0);
+    if (gc_n(GP_CHORUS) != 1u || p.ch[0][0] != 10u || p.ch[0][1] != Q_MAJ)
+        vs_fail("CHORDS: a black key, a new progression", 0, gc_n(GP_CHORUS), p.ch[0][0]);
+    gen.v[GK_PART] = GP_CHORUS;
+    gen.v[GK_BAR] = 0;
+    gen_chord_key(KEY_D);
+    gen_chord_key(KEY_G);
+    gen_chord_key(KEY_C);
+    gen_write();                                            /* (written: the tracks 3 bars long) */
+    for (i = 0; i < GR_NROLE; i++)
+        if (gen_role_on(i) && i != GR_PERC && trk[i].p[P_SLEN] != 48)
+            vs_fail("CHORDS: a 3-bar part's tracks", 0, i, (uint32_t)trk[i].p[P_SLEN]);
+    gen.win = GC_WIN;                                       /* (CHORDS window: AUTO again, the chords kept) */
+    gen_knob(0, -1);
+    if (gc_mine(GP_CHORUS) || gc_n(GP_CHORUS) != 3u)
+        vs_fail("CHORDS: AUTO keeps them", 0, gc_mine(GP_CHORUS), gc_n(GP_CHORUS));
+    {                                                       /* (a SONG of 3-bar verses, 2-bar choruses: every track's
+                                                             * parts the same length, so they change together) */
+        uint32_t e, k;
+        gen.v[GK_PART] = GP_VERSE;
+        gen.v[GK_BAR] = 0;
+        gen_chord_key(KEY_C);
+        gen_chord_key(KEY_G);
+        gen_chord_key(KEY_D);
+        gen.v[GK_PART] = GP_CHORUS;
+        gen.v[GK_BAR] = 0;
+        gen_chord_key(KEY_G);
+        gen_chord_key(KEY_C);
+        gen.v[GK_PART] = GP_SONG;
+        gen.made = 0;
+        gen_oct();
+        for (e = 0; e < NENT; e++)
+            for (k = 0; k < GR_NROLE; k++)
+                if (k != GR_PERC && k != GR_LEAD && gen_role_on(k) && ent_on(GR_BASS, e) &&
+                    ent_len48(k, e) * ent_reps(k, e) != ent_len48(GR_BASS, e) * ent_reps(GR_BASS, e))
+                    vs_fail("CHORDS: a SONG's parts out of step", 0, e, k);
+        vs_play(0, 400);
+        gen_back();
+    }
+    memset(gch, 0, sizeof gch);
+    gen.win = 0;
+    printf("vallee_stress: own chords (issue #1): D G C on CHORUS is Dm G C, 3 bars; dim, bVII, AUTO: %s\n",
+           vs_errors ? "FAIL" : "ok");
+}
+
 static void vs_gen_fuzz(uint32_t rounds)
 {
     uint32_t r, k;
@@ -116,8 +201,28 @@ static void vs_gen_fuzz(uint32_t rounds)
                 gen.v[k] = (uint8_t)vs_r();
         }
         gen.seed = (uint16_t)(vs_n(10) == 0u ? vs_r() : 1u + vs_n(999));
+        if (vs_n(2) == 0u) {                                /* ((Vallée) CHORDS: a part's own, as keys and TYPE set */
+            uint32_t pt = vs_n(GC_NPART), i;               /* them, or raw bytes (a stale state) */
+            gch[pt].on = (uint8_t)vs_n(2);
+            for (i = 0; i < 4u; i++) {
+                gch[pt].r[i] = (uint8_t)(mode < 7u ? (vs_n(4) ? 1u + vs_n(19) : 0u) : vs_r());
+                gch[pt].q[i] = (uint8_t)(mode < 7u ? (vs_n(2) ? 0u : GC_Q[vs_n(GC_NT - 1u)] + 1u) : vs_r());
+            }
+        }
         gen_write();
         vs_check_tracks(r);
+        {                                                   /* MINE: a bar a chord, the part as long; chords well formed */
+            gplan_t pl;
+            uint32_t part = gen.v[GK_PART] % GP_N, i;
+            gen_plan(&pl);
+            if (gc_mine(part) && (pl.n != gc_n(part) || pl.bars != pl.n || !pl.n))
+                vs_fail("own chords: not a bar each", r, pl.n, pl.bars);
+            if (gc_mine(part) && part != GP_SONG && gen_role_on(GR_BASS) && trk[GR_BASS].p[P_SLEN] != (int16_t)(pl.bars * 16u))
+                vs_fail("own chords: the part's length", r, pl.bars, (uint32_t)trk[GR_BASS].p[P_SLEN]);
+            for (i = 0; i < pl.n && i < 8u; i++)
+                if (pl.ch[i][0] > 11u || pl.ch[i][1] >= Q_N)
+                    vs_fail("chord out of range", r, pl.ch[i][0], pl.ch[i][1]);
+        }
         if (vs_n(4) == 0u) {                                /* OCT-: put back */
             gen_back();
             vs_check_tracks(r);
@@ -290,6 +395,7 @@ int main(int argc, char **argv)
         vs_rng ^= (uint64_t)atoi(argv[3]) * 0x2545F4914F6CDD1Dull;
     vs_creatures();
     printf("vallee_stress: creatures: 32 engines x 256 sounds, 2000 names: %s\n", vs_errors ? "FAILED" : "ok");
+    vs_own_chords();
     vs_gen_fuzz(rounds);
     printf("vallee_stress: GEN fuzz: %u writes (random and raw knobs, undo, played, drawn): %s\n", rounds,
            vs_errors ? "FAILED" : "ok");

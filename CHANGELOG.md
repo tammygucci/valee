@@ -1,5 +1,11 @@
 # Changelog
 
+## Next (in testing)
+
+- **GEN: your own chords** (issue #1). GEN's new fifth page, CHORDS: pick a part and press keys, one chord a bar
+  (white keys I–VII of the key, black keys the ♭ chords), up to four; GEN writes the parts over them, and the part is
+  as many bars as its chords. Saved with the project; Skiff and 0.9 still open such projects.
+
 ## 0.9 alpha
 
 The first public test version. Firmware for the M-VAVE FM-1 that writes you a song, then lets you perform it. Built on [Skiff](https://github.com/illuminus5/skiff) 2.6 by illuminus5.

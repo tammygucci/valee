@@ -84,6 +84,7 @@
  *
  * Built on the Mac too (tests/project_test.c, -DPROJ_HOST): the part above the #ifndef
  * PROJ_HOST needs core.h, params.c (TP) and engines.c. */
+#include "gen_chords.h"                       /* ((Vallée) GEN's own chords: saved with the project */
 #define PROJ_MAGIC 0x534B4631u                 /* (Skiff) "SKF1": FUN9 + the steps' NUDGE (see the top) */
 #define PROJ_MAGIC2 0x534B4632u                /* (Skiff phase 5) "SKF2": no steps, each track's list (proj_pack2) */
 #define PROJ_MAGIC_V9 0x46554E39u              /* "FUN9": FUN8, 64 bytes longer (the DRUM lane levels, 99 parameters) */
@@ -137,6 +138,7 @@ typedef struct {
     uint8_t scene[PROJ_SCENES];                /* (SKF2) the scenes (bank.c) */
     uint8_t dx_on;                             /* (Skiff phase 7) 1: dx is the project's DRUM-X kit; 0 none (the factory's) */
     dx_lane_t dx[DV_NLANE];                    /* (SKF3) the DRUM-X kit (drumx_voice.c dx_kit), one for every DRUM-X track */
+    uint8_t gch[sizeof gch];                   /* ((Vallée) GEN's own chords (vgen.c gch); SKF4: after the tracks */
     uint32_t sum;
 } project_t;
 #if FELUCCA_LEGACY
@@ -192,6 +194,10 @@ _Static_assert(PROJ_SCENES >= PROJ_SC2, "SKF2's scenes are the first bytes of to
 typedef struct { uint32_t magic, size, nt, sc, dx; } proj_fmt_t;   /* (dx: 1 = it holds the DRUM-X kit) */
 static const proj_fmt_t PROJ_SKF2 = {PROJ_MAGIC2, PROJ_STORE2, PROJ_NT, PROJ_SC2, 0u};
 static const proj_fmt_t PROJ_SKF3 = {PROJ_MAGIC3, PROJ_STORE3, 6u, PROJ_SCENES, 1u};
+/* ((Vallée) GEN's own chords: when a part has any, PROJ_GC_MARK and vgen.c's gch after the last track's parameters,
+ * where the readers before (Skiff's, Vallée 0.9's) stop: they open the project as ever, the chords passed over; none: the
+ * record as before, byte for byte) */
+#define PROJ_GC_MARK 0x43u                    /* ('C') */
 /* (Skiff 2.0, Tier B: design/TIER_B.md 5) "SKF4": 2560 bytes, the parameters by stored id (core.h sid_put): one added
  * or moved never shifts the others. 8 the layout (PROJ_LAYOUT4; another is not one this firmware reads), 9 flags (0);
  * from 10 (PROJ_ENT4) the lists, 4 bytes an entry (pattern id + 1 or PAT_REST, the REPS byte, the entry's sound: #30's,
@@ -206,7 +212,8 @@ static const proj_fmt_t PROJ_SKF3 = {PROJ_MAGIC3, PROJ_STORE3, 6u, PROJ_SCENES, 
 #define PROJ_ENT4 10u
 static const proj_fmt_t PROJ_SKF4 = {PROJ_MAGIC4, PROJ_STORE4, 6u, PROJ_SCENES, 1u};
 _Static_assert(PROJ_ENT4 + NTRK * (NENT * 4u + 1u) + PROJ_SCENES + 2u + 1u + DV_NLANE * 11u + NTRK * FM6_PACKED +
-               1u + 2u * GSID_COUNT + NTRK * (4u + SID_COUNT) + PROJ_NAME_LEN + 4u <= PROJ_STORE4, "SKF4 holds it all");
+               1u + 2u * GSID_COUNT + NTRK * (4u + SID_COUNT) + 1u + sizeof gch + PROJ_NAME_LEN + 4u <= PROJ_STORE4,
+               "SKF4 holds it all ((Vallée) GEN's own chords too)");
 #define PROJ_SKF (&PROJ_SKF4)                  /* the format a save writes */
 #define PROJ_NAME_AT(f) ((f)->size - 4u - PROJ_NAME_LEN)
 #define PROJ_FM6_AT(f) (PROJ_NAME_AT(f) - (f)->nt * FM6_PACKED)
@@ -1045,6 +1052,13 @@ static int proj_pack4(project_store_t *out, const project_t *q)
         if (!(n = sid_put(b + pos, q->t[t].p))) return 0;
         pos += n;
     }
+    for (n = 0; n < sizeof q->gch && !q->gch[n]; n++)
+        ;
+    if (n < sizeof q->gch) {                             /* ((Vallée) GEN's own chords, when any) */
+        if (pos + 1u + sizeof q->gch > PROJ_NAME_AT(&PROJ_SKF4)) return 0;
+        b[pos] = PROJ_GC_MARK;
+        memcpy(b + pos + 1u, q->gch, sizeof q->gch);
+    }
     {
         char nm[PROJ_NAME_LEN + 1u];
         memcpy(b + PROJ_NAME_AT(&PROJ_SKF4), nm, proj_name_get(nm, (const uint8_t *)q->name));
@@ -1100,6 +1114,8 @@ static int proj_unpack4(project_t *q, const uint8_t *b)
             q->t[t].step[e].time = ST_REST;               /* (empty: the patterns hold the steps) */
 #endif
     }
+    if (end - pos > sizeof q->gch && b[pos] == PROJ_GC_MARK)   /* ((Vallée) GEN's own chords; none: none) */
+        memcpy(q->gch, b + pos + 1u, sizeof q->gch);
 #if FELUCCA_LEGACY
     chain_defaults(&q->chain);
 #endif
@@ -1391,6 +1407,7 @@ static void project_capture(project_t *p)
     memcpy(p->cur, lists.cur, sizeof p->cur);
     p->song = lists.song;
     memcpy(p->scene, lists.scene, sizeof p->scene);  /* (the scenes too: the project's) */
+    memcpy(p->gch, gch, sizeof p->gch);            /* ((Vallée) GEN's own chords) */
     if (memcmp(dx_kit, DX_KIT_DEF, sizeof dx_kit)) {   /* (phase 7) the DRUM-X kit, when not the factory's (none: */
         p->dx_on = 1;                              /* the factory's when loaded; a project of before as it was) */
         memcpy(p->dx, dx_kit, sizeof p->dx);
@@ -1534,6 +1551,7 @@ static int project_restore_runtime(const project_t *input)
     memcpy(lists.cur, p->cur, sizeof lists.cur);
     lists.song = p->song;
     memcpy(lists.scene, p->scene, sizeof lists.scene);
+    memcpy(gch, p->gch, sizeof gch);                    /* ((Vallée) GEN's own chords: the project's (none: none) */
     scene_forget();
     memset(trk_pid, 0, sizeof trk_pid);
     motion_lost = 0;
@@ -1922,6 +1940,7 @@ static void project_new(void)
     motion_base_valid = 0;
     motion_lost = 0;
     lists_clear();
+    memset(gch, 0, sizeof gch);                   /* ((Vallée) GEN's own chords: none */
     scene_forget();
     for (i = 0; i < G_COUNT; i++)
         if (i != G_SLOT && i != G_LOAD && i != G_SAVE && !unit_g_id(i))

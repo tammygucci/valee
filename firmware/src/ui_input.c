@@ -2252,6 +2252,9 @@ static void ui_input(void)
     }
     if (notes && sm_page() && !layer_open() && !ui.menu && !ui.confirm && !name_on() && !song.grid)
         sm_key(kb_map(TSEL, (uint32_t)__builtin_ctz(notes)));   /* ((Vallée) SUMMON's pages: a key begins it, or */
+    if (notes && cur_page()->graph == GR_GEN && gen.win % GEN_NWIN == GC_WIN && !layer_open() && !ui.menu &&
+        !ui.confirm && !name_on() && !song.grid)
+        gen_chord_key((uint32_t)__builtin_ctz(notes));  /* ((Vallée) GEN's CHORDS: a key the chord for BAR */
     home = btn_hold(&ui.home_t0, B_HOME, now, !ui.confirm && !name_on());   /* ((Skiff U2) held over a dialog or NAME:
                                                          * no MENU, which threw them away) */
     if (home_long && !((fm1_in.buttons >> panel.btn[B_HOME]) & 1u)) {   /* (Skiff) HOME let go after its hold: the */

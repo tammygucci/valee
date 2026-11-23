@@ -712,6 +712,44 @@ static int other_fw_test(void)
     return bad;
 }
 
+/* ((Vallée) GEN's own chords: kept by a save and a load (SKF4, after the tracks); none: the record as before, byte for
+ * byte; with them: only that block and the hash differ, so the readers before (Skiff's, 0.9's) open it as ever */
+static int gen_chords_test(void)
+{
+    static project_t pj, back;
+    static project_store_t w0, w1;
+    uint32_t i, diff = 0, lo = PROJ_STORE4, hi = 0;
+    int ok;
+    reset();
+    memset(gch, 0, sizeof gch);
+    project_capture(&pj);
+    ok = proj_pack4(&w0, &pj);
+    gch[3].on = 1;
+    gch[3].r[0] = 2; gch[3].r[1] = 5; gch[3].r[2] = 1;   /* (ii V I) */
+    gch[3].q[1] = 5u /* (Q_DOM7 + 1) */;
+    gch[2].r[0] = 18;                                        /* (a black key's: Bb in C) */
+    project_capture(&pj);
+    ok &= proj_pack4(&w1, &pj);
+    for (i = 0; i < PROJ_STORE4 - 4u; i++)
+        if (w0.raw[i] != w1.raw[i]) {
+            diff++;
+            lo = i < lo ? i : lo;
+            hi = i;
+        }
+    ok &= diff && hi - lo <= sizeof gch && w1.raw[lo] == PROJ_GC_MARK && hi < PROJ_NAME_AT(&PROJ_SKF4);
+    ok &= proj_unpack4(&back, w1.raw) && !memcmp(back.gch, gch, sizeof gch);
+    ok &= proj_unpack4(&back, w0.raw);
+    for (i = 0; i < sizeof back.gch; i++)
+        ok &= back.gch[i] == 0u;
+    ok &= proj_unpack4(&back, w1.raw);
+    memset(gch, 0, sizeof gch);
+    ok &= project_restore_runtime(&back) == 0 && gch[3].on == 1u && gch[3].r[2] == 1u &&
+          gch[3].q[1] == 5u /* (Q_DOM7 + 1) */ && gch[2].r[0] == 18u;
+    memset(gch, 0, sizeof gch);
+    return check("(Vallee) GEN's own chords: saved and loaded; none: the record as before; with them only their block",
+                 ok);
+}
+
 int main(void)
 {
     int bad = 0, ok;
@@ -1073,6 +1111,9 @@ int main(void)
     bad += autosave_save_test();
     bad += other_fw_test();
     bad += cpu2_once_test();
+#if !FELUCCA_LEGACY
+    bad += gen_chords_test();
+#endif
     printf("%s\n", bad ? "PERSISTENCE TEST FAILED" : "persistence test passed");
     return bad != 0;
 }

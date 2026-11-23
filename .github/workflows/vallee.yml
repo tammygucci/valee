@@ -99,6 +99,7 @@ jobs:
 
   deploy:
     needs: build
+    if: github.ref == 'refs/heads/main'    # (the site only from main: a branch's or a tag's build publishes nothing)
     runs-on: ubuntu-latest
     environment:
       name: github-pages
