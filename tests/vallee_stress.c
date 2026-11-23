@@ -185,6 +185,97 @@ static void vs_own_chords(void)
            vs_errors ? "FAIL" : "ok");
 }
 
+/* ((Vallée) parts one by one into a song, as asked on the FM-1: a new project, VERSE written, CHORUS written: two
+ * sections (each track's list VERSE CHORUS, each its own patterns, the verse not written over by the chorus, nor by the
+ * autosave); VERSE again: still two, the same patterns; INTRO: in front; OCT-: the lists and the pool as before; a song
+ * of the user's own lists: left alone; PART SONG after: the whole arrangement */
+static uint32_t vs_ents(uint32_t k)
+{
+    uint32_t e, n = 0;
+    for (e = 0; e < NENT; e++)
+        n += lists.ent[k][e][0] != 0;
+    return n;
+}
+static void vs_parts_song(void)
+{
+    static step_t verse[NSTEP];
+    uint32_t k, free0, vid;
+    ui_power_on();
+    project_new();
+    gen_reset();
+    memset(gch, 0, sizeof gch);
+    gen.seed = 7;
+    free0 = gen_pool_free();
+    gen.v[GK_PART] = GP_VERSE;
+    gen.made = 0;
+    gen_oct();
+    memcpy(verse, trk[GR_BASS].step, sizeof verse);
+    vid = gen_sid[GR_BASS][GP_VERSE - GP_INTRO];
+    gen.v[GK_PART] = GP_CHORUS;
+    gen.dirty = 1;
+    gen_oct();
+    (void)keep_all();                                       /* (the autosave's round: the tracks kept where they are) */
+    for (k = 0; k < GR_NROLE; k++)
+        if (vs_ents(k) != 2u)
+            vs_fail("parts: VERSE then CHORUS, two sections", 0, k, vs_ents(k));
+    if (lists.ent[GR_BASS][0][0] != vid + 1u || gen_sid[GR_BASS][GP_CHORUS - GP_INTRO] == GEN_NOID ||
+        lists.ent[GR_BASS][1][0] != gen_sid[GR_BASS][GP_CHORUS - GP_INTRO] + 1u)
+        vs_fail("parts: the verse's and the chorus's patterns in order", 0, lists.ent[GR_BASS][0][0], vid);
+    (void)gen_load(GR_BASS, vid);
+    if (memcmp(trk[GR_BASS].step, verse, sizeof verse))
+        vs_fail("parts: the verse written over", 0, vid, 0);
+    gen.v[GK_PART] = GP_VERSE;                              /* (VERSE again: the same two, the same pattern) */
+    gen.dirty = 1;
+    gen.seed = 8;
+    gen_oct();
+    if (vs_ents(GR_BASS) != 2u || gen_sid[GR_BASS][GP_VERSE - GP_INTRO] != vid)
+        vs_fail("parts: VERSE again, in place", 0, vs_ents(GR_BASS), gen_sid[GR_BASS][GP_VERSE - GP_INTRO]);
+    gen.v[GK_PART] = GP_INTRO;                              /* (INTRO: in front) */
+    gen.dirty = 1;
+    gen_oct();
+    if (vs_ents(GR_BASS) != 3u || lists.ent[GR_BASS][0][0] != gen_sid[GR_BASS][0] + 1u ||
+        lists.ent[GR_BASS][1][0] != vid + 1u)
+        vs_fail("parts: INTRO in front", 0, vs_ents(GR_BASS), lists.ent[GR_BASS][0][0]);
+    vs_play(0, 300);
+    if (!gen_back() || vs_ents(GR_BASS) > 1u || gen_pool_free() != free0)
+        vs_fail("parts: OCT- the lists and the pool as before", 0, vs_ents(GR_BASS), gen_pool_free());
+    project_new();                                          /* (a song of the user's: two entries of their own) */
+    gen.made = 0;
+    lists.ent[GR_BASS][0][0] = 1;
+    lists.ent[GR_BASS][1][0] = 2;
+    gen.v[GK_PART] = GP_VERSE;
+    gen_oct();
+    if (lists.ent[GR_BASS][0][0] != 1u || lists.ent[GR_BASS][1][0] != 2u || vs_ents(GR_KEYS) > 1u)
+        vs_fail("parts: the user's own song left alone", 0, lists.ent[GR_BASS][0][0], lists.ent[GR_BASS][1][0]);
+    gen_back();
+    project_new();                                          /* (playing, SONG off: written live, on playing, the */
+    gen.made = 0;                                           /* patterns waiting; stopped: kept, two sections) */
+    gen.v[GK_PART] = GP_VERSE;
+    seq_start();
+    gen_oct();
+    if (!song.playing)
+        vs_fail("parts: playing, SONG off: still playing", 0, 0, 0);
+    gen.v[GK_PART] = GP_CHORUS;
+    gen.dirty = 1;
+    gen_oct();
+    song.playing = 0;
+    if (keep_all() || vs_ents(GR_BASS) != 2u || !pool_used(gen_sid[GR_BASS][GP_CHORUS - GP_INTRO]))
+        vs_fail("parts: playing, then stopped: two sections kept", 0, vs_ents(GR_BASS), 0);
+    gen_back();
+    project_new();                                          /* (parts, then PART SONG: the whole arrangement) */
+    gen.made = 0;
+    gen.v[GK_PART] = GP_CHORUS;
+    gen_oct();
+    gen.v[GK_PART] = GP_SONG;
+    gen.dirty = 1;
+    gen_oct();
+    if (vs_ents(GR_BASS) != 8u)
+        vs_fail("parts: then PART SONG, its arrangement", 0, vs_ents(GR_BASS), 0);
+    gen_back();
+    printf("vallee_stress: parts one by one into a song (VERSE, CHORUS, again, INTRO, OCT-, the user's own, SONG): %s\n",
+           vs_errors ? "FAIL" : "ok");
+}
+
 static void vs_gen_fuzz(uint32_t rounds)
 {
     uint32_t r, k;
@@ -396,6 +487,7 @@ int main(int argc, char **argv)
     vs_creatures();
     printf("vallee_stress: creatures: 32 engines x 256 sounds, 2000 names: %s\n", vs_errors ? "FAILED" : "ok");
     vs_own_chords();
+    vs_parts_song();
     vs_gen_fuzz(rounds);
     printf("vallee_stress: GEN fuzz: %u writes (random and raw knobs, undo, played, drawn): %s\n", rounds,
            vs_errors ? "FAILED" : "ok");

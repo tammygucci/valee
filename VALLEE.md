@@ -216,13 +216,19 @@ UNUSED). If it still says PATTERNS FULL, your saved projects hold them, and the 
 slot 1 holds 30, slot 2 holds 30): delete one you don't need on SAVE > PROJECT (KNOB 2: DELETE), and GEN frees its
 patterns. A generated song takes 30, so two saved songs fill most of the 64.
 
-**Making a song part by part.** Keep the seed and the style, step through PART (INTRO, VERSE, CHORUS, BRIDGE, OUTRO), and
-write each one. A seed keeps its key, tempo, sounds and hook across parts.
+**Making a song part by part.** Turn PART to a part (INTRO, VERSE, CHORUS, BRIDGE or OUTRO) and press OCT+: GEN
+writes it and puts it in the song. Write a verse, then a chorus, and SEQ > SONG shows two sections, VERSE then CHORUS:
+each part has patterns of its own (6 a part), and the parts stand in a song's order whatever order you write them in
+(an INTRO goes in front). OCT+ again on a part writes that part anew in its place. A seed keeps its key, tempo, sounds
+and hook across parts. Turn SONG on (SEQ > SONG) to play them one after another; set REPS there to repeat one.
 
-GEN writes into each track's current pattern, so keep a part before writing the next. Skiff's song mode works track
-by track: on SEQ > SONG, COPY+ puts a copy of the track's pattern in its list (do it on each track, ALGORITHM picking
-the track), and the copies chain into the song (DESIGN.md's SONG section has the details). Or save the part as a
-project (SAVE > PROJECT), four slots.
+While it plays with SONG off, a part is written live, as ever. With SONG on, or when there's no room for the new
+patterns to wait, GEN stops the music first. OCT− puts back everything the song was built over: the lists, the tracks
+and the patterns. PART SONG afterwards writes the whole arrangement in place of it.
+
+GEN only builds a song where the lists are empty or GEN's own song. A song you've arranged yourself on SEQ > SONG is
+left alone: there GEN writes into the tracks' current patterns, as Skiff's GEN-less way: COPY+ on SEQ > SONG keeps a
+copy of a track's pattern in its list (each track, ALGORITHM picking it). LOOP never goes into a song.
 
 **SOUNDS KEEP** writes notes only, so the sounds and mix you've built stay.
 

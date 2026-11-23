@@ -1795,6 +1795,20 @@ static int gen_flush(void)                         /* every waiting pattern writ
     return 0;
 }
 static int gen_load(uint32_t k, uint32_t id) { return pat_load(&trk[k % NTRK], id % BK_POOL); }
+/* ((Vallée) a part GEN wrote on its own, into the song it builds: track k on pattern *id (a new one, none yet), its
+ * steps kept there now (playing: waiting, written once stopped), so the autosave keeps it there and no other part's. 0 */
+static int gen_bind(uint32_t k, uint8_t *id)
+{
+    uint32_t n = *id != 0xFFu ? *id % BK_POOL : pool_alloc();
+    k %= NTRK;
+    if (n == NPAT || !bk_pack(bk_rec, &trk[k]) || pat_keep_now(n, bk_rec))
+        return 1;
+    *id = (uint8_t)n;
+    trk_pid[k] = (uint8_t)(n + 1u);
+    trk_sig[k] = proj_hash(bk_rec, BK_REC);
+    return 0;
+}
+static uint32_t gen_pend_free(void) { return pend_free(); }   /* (patterns that can wait while it plays) */
 static void gen_unkeep(uint32_t id)                /* pattern id cleared, nothing naming it (stopped): GEN's undo */
 {
     id %= BK_POOL;

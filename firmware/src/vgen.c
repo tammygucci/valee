@@ -1319,11 +1319,17 @@ static int gen_keep_trk(uint32_t k, uint8_t *id);
 static int gen_flush(void);
 static int gen_load(uint32_t k, uint32_t id);
 static void gen_unkeep(uint32_t id);
+static int gen_bind(uint32_t k, uint8_t *id);
+static uint32_t gen_pend_free(void);
+static int trk_keep(uint32_t k);
 #define GEN_NPART 5u                                    /* INTRO .. OUTRO */
 #define GEN_NOID 0xFFu                                  /* (no pattern) */
 static const uint8_t GEN_ARR[8] = {GP_INTRO, GP_VERSE, GP_CHORUS, GP_VERSE, GP_CHORUS, GP_BRIDGE, GP_CHORUS, GP_OUTRO};
 static uint8_t gen_sid[GR_NROLE][GEN_NPART];            /* each part's pattern a track (.bss: the pool is full) */
 static uint8_t gen_lwas[sizeof lists];                  /* the lists as they were */
+/* ((Vallée) the song's arrangement, each entry a part (0 INTRO .. 4 OUTRO): SONG's GEN_ARR, or the parts written one by
+ * one, each once, in a song's order; the tracks it holds (their roles ON when it began) */
+static uint8_t gen_arr[NENT], gen_narr, gen_smask;
 /* ((Vallée) THE SPELL's re-roll: the knobs and seed the song was written with, each part's take (0 the first), the
  * lists' fingerprint then (another song since, or the lists edited: not GEN's song any more), each track's bar still
  * to write (+ 1, gen_rr_poll) and its part) */
@@ -1367,6 +1373,109 @@ static void gen_song_drop(void)                         /* the song's lists and 
     memset(gen_sid, GEN_NOID, sizeof gen_sid);
     (void)gen_flush();
     gen.song = 0;
+    gen_narr = 0;
+}
+static uint32_t gen_on_mask(void)
+{
+    uint32_t k, m = 0;
+    for (k = 0; k < GR_NROLE; k++)
+        if (gen_role_on(k))
+            m |= 1u << k;
+    return m;
+}
+/* each track of the song: its list the arrangement (cur: the entry of part pi, the first), its patterns gen_sid */
+static void gen_lists_make(uint32_t pi)
+{
+    uint32_t k, e, at = 0;
+    for (e = 0; e < gen_narr; e++)
+        if (gen_arr[e] == pi) {
+            at = e;
+            break;
+        }
+    fm1_irq_off();
+    for (k = 0; k < GR_NROLE; k++) {
+        if (!((gen_smask >> k) & 1u))
+            continue;
+        for (e = 0; e < NENT; e++) {
+            uint32_t id = e < gen_narr ? gen_sid[k][gen_arr[e] % GEN_NPART] : GEN_NOID;
+            lists.ent[k][e][0] = (uint8_t)(id != GEN_NOID ? id + 1u : 0u);
+            lists.ent[k][e][1] = 0;
+            lists.snd[k][e][0] = lists.snd[k][e][1] = 0;
+        }
+        lists.cur[k] = (uint8_t)at;
+    }
+    fm1_irq_on();
+    gen_lsig = gen_lists_sig();
+}
+static int gen_is_song(void);
+/* may a part written on its own go into a song: the lists GEN's song (the same tracks), or none yet (every track's
+ * list no more than its first entry) */
+static int gen_part_song_ok(void)
+{
+    uint32_t k, e;
+    if (!gen_on_mask())
+        return 0;
+    if (gen.song && gen_is_song())
+        return gen_smask == gen_on_mask();
+    for (k = 0; k < NTRK; k++)
+        for (e = 1; e < NENT; e++)
+            if (lists.ent[k][e][0])
+                return 0;
+    return 1;
+}
+/* ((Vallée) a part written on its own (OCT+ on INTRO .. OUTRO): written, each track's part kept as a pattern of its
+ * own and the song's lists made of the parts so far, each once in a song's order (a SONG's: its arrangement as it
+ * was). Playing: on, unless SONG is (a new part, or the song playing: stopped first). 0 written; 1 not (said) */
+static int gen_part_add(uint32_t pi)
+{
+    uint32_t k, e, fresh = !(gen.song && gen_is_song()), in = 0, need = 0, n = 0;
+    for (e = 0; e < gen_narr && !fresh; e++)
+        in |= gen_arr[e] == pi;
+    for (k = 0; k < GR_NROLE; k++)
+        if (gen_role_on(k)) {
+            n++;
+            need += fresh || gen_sid[k][pi] == GEN_NOID;
+        }
+    if (transport_busy() && (lists.song != SONG_OFF || gen_pend_free() < n))
+        transport_stop_now();
+    bank_poll();
+    if (gen_pool_free() < need && pool_unused() && !transport_busy())
+        pool_clear_unused();
+    if (gen_pool_free() < need) {
+        ui_way("PATTERNS FULL", WAY_PATTERNS);
+        return 1;
+    }
+    if (fresh) {                                        /* (a new song: the lists as they were, for OCT-) */
+        memcpy(gen_lwas, &lists, sizeof lists);
+        memset(gen_sid, GEN_NOID, sizeof gen_sid);
+        memset(gen_pvar, 0, sizeof gen_pvar);
+        memset(gen_rr, 0, sizeof gen_rr);
+        gen_narr = 0;
+        gen_smask = (uint8_t)gen_on_mask();
+    }
+    for (k = 0; k < GR_NROLE; k++)                      /* (a track's own edits kept where they were first) */
+        if (gen_role_on(k) && trk_pid[k])
+            (void)trk_keep(k);
+    gen_write();
+    gen.song = 1;
+    memcpy(gen_sv, gen.v, sizeof gen_sv);
+    gen_sseed = gen.seed;
+    for (k = 0; k < GR_NROLE; k++)
+        if (gen_role_on(k) && gen_bind(k, &gen_sid[k][pi])) {
+            ui_way("PATTERNS FULL", WAY_PATTERNS);
+            return 1;
+        }
+    if (!transport_busy())
+        (void)gen_flush();
+    if (!in) {                                          /* (a new part: in a song's order) */
+        for (e = gen_narr; e > 0u && gen_arr[e - 1u] > pi; e--)
+            gen_arr[e] = gen_arr[e - 1u];
+        gen_arr[e] = (uint8_t)pi;
+        gen_narr++;
+    }
+    gen_lists_make(pi);
+    ui.force = 1;
+    return 0;
 }
 static int gen_song(void)                               /* 0 written; 1 not (said) */
 {
@@ -1434,20 +1543,12 @@ static int gen_song(void)                               /* 0 written; 1 not (sai
         ui_way("STORAGE ERROR", "");
         return 1;
     }
-    fm1_irq_off();
-    for (k = 0; k < GR_NROLE; k++) {
-        if (!gen_role_on(k))
-            continue;
-        for (e = 0; e < NENT; e++) {
-            lists.ent[k][e][0] = (uint8_t)(e < NELEM(GEN_ARR) ? gen_sid[k][GEN_ARR[e] - GP_INTRO] + 1u : 0u);
-            lists.ent[k][e][1] = 0;
-            lists.snd[k][e][0] = lists.snd[k][e][1] = 0;
-        }
-        lists.cur[k] = 0;
-    }
+    for (e = 0; e < NELEM(GEN_ARR); e++)               /* ((Vallée) the arrangement: gen_lists_make) */
+        gen_arr[e] = (uint8_t)(GEN_ARR[e] - GP_INTRO);
+    gen_narr = (uint8_t)NELEM(GEN_ARR);
+    gen_smask = (uint8_t)gen_on_mask();
+    gen_lists_make(0);
     lists.song = SONG_ONCE;
-    fm1_irq_on();
-    gen_lsig = gen_lists_sig();
     for (k = 0; k < GR_NROLE; k++)
         if (gen_role_on(k))
             (void)gen_load(k, gen_sid[k][0]);           /* (the tracks on the INTRO) */
@@ -1596,8 +1697,27 @@ static void gen_oct(void)
         }
         return;
     }
-    if (gen.song && gen.made && gen_copies_top())
-        gen_song_drop();                                /* (a part again after a SONG: the song's patterns back) */
+    {                                                   /* ((Vallée) INTRO .. OUTRO: into the song, part by part */
+        uint32_t part = gen.v[GK_PART] % GP_N;
+        if (part >= GP_INTRO && part <= GP_OUTRO && gen_part_song_ok()) {
+            if (!gen_part_add(part - GP_INTRO)) {
+                str_cpy(b, GEN_PART[part], sizeof b);
+                str_cpy(b + str_len(b), " #", sizeof b - str_len(b));
+                fmt_int(b + str_len(b), gen.seed);
+                ui_say(b, " IN SONG");
+            }
+            return;
+        }
+    }
+    if (gen.song && gen_is_song()) {                    /* (LOOP, or other tracks, over GEN's song: its parts kept, */
+        uint32_t k;                                     /* the tracks off them, so nothing is written over a part) */
+        for (k = 0; k < GR_NROLE; k++)
+            if (gen_role_on(k) && trk_pid[k])
+                (void)trk_keep(k);
+        for (k = 0; k < GR_NROLE; k++)
+            if (gen_role_on(k))
+                trk_pid[k] = 0;
+    }                                                   /* (its lists edited since: the user's now, kept as they are) */
     gen.song = 0;
     gen_write();
     str_cpy(b, GEN_STYLE[gen.v[GK_STYLE] % GS_N], sizeof b);
@@ -1635,6 +1755,7 @@ static int gen_back(void)
                     gen_unkeep(gen_sid[k][p]);
         (void)gen_flush();
         gen.song = 0;
+        gen_narr = 0;
         memset(gen_rr, 0, sizeof gen_rr);
     }
     gen.made = 0;

@@ -5,6 +5,10 @@
 - **GEN: your own chords** (issue #1). GEN's new fifth page, CHORDS: pick a part and press keys, one chord a bar
   (white keys I–VII of the key, black keys the ♭ chords), up to four; GEN writes the parts over them, and the part is
   as many bars as its chords. Saved with the project; Skiff and 0.9 still open such projects.
+- **GEN: parts add up into a song.** Write a verse, then a chorus: SEQ > SONG has both, in a song's order, each with
+  patterns of its own. Writing a part again replaces it in place; OCT− undoes the whole build. A song you arranged
+  yourself is left alone.
+- Only the release build has to fit the FM-1 now; the developer build with the serial console just warns.
 
 ## 0.9 alpha
 
