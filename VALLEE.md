@@ -451,10 +451,11 @@ complete backup under it still saves and restores everything at once.
 The FM-1's firmware has to fit a fixed slot of 581,564 bytes. Skiff 2.6 already filled all but about 4.5 KB of it
 (its released file: an image of about 577,000 bytes), and Vallée's additions need about 34 KB. So Vallée is built
 without Skiff's SLICE engine and its two built-in drum loops (`FELUCCA_SLICE=0`, a build switch Skiff already had),
-which frees about 50 KB: with everything (THE SPELL, ALEMBIC and SUMMON included) the release build measures an image
-of 572,120 bytes, about 9.2 KB under the limit, and 87,704 bytes of the 94,208 of RAM (SUMMON, its two screens and
-AKASHA's new seeds included, and Vallée's own screens and GEN built for size as Skiff's UI is; the development
-build, with its console, a little more).
+which frees about 50 KB: with everything (THE SPELL, ALEMBIC, SUMMON and GEN's own chords included) the release build
+measures an image of 575,856 bytes, about 5.6 KB under the limit, and 87,816 bytes of the 94,208 of RAM (SUMMON, its two screens and
+AKASHA's new seeds included, and Vallée's own screens and GEN built for size as Skiff's UI is). Only the release has to
+fit: a development build with Skiff's serial console (`./build.sh`) is about 4 KB bigger, and CI builds it last and
+only warns when it doesn't fit; the tests read one built without the console (`FELUCCA_CDC=0 ./build.sh`).
 
 What that means for what you saved under Skiff:
 
@@ -511,7 +512,7 @@ release with the package attached; `fmhub.json` in the root is the hub's card (i
 To build locally, see `BUILDING.md`:
 
 ```
-./build.sh && sh tests/run_tests.sh        # the development build and the tests
+FELUCCA_CDC=0 ./build.sh && sh tests/run_tests.sh   # the development build (no console) and the tests
 ./build.sh --release 0.9-alpha            # the package
 EMU_PREVIEW=0 EMU_VERSION=v0.9-alpha web/emu/build_clang.sh   # the emulator: plain clang, no Emscripten
 python3 web/emu/bundle_single.py          # .. as one HTML file

@@ -52,8 +52,8 @@ jobs:
       - name: Samples (CC0)
         run: '[ -d assets/samples-cc0 ] || python3 tools/fetch_cc0.py'
 
-      - name: Firmware (the development build the tests read)
-        run: ./build.sh
+      - name: Firmware (the development build the tests read, without the serial console as a release)
+        run: FELUCCA_CDC=0 ./build.sh   # (a release's size: the slot's limit is the release's alone)
 
       - name: Tests (host, UI, web)
         run: sh tests/run_tests.sh
@@ -96,6 +96,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: build/release-${{ env.REL }}/*
+
+      - name: Firmware with the serial console (a developer's; past the slot it warns, it doesn't fail)
+        continue-on-error: true
+        run: ./build.sh || { echo "::warning::the build with the serial console doesn't fit the app slot (the release does)"; exit 1; }
 
   deploy:
     needs: build
