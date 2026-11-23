@@ -9,7 +9,7 @@ on:
     inputs:
       release:
         description: "release version (X.Y-suffix, one digit each)"
-        default: "0.9-alpha"
+        default: "0.9.1-alpha"
   push:
     tags: ["v*"]
 
@@ -26,7 +26,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      REL: ${{ github.event.inputs.release || '0.9-alpha' }}
+      REL: ${{ github.event.inputs.release || '0.9.1-alpha' }}
       JIELI_TOOLCHAIN: ${{ github.workspace }}/../jieli/toolchain
       AC79_SDK: ${{ github.workspace }}/../fw-AC79_AIoT_SDK
     steps:

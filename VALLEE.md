@@ -503,7 +503,7 @@ The FM-1 firmware is built with JieLi's toolchain. The easiest way is GitHub Act
 3. Actions > **Vallée build** > Run workflow.
 
 It builds the firmware, runs every test (host, UI, web, emulator), then makes the release
-`vallee-0.9-alpha.fwsc` and the browser emulator, and publishes your site:
+`vallee-0.9.1-alpha.fwsc` and the browser emulator, and publishes your site:
 
 - the web installer, `/webapp/installer/` (Chrome or Edge, USB)
 - the editor, `/webapp/editor/`
@@ -519,10 +519,10 @@ To build locally, see `BUILDING.md`:
 
 ```
 FELUCCA_CDC=0 ./build.sh && sh tests/run_tests.sh   # the development build (no console) and the tests
-./build.sh --release 0.9-alpha            # the package
-EMU_PREVIEW=0 EMU_VERSION=v0.9-alpha web/emu/build_clang.sh   # the emulator: plain clang, no Emscripten
+./build.sh --release 0.9.1-alpha          # the package
+EMU_PREVIEW=0 EMU_VERSION=v0.9.1-alpha web/emu/build_clang.sh   # the emulator: plain clang, no Emscripten
 python3 web/emu/bundle_single.py          # .. as one HTML file
-python3 web/make_site.py build/vallee-0.9-alpha.fwsc 0.9-alpha site
+python3 web/make_site.py build/vallee-0.9.1-alpha.fwsc 0.9.1-alpha site
 ```
 
 **Flash space.** The FM-1's app slot is 581,564 bytes ([Room on the FM-1](#room-on-the-fm-1)). If the image doesn't

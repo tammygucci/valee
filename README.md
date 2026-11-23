@@ -22,7 +22,7 @@
   <br><sub>The demo, a live performance and SUMMON (click to play)</sub>
 </p>
 
-> **This is an alpha (0.9).** Everything here works on my own FM-1 and passes the full test suite, but it hasn't been
+> **This is an alpha (0.9.1).** Everything here works on my own FM-1 and passes the full test suite, but it hasn't been
 > on many units yet. Back up anything you care about first (the installer does this for you), expect a few rough
 > edges, and please [report what you find](https://github.com/tammygucci/valee/issues/new/choose). You can always
 > go back: see [Going back](#going-back) below.
