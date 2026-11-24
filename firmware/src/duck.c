@@ -17,7 +17,7 @@ static uint8_t duck_on;                                  /* bit k: track k's gai
 /* a note track t starts (voice.c trk_note_on) */
 static void duck_note(const track_t *t, uint32_t note)
 {
-    if (!drum_engine(t->engine % NENGINES) || !drum_lane(note))   /* (a kit, DRUM or DRUM-X: its KICK lane only) */
+    if (!drum_engine(t->engine % NENGINES) || drum_lane(note) <= LN_KICK2)   /* (a kit: its KICK lanes only ((Vallée) KICK, KICK 2) */
         duck_hits |= (uint8_t)(1u << (t - trk));
 }
 

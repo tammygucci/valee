@@ -1179,9 +1179,9 @@ static int test_grid(void)
     frame();
     bad += check("SEQ > STEP on a DRUM track is the grid (keys to the UI), GRID in the footer", grid_on() && song.grid == 1u &&
                  cur_page()->scope == SC_STEP);
-    bad += check("the lanes: KICK SNARE CLAP HATCL HATOP TOM RIM BELL on GM 36 38 39 42 46 45 37 56",
-                 str_eq(drum_lane_name(t, 0), "KICK") && str_eq(drum_lane_name(t, 7), "BELL") && DRUM_LANE_NOTE[3] == 42 &&
-                 DRUM_LANE_NOTE[6] == 37 && drum_lane(41) == DV_TOM && drum_lane(49) == DV_BELL && drum_lane(35) == DV_KICK);
+    bad += check("the lanes: (Vallée) SPAMPY's 16, KICK .. COWBELL on GM 36 35 38 39 42 46 44 37 40 43 48 49 51 70 63 56",
+                 str_eq(drum_lane_name(t, 0), "KICK") && str_eq(drum_lane_name(t, 15), "COWBELL") && DRUM_LANE_NOTE[4] == 42 &&
+                 DRUM_LANE_NOTE[7] == 37 && drum_lane(41) == LN_LTOM && drum_lane(49) == LN_CRASH && drum_lane(35) == LN_KICK2);
     tap_key(key_at(1, 1));
     bad += check("black key 2: lane 2 (SNARE) selected", ui.lane == 1u);
     tap_key(key_at(0, 4));
@@ -1255,23 +1255,24 @@ static int test_grid(void)
     t->p[P_SLEN] = 16;
     /* a step's GM notes on their lanes */
     t->step[8] = (step_t){{41, 49, 36, 0}, 3, ST_NOTE, SF_ACCENT, 96, 0, 0};
-    ok = step_lanes(&t->step[8]) == ((1u << DV_TOM) | (1u << DV_BELL) | (1u << DV_KICK)) &&
+    ok = step_lanes(&t->step[8]) == ((1u << LN_LTOM) | (1u << LN_CRASH) | (1u << LN_KICK)) &&
          step_accents(&t->step[8]) == step_lanes(&t->step[8]);
-    grid_hit(t, 8, DV_TOM, 0);
-    ok &= t->step[8].n == 1 && t->step[8].note[0] == 49 && t->step[8].hit == 1u << DV_KICK && (t->step[8].flags & SF_ACCENT);
-    grid_acc(t, 8, DV_KICK, 0);
-    ok &= !t->step[8].acc && !(t->step[8].flags & SF_ACCENT) && t->step[8].n == 1 && (step_lanes(&t->step[8]) >> DV_BELL & 1u);
-    grid_acc(t, 8, DV_BELL, 1);
-    ok &= !t->step[8].n && t->step[8].hit == ((1u << DV_KICK) | (1u << DV_BELL)) && t->step[8].acc == 1u << DV_BELL;
-    bad += check("GM notes on the grid: a low tom / crash on their lanes; an edit makes the lane its hit", ok);
+    grid_hit(t, 8, LN_LTOM, 0);                       /* ((Vallée) an edit: every note its lane's hit, then the edit */
+    ok &= !t->step[8].n && t->step[8].hit == ((1u << LN_KICK) | (1u << LN_CRASH)) && t->step[8].acc == t->step[8].hit &&
+          !(t->step[8].flags & SF_ACCENT);
+    grid_acc(t, 8, LN_KICK, 0);
+    ok &= t->step[8].acc == 1u << LN_CRASH;
+    grid_acc(t, 8, LN_CRASH, 0);
+    ok &= !t->step[8].acc && t->step[8].hit == ((1u << LN_KICK) | (1u << LN_CRASH));
+    bad += check("GM notes on the grid: a low tom / crash on their lanes; an edit makes them all hits", ok);
     /* the keys in the audio ISR: on the grid only the lane keys play */
     kb_prev = 0;
     fm1_in.notes = (1u << key_at(0, 3)) | (1u << key_at(1, 3)) | (1u << key_at(1, GK_ACC));
     keyboard_block();
-    ok = kb_note[key_at(0, 3)] == KB_SILENT && kb_note[key_at(1, 3)] == 42u && kb_note[key_at(1, GK_ACC)] == KB_SILENT;
+    ok = kb_note[key_at(0, 3)] == KB_SILENT && kb_note[key_at(1, 3)] == 39u && kb_note[key_at(1, GK_ACC)] == KB_SILENT;
     fm1_in.notes = 0;
     keyboard_block();
-    bad += check("grid keys in the ISR: white keys and ACC silent, black key 4 plays HAT CL (42)", ok);
+    bad += check("grid keys in the ISR: white keys and ACC silent, black key 4 plays CLAP (39)", ok);
     /* live recording on the grid: armed and playing, a lane key records its hit at the play head */
     track_defaults_steps(t);
     song.rec = 1;
@@ -1301,17 +1302,17 @@ static int test_grid(void)
     keyboard_block();
     fm1_in.notes = 0;
     keyboard_block();
-    ok = !song.grid && t->step[9].hit == ((1u << DV_KICK) | (1u << DV_HATC)) && t->step[9].n == 1 && t->step[9].note[0] == 35 &&
-         step_lanes(&t->step[9]) == ((1u << DV_KICK) | (1u << DV_HATC));
+    ok = !song.grid && t->step[9].hit == ((1u << LN_KICK) | (1u << LN_HAT) | (1u << LN_KICK2)) && !t->step[9].n &&
+         step_lanes(&t->step[9]) == t->step[9].hit;
     song.rec = 0;
     song.playing = 0;
-    bad += check("REC on HOME: GM keys quantised into the grid (35 a note on the KICK lane)", ok);
+    bad += check("REC on HOME: GM keys quantised into the grid (35 on the KICK 2 lane)", ok);
     /* the BEAT phrase (tests/phrases.h) into the DRUM track fills the grid */
     track_defaults_steps(t);
     load_pat16(t, PATTERNS[11].note, PATTERNS[11].flags);
-    ok = t->p[P_SLEN] == 16 && lane_steps(t, DV_KICK) == ((1u << 0) | (1u << 6) | (1u << 8) | (1u << 11)) &&
-         lane_steps(t, DV_SNARE) == ((1u << 4) | (1u << 12)) && lane_steps(t, DV_HATO) == 1u << 14 &&
-         lane_steps(t, DV_HATC) == 0xA6AEu && t->step[0].acc == 1u << DV_KICK && t->step[4].acc == 1u << DV_SNARE &&
+    ok = t->p[P_SLEN] == 16 && lane_steps(t, LN_KICK) == ((1u << 0) | (1u << 6) | (1u << 8) | (1u << 11)) &&
+         lane_steps(t, LN_SNARE) == ((1u << 4) | (1u << 12)) && lane_steps(t, LN_OHAT) == 1u << 14 &&
+         lane_steps(t, LN_HAT) == 0xA6AEu && t->step[0].acc == 1u << LN_KICK && t->step[4].acc == 1u << LN_SNARE &&
          t->step[1].acc == 0u && t->step[16].time == ST_REST;
     for (i = 0; i < 16u; i++)
         ok &= t->step[i].n == 0u && !(t->step[i].flags & SF_ACCENT);
@@ -3075,7 +3076,8 @@ static int test_edit_cycle(void)
         }
         go_title("LANES"); frame();
         ok = TSEL->p[P_LN5] == 127;
-        turn(EN_K1, 5 - (int32_t)ui.lane);
+        ui.lane = 0;                                 /* ((Vallée) the grid's lane may be past the 8 LANES edits (3b) */
+        turn(EN_K1, 5);
         turn(EN_K2, -3);
         ok &= ui.lane == 5u && TSEL->p[P_LN5] == 124 && TSEL->p[P_LN4] == 127 && TSEL->p[P_LN6] == 127;
         bad += check("LANES: KNOB 1 TOM, KNOB 2 its level (100 % by default), the other lanes stay", ok);
@@ -3086,11 +3088,11 @@ static int test_edit_cycle(void)
         turn(EN_K2, -2);
         ok &= ui.lane == 2u && TSEL->p[P_LPAN0 + 2] == -10 && TSEL->p[P_LN2] == 125 && !TSEL->p[P_LPAN0 + 5] &&
               TSEL->p[P_LN5] == 124 && lock_id(1) == P_LN0 + 2u && lock_id(2) == P_LPAN0 + 2u && lock_id(3) == 0xFFu;
-        key_down(13); frame(); key_up(13); frame();  /* (13: F#, HAT CL) */
-        ok &= ui.lane == DV_HATC;
+        key_down(13); frame(); key_up(13); frame();  /* (13: F#, HAT) */
+        ok &= ui.lane == LN_HAT;
         turn(EN_K1, -1);
         key_down(13); frame(); key_up(13); frame();  /* (the same key again: its lane again) */
-        ok &= ui.lane == DV_HATC;
+        ok &= ui.lane == LN_HAT;
         bad += check("(2.0, #36) LANE MIX: LANES' lane; KNOB 1 CLAP, 3 its PAN, 2 its LEVEL, a held step's lock them; a "
                      "key struck picks its lane, the same key again too", ok);
         apply_preset_to(TSEL, 0);
@@ -4477,11 +4479,11 @@ static int test_play_leds(void)
     ui.layer = 0;
     set_engine_of(t, ENGI_DRUM);
     t->engine = t->eng_req;
-    t->step[0] = (step_t){.hit = 1u << DV_KICK, .time = ST_NOTE};
+    t->step[0] = (step_t){.hit = 1u << LN_KICK, .time = ST_NOTE};
     transport_req = 2; events_block(CTL);
     seq_start(); events_block(CTL);
     i = play_leds();
-    ok &= t->seq_n == 1u && i != 0u && kb_map(t, (uint32_t)__builtin_ctz(i)) == DRUM_LANE_NOTE[DV_KICK];
+    ok &= t->seq_n == 1u && i != 0u && kb_map(t, (uint32_t)__builtin_ctz(i)) == DRUM_LANE_NOTE[LN_KICK];
     open_family(FAM_SEQ);
     frame();
     ok &= grid_on() && key_leds(0) == grid_leds();
@@ -4546,7 +4548,7 @@ static int test_cursor_step_leds(void)
     bad += check("#89 FEEL (same cursor): no step keys", key_leds(0) == 0u);
     set_engine_of(t, ENGI_DRUM);
     t->engine = t->eng_req;
-    t->step[0] = (step_t){.hit = 1u << DV_KICK, .time = ST_NOTE};
+    t->step[0] = (step_t){.hit = 1u << LN_KICK, .time = ST_NOTE};
     go_page(GR_ROLL);
     frame();
     bad += check("#89 the DRUM grid keeps its map", grid_on() && key_leds(0) == grid_leds());
@@ -4873,7 +4875,7 @@ static int test_step_leds(void)
                     set_engine_of(TSEL, ENGI_DRUM);
                     TSEL->engine = TSEL->eng_req;
                     TSEL->p[P_SLEN] = 16;
-                    TSEL->step[2] = (step_t){.hit = 1u << DV_KICK, .time = ST_NOTE};   /* one hit, on step 3 */
+                    TSEL->step[2] = (step_t){.hit = 1u << LN_KICK, .time = ST_NOTE};   /* one hit, on step 3 */
                 } else {
                     TSEL->step[0] = (step_t){.note = {60}, .n = 1, .time = ST_NOTE};   /* C4 on step 1 */
                 }
@@ -4928,7 +4930,7 @@ static int test_step_leds(void)
     {   /* the DRUM grid's beats (ui_input.c grid_beats): "5111 5111 5111 5111", the first step of each four brighter
          * where no hit shows, the hits lit and the playhead as before; LEN cuts them, a page shows its own; groups of
          * four whatever LEN / DIV; DIM HI / LO: fm1_led_mid over the glow, OFF / INV: the glow alone */
-        uint32_t want, beats, keys, kick = 1u << DV_KICK, ok = 1, mi;
+        uint32_t want, beats, keys, kick = 1u << LN_KICK, ok = 1, mi;
         for (mi = 0; mi < LEDS_COUNT; mi++) {
             uint32_t m = MODES[mi], glow = m == LEDS_DIM || m == LEDS_DIM_LO;
             char what[128];
@@ -5882,14 +5884,14 @@ static int test_seq_tools(void)
         rng_state = 0x2545F491u * seed;
         btn_down(B_SEQ); frame();
         tl_key(4);
-        a = tl_count(TSEL, DV_KICK); b2 = tl_count(TSEL, DV_SNARE);
-        ok &= msg_is("RANDOM BEAT") && a >= 3u && a <= 5u && (tl_lanes_of(TSEL, DV_KICK) & 1u) && b2 >= 2u && b2 <= 3u &&
-              (tl_lanes_of(TSEL, DV_SNARE) & 0x1010u) == 0x1010u && tl_count(TSEL, DV_HATC) >= 8u &&
-              tl_count(TSEL, DV_HATC) <= 12u;
+        a = tl_count(TSEL, LN_KICK); b2 = tl_count(TSEL, LN_SNARE);
+        ok &= msg_is("RANDOM BEAT") && a >= 3u && a <= 5u && (tl_lanes_of(TSEL, LN_KICK) & 1u) && b2 >= 2u && b2 <= 3u &&
+              (tl_lanes_of(TSEL, LN_SNARE) & 0x1010u) == 0x1010u && tl_count(TSEL, LN_HAT) >= 8u &&
+              tl_count(TSEL, LN_HAT) <= 12u;
         for (k = 0; k < 10u; k++) {
             memcpy(mid, TSEL->step, sizeof mid);
             tl_key(5);
-            okc &= (tl_lanes_of(TSEL, DV_KICK) & 1u) && memcmp(mid, TSEL->step, sizeof mid) != 0 && tl_count(TSEL, DV_HATC);
+            okc &= (tl_lanes_of(TSEL, LN_KICK) & 1u) && memcmp(mid, TSEL->step, sizeof mid) != 0 && tl_count(TSEL, LN_HAT);
         }
         btn_up(B_SEQ); frame();
     }
@@ -5900,36 +5902,36 @@ static int test_seq_tools(void)
     go_page(GR_ROLL); frame();
     btn_down(B_SEQ); frame();
     tl_key(6);                                          /* E4: BEAT */
-    ok = msg_is("BASIC BEAT") && tl_lanes_of(TSEL, DV_KICK) == 0x1111u && tl_lanes_of(TSEL, DV_SNARE) == 0x1010u &&
-         tl_lanes_of(TSEL, DV_HATC) == 0x5555u;
-    key_down(black(2)); frame(); key_up(black(2)); frame();   /* black key 3: the CLAP lane */
-    ok &= ui.lane == DV_CLAP && !gates();
+    ok = msg_is("BASIC BEAT") && tl_lanes_of(TSEL, LN_KICK) == 0x1111u && tl_lanes_of(TSEL, LN_SNARE) == 0x1010u &&
+         tl_lanes_of(TSEL, LN_HAT) == 0x5555u;
+    key_down(black(3)); frame(); key_up(black(3)); frame();   /* black key 4: the CLAP lane ((Vallée) SPAMPY's order) */
+    ok &= ui.lane == LN_CLAP && !gates();
     tl_key(10);                                         /* B4: FILL, four times round */
-    ok &= tl_lanes_of(TSEL, DV_CLAP) == 0xFFFFu && msg_is("CLAP EVERY STEP");
+    ok &= tl_lanes_of(TSEL, LN_CLAP) == 0xFFFFu && msg_is("CLAP EVERY STEP");
     tl_key(10);
-    ok &= tl_lanes_of(TSEL, DV_CLAP) == 0x5555u;
+    ok &= tl_lanes_of(TSEL, LN_CLAP) == 0x5555u;
     tl_key(10);
-    ok &= tl_lanes_of(TSEL, DV_CLAP) == 0x1111u;
+    ok &= tl_lanes_of(TSEL, LN_CLAP) == 0x1111u;
     tl_key(10);
-    ok &= !tl_lanes_of(TSEL, DV_CLAP) && msg_is("CLAP CLEARED") && tl_lanes_of(TSEL, DV_KICK) == 0x1111u;
+    ok &= !tl_lanes_of(TSEL, LN_CLAP) && msg_is("CLAP CLEARED") && tl_lanes_of(TSEL, LN_KICK) == 0x1111u;
     bad += check("  E4 BEAT: four on the floor, 2 and 4, 8th hats; black key 3 the lane, B4 FILL 1 / 2 / 4 / none", ok);
-    ui.lane = DV_SNARE;
-    grid_acc(TSEL, 4, DV_SNARE, 1);
+    ui.lane = LN_SNARE;
+    grid_acc(TSEL, 4, LN_SNARE, 1);
     tl_key(9);                                          /* A4: REVERSE the lane */
-    ok = tl_lanes_of(TSEL, DV_SNARE) == 0x0808u && ((step_accents(&TSEL->step[11]) >> DV_SNARE) & 1u) &&
-         !((step_accents(&TSEL->step[3]) >> DV_SNARE) & 1u) && tl_lanes_of(TSEL, DV_KICK) == 0x1111u;
+    ok = tl_lanes_of(TSEL, LN_SNARE) == 0x0808u && ((step_accents(&TSEL->step[11]) >> LN_SNARE) & 1u) &&
+         !((step_accents(&TSEL->step[3]) >> LN_SNARE) & 1u) && tl_lanes_of(TSEL, LN_KICK) == 0x1111u;
     tl_key(8);                                          /* G4: CLEAR the lane */
-    ok &= !tl_lanes_of(TSEL, DV_SNARE) && tl_lanes_of(TSEL, DV_HATC) == 0x5555u && msg_is("SNARE CLEARED");
-    ui.lane = DV_TOM;
+    ok &= !tl_lanes_of(TSEL, LN_SNARE) && tl_lanes_of(TSEL, LN_HAT) == 0x5555u && msg_is("SNARE CLEARED");
+    ui.lane = LN_RIM;
     rng_state = 77u;
     tl_key(11);                                         /* C5: RANDOM the lane: at least one hit */
-    ok &= tl_count(TSEL, DV_TOM) >= 1u && tl_lanes_of(TSEL, DV_KICK) == 0x1111u;
+    ok &= tl_count(TSEL, LN_RIM) >= 1u && tl_lanes_of(TSEL, LN_KICK) == 0x1111u;
     bad += check("  A4 / G4 / C5: the lane reversed (its accents with it), cleared, at random; the others stay", ok);
     a = leds_at(0); b2 = leds_at(250);
     ok = ((a ^ b2) >> white(0)) & 1u && ((a ^ b2) >> white(11)) & 1u && ((a ^ b2) >> white(7)) & 1u &&   /* ((1.3)
                                                          * F4 EUCLID, D5 DOUBLE, E5 HALF too) */
          ((a ^ b2) >> white(12)) & 1u && ((a ^ b2) >> white(13)) & 1u &&
-         ((a & b2) >> black(DV_TOM)) & 1u && ((a ^ b2) >> black(0)) & 1u && !(((a | b2) >> black(8)) & 1u);
+         ((a & b2) >> black(LN_RIM)) & 1u && ((a ^ b2) >> black(0)) & 1u && !(((a | b2) >> black(8)) & 1u);
     btn_up(B_SEQ); frame();
     ui_power_on();
     tl_melody();
@@ -7558,43 +7560,43 @@ static int test_drum_lane_copy(void)
     track_defaults_steps(t);
     t->p[P_SLEN] = 32;
     for (i = 0; i < 16u; i++)                          /* KICK on the beats (1 accented), CL HAT on the eighths */
-        if ((h = (i % 4u ? 0u : 1u << DV_KICK) | (i % 2u ? 0u : 1u << DV_HATC)) != 0u)
-            t->step[i] = (step_t){{0}, 0, ST_NOTE, 0, 100, (uint8_t)h, (uint8_t)(i ? 0u : 1u << DV_KICK)};
+        if ((h = (i % 4u ? 0u : 1u << LN_KICK) | (i % 2u ? 0u : 1u << LN_HAT)) != 0u)
+            t->step[i] = (step_t){{0}, 0, ST_NOTE, 0, 100, (uint16_t)h, (uint16_t)(i ? 0u : 1u << LN_KICK)};
     open_family(FAM_SEQ);
     frame();
-    ui.lane = DV_KICK;
+    ui.lane = LN_KICK;
     cursor_set(0);
     shift_turn(15);
     shift_press(B_OCTDN);
-    ok = grid_on() && clip.lane == DV_KICK && clip.n == 13u && msg_is("COPIED KICK 13 STEPS") &&
-         clip.step[0].hit == 1u << DV_KICK && clip.step[0].acc == 1u << DV_KICK && clip.step[4].hit == 1u << DV_KICK &&
+    ok = grid_on() && clip.lane == LN_KICK && clip.n == 13u && msg_is("COPIED KICK 13 STEPS") &&
+         clip.step[0].hit == 1u << LN_KICK && clip.step[0].acc == 1u << LN_KICK && clip.step[4].hit == 1u << LN_KICK &&
          !clip.step[2].hit;
     bad += check("  DRUM grid: SHIFT + OCT- copies the LANE's hits alone (KICK, its accent), from its first", ok);
-    ui.lane = DV_CLAP;
+    ui.lane = LN_CLAP;
     cursor_set(0);
     shift_press(B_OCTUP);
-    ok = msg_is("PASTED ON CLAP") && ((t->step[0].acc >> DV_CLAP) & 1u) && !((t->step[4].acc >> DV_CLAP) & 1u);
+    ok = msg_is("PASTED ON CLAP") && ((t->step[0].acc >> LN_CLAP) & 1u) && !((t->step[4].acc >> LN_CLAP) & 1u);
     for (i = 0; i < 16u; i++)
-        ok &= ((t->step[i].hit >> DV_CLAP) & 1u) == (i % 4u == 0u && i <= 12u) &&
-              (t->step[i].hit & (1u << DV_KICK | 1u << DV_HATC)) == ((i % 4u ? 0u : 1u << DV_KICK) | (i % 2u ? 0u : 1u << DV_HATC));
+        ok &= ((t->step[i].hit >> LN_CLAP) & 1u) == (i % 4u == 0u && i <= 12u) &&
+              (t->step[i].hit & (1u << LN_KICK | 1u << LN_HAT)) == ((i % 4u ? 0u : 1u << LN_KICK) | (i % 2u ? 0u : 1u << LN_HAT));
     bad += check("  SHIFT + OCT+ pastes them onto the LANE shown (CLAP, the accent too); KICK and CL HAT as they were", ok);
-    ui.lane = DV_KICK;
+    ui.lane = LN_KICK;
     cursor_set(0);
     shift_turn(15);
     shift_press(B_OCTDN);
     shift_press(B_OCTDN);
-    ok = clip.lane == CLIP_ALL && msg_is("COPIED ALL LANES") && clip.n == 15u && clip.step[2].hit == 1u << DV_HATC;
-    ui.lane = DV_TOM;
+    ok = clip.lane == CLIP_ALL && msg_is("COPIED ALL LANES") && clip.n == 15u && clip.step[2].hit == 1u << LN_HAT;
+    ui.lane = LN_RIM;
     cursor_set(16);
     shift_press(B_OCTUP);
     ok &= msg_is("PASTED") && t->step[16].hit == t->step[0].hit && t->step[16].acc == t->step[0].acc &&
-          t->step[18].hit == t->step[2].hit && !t->step[17].hit && !((t->step[16].hit >> DV_TOM) & 1u);
+          t->step[18].hit == t->step[2].hit && !t->step[17].hit && !((t->step[16].hit >> LN_RIM) & 1u);
     bad += check("  SHIFT + OCT- again on the same steps and lane: every lane (COPIED ALL LANES), pasted as it was", ok);
-    ui.lane = DV_BELL;
+    ui.lane = LN_BELL;
     cursor_set(0);
     shift_turn(15);
     shift_press(B_OCTDN);
-    ok = msg_is("NO BELL TO COPY") && clip.lane == CLIP_ALL;
+    ok = msg_is("NO COWBELL TO COPY") && clip.lane == CLIP_ALL;
     shift_press(B_OCTDN);
     ok &= msg_is("COPIED ALL LANES");
     go_page(GR_FEEL); frame();

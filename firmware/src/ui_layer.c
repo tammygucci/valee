@@ -96,7 +96,7 @@ static struct {
     uint8_t quiet;                     /* #39: a layer closed after it opened: KNOB 1..4 do nothing until quiet_t + */
     uint32_t quiet_t;                  /* LY_QUIET_MS (fm1_ms) */
     uint32_t clr_t;                    /* (Skiff U2) REC's CLEAR key pressed (fm1_ms | 1; 0: none): it clears when held */
-    uint8_t mute[NTRK];                /* ((1.3) EDIT: the DRUM lanes' mutes when it opened (eng_drum.c drum_mute; OCT-) */
+    uint16_t mute[NTRK];               /* ((1.3) EDIT: the DRUM lanes' mutes when it opened (eng_drum.c drum_mute; OCT-) */
 } lys;
 #define LY_BPM (2u * NTRK)             /* lys.v: the BPM's */
 #define LY_QUIET_MS 250u
@@ -594,9 +594,10 @@ static void layer_key(uint32_t l, uint32_t k)
             edit_load(eng_vis(p), 0);
         else if (p == LY_INIT)
             confirm_open(CF_INIT_SOUND, song.sel);      /* (the dialog closes the layer) */
-    } else if (l == LAYER_EDIT && p < NLANE && drum_track(TSEL)) {   /* ((1.3, from Felucca 1.4.1) black keys 1..8:
+    } else if (l == LAYER_EDIT && p < KLANE && drum_track(TSEL)) {   /* ((1.3, from Felucca 1.4.1) black keys 1..8:
                                                          * the lanes' MUTE, latched (eng_drum.c drum_mute) */
-        drum_mute[song.sel] ^= (uint8_t)(1u << p);
+        p += lane_view;
+        drum_mute[song.sel] ^= (uint16_t)(1u << p);
         ui_say(drum_lane_name(TSEL, p), (drum_mute[song.sel] >> p) & 1u ? " MUTED" : " ON");
         ui.force = 1;
     } else if (l == LAYER_REC) {
@@ -610,8 +611,8 @@ static void layer_key(uint32_t l, uint32_t k)
     } else if (l == LAYER_SEQ) {
         if (!key_black(k))
             tools_key(p);
-        else if (p < NLANE && drum_track(TSEL)) {
-            ui.lane = (uint8_t)p;                       /* (black keys 1..8: the lane, as on the grid) */
+        else if (p < KLANE && drum_track(TSEL)) {
+            ui.lane = (uint8_t)(lane_view + p);                      /* (black keys 1..8: the lane, as on the grid) */
             eu_lane(TSEL);                              /* ((1.3) EUCLID open: on that lane now) */
         }
     }
@@ -823,14 +824,14 @@ static uint32_t layer_leds(uint32_t *br)
                                                          * one the track may not play dark: engines.c eng_allowed) */
             on = p < NENG_SHOWN && p < LY_INIT && eng_vis(p) == TSEL->eng_req % NENGINES;
             can = p < NENG_SHOWN && p < LY_INIT ? (uint32_t)eng_allowed(song.sel, eng_vis(p)) : p == LY_INIT;
-        } else if (l == LAYER_EDIT && p < NLANE && drum_track(TSEL)) {   /* ((1.3) the lanes: sounding lit, muted
+        } else if (l == LAYER_EDIT && p < KLANE && drum_track(TSEL)) {   /* ((1.3) the lanes: sounding lit, muted
                                                          * breathe, as GLO's track mutes) */
-            on = !((drum_mute[song.sel] >> p) & 1u);
+            on = !((drum_mute[song.sel] >> (lane_view + p)) & 1u);
             can = 1;
         } else if (l == LAYER_SEQ) {                    /* the tools breathe; DRUM: the lane */
-            on = (b && p < NLANE && drum_track(TSEL) && p == ui.lane) || (!b && p == TL_EUCLID && eu.on);   /* lit,
+            on = (b && p < KLANE && drum_track(TSEL) && lane_view + p == ui.lane) || (!b && p == TL_EUCLID && eu.on);   /* lit,
                                                          * the other lanes breathe ((1.3) EUCLID open: lit) */
-            can = b ? p < NLANE && drum_track(TSEL) : tl_cell(TSEL, p);
+            can = b ? p < KLANE && drum_track(TSEL) : tl_cell(TSEL, p);
         } else if (l == LAYER_PERF && b && p < NTRK) {  /* (Skiff) a track sounding lit; a muted one, a staged one */
             on = !trk[p].p[P_MUTE] && !mute_arm[p] && !trk_cut(p);   /* breathe ((2.0) a hold cutting too) */
             can = 1;
@@ -1167,12 +1168,12 @@ static void layer_edit(void)                            /* the engines from F3, 
         engine_sound_row(104);
         return;
     }
-    for (i = 0; i < NLANE; i++) {                       /* ((1.3) DRUM: the black keys' lane mutes in the sound's place,
+    for (i = 0; i < KLANE; i++) {                       /* ((1.3) DRUM: the black keys' lane mutes in the sound's place,
                                                          * 8 cells of 25 px as SEQ TOOLS' lanes; a muted one dim) */
         int32_t x = 6 + 29 * (int32_t)i;
-        uint16_t ink, fill = lc_box(x, 100, 25, 18, lc_fill((drum_mute[song.sel] >> i) & 1u ? LS_DIM : LS_OFF, &ink));
+        uint16_t ink, fill = lc_box(x, 100, 25, 18, lc_fill((drum_mute[song.sel] >> (lane_view + i)) & 1u ? LS_DIM : LS_OFF, &ink));
         GFX_HOOK_ALIGN(x, 100, x + 25, 118, AL_HV, "edit lane mute cell name centred");
-        cv_text_in(x, 100 + CAP_IN(S, 18), 25, &AF_S, drum_lane_abbr(TSEL, i), ink, fill);
+        cv_text_in(x, 100 + CAP_IN(S, 18), 25, &AF_S, drum_lane_abbr(TSEL, lane_view + i), ink, fill);
     }
 }
 
@@ -1211,11 +1212,11 @@ static void layer_seq(void)
         }
         lcell(LC_X(p % 4u), 4 + 32 * (int32_t)(p / 4u), 28, n, TL_ICON[p], nm, st);
     }
-    for (p = 0; drum && p < NLANE; p++) {               /* the lanes (black keys 1..8): 8 cells of 18 px, 2 px apart */
+    for (p = 0; drum && p < KLANE; p++) {               /* the lanes (black keys 1..8): 8 cells of 18 px, 2 px apart */
         int32_t x = 6 + 20 * (int32_t)p;
-        uint16_t ink, fill = lc_box(x, 100, 18, 18, lc_fill(p == ui.lane % NLANE ? LS_SEL : LS_OFF, &ink));
+        uint16_t ink, fill = lc_box(x, 100, 18, 18, lc_fill(lane_view + p == ui.lane ? LS_SEL : LS_OFF, &ink));
         GFX_HOOK_ALIGN(x, 100, x + 18, 118, AL_HV, "tools lane cell name centred");
-        cv_text_in(x, 100 + CAP_IN(S, 18), 18, &AF_S, drum_lane_abbr(TSEL, p), ink, fill);
+        cv_text_in(x, 100 + CAP_IN(S, 18), 18, &AF_S, drum_lane_abbr(TSEL, lane_view + p), ink, fill);
     }
     for (p = TL_DOUBLE; !eu.on && p < TL_N; p++) {     /* ((1.3) D5 DOUBLE (x2), E5 HALF (/2) at the row's end, */
         int32_t x = 168 + 35 * (int32_t)(p - TL_DOUBLE);   /* 31 px each: the lanes' row has no room for their names) */

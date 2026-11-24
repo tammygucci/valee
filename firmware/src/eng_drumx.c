@@ -63,7 +63,7 @@ static drumx_lane_t *drumx_lane_of(track_t *t, const voice_t *v)
 static voice_t *drumx_reuse(track_t *t, uint32_t note)
 {
     drumx_lane_t *K = drumx_kit_of(t);
-    uint32_t lane = drum_lane(note), owner = K ? K[lane].owner : 0;
+    uint32_t lane = dv_lane(note), owner = K ? K[lane].owner : 0;
     voice_t *v;
     if (!owner || owner > NVOICE)
         return 0;
@@ -77,7 +77,7 @@ static void drumx_note_on(track_t *t, voice_t *v)
     uint32_t i = (uint32_t)(v - t->v), lane;
     if (!K || i >= NVOICE)
         return;
-    lane = drum_lane(v->note);
+    lane = dv_lane(v->note);
     L = &K[(uint32_t)v->s[0] & (DV_NLANE - 1u)];
     if (L->owner == i + 1u)                              /* this voice played another lane: it stops there */
         L->owner = 0;
@@ -125,7 +125,7 @@ static void drumx_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const
         n = CTL;
     dx_run(&dx_kit[lane], &L->x, p[P_E0], L->st * 16 + (p[P_E1] - 64) * 3, p[P_E3] - 64, p[P_E2] - 64, p[P_E4] - 64,
            p[P_E6], p[P_E5], y, n);
-    if ((drum_mute[(uint32_t)(t - trk) % NTRK] >> lane) & 1u)
+    if ((drum_mute[(uint32_t)(t - trk) % NTRK] >> drum_lane(v->note)) & 1u)
         return;                                          /* ((1.3) a muted lane rings on unheard, as DRUM's) */
     if (drv > 0) {                                       /* DRV: x1..x4 into the soft clip, the level kept (Q12) */
         g = 4096 + drv * 3 * 4096 / 127;

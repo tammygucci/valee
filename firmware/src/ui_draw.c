@@ -967,7 +967,7 @@ static void draw_columns(void)
         lane_follow(page_lane_p());                    /* keys and DRUM-X's sheet do (ui_dx.c) */
     if (cur_page()->graph == GR_LANES || cur_page()->graph == GR_LMIX)   /* ((Skiff U3, R6) LANES: KNOB 1 the lane, by its
                                                                          * name; (2.0) LANE MIX's) */
-        draw_column(0, "LANE", drum_lane_name(TSEL, page_lane()), "", VR_LIVE, (int32_t)page_lane() * 1000 / 7, ICON_AUTO);
+        draw_column(0, "LANE", dv_lane_name(TSEL, page_lane()), "", VR_LIVE, (int32_t)page_lane() * 1000 / 7, ICON_AUTO);
     if (cur_page()->scope == SC_TRK) {                 /* LEVEL PAN REV MUTE of the selected track */
         const track_t *t = TSEL;
         uint32_t lvl = trk_level(song.sel);
@@ -1677,6 +1677,7 @@ static void ui_draw(void)
 {
     static uint8_t counting;
     ui.frame++;
+    lane_view = (uint8_t)(ui.lane & KLANE);             /* ((Vallée) the 8 lanes the keys and the grid show: the selected one's */
     if (ui.take_t)                                      /* (Skiff: the TAKE box, ui_take.c) */
         ui.take_t--;
     if (ui.beast_t)                                     /* ((Vallée) the creature box, ui_xeno.c) */

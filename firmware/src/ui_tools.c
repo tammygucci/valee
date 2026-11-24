@@ -235,15 +235,15 @@ static void tl_lane_clear(track_t *t, uint32_t len, uint32_t l)
 static void tl_lane_rnd(track_t *t, uint32_t len, uint32_t l, int any)
 {
     tl_lane_clear(t, len, l);
-    if (l == DV_KICK)
+    if (l == LN_KICK)
         tl_euclid(t, len, l, tl_per(3u + tl_rnd(3), len), 0, tl_rnd(2));
-    else if (l == DV_SNARE)
+    else if (l == LN_SNARE)
         tl_euclid(t, len, l, tl_per(2, len), 4u % len, 0);
-    else if (l == DV_HATC)
+    else if (l == LN_HAT)
         tl_euclid(t, len, l, tl_per(8u + tl_rnd(5), len), tl_rnd(2), 0);
-    else if (!any || !tl_rnd(l == DV_HATO ? 2u : 3u))
-        tl_euclid(t, len, l, tl_per(1u + tl_rnd(2), len), l == DV_HATO ? (2u + 4u * tl_rnd(4)) % len : tl_rnd(len), 0);
-    if (l == DV_SNARE && !tl_rnd(3))
+    else if (!any || !tl_rnd(l == LN_OHAT ? 2u : 3u))
+        tl_euclid(t, len, l, tl_per(1u + tl_rnd(2), len), l == LN_OHAT ? (2u + 4u * tl_rnd(4)) % len : tl_rnd(len), 0);
+    if (l == LN_SNARE && !tl_rnd(3))
         grid_hit(t, tl_rnd(len), l, 1);                 /* (a ghost snare now and then) */
 }
 
@@ -253,7 +253,7 @@ static uint32_t tl_hit_nth(const track_t *t, uint32_t len, uint32_t n, uint32_t 
     uint32_t i, l, c = 0;
     for (i = 0; i < len; i++)
         for (l = 0; l < NLANE; l++)
-            if (tl_lane(&t->step[i], l) && (i || l != DV_KICK) && c++ == n) {
+            if (tl_lane(&t->step[i], l) && (i || l != LN_KICK) && c++ == n) {
                 *ip = i;
                 *lp = l;
                 return 1;
@@ -277,7 +277,7 @@ static uint32_t tl_cook_hit(track_t *t, uint32_t len)
         uint32_t used = 0;
         for (j = 0; j < len; j++)
             used |= step_lanes(&t->step[j]);
-        for (l = DV_HATC, j = tl_rnd(NLANE); used && j < 2u * NLANE; j++)
+        for (l = LN_HAT, j = tl_rnd(NLANE); used && j < 2u * NLANE; j++)
             if ((used >> (j % NLANE)) & 1u) {
                 l = j % NLANE;
                 break;
@@ -758,9 +758,9 @@ static const char *tl_do(track_t *t, uint32_t p, uint32_t l)
     case TL_BEAT:                                       /* four on the floor, the backbeat, 8th hats */
         for (i = 0; i < len; i++) {
             step_clear(&t->step[i]);
-            if (i % 4u == 0u) grid_hit(t, i, DV_KICK, 1);
-            if (i % 8u == 4u) grid_hit(t, i, DV_SNARE, 1);
-            if (i % 2u == 0u) grid_hit(t, i, DV_HATC, 1);
+            if (i % 4u == 0u) grid_hit(t, i, LN_KICK, 1);
+            if (i % 8u == 4u) grid_hit(t, i, LN_SNARE, 1);
+            if (i % 2u == 0u) grid_hit(t, i, LN_HAT, 1);
         }
         msg = "BASIC BEAT";
         break;

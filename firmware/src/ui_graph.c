@@ -696,8 +696,8 @@ static void graph_grid(const track_t *t, uint16_t c)
     for (i = 0; i < 16u && base + i < len; i++)     /* a parameter lock: a mark over the step */
         if ((locks >> (base + i)) & 1u)
             cv_rect(41 + (int32_t)i * 12, 1, 8, 2, T_ACCENT);
-    for (l = 0; l < NLANE; l++) {
-        int32_t y = y0 + 4 + (int32_t)l * 14;
+    for (l = lane_view; l < lane_view + KLANE; l++) {   /* ((Vallée) 8 rows: the page of 8 lanes holding the selected one */
+        int32_t y = y0 + 4 + (int32_t)(l - lane_view) * 14;
         int sel = l == ui.lane;
         uint16_t row = sel ? T_RAISE : T_SURF;
         if (sel) {
@@ -960,7 +960,7 @@ static void lane_tile(const track_t *t, uint32_t i, int32_t x, int32_t y, int se
     if (sel)
         cv_rect(x + 2, y, 24, 16, T_THEME);
     GFX_HOOK_ALIGN(x + 2, y, x + 26, y + 16, AL_HV, "lane name centred under its fader");
-    cv_text_in(x + 2, y + CAP_IN(S, 16), 24, &AF_S, drum_lane_abbr(t, i), sel ? T_INK : drum_lane_has(t, i) ? T_MID : T_DIM,
+    cv_text_in(x + 2, y + CAP_IN(S, 16), 24, &AF_S, dv_lane_abbr(t, i), sel ? T_INK : drum_lane_has(t, i) ? T_MID : T_DIM,
                sel ? T_THEME : T_SURF);
 }
 static void graph_lanes(const track_t *t, uint16_t c)

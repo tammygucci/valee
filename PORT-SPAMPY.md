@@ -64,6 +64,16 @@ The old version stays installable: branch `vallee-skiff-engine` = release v0.9.1
       3a data model: NLANE 16; step_t's hit / acc 16 bits (packed: 15 bytes, no padding); the ~126 hit / acc sites
          audited; RAM (.bss +~1.7 KB) moved to the pool (31 KB free); every stored format (patterns, projects, user
          patterns, editor protocol, backups) a new version, old 8-lane bytes mapped on read.
+         DONE (2026-11-24): step_t packed (#pragma pack, 15 B); a step holds notes or hits, never both (every drum
+         note is a lane's: LANE_OF_GM; recording, step_to_grid, the editor's STEP_SET enforce it), so step_put9
+         keeps lanes 9..16 in the note bytes; bank records BK_VER4 (older: LANE_FROM8 on read); FUN8 / the
+         converter's formats keep 8 lanes (step_put9_old, lanes_to8); editor INFO 5A 01 16, STEP_SET 21 bytes,
+         replies 3 bytes longer; GEN maps its 8 rows through lanes_from8; duck: KICK and KICK 2; lane mutes 16-bit
+         by grid lane; gen_w and pat_load's buffer in the pool; web: 16 lane names / LANE_OF (hex), toGrid.
+         Interim until 3b/3c: the drum voices are still Skiff's 8 (dv_lane, DV_LANE_NOTE, dv_lane_name: the LANES /
+         LANE MIX pages and P_LN / P_LTUNE / P_LPAN stay 8 DV lanes); black keys 1..8 and the grid show the page of
+         8 lanes holding the selected one (KLANE, lane_view); the web editor reads lanes 1..8 only (no 20-byte
+         steps yet); user-preset grid records (old format) 8 lanes.
       3b engine: drums.c, drum_synth.c, punch.c (GM sample kit + 4 treatments, 30 synth kits, punch, per-lane TUNE /
          DECAY / BODY) as Vallée's DRUM engine on any track; voices in Vallée's model.
       3c screens and features: the grid and LANES / LANE MIX on 16 lanes; keys F3..G5 the 16 lanes (SPAMPY's

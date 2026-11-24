@@ -855,8 +855,8 @@ async function editorGrid() {
   const { m, rq, done } = attachMock({});
   const C = E.CMD;
   const info = E.parse[C.INFO](await rq(E.req.info()));
-  const h = E.parseHits("kick >snare HATCL cym");
-  ok(h && h.hit === (1 | 2 | 8 | 128) && h.acc === 2 && E.hitsText(h.hit, h.acc) === "KICK >SNARE HATCL BELL" &&
+  const h = E.parseHits("kick >snare HATCL cym openhat");   /* ((Vallée) SPAMPY's 16 lanes */
+  ok(h && h.hit === (1 | 4 | 16 | 2048 | 32) && h.acc === 4 && E.hitsText(h.hit, h.acc) === "KICK >SNARE HAT OPENHAT CRASH" &&
      E.parseHits("KICK FOO") === null && E.parseHits(" ").hit === 0, "grid: hits as text (lanes, > accent, CYM / CONGA aliases)");
   let s = E.parse[C.STEP_SET](await rq(E.req.stepSet(3, { n: 1, notes: [41, 0, 0, 0], time: 0, flags: 0, vel: 100, hit: 0x81, acc: 0x80 })));
   ok(s.hit === 0x81 && s.acc === 0x80 && s.notes[0] === 41, "grid: STEP_SET / STEP_GET carry the hits (lane 8 too)");
@@ -872,11 +872,12 @@ async function editorGrid() {
   }
   const cap = await E.capturePatch(rq, info, "MY BEAT");
   ok(cap.patch.grid && !cap.patch.pattern && cap.patch.grid[0][0] === 0x81 && cap.patch.grid[0][1] === 0x80 &&
-     cap.patch.grid[2][0] === 0x80 && cap.patch.grid[1][0] === 0 && cap.patch.grid[4][0] === 1,
-     "grid: capture of a DRUM track = its grid (a crash 49 on BELL)");
+     cap.patch.grid[2][0] === 0x800 && cap.patch.grid[1][0] === 0 && cap.patch.grid[4][0] === 1,
+     "grid: capture of a DRUM track = its grid (a crash 49 on CRASH, (Vallée) lane 12)");
   const rc = await E.bank.put(rq, 14, cap.patch);
   const g = await E.bank.get(rq, info, 14);
-  ok(rc === 0 && g.grid && !g.pattern && JSON.stringify(g.grid) === JSON.stringify(cap.patch.grid), "grid: UP_PUT kind 1 -> UP_GET round trip");
+  ok(rc === 0 && g.grid && !g.pattern && JSON.stringify(g.grid) === JSON.stringify(cap.patch.grid.map(([h, a]) => [h & 255, a & 255])),
+    "grid: UP_PUT kind 1 -> UP_GET round trip (the record's 8 bits: lanes 1..8)");
   const put = E.req.upPut(14, cap.patch), saved = JSON.stringify(m.state.bank[14]);
   const base = put[1].length - 17;
   for (const bytes of [put[1].slice(0, -1), [...put[1], 0], [...put[1].slice(0, base), 2, ...Array(16).fill(0)]]) {
@@ -1481,8 +1482,8 @@ async function editorMixer() {
   /* track 4's demo beat: the DRUM kit's lane hits and accents */
   const st = [];
   for (let i = 0; i < 16; i++) st.push(E.parse[C.TRACK_STEP](await rq(E.req.trackStep(3, i))));
-  ok(st.every((s) => s.n === 0) && st[0].hit === 1 && st[0].acc === 1 && st[1].hit === 8
-    && st[4].hit === 2 && st[4].acc === 2 && st[14].hit === 16,
+  ok(st.every((s) => s.n === 0) && st[0].hit === 1 && st[0].acc === 1 && st[1].hit === 16   /* ((Vallée) SPAMPY's lanes */
+    && st[4].hit === 4 && st[4].acc === 4 && st[14].hit === 32,
     "mixer: the mock's track 4 holds the BEAT grid (KICK CHH ... SNARE ... OHH)");
   ok(JSON.stringify(E.parseNotes("C4 E4 G4")) === "[60,64,67]" && JSON.stringify(E.parseNotes("36 38")) === "[36,38]" && E.parseNotes("KICK") === null,
     "mixer: notes parse as numbers or note names (no GM drum names)");
@@ -1962,8 +1963,8 @@ function samplesMatch() {
     const tone = (amp) => Float64Array.from({ length: 4000 }, (_, i) => Math.sin(i * 0.3) * amp);
     const rows = E.LANES.map(() => null);
     rows[0] = { raw: tone(0.5), a: 0, b: 4000, lvl: 1 };
-    rows[3] = { raw: tone(0.5), a: 0, b: 4000, lvl: 0.5 };
-    rows[6] = { raw: tone(0.25), a: 0, b: 2000, lvl: 1 };
+    rows[4] = { raw: tone(0.5), a: 0, b: 4000, lvl: 0.5 };   /* ((Vallée) SPAMPY's lanes: HAT 42, RIM 37 */
+    rows[7] = { raw: tone(0.25), a: 0, b: 2000, lvl: 1 };
     const zs = E.kitZones(rows), pk = (s) => s.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
     const slot = E.buildSlot("KIT", zs).zones;
     ok(zs.length === 3 && zs.map((z) => [z.root, z.lo, z.hi].join("/")).join() === "36/36/36,42/42/42,37/37/37" &&

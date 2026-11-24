@@ -767,7 +767,7 @@ static void g_drums(step_t *w, const gdrum_t *d, grng_t *r, int32_t energy, int 
     uint32_t i, l;
     for (i = 0; i < len; i++) {
         uint32_t hit = 0, acc = 0, ghost = 0, bar = i / 16u;
-        for (l = 0; l < NLANE; l++) {
+        for (l = 0; l < 8u; l++) {                       /* (its 8 lanes of before: mapped below, lanes_from8) */
             char c = d->ln[l] ? d->ln[l][i % 16u] : '.';
             if (!d->ln[l] || c == '\0')
                 continue;
@@ -790,8 +790,8 @@ static void g_drums(step_t *w, const gdrum_t *d, grng_t *r, int32_t energy, int 
         if (!hit && !ghost)
             continue;
         w[i].time = ST_NOTE;
-        w[i].hit = (uint8_t)(hit | ghost);
-        w[i].acc = (uint8_t)acc;
+        w[i].hit = (uint16_t)lanes_from8(hit | ghost);   /* ((Vallée) GEN writes the old 8, mapped to SPAMPY lanes */
+        w[i].acc = (uint16_t)lanes_from8(acc);
         w[i].vel = (uint8_t)clamp(g_vel(r, hit ? 100 : 46), 1, 127);
         if (gen.v[GK_COMPLEX] > 60 && ((hit >> 3) & 1u) && g_pct(r, gen.v[GK_COMPLEX] - 55))
             w[i].flags |= (uint8_t)(1u << SF_RATCH_SH);   /* (a hat doubled) */
@@ -1190,7 +1190,7 @@ static uint32_t gen_amt(uint32_t role)
 
 /* (Vallée) role's steps for part (GEN's knobs as they are, plan p) into w: their length (gen_write; THE SPELL's
  * re-roll, gen_part_steps) */
-static step_t gen_w[NSTEP];                             /* (.bss: the pool is full) */
+static step_t gen_w[NSTEP] __attribute__((section(".pool")));   /* ((Vallée) the pool: .bss is tight with 16 lanes) */
 static uint32_t gen_role_steps(uint32_t role, uint32_t part, const gplan_t *p, step_t *w)
 {
     const gstyle_t *s = g_sty();

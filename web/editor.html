@@ -592,23 +592,27 @@ function unframe(d) {
   return { cmd: d[4], a: Array.from(d.slice(5, d.length - 1)) };
 }
 
-/* the DRUM grid (firmware v5): a step's lane hits and their accents, bit l = lane l. Each lane plays its GM note
-   (eng_drum.c DRUM_LANE_NOTE) on any engine; LANE_OF: the lane a GM note 35..81 strikes (drum_lane; others fold
-   to their octave of 36..47) */
-const LANES = ["KICK", "SNARE", "CLAP", "HATCL", "HATOP", "TOM", "RIM", "BELL"];
-const LANE_NOTE = [36, 38, 39, 42, 46, 45, 37, 56];
-const LANE_OF = "00612153535455757773777675555555773366336665577";
-const LANE_ALIAS = { CONGA: 5, CLAVE: 6, CYM: 7, BD: 0, SD: 1, CP: 2, CH: 3, OH: 4 };
-const drumLane = (n) => +LANE_OF[(n >= 35 && n <= 81 ? n : 36 + ((n + 120 - 36) % 12)) - 35];
+/* the DRUM grid (firmware v5; (Vallée) SPAMPY's 16 lanes): a step's lane hits and their accents, bit l = lane l.
+   Each lane plays its GM note (eng_drum.c DRUM_LANE_NOTE) on any engine; LANE_OF: the lane a GM note 35..81 strikes,
+   a hex digit each (drum_lane: every note a lane's; below 35 the kick, above 81 the shaker) */
+const LANES = ["KICK", "KICK 2", "SNARE", "CLAP", "HAT", "OPEN HAT", "PEDAL", "RIM",
+               "SNARE 2", "LOW TOM", "HI TOM", "CRASH", "RIDE", "SHAKER", "CONGA", "COWBELL"];
+const LANE_NOTE = [36, 35, 38, 39, 42, 46, 44, 37, 40, 43, 48, 49, 51, 70, 63, 56];
+const LANE_OF = "107238949695aabacbcdbfbdceeeeeeeffddffdd777eeff";
+const LANE_ALIAS = { BD: 0, B2: 1, SD: 2, CP: 3, CH: 4, OH: 5, PH: 6, RS: 7, S2: 8, LT: 9, HT: 10, CR: 11, RD: 12, SH: 13,
+                     CG: 14, CB: 15, KICK2: 1, OPENHAT: 5, HATCL: 4, HATOP: 5, SNARE2: 8, LOWTOM: 9, HITOM: 10, TOM: 9,
+                     BELL: 15, CYM: 11, CLAVE: 7 };
+const drumLane = (n) => (n < 35 ? 0 : n > 81 ? 13 : parseInt(LANE_OF[n - 35], 16));
 /* the lanes a step strikes (its hits, its notes on their lanes) and which are accented (step_lanes / step_accents) */
 const stepLanes = (s) => (s.time !== 0 ? 0 : s.notes.slice(0, s.n).reduce((m, n) => m | (1 << drumLane(n)), s.hit | 0));
 const stepAccents = (s) => (s.flags & 1 ? stepLanes(s) : (s.acc | 0) & stepLanes(s));
 /* hits as text, an accent marked ">" ("KICK >SNARE HATCL"), and back: null when a word is not a lane */
-const hitsText = (hit, acc) => LANES.map((nm, l) => (hit >> l & 1 ? (acc >> l & 1 ? ">" : "") + nm : "")).filter(Boolean).join(" ");
+const LANE_WORD = LANES.map((nm) => nm.replace(/ /g, ""));   /* ((Vallée) one word each: "KICK2", "OPENHAT" */
+const hitsText = (hit, acc) => LANE_WORD.map((nm, l) => (hit >> l & 1 ? (acc >> l & 1 ? ">" : "") + nm : "")).filter(Boolean).join(" ");
 function parseHits(text) {
   let hit = 0, acc = 0;
   for (const w of String(text).toUpperCase().split(/[\s,]+/).filter(Boolean)) {
-    const a = w.startsWith(">"), nm = a ? w.slice(1) : w, l = LANES.includes(nm) ? LANES.indexOf(nm) : LANE_ALIAS[nm];
+    const a = w.startsWith(">"), nm = a ? w.slice(1) : w, l = LANE_WORD.includes(nm) ? LANE_WORD.indexOf(nm) : LANE_ALIAS[nm];
     if (l == null) return null;
     hit |= 1 << l;
     if (a) acc |= 1 << l;
@@ -1647,7 +1651,7 @@ function cleanPatch(pt) {
     ? Array.from({ length: UP.PAT }, (_, i) => { const x = pt.pattern[i]; return Array.isArray(x) ? patNorm(x[0] | 0, x[1] | 0) : [0, 0]; })
     : null;
   const grid = Array.isArray(pt.grid) && pt.grid.length
-    ? Array.from({ length: UP.PAT }, (_, i) => { const x = pt.grid[i]; const h = Array.isArray(x) ? x[0] & 255 : 0; return [h, Array.isArray(x) ? x[1] & h : 0]; })
+    ? Array.from({ length: UP.PAT }, (_, i) => { const x = pt.grid[i]; const h = Array.isArray(x) ? x[0] & 0xFFFF : 0;   /* ((Vallée) 16 lanes */ return [h, Array.isArray(x) ? x[1] & h : 0]; })
     : null;
   const o = {
     name: String(pt.name ?? "PATCH").slice(0, 32) || "PATCH",
@@ -2600,10 +2604,10 @@ function makeMockDevice(opt = {}) {
   const EMPTY = { n: 0, notes: [0, 0, 0, 0], time: 2, flags: 0, vel: 0, hit: 0, acc: 0, chance: 100, ratchet: 1 };
   const isDrum = () => ["DRUM", "DRUM-X"].includes(ENG[st.engine].name);   /* (Skiff: DRUM-X a drum track too) */
   const clearSteps = () => st.step.forEach((s) => Object.assign(s, EMPTY, { notes: [0, 0, 0, 0] }));
-  function toGrid(s) {                            /* eng_drum.c step_to_grid: a lane's own note becomes its hit */
+  function toGrid(s) {                            /* eng_drum.c step_to_grid: ((Vallée) every note its lane's hit */
     if (s.time !== 0) return;
-    const keep = s.notes.slice(0, s.n).filter((n) => { const l = drumLane(n); if (n !== LANE_NOTE[l]) return true; s.hit |= 1 << l; return false; });
-    s.notes = [...keep, 0, 0, 0, 0].slice(0, 4); s.n = keep.length;
+    s.notes.slice(0, s.n).forEach((n) => { s.hit |= 1 << drumLane(n); });
+    s.notes = [0, 0, 0, 0]; s.n = 0;
     if (!s.n && s.flags & 1) { s.acc |= s.hit; s.flags &= ~1; }
   }
   function loadPat16(pat) {                       /* ui.c load_pat16 (into a DRUM track: its grid) */

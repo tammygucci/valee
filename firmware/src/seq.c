@@ -172,7 +172,9 @@ static uint32_t key_place(uint32_t k)
         n += (uint32_t)(key_black(i) == key_black(k));
     return n;
 }
-enum { GK_ACC = NLANE, GK_PGDN, GK_PGUP };       /* black keys 9..11 on the grid */
+#define KLANE 8u                                /* ((Vallée) black keys 1..8: 8 of the 16 lanes, the page of 8 that */
+static uint8_t lane_view;                       /* holds the selected lane (lane_view 0 / 8: ui.lane & 8) */
+enum { GK_ACC = KLANE, GK_PGDN, GK_PGUP };       /* black keys 9..11 on the grid */
 
 static uint32_t scale_mask(const track_t *t)
 {
@@ -696,7 +698,7 @@ static __attribute__((noinline)) void rec_untie(const track_t *t, step_t *s, uin
     for (k = 0; k < b->n; k++)
         if ((m >> k) & 1u) {
             s->note[s->n] = b->note[k];
-            s->acc |= (uint8_t)(1u << s->n++);
+            s->acc |= (uint16_t)(1u << s->n++);
         }
 }
 
@@ -711,22 +713,11 @@ static void rec_put(track_t *t, step_t *s, uint32_t note, uint32_t vel)
             s->flags = 0;
             s->vel = 0;
         }
-        s->time = ST_NOTE;
-        if (note == DRUM_LANE_NOTE[l]) {            /* a lane's note: its hit */
-            s->hit |= (uint8_t)(1u << l);
-            if (vel > 110)
-                s->acc |= (uint8_t)(1u << l);
-        } else {                                    /* another GM drum (a low tom, a crash): a note */
-            for (k = 0; k < s->n && s->note[k] != note; k++)
-                ;
-            if (k == s->n) {
-                if (s->n < 4u)
-                    s->n++;
-                s->note[s->n - 1u] = (uint8_t)note;
-            }
-            if (vel > 110)
-                s->flags |= SF_ACCENT;
-        }
+        step_to_grid(s);                            /* ((Vallée) notes there of before: their lanes' hits (a */
+        s->time = ST_NOTE;                          /* step with hits holds no notes: project.c step_put9) */
+        s->hit |= (uint16_t)(1u << l);              /* ((Vallée) every drum note a lane's: its hit (SPAMPY's 16) */
+        if (vel > 110)
+            s->acc |= (uint16_t)(1u << l);
     } else {
         if (s->time != ST_NOTE || !s->n || trk_vmode(t) != V_POLY) {
             s->n = 0;                               /* a fresh step */
@@ -807,14 +798,14 @@ static __attribute__((noinline)) void rec_hold_mix(track_t *t, uint32_t idx, uin
                 ;
             if (x < s->n) {
                 if (idx != t->rh_start && !s->hit)
-                    s->acc |= (uint8_t)(1u << x);
+                    s->acc |= (uint16_t)(1u << x);
             } else if (s->hit || s->n >= 4u) {
                 keep = 0;
             } else {
                 if (!s->n)
                     s->time = ST_NOTE;
                 s->note[s->n] = (uint8_t)p;
-                s->acc |= (uint8_t)(1u << s->n++);
+                s->acc |= (uint16_t)(1u << s->n++);
                 add = 1;
             }
         }
@@ -888,7 +879,7 @@ static void rec_release(track_t *t, uint32_t note)
             for (; x + 1u < s->n; x++)
                 s->note[x] = s->note[x + 1u];
             s->note[--s->n] = 0;
-            s->acc = (uint8_t)((s->acc & lo) | ((s->acc >> 1) & ~lo));
+            s->acc = (uint16_t)((s->acc & lo) | ((s->acc >> 1) & ~lo));
             if (!s->n && !s->hit)
                 s->time = ST_REST;
         }
@@ -1187,7 +1178,7 @@ static __attribute__((noinline)) void keyboard_block(void)
             if (song.grid == 2u)                  /* NAME (ui_name.c): every key types, none sounds */
                 kb_note[k] = KB_SILENT;
             else if (song.grid)                   /* the DRUM grid: a lane key plays its lane, the rest are the UI's */
-                kb_note[k] = key_black(k) && key_place(k) < NLANE ? DRUM_LANE_NOTE[key_place(k)] : KB_SILENT;
+                kb_note[k] = key_black(k) && key_place(k) < KLANE ? DRUM_LANE_NOTE[lane_view + key_place(k)] : KB_SILENT;
             else
                 kb_note[k] = (uint8_t)kb_map(&trk[kb_trk[k]], k);
             if (kb_note[k] == KB_SILENT)

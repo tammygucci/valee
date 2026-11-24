@@ -60,7 +60,7 @@ static int motion_capacity(void)
 static int probability_playback(void)
 {
     int bad = 0; ui_power_on(); track_t *t = &trk[0];
-    step_t s = {{60, 64, 0, 0}, 2, ST_NOTE, 0, 90, 1u << DV_KICK, 0, 0};
+    step_t s = {{60, 64, 0, 0}, 2, ST_NOTE, 0, 90, 1u << LN_KICK, 0, 0};
     bad += check("zero-initialized probability remains legacy 100 percent", step_chance(&s) == 100u);
     step_set_chance(&s, 0); seq_step(t, &s, div_samples(2), 0);
     bad += check("zero percent suppresses the whole chord and drum hits", step_chance(&s) == 0u && !t->seq_n);
@@ -74,7 +74,7 @@ static int probability_playback(void)
 static int compact_project(void)
 {
     int bad = 0; ui_power_on(); track_t *t = &trk[0];
-    t->step[3] = (step_t){{60, 67}, 2, ST_NOTE, SF_ACCENT, 110, 0x81, 0x80, 0};
+    t->step[3] = (step_t){{0, 0}, 0, ST_NOTE, SF_ACCENT, 110, 0x81, 0x80, 0};   /* ((Vallée) hits: no notes */
     step_set_chance(&t->step[3], 25); t->p[P_FM1_LEVEL] = 80; t->p[P_ED_FLT] = -50;
     motion_set_event(t, 3, P_REV, 110);
     project_t before, after; project_store_t packed, corrupt;

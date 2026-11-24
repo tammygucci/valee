@@ -33,7 +33,12 @@
 #define BK_VER 1u
 #define BK_VER2 2u                                 /* (Skiff 1.3) an id from 128 on (see the top) */
 #define BK_VER3 3u                                 /* (Skiff 2.0, #25) per-note ties (see the top) */
-static int bk_ver(uint32_t v) { return v == BK_VER || v == BK_VER2 || v == BK_VER3; }
+#define BK_VER4 4u                                 /* ((Vallée, the SPAMPY sound) 16 lanes in SPAMPY's order (project.c
+                                                    * step_put9); BK_VER2's ids and BK_VER3's ties as well. What this
+                                                    * firmware writes, every record: Classic shows one as empty, never
+                                                    * misread; a record of version 1..3 is read through LANE_FROM8 */
+static int bk_ver(uint32_t v) { return v == BK_VER || v == BK_VER2 || v == BK_VER3 || v == BK_VER4; }
+#define BK_OLD(r) ((r)[0] < BK_VER4)               /* (its lanes: Vallée's 8 of before) */
 #define BK_PER 4u
 #define BK_POOL NPAT                               /* the patterns, ids 0 .. 63 (every track's: phase 5) */
 #define BK_CHUNKS (BK_POOL / BK_PER)
@@ -228,7 +233,7 @@ static int bk_pack_raw(uint8_t *r, uint32_t k, const step_t *st, const int16_t *
         if ((ms->event[i].place >> 6) == k && MOTION_ID(&ms->event[i]) >= PROJ_NP - 8u && MOTION_ID(&ms->event[i]) < P_E0)
             np = P_COUNT;
     memset(r, 0, BK_REC);
-    r[0] = BK_VER;
+    r[0] = BK_VER4;                                /* ((Vallée) every record: SPAMPY's lanes (BK_VER4) */
     r[1] = (uint8_t)np;
     for (i = 0; i < 5u; i++)
         r[2u + i] = (uint8_t)(tv[i] + 64);
@@ -246,15 +251,13 @@ static int bk_pack_raw(uint8_t *r, uint32_t k, const step_t *st, const int16_t *
         uint32_t id = np == P_COUNT || MOTION_ID(e) < P_E0 ? MOTION_ID(e) : MOTION_ID(e) - PROJ_ESHIFT;
         m[0] = (uint8_t)((e->place & 63u) | (id >> 7) << 6);   /* ((1.3) the id's bit 7: BK_VER2) */
         m[1] = (uint8_t)((id & 127u) | (e->lock ? MOTION_LOCK : 0u));
-        if (id > 127u)
-            r[0] = BK_VER2;
+        (void)0;                                   /* ((1.3) an id past 127: BK_VER2's bit; (Vallée) BK_VER4 holds it */
         m[2] = (uint8_t)e->value;
         m[3] = (uint8_t)((uint16_t)e->value >> 8);
         n++;
     }
     r[7] = (uint8_t)(n | (on ? 128u : 0u));
-    if (ties)
-        r[0] = BK_VER3;                            /* ((2.0) its ids as BK_VER2's too) */
+    (void)ties;                                    /* ((2.0) ties: BK_VER3's; (Vallée) BK_VER4 holds them */
     return 1;
 }
 /* track t's pattern as it is (the sound's own timing, its automation and locks) -> record r */
@@ -435,7 +438,7 @@ static int pat_decode(const track_t *t, uint32_t id, step_t *st, int16_t *v, mot
         return 1;
     memset(st, 0, NSTEP * sizeof *st);
     for (i = 0; i < NSTEP; i++)
-        if (!step_get9(&st[i], r + BK_STEPS + i * 9u))
+        if (!step_get9(&st[i], r + BK_STEPS + i * 9u, BK_OLD(r)))
             return 1;
     nudge_unpack(st, r + BK_NUDGE, NSTEP);
     for (i = 0; i < 5u; i++)
@@ -628,7 +631,7 @@ static uint32_t chain_next(uint32_t k, uint32_t *e2, step_t *u, uint32_t *un)
     *un = bk_rec[2] - 64u < CT_N ? bk_rec[2] - 64u : CT_N;
     memset(u, 0, CT_N * sizeof *u);
     for (i = 0; i < *un; i++)
-        if (!step_get9(&u[i], bk_rec + BK_STEPS + i * 9u))
+        if (!step_get9(&u[i], bk_rec + BK_STEPS + i * 9u, BK_OLD(bk_rec)))
             return PAT_NONE;
     for (i = 0; i < *un; i++)
         ed_unfold(&u[i], &u[i], i ? &u[i - 1u] : 0);
@@ -684,7 +687,7 @@ static int chain_tails(uint32_t k, const step_t *last, uint32_t cnt, const uint8
     for (i = 0; i < un; i++)
         if (!step_put9(bk_rec + BK_STEPS + i * 9u, &u[i]))
             return 2;
-    bk_rec[0] = BK_VER3;                           /* (ties in it) */
+    bk_rec[0] = BK_VER4;                           /* (ties in it; (Vallée) its steps written in SPAMPY's lanes) */
     if (pat_keep_rec(id, bk_rec))
         return 2;
     if (q->armed && q->slot == e2 && !q->done) {   /* (playing: the copy coming in next, the same) */
@@ -870,7 +873,7 @@ static int keep_poll(void)
  * (AUTOMATION FULL: the pattern keeps it, motion_lost) */
 static int pat_load(track_t *t, uint32_t id)
 {
-    static step_t st[NSTEP];
+    static step_t st[NSTEP] __attribute__((section(".pool")));   /* ((Vallée) the pool: .bss is tight with 16 lanes) */
     static motion_store_t ms;
     uint32_t k = trk_index(t), i, full;
     int16_t v[5];
@@ -1709,7 +1712,7 @@ static void rec_empty(uint8_t *r, const track_t *t)
     for (i = 1; i < NSTEP; i++)
         memcpy(r + BK_STEPS + i * 9u, r + BK_STEPS, 9u);
     memset(r + BK_NUDGE, 0, BK_REC - BK_NUDGE);
-    r[0] = BK_VER;
+    r[0] = BK_VER4;
     r[1] = PROJ_NP;
     r[7] = 0;
 }
@@ -2159,7 +2162,7 @@ static int bank_chunk_ok(const uint8_t *b, uint32_t len)
         if (!bk_ver(p[0]) || p[1] < 8u || p[1] > P_COUNT || (p[7] & 127u) > MOTION_MAX)
             return 0;
         for (i = 0; i < NSTEP; i++)
-            if (!step_get9(&s, p + BK_STEPS + i * 9u))
+            if (!step_get9(&s, p + BK_STEPS + i * 9u, BK_OLD(p)))
                 return 0;
     }
     return 1;

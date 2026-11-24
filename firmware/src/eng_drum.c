@@ -120,10 +120,24 @@ static uint32_t drum_gm(const int16_t *p, uint32_t note, int32_t *st)
 /* A step's lane hits (step_t.hit / acc, the DRUM grid: SEQ > NOTES on a DRUM track) play these GM notes, on any
  * engine: DRUM strikes its lanes, a synth plays the pitches. Each is the designed pitch of
  * its lane (st 0 in DRUM_GM) */
-static const uint8_t DRUM_LANE_NOTE[NLANE] = {36, 38, 39, 42, 46, 45, 37, 56};
-
-/* the lane a note strikes (KIT-proof: a kit plays its own piece inside the lane) */
+/* ((Vallée, the SPAMPY sound) SPAMPY's 16 sounds (its drums.c LANE_NOTE), one per white key F3 (kick) .. G5 (cowbell) */
+static const uint8_t DRUM_LANE_NOTE[NLANE] = {36, 35, 38, 39, 42, 46, 44, 37, 40, 43, 48, 49, 51, 70, 63, 56};
+/* a GM note -> its lane: the nearest sound of the 16 (35..81; below: kick, above: shaker): SPAMPY's LANE_OF_GM */
+static const uint8_t LANE_OF_GM[81 - 35 + 1] = {
+    /* 35 */ 1, 0, 7, 2, 3, 8, 9, 4, 9, 6,
+    /* 45 */ 9, 5, 10, 10, 11, 10, 12, 11, 12, 13,
+    /* 55 */ 11, 15, 11, 13, 12, 14, 14, 14, 14, 14,
+    /* 65 */ 14, 14, 15, 15, 13, 13, 15, 15, 13, 13,
+    /* 75 */ 7, 7, 7, 14, 14, 15, 15};
+/* the lane a note strikes (the grid, the keys, MIDI in: every note a lane's) */
 static uint32_t drum_lane(uint32_t note)
+{
+    return note < 35u ? 0u : note > 81u ? 13u : LANE_OF_GM[note - 35u];
+}
+/* the drum voices' own 8 (drum_voice.c, until SPAMPY's player: phase 3b): their notes (the 8 lanes of before), a
+ * note's DV lane by its GM piece, their names as the kit plays them (the LANES pages' 8: P_LN0.., P_LTUNE0..) */
+static const uint8_t DV_LANE_NOTE[DV_NLANE] = {36, 38, 39, 42, 46, 45, 37, 56};
+static uint32_t dv_lane(uint32_t note)
 {
     uint32_t n = note >= 35u && note <= 81u ? note : 36u + (note + 120u - 36u) % 12u;
     return DV_TYPE_LANE[DRUM_GM[n - 35u][0]];
@@ -142,7 +156,7 @@ static uint32_t drum_swaps(const track_t *t)
  * SAMPLE picks one), as a voice keeps it (0x8000 | k << 5 | zone); 0 none: the lane silent */
 static uint32_t drum_user_zone(uint32_t k, uint32_t l)
 {
-    uint32_t i, zi = 0, w = 128u, note = DRUM_LANE_NOTE[l & (NLANE - 1u)];
+    uint32_t i, zi = 0, w = 128u, note = DV_LANE_NOTE[l & (DV_NLANE - 1u)];
     k %= SMP_USER_SLOTS;
     for (i = 0; i < usr_nz[k]; i++) {
         const smp_zone_t *z = &usr_zone[k][i];
@@ -164,29 +178,43 @@ static int drum_lane_has(const track_t *t, uint32_t l)
 /* (Skiff 1.3, from Felucca 1.4.1) the lanes' mutes, a bit each a track (KICK .. BELL), DRUM's and DRUM-X's: the EDIT
  * layer's black keys 1..8 (ui_layer.c). Performance state: not saved; a sound load clears the track's, a project load
  * every track's. A muted lane's voice rings on unheard (its hits still take a voice: un-muting is seamless) */
-static uint8_t drum_mute[NTRK];
-static const char *drum_lane_name(const track_t *t, uint32_t l)
+static uint16_t drum_mute[NTRK];   /* ((Vallée) bit l: grid lane l muted (16) */
+static const char *drum_lane_name(const track_t *t, uint32_t l)   /* ((Vallée) SPAMPY's names, 8 characters at most */
 {
-    static const char *const N[NLANE] = {"KICK", "SNARE", "CLAP", "CL HAT", "OP HAT", "TOM", "RIM", "BELL"};
+    static const char *const N[NLANE] = {"KICK", "KICK 2", "SNARE", "CLAP", "HAT", "OPEN HAT", "PEDAL", "RIM",
+                                         "SNARE 2", "LOW TOM", "HI TOM", "CRASH", "RIDE", "SHAKER", "CONGA", "COWBELL"};
+    (void)t;
+    return N[l & (NLANE - 1u)];
+}
+static const char *dv_lane_name(const track_t *t, uint32_t l)
+{
+    static const char *const N[DV_NLANE] = {"KICK", "SNARE", "CLAP", "CL HAT", "OP HAT", "TOM", "RIM", "BELL"};
     uint32_t kit = drum_swaps(t);
-    l &= NLANE - 1u;
+    l &= DV_NLANE - 1u;
     if (l == DV_TOM && (kit & 1u))
         return "CONGA";
     if (l == DV_RIM && (kit & 2u))
         return "CLAVE";
     return (kit & 4u) && l == DV_BELL ? "CYM" : N[l];
 }
-/* .. in two letters, the drum machine way (the grid's lane column) */
-static const char *drum_lane_abbr(const track_t *t, uint32_t l)
+static const char *dv_lane_abbr(const track_t *t, uint32_t l)
 {
-    static const char *const N[NLANE] = {"BD", "SD", "CP", "CH", "OH", "TM", "RS", "CB"};
+    static const char *const N[DV_NLANE] = {"BD", "SD", "CP", "CH", "OH", "TM", "RS", "CB"};
     uint32_t kit = drum_swaps(t);
-    l &= NLANE - 1u;
+    l &= DV_NLANE - 1u;
     if (l == DV_TOM && (kit & 1u))
         return "CG";
     if (l == DV_RIM && (kit & 2u))
         return "CL";
     return (kit & 4u) && l == DV_BELL ? "CY" : N[l];
+}
+/* .. in two letters, the drum machine way (the grid's lane column) */
+static const char *drum_lane_abbr(const track_t *t, uint32_t l)
+{
+    static const char *const N[NLANE] = {"BD", "B2", "SD", "CP", "CH", "OH", "PH", "RS",
+                                         "S2", "LT", "HT", "CR", "RD", "SH", "CG", "CB"};
+    (void)t;
+    return N[l & (NLANE - 1u)];
 }
 
 /* the lanes step s strikes: its hits, and its notes on their lanes (a NOTE step only) */
@@ -203,22 +231,16 @@ static uint32_t step_lanes(const step_t *s)
 /* .. and which of them are accented */
 static uint32_t step_accents(const step_t *s) { return s->flags & SF_ACCENT ? step_lanes(s) : s->acc & step_lanes(s); }
 
-/* a step's notes that are a lane's note become that lane's hits (the same note, the same velocity: nothing
- * sounds different). Other notes (a low tom 41, a crash 49) stay notes, shown on their lane. A step accent
- * of a step left with hits only becomes the hits' accents. Pattern loads into a DRUM track, projects of
- * before the grid, the grid's edits */
+/* a step's notes become their lanes' hits (drum_lane: every GM note has its nearest of the 16: (Vallée) SPAMPY's
+ * way, so a DRUM track's step holds hits only, never notes). A step accent of a step left with hits only becomes
+ * the hits' accents. Pattern loads into a DRUM track, projects of before the grid, the grid's edits */
 static void step_to_grid(step_t *s)
 {
     uint32_t i, k = 0;
     if (s->time != ST_NOTE)
         return;
-    for (i = 0; i < s->n && i < 4u; i++) {
-        uint32_t l = drum_lane(s->note[i]);
-        if (s->note[i] == DRUM_LANE_NOTE[l])
-            s->hit |= (uint8_t)(1u << l);
-        else
-            s->note[k++] = s->note[i];
-    }
+    for (i = 0; i < s->n && i < 4u; i++)
+        s->hit |= (uint16_t)(1u << drum_lane(s->note[i]));
     for (i = k; i < 4u; i++)
         s->note[i] = 0;
     s->n = (uint8_t)k;
@@ -248,7 +270,7 @@ static drum_lane_t *drum_lane_of(track_t *t, const voice_t *v)
 static voice_t *drum_reuse(track_t *t, uint32_t note)
 {
     drum_lane_t *K = drum_kit_of(t);
-    uint32_t lane = drum_lane(note), owner = K ? K[lane].owner : 0;
+    uint32_t lane = dv_lane(note), owner = K ? K[lane].owner : 0;
     voice_t *v;
     if (!owner || owner > NVOICE)
         return 0;
@@ -264,7 +286,7 @@ static void drum_note_on(track_t *t, voice_t *v)
     if (!K || i >= NVOICE)
         return;
     role = drum_gm(t->p, v->note, &st);
-    lane = drum_lane(v->note);
+    lane = dv_lane(v->note);
     L = &K[(uint32_t)v->s[0] & (DV_NLANE - 1u)];
     u = drum_user(t->p);
     if (u && v->env && L->owner == i + 1u && (v->s[5] & 0x8000) && v->s[6] != 1) {   /* ((#35) its sample still */
@@ -351,7 +373,7 @@ static __attribute__((noinline)) void drum_smp(track_t *t, voice_t *v, int32_t *
     int32_t lp = p[P_E2] < 64 ? 2000 + p[P_E2] * 480 : 0, y = (int32_t)v->ph[2], drv = p[P_E7], g = 0, mk = 0, s;
     int32_t off = v->s[4];
     uint32_t stepq = (pow2_q16(d16) >> 8) * (z->rate >> 8), frac = v->ph[1], i;
-    int heard = !((drum_mute[(uint32_t)(t - trk) % NTRK] >> ln) & 1u);
+    int heard = !((drum_mute[(uint32_t)(t - trk) % NTRK] >> drum_lane(v->note)) & 1u);
     if (!v->s[5] || !z->n || v->s[6] == 1) {             /* (no sample, its slot emptied since: over) */
         v->s[6] = 1;
         return;
@@ -453,7 +475,7 @@ static void drum_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
     again = L->v.trig && L->v.live;                      /* (2.1.1) struck again while it rings */
     dv_run(&L->c, &L->v, mb, y, n);
     drum_declick(L, y, n, again);
-    if ((drum_mute[(uint32_t)(t - trk) % NTRK] >> ln) & 1u)
+    if ((drum_mute[(uint32_t)(t - trk) % NTRK] >> drum_lane(v->note)) & 1u)
         return;                                          /* ((1.3) a muted lane rings on unheard) */
     if (drv > 0) {                                       /* DRV: x1..x4 into the soft clip, the level kept (Q12) */
         g = 4096 + drv * 3 * 4096 / 127;

@@ -708,16 +708,16 @@ static double lane_mix(uint32_t note, uint32_t lane, int16_t level, uint32_t nb,
 }
 static void lane_levels(void)
 {
-    static const uint8_t NOTE[NLANE] = {36, 38, 39, 42, 46, 45, 37, 56};
+    static const uint8_t NOTE[DV_NLANE] = {36, 38, 39, 42, 46, 45, 37, 56};
     uint32_t l, bad = 0;
     uint64_t h0, h1, h2;
     double worst = 0;
     kit_fresh();
-    for (l = 0; l < NLANE; l++)
-        bad += trk[0].p[P_LN0 + l] != 127 || TP[P_LN0 + l].def != 127 || NOTE[l] != DRUM_LANE_NOTE[l];
-    for (l = 0; l < NLANE; l++) {
+    for (l = 0; l < DV_NLANE; l++)
+        bad += trk[0].p[P_LN0 + l] != 127 || TP[P_LN0 + l].def != 127 || NOTE[l] != DV_LANE_NOTE[l];
+    for (l = 0; l < DV_NLANE; l++) {
         double full = lane_mix(NOTE[l], l, 127, 64, &h0), half, off;
-        (void)lane_mix(NOTE[l], (l + 1u) % NLANE, 0, 64, &h1);   /* another lane silenced: this one as it was */
+        (void)lane_mix(NOTE[l], (l + 1u) % DV_NLANE, 0, 64, &h1);   /* another lane silenced: this one as it was */
         half = lane_mix(NOTE[l], l, 64, 64, &h2);
         bad += h1 != h0 || h2 == h0;
         off = lane_mix(NOTE[l], l, 0, 64, &h1);
@@ -759,18 +759,18 @@ static double lane_try(uint32_t note, uint32_t id, int16_t v, uint32_t nb, uint6
 }
 static void lane_tune_decay(void)
 {
-    static const uint8_t NOTE[NLANE] = {36, 38, 39, 42, 46, 45, 37, 56};
-    static const uint8_t PITCHED[NLANE] = {1, 0, 0, 0, 0, 1, 1, 1};   /* (the snare, the clap, the hats: mostly noise) */
+    static const uint8_t NOTE[DV_NLANE] = {36, 38, 39, 42, 46, 45, 37, 56};
+    static const uint8_t PITCHED[DV_NLANE] = {1, 0, 0, 0, 0, 1, 1, 1};   /* (the snare, the clap, the hats: mostly noise) */
     uint32_t l, bad = 0, c0, c1, cx;
     uint64_t h0, h1, h2;
     double l0, l1, lx;
     kit_fresh();
-    for (l = 0; l < NLANE; l++)
+    for (l = 0; l < DV_NLANE; l++)
         bad += trk[0].p[P_LTUNE0 + l] != 64 || trk[0].p[P_LDECAY0 + l] != 0;
-    for (l = 0; l < NLANE; l++) {
+    for (l = 0; l < DV_NLANE; l++) {
         (void)lane_try(NOTE[l], P_LTUNE0 + l, 64, 128, &h0, &c0, &l0);
-        (void)lane_try(NOTE[l], P_LTUNE0 + (l + 1u) % NLANE, 127, 128, &h1, &cx, &lx);
-        (void)lane_try(NOTE[l], P_LDECAY0 + (l + 3u) % NLANE, -64, 128, &h2, &cx, &lx);
+        (void)lane_try(NOTE[l], P_LTUNE0 + (l + 1u) % DV_NLANE, 127, 128, &h1, &cx, &lx);
+        (void)lane_try(NOTE[l], P_LDECAY0 + (l + 3u) % DV_NLANE, -64, 128, &h2, &cx, &lx);
         bad += h1 != h0 || h2 != h0;                  /* another lane's: this one as it was */
         (void)lane_try(NOTE[l], P_LTUNE0 + l, 127, 128, &h1, &c1, &lx);
         bad += h1 == h0 || (PITCHED[l] && c1 < c0 + c0 / 4u);
@@ -1130,7 +1130,7 @@ static void kit_keys(void)
         trk[0].p[P_E6] = 1;
         for (n = 0; n < 128u; n++) {
             uint32_t t = drum_gm(trk[0].p, n, &st);
-            bad += t != DV_KTYPE(k + 1u, drum_lane(n));
+            bad += t != DV_KTYPE(k + 1u, dv_lane(n));
         }
         for (i = 0; i < 8u; i++) {
             kit_fresh();
@@ -1154,22 +1154,13 @@ static void kit_keys(void)
     }
     host_tracks_init();
     host_preset(&trk[0], ENGI_DRUM, 0);
+    /* ((Vallée, the SPAMPY sound) the grid's 16 lanes named as SPAMPY's, whatever the kit */
     trk[0].p[P_E0] = DK_10;
-    bad += strcmp(drum_lane_name(&trk[0], DV_BELL), "CYM") != 0 || strcmp(drum_lane_abbr(&trk[0], DV_TOM), "TM") != 0;
+    bad += strcmp(drum_lane_name(&trk[0], LN_BELL), "COWBELL") != 0 || strcmp(drum_lane_abbr(&trk[0], LN_LTOM), "LT") != 0;
     trk[0].p[P_E0] = DK_66;
-    bad += strcmp(drum_lane_name(&trk[0], DV_TOM), "CONGA") != 0 || strcmp(drum_lane_name(&trk[0], DV_BELL), "BELL") != 0;
-    trk[0].p[P_E0] = DK_77;
-    bad += strcmp(drum_lane_name(&trk[0], DV_RIM), "CLAVE") != 0 || strcmp(drum_lane_abbr(&trk[0], DV_BELL), "CY") != 0;
-    trk[0].p[P_E0] = DK_STD;
-    bad += strcmp(drum_lane_name(&trk[0], DV_TOM), "TOM") != 0 || strcmp(drum_lane_name(&trk[0], DV_BELL), "BELL") != 0;
+    bad += strcmp(drum_lane_name(&trk[0], LN_CONGA), "CONGA") != 0 || strcmp(drum_lane_name(&trk[0], LN_KICK2), "KICK 2") != 0;
+    bad += strcmp(drum_lane_abbr(&trk[0], LN_SHAKER), "SH") != 0 || strcmp(drum_lane_name(&trk[0], LN_OHAT), "OPEN HAT") != 0;
     bad += ENG_DRUM.edit[0].max != DK_COUNT - 1 || strcmp(ENG_DRUM.edit[0].names[DK_77], "77") != 0;
-    trk[0].p[P_E0] = DK_DEEP;                         /* 1.5.6 (#216) */
-    bad += strcmp(drum_lane_name(&trk[0], DV_BELL), "CYM") != 0 || strcmp(drum_lane_name(&trk[0], DV_TOM), "TOM") != 0;
-    trk[0].p[P_E0] = DK_TIGHT;
-    bad += strcmp(drum_lane_name(&trk[0], DV_BELL), "BELL") != 0 || strcmp(drum_lane_name(&trk[0], DV_RIM), "RIM") != 0;
-    trk[0].p[P_E0] = DK_PERC;
-    bad += strcmp(drum_lane_name(&trk[0], DV_TOM), "CONGA") != 0 || strcmp(drum_lane_abbr(&trk[0], DV_RIM), "CL") != 0 ||
-           strcmp(drum_lane_name(&trk[0], DV_BELL), "BELL") != 0;
     bad += strcmp(ENG_DRUM.edit[0].names[DK_DEEP], "DEEP") != 0 || strcmp(ENG_DRUM.edit[0].names[DK_PERC], "PERC") != 0;
     printf("drum_test: kits 80 10 66 55 77 DEEP TIGHT PERC: every GM note on its lane's piece, the 8 lanes alone and together through the "
            "engine, the lanes' names: %s\n", bad ? "FAIL" : "ok");

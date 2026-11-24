@@ -197,6 +197,9 @@ static int preferences(void)
         (host_wire[n - 6] | host_wire[n - 5] << 7 | host_wire[n - 4] << 14 | host_wire[n - 3] << 21 |
          (uint32_t)host_wire[n - 2] << 28) == SMP_FACT_CRC);
     n -= 8u;                                              /* (the tags before it, as they were) */
+    bad += check("INFO (Vallée) the lanes then: 5A 01 16 (SPAMPY's 16, a step's 20 bytes)",
+        host_wire[n - 4] == 0x5A && host_wire[n - 3] == 1 && host_wire[n - 2] == NLANE);
+    n -= 3u;
     bad += check("INFO (2.0) the song's tag then: 58 01 01 (LIST2, NEW, COPY+, CHAIN, ONCE, EMPTY, CLEAR UNUSED)",
         host_wire[n - 4] == 0x58 && host_wire[n - 3] == 1 && host_wire[n - 2] == ED_SONG2);
     n -= 3u;                                              /* (the tags before it, as they were) */
@@ -339,11 +342,20 @@ static int steps(void)
     int bad = 0;
     reset();
     TSEL->step[0].hit = TSEL->step[0].acc = 0x80;
-    bad += check("legacy 8-byte step writes preserve lane data",
-                 request(ED_STEP_SET, a, 9) == 24u && TSEL->step[0].note[0] == 60 &&
-                 TSEL->step[0].hit == 0x80 && TSEL->step[0].acc == 0x80);
-    bad += check("full grid step writes preserve high lane bits and constrain accents",
-                 request(ED_STEP_SET, a, 12) == 24u && TSEL->step[0].hit == 0x92 && TSEL->step[0].acc == 2);
+    bad += check("legacy 8-byte step writes: (Vallée) its note, the hits gone (a step holds notes or hits)",
+                 request(ED_STEP_SET, a, 9) == 27u && TSEL->step[0].note[0] == 60 && !TSEL->step[0].hit && !TSEL->step[0].acc);
+    a[1] = 0;                                             /* (no notes: the hits) */
+    TSEL->step[0].hit = TSEL->step[0].acc = 0x8100;
+    bad += check("full grid step writes: lane 8's hit bit, accents kept to the hits; (Vallée) lanes 9..16 as they were",
+                 request(ED_STEP_SET, a, 12) == 27u && TSEL->step[0].hit == 0x8192 && TSEL->step[0].acc == 0x8102 &&
+                 !TSEL->step[0].n && !TSEL->step[0].note[0]);
+    memcpy(a + 12, (const uint8_t[]){100, 1, 0, 0, 32, 0, 0x05, 0x04, 2}, 9);   /* (chance .. ties, then lanes 9..16) */
+    n = request(ED_STEP_SET, a, 21);
+    bad += check("(Vallée, INFO 5A 01) a 20-byte step: lanes 9..16, their accents; replied in its last 3 bytes",
+                 n == 27u && TSEL->step[0].hit == 0x0592 && TSEL->step[0].acc == 0x0402 && host_wire[n - 4] == 0x05 &&
+                 host_wire[n - 3] == 0x04 && host_wire[n - 2] == 0);
+    a[1] = 1;
+    memset(a + 12, 0, 9);
     before = TSEL->step[0]; a[2] = 71;
     for (n = 2; n <= sizeof a; n++) {
         if (n == 9u || n == 12u || n == 13u) continue;   /* (14: a[13], the ratchet, 0 is refused) */
@@ -352,7 +364,7 @@ static int steps(void)
     bad += check("partial or oversized step payloads never mutate a valid step", ok);
     a[0] = 1; a[1] = 0; memcpy(a + 2, (const uint8_t[]){1,64,0,0,0,ST_NOTE,0,99}, 8);
     bad += check("TRACK_STEP accepts its legacy payload on an unselected track",
-                 request(ED_TRACK_STEP, a, 10) == 25u && trk[1].step[0].note[0] == 64 && song.sel == 0);
+                 request(ED_TRACK_STEP, a, 10) == 28u && trk[1].step[0].note[0] == 64 && song.sel == 0);
     before = trk[1].step[0]; a[3] = 65;
     bad += check("TRACK_STEP rejects an incomplete grid extension",
                  !request(ED_TRACK_STEP, a, 11) && !memcmp(&before, &trk[1].step[0], sizeof before));
@@ -360,13 +372,13 @@ static int steps(void)
     memcpy(a, (const uint8_t[]){0, 1, 60, 0, 0, 0, ST_NOTE, SF_ACCENT, 100, 0, 0, 0, 80, 3}, 14);
     n = request(ED_STEP_SET, a, 14);
     bad += check("STEP_SET with the ratchet: x3 kept, replied after the chance, flags without it",
-                 n == 24u && step_ratchet(&TSEL->step[0]) == 3u && step_chance(&TSEL->step[0]) == 80u &&
-                 host_wire[n - 6] == 3 && host_wire[n - 7] == 80 && host_wire[12] == SF_ACCENT);
+                 n == 27u && step_ratchet(&TSEL->step[0]) == 3u && step_chance(&TSEL->step[0]) == 80u &&
+                 host_wire[n - 9] == 3 && host_wire[n - 10] == 80 && host_wire[12] == SF_ACCENT);
     a[7] = SF_SLIDE; n = request(ED_STEP_SET, a, 13);
-    ok = n == 24u && step_ratchet(&TSEL->step[0]) == 3u && TSEL->step[0].flags == (SF_SLIDE | 2u << SF_RATCH_SH);
+    ok = n == 27u && step_ratchet(&TSEL->step[0]) == 3u && TSEL->step[0].flags == (SF_SLIDE | 2u << SF_RATCH_SH);
     n = request(ED_STEP_SET, a, 9);
     bad += check("STEP_SET without the ratchet (an older editor) keeps the step's own",
-                 ok && n == 24u && step_ratchet(&TSEL->step[0]) == 3u);
+                 ok && n == 27u && step_ratchet(&TSEL->step[0]) == 3u);
     before = TSEL->step[0]; ok = 1;
     for (n = 0; n < 8u; n++) {
         a[13] = (uint8_t)(n < 4u ? 0u : 5u + n);
@@ -375,10 +387,10 @@ static int steps(void)
     bad += check("STEP_SET refuses a ratchet outside 1..4 and leaves the step", ok);
     memcpy(a, (const uint8_t[]){1, 2, 1, 64, 0, 0, 0, ST_NOTE, 0, 99, 0, 0, 0, 100, 4}, 15);
     n = request(ED_TRACK_STEP, a, 15);
-    ok = n == 25u && step_ratchet(&trk[1].step[2]) == 4u && host_wire[n - 6] == 4;
+    ok = n == 28u && step_ratchet(&trk[1].step[2]) == 4u && host_wire[n - 9] == 4;
     a[14] = 1; n = request(ED_TRACK_STEP, a, 15);
     bad += check("TRACK_STEP sets the ratchet of any track (x4, then back to x1)",
-                 ok && n == 25u && step_ratchet(&trk[1].step[2]) == 1u && !(trk[1].step[2].flags & SF_RATCH));
+                 ok && n == 28u && step_ratchet(&trk[1].step[2]) == 1u && !(trk[1].step[2].flags & SF_RATCH));
     /* (Skiff W1, INFO 43 01) FLAM, COND, NUDGE + 32 after the ratchet; an older editor's write keeps FLAM */
     memcpy(a, (const uint8_t[]){0, 1, 60, 0, 0, 0, ST_NOTE, 0, 100, 0, 0, 0, 100, 1}, 14);
     step_set_rflam(&TSEL->step[0], 5u);
@@ -386,14 +398,14 @@ static int steps(void)
     TSEL->step[0].nudge = -7;
     n = request(ED_STEP_SET, a, 14);
     bad += check("STEP_SET x1 (an editor of before) keeps a FLAM step's FLAM, its COND and NUDGE; the reply carries them",
-                 n == 24u && (TSEL->step[0].flags & SF_FLAM) && TSEL->step[0].cond == TC_1_2 && TSEL->step[0].nudge == -7 &&
-                 host_wire[n - 5] == 1 && host_wire[n - 4] == TC_1_2 && host_wire[n - 3] == 25);
+                 n == 27u && (TSEL->step[0].flags & SF_FLAM) && TSEL->step[0].cond == TC_1_2 && TSEL->step[0].nudge == -7 &&
+                 host_wire[n - 8] == 1 && host_wire[n - 7] == TC_1_2 && host_wire[n - 6] == 25);
     memcpy(a, (const uint8_t[]){0, 1, 60, 0, 0, 0, ST_NOTE, 0, 100, 0, 0, 0, 100, 1, 0, TC_FILL, 32 + 9}, 17);
     n = request(ED_STEP_SET, a, 17);
-    ok = n == 24u && !(TSEL->step[0].flags & SF_FLAM) && TSEL->step[0].cond == TC_FILL && TSEL->step[0].nudge == 9;
+    ok = n == 27u && !(TSEL->step[0].flags & SF_FLAM) && TSEL->step[0].cond == TC_FILL && TSEL->step[0].nudge == 9;
     a[14] = 1; a[15] = 0; a[16] = 32; n = request(ED_STEP_SET, a, 17);
     bad += check("STEP_SET writes FLAM, COND and NUDGE (a Clear: FLAM off, COND --, NUDGE 0)",
-                 ok && n == 24u && (TSEL->step[0].flags & SF_FLAM) && !TSEL->step[0].cond && !TSEL->step[0].nudge);
+                 ok && n == 27u && (TSEL->step[0].flags & SF_FLAM) && !TSEL->step[0].cond && !TSEL->step[0].nudge);
     before = TSEL->step[0]; ok = 1;
     a[14] = 2; ok &= !request(ED_STEP_SET, a, 17);
     a[14] = 0; a[15] = TC_COUNT; ok &= !request(ED_STEP_SET, a, 17);
@@ -403,29 +415,29 @@ static int steps(void)
     memcpy(a, (const uint8_t[]){1, 2, 1, 64, 0, 0, 0, ST_NOTE, 0, 99, 0, 0, 0, 100, 2, 1, TC_3_4, 0}, 18);
     n = request(ED_TRACK_STEP, a, 18);
     bad += check("TRACK_STEP writes COND and NUDGE on any track (FLAM only at x1)",
-                 n == 25u && trk[1].step[2].cond == TC_3_4 && trk[1].step[2].nudge == -32 &&
+                 n == 28u && trk[1].step[2].cond == TC_3_4 && trk[1].step[2].nudge == -32 &&
                  !(trk[1].step[2].flags & SF_FLAM) && step_ratchet(&trk[1].step[2]) == 2u);
     /* (2.0, #25, INFO 57 01 bit 6) the ties after NUDGE: kept to the step's notes; none on a step with hits or a TIE; a
      * write without them (an editor of before) leaves none; past 15 refused */
     memcpy(a, (const uint8_t[]){3, 2, 60, 64, 0, 0, ST_NOTE, 0, 100, 0, 0, 0, 100, 1, 0, 0, 32, 1}, 18);
     n = request(ED_STEP_SET, a, 18);
-    ok = n == 24u && step_ties(&TSEL->step[3]) == 1u && host_wire[n - 2] == 1;
+    ok = n == 27u && step_ties(&TSEL->step[3]) == 1u && host_wire[n - 5] == 1;
     a[17] = 15; n = request(ED_STEP_SET, a, 18);
-    ok &= n == 24u && TSEL->step[3].acc == 3u && host_wire[n - 2] == 3;
+    ok &= n == 27u && TSEL->step[3].acc == 3u && host_wire[n - 5] == 3;
     before = TSEL->step[3];
     a[17] = 16; ok &= !request(ED_STEP_SET, a, 18) && !memcmp(&before, &TSEL->step[3], sizeof before);
     n = request(ED_STEP_SET, a, 17);
-    ok &= n == 24u && !TSEL->step[3].acc && !host_wire[n - 2];
+    ok &= n == 27u && !TSEL->step[3].acc && !host_wire[n - 5];
     bad += check("STEP_SET writes a step's ties (to its 2 notes), refuses 16, a write without them leaves none", ok);
-    a[17] = 1; a[9] = 0x04; a[10] = 0x04; n = request(ED_STEP_SET, a, 18);
-    ok = n == 24u && TSEL->step[3].hit == 0x04 && TSEL->step[3].acc == 0x04 && !host_wire[n - 2];
-    a[9] = a[10] = 0; a[6] = ST_TIE; n = request(ED_STEP_SET, a, 18);
-    ok &= n == 24u && !TSEL->step[3].acc;
+    a[17] = 1; a[9] = 0x04; a[10] = 0x04; a[1] = 0; n = request(ED_STEP_SET, a, 18);   /* ((Vallée) hits: no notes */
+    ok = n == 27u && TSEL->step[3].hit == 0x04 && TSEL->step[3].acc == 0x04 && !host_wire[n - 5];
+    a[1] = 2; a[9] = a[10] = 0; a[6] = ST_TIE; n = request(ED_STEP_SET, a, 18);
+    ok &= n == 27u && !TSEL->step[3].acc;
     memcpy(a, (const uint8_t[]){1, 4, 2, 60, 64, 0, 0, ST_NOTE, 0, 99, 0, 0, 0, 100, 1, 0, 0, 32, 2}, 19);
-    ok &= request(ED_TRACK_STEP, a, 19) == 25u && step_ties(&trk[1].step[4]) == 2u;
+    ok &= request(ED_TRACK_STEP, a, 19) == 28u && step_ties(&trk[1].step[4]) == 2u;
     n = request(ED_TRACK_STEP, a, 2);
     bad += check("no ties on a step with hits (its accents kept) or a TIE; TRACK_STEP writes and reads them on any track",
-                 ok && n == 25u && host_wire[n - 2] == 2);
+                 ok && n == 28u && host_wire[n - 5] == 2);
     {   /* (Skiff W3) the DRUM-X kit: KIT_GET, KIT_PUT, a lane's 15 values; a bad one refused, the kit as it was */
         static const uint8_t PUT[16] = {2, DXW_BELL, DXF_BP, 1, DXM_NOISE, 1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
         dx_lane_t was = dx_kit[2];
@@ -1468,7 +1480,7 @@ static int song2_cmds(void)
                  ok);
     a[0] = 2; a[1] = (uint8_t)p1;
     ok = request(ED_POOL, a, 2) && !host_wire[6] && pool_used(p1) && !pat_read(p1, bk_rec) &&
-         step_get9(&s, bk_rec + BK_STEPS) && !s.n && ent_pat(0, 0) == p1;                   /* EMPTY A's 01: in use */
+         step_get9(&s, bk_rec + BK_STEPS, 0) && !s.n && ent_pat(0, 0) == p1;                   /* EMPTY A's 01: in use */
     lists.ent[0][2][0] = 0;                                                                  /* (C's NEW: unused now) */
     a[0] = 3;
     ok &= request(ED_POOL, a, 1) && !host_wire[6] && !pool_used(c - 1u) && request(ED_POOL, a, 1) && host_wire[6] == 1;

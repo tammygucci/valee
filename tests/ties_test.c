@@ -169,12 +169,12 @@ static int record(void)
     int bad = 0, ok;
     uint32_t i;
     step_t s = {{C4, E4}, 2, ST_NOTE, 0, 100, 0, 1};    /* C4 tied, E4 new */
-    ok = step_put9(b, &s) && b[7] == 1u && step_get9(&back, b) && back.acc == 1u && step_ties(&back) == 1u &&
+    ok = step_put9(b, &s) && b[7] == 1u && step_get9(&back, b, 0) && back.acc == 1u && step_ties(&back) == 1u &&
          back.n == 2u && back.note[0] == C4 && back.note[1] == E4;
     b[7] = 4u;                                         /* (a tie of note 3: the step has two) */
-    ok &= !step_get9(&back, b);
-    s = (step_t){{C4}, 1, ST_NOTE, 0, 100, 3u, 2u};    /* (hits: acc their accents, no ties) */
-    ok &= step_put9(b, &s) && b[7] == 2u && step_get9(&back, b) && back.acc == 2u && !step_ties(&back);
+    ok &= !step_get9(&back, b, 0);
+    s = (step_t){{0}, 0, ST_NOTE, 0, 100, 3u, 2u};     /* (hits: acc their accents, no ties; (Vallée) no notes) */
+    ok &= step_put9(b, &s) && b[7] == 2u && step_get9(&back, b, 0) && back.acc == 2u && !step_ties(&back);
     bad += check("RECORD: a step's ties in byte 7 (no hits), back as they were; a tie of a note it doesn't have "
                  "refused; with hits byte 7 is their accents", ok);
 
@@ -182,14 +182,14 @@ static int record(void)
     st[0] = (step_t){{C4}, 1, ST_NOTE, 0, 100};
     st[1] = (step_t){{0}, 0, ST_TIE, 0, 0};
     st[2] = (step_t){{C4, E4}, 2, ST_NOTE, 0, 100};
-    ok = bk_pack_raw(r, 0, st, TV, &ms, 0) && r[0] == BK_VER;
+    ok = bk_pack_raw(r, 0, st, TV, &ms, 0) && r[0] == BK_VER4;   /* ((Vallée) every record: version 4 */
     for (i = 0; i < NSTEP; i++)
         ok &= r[BK_STEPS + i * 9u + 7u] == 0u;
     st[2].acc = 1;                                     /* (C4 tied on step 3) */
-    ok &= bk_pack_raw(r, 0, st, TV, &ms, 0) && r[0] == BK_VER3 && bk_ver(r[0]) && !(r[0] == 1u || r[0] == 2u);
-    ok &= step_get9(&back, r + BK_STEPS + 2u * 9u) && step_ties(&back) == 1u;
-    bad += check("  a record without ties stays version 1 (byte 7 of every hitless step 0); with one it is version 3: "
-                 "2.0 reads it back, 1.4 (versions 1 and 2) shows it empty", ok);
+    ok &= bk_pack_raw(r, 0, st, TV, &ms, 0) && r[0] == BK_VER4 && bk_ver(r[0]) && !(r[0] == 1u || r[0] == 2u);
+    ok &= step_get9(&back, r + BK_STEPS + 2u * 9u, 0) && step_ties(&back) == 1u;
+    bad += check("  a record without ties: byte 7 of every hitless step 0; with one: (Vallée) version 4 as every record, "
+                 "read back, 1.4 (versions 1 and 2) shows it empty", ok);
     return bad;
 }
 
@@ -232,7 +232,7 @@ static step_t kept_step(uint32_t e, uint32_t i)     /* step i of T1's entry e's 
 {
     step_t s;
     memset(&s, 0, sizeof s);
-    if (pat_read(ent_pat(0, e), bk_rec) || !step_get9(&s, bk_rec + BK_STEPS + i * 9u))
+    if (pat_read(ent_pat(0, e), bk_rec) || !step_get9(&s, bk_rec + BK_STEPS + i * 9u, 0))
         s.n = 255u;
     return s;
 }

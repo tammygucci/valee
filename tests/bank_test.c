@@ -123,8 +123,12 @@ static void rich(uint32_t k, uint32_t seed)
                 s->note[j] = (uint8_t)(24u + (i * 5u + j * 7u + seed) % 100u);
             s->vel = (uint8_t)(1u + (i * 37u + seed) % 127u);
             s->flags = (uint8_t)((i % 3u == 0u ? SF_ACCENT : 0u) | (i % 5u == 0u ? SF_SLIDE : 0u));
-            s->hit = (uint8_t)(i % 6u == 0u ? 0x81u : i % 6u == 1u ? 0x24u : 0u);
-            s->acc = (uint8_t)(s->hit & 0x80u);
+            s->hit = (uint16_t)(i % 6u == 0u ? 0x8181u : i % 6u == 1u ? 0x2400u : 0u);   /* ((Vallée) 16 lanes; a */
+            s->acc = (uint16_t)(s->hit & 0x8080u);
+            if (s->hit) {                             /* step with hits holds no notes (project.c step_put9) */
+                s->n = 0;
+                memset(s->note, 0, 4);
+            }
         }
         step_set_chance(s, (i * 11u + seed) % 101u);
         if (i % 7u == 3u)
@@ -464,16 +468,16 @@ static int last_track(void)
     id = trk_pid[k] - 1u;
     ok &= !pat_read(id, r) && r[1] == PROJ_NP && r[BK_MOT + 1u] == ((P_E5 - PROJ_ESHIFT) | MOTION_LOCK) &&
           !pat_decode(&trk[k], id, st, v, &ms) && ms.count == 1u && (ms.event[0].id == P_E5 && ms.event[0].lock);
-    ok &= r[0] == BK_VER;
+    ok &= r[0] == BK_VER4;                            /* ((Vallée) every record written now: version 4 (16 lanes) */
     bad += check("  (phase 9) a lock on E5: the record of 103 parameters (E5 at 100), back at today's P_E5", ok);
     ok = motion_put(&trk[k], 4, P_DTONE, -9, MOTION_LOCK) == 0 && keep_all() == 0 && trk_pid[k] == id + 1u;
     ok &= !pat_read(id, r) && r[1] == P_COUNT && !pat_decode(&trk[k], id, st, v, &ms) && ms.count == 2u;
     for (i = n = 0; i < ms.count; i++)
         n += (ms.event[i].id == P_E5 && ms.event[i].lock) || (ms.event[i].id == P_DTONE && ms.event[i].lock);
     bad += check("  .. and one on DRIVE's TONE (phase 9's): the record of today's ids, both back", ok && n == 2u);
-    ok = !pat_read(id, r) && P_E5 > 127u && r[0] == BK_VER2 && (r[BK_MOT] & 64u) &&
+    ok = !pat_read(id, r) && P_E5 > 127u && r[0] == BK_VER4 && (r[BK_MOT] & 64u) &&
          r[BK_MOT + 1u] == ((P_E5 & 127u) | MOTION_LOCK) && !(r[BK_MOT + 4u] & 64u);
-    bad += check("  (1.3) E5 is past 127 there: version 2, its id's bit 7 in its step byte's bit 6", ok);
+    bad += check("  (1.3) E5 is past 127 there: version 2 on (4), its id's bit 7 in its step byte's bit 6", ok);
     return bad;
 }
 
@@ -1270,12 +1274,16 @@ static int song_six(void)
     for (k = 0; k < NTRK; k++) {                  /* each track: A (20 + 3k ..), B (40 + 3k ..), 4 steps */
         for (e = 0; e < 2u; e++) {
             simple(k, 20u + 20u * e + 3u * k, 4, DIR_FWD);
-            trk[k].step[0].hit = (uint8_t)(k == NTRK - 1u ? 1u << e : 0u);   /* (T6: KICK on A, SNARE on B) */
+            trk[k].step[0].hit = (uint16_t)(k == NTRK - 1u ? 1u << e : 0u);   /* (T6: KICK on A, KICK 2 on B) */
+            if (k == NTRK - 1u)                   /* ((Vallée) a step with hits holds no notes */
+                trk[k].step[0].n = 0, memset(trk[k].step[0].note, 0, 4);
             ok &= bank_put(k, e, 0) == 0;
         }
         ok &= ent_go(k, 0) == 0;
     }
     trk[NTRK - 1u].step[2].hit = 4u;              /* T6's A edited, then B and back: A waits to be written */
+    trk[NTRK - 1u].step[2].n = 0;
+    memset(trk[NTRK - 1u].step[2].note, 0, 4);
     ok &= ent_go(NTRK - 1u, 1) == 0 && ent_go(NTRK - 1u, 0) == 0 && pend_free() == PEND_N - 1u;
     lists.song = 1;
     sg_play();
@@ -1283,7 +1291,8 @@ static int song_six(void)
         sg_steps(4);                              /* (a pass: every track's next came in at its end) */
         sg_frame();
         for (k = 0; k < NTRK; k++)
-            ok &= lists.cur[k] == i % 2u && trk[k].step[0].note[0] == 20u + 20u * (i % 2u) + 3u * k &&
+            ok &= lists.cur[k] == i % 2u &&
+                  (k == NTRK - 1u || trk[k].step[0].note[0] == 20u + 20u * (i % 2u) + 3u * k) &&
                   trk[k].step[0].hit == (k == NTRK - 1u ? 1u << i % 2u : 0u);
     }
     ok &= trk[NTRK - 1u].step[2].hit == 4u;       /* (A again: its edit) */

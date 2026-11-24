@@ -380,15 +380,16 @@ int main(void)
         v4.sum = proj_hash(&v4, sizeof v4 - 4u);
         memcpy(&buf, &v4, sizeof v4);
         ok = proj_import(&q2, &buf, (int)sizeof v4) && q2.t[1].engine == ENGI_DRUM;
-        ok &= s[0].n == 0 && s[0].hit == 1u << DV_KICK && s[0].acc == 1u << DV_KICK && !(s[0].flags & SF_ACCENT) &&
+        /* ((Vallée) every drum note a lane's (SPAMPY's 16): the low tom and the crash too, hits, no notes left */
+        ok &= s[0].n == 0 && s[0].hit == 1u << LN_KICK && s[0].acc == 1u << LN_KICK && !(s[0].flags & SF_ACCENT) &&
               s[0].vel == 96 && s[0].time == ST_NOTE;
-        ok &= s[1].n == 0 && s[1].hit == ((1u << DV_HATC) | (1u << DV_SNARE)) && !s[1].acc && s[1].vel == 100;
-        ok &= s[2].n == 1 && s[2].note[0] == 41 && s[2].hit == 1u << DV_KICK && (s[2].flags & SF_ACCENT) &&
-              step_lanes(&s[2]) == ((1u << DV_KICK) | (1u << DV_TOM)) && step_accents(&s[2]) == step_lanes(&s[2]);
-        ok &= s[3].n == 1 && s[3].note[0] == 49 && !s[3].hit && step_lanes(&s[3]) == 1u << DV_BELL;
+        ok &= s[1].n == 0 && s[1].hit == ((1u << LN_HAT) | (1u << LN_SNARE)) && !s[1].acc && s[1].vel == 100;
+        ok &= s[2].n == 0 && s[2].hit == ((1u << LN_KICK) | (1u << LN_LTOM)) && !(s[2].flags & SF_ACCENT) &&
+              s[2].acc == s[2].hit && step_lanes(&s[2]) == s[2].hit;
+        ok &= s[3].n == 0 && s[3].hit == 1u << LN_CRASH && step_lanes(&s[3]) == 1u << LN_CRASH;
         ok &= s[4].time == ST_TIE && !s[4].hit && s[5].time == ST_REST && s[5].n == 2 && !s[5].hit;
         ok &= steps_same(q2.t[0].step, v4.t[0].step);   /* (not DRUM: as it was) */
-        bad += check("FUN4 -> FUN6: a DRUM track's lane notes -> hits (accents too), a low tom / crash kept", ok);
+        bad += check("FUN4 -> FUN6: a DRUM track's notes -> hits (accents too), a low tom / crash their lanes'", ok);
     }
     v3.t[0].p[7]++;
     memcpy(&buf, &v3, sizeof v3);
@@ -459,7 +460,7 @@ int main(void)
             ok &= q2.t[2].p[P_E0 + i] == dk->e[i];
         ok &= !memcmp(&q2.t[0].step[1], &q.t[0].step[1], sizeof q.t[0].step - sizeof(step_t)) &&
               q2.t[0].p[P_LEVEL] == q.t[0].p[P_LEVEL];
-        ok &= q2.t[0].step[0].n == 0 && q2.t[0].step[0].hit == ((1u << DV_KICK) | (1u << DV_HATC));   /* the grid */
+        ok &= q2.t[0].step[0].n == 0 && q2.t[0].step[0].hit == ((1u << LN_KICK) | (1u << LN_HAT));   /* the grid */
         ok &= !memcmp(q2.t[1].step, q.t[1].step, sizeof q.t[1].step);   /* (PHYS: as they were) */
         bad += check("FUN4 phys 1: PHYS MODEL DRUM -> DRUM engine (its lane notes as hits), MEMB kept", ok);
         memcpy(&buf, &q2, sizeof q2);
@@ -708,12 +709,14 @@ int main(void)
         bad += check("FUN8: a patch byte above 127 cannot be packed", !proj_pack(&st, &a));
         memcpy(a.fm6[1], FM6_INIT, FM6_PACKED);
         a.t[0].step[3].n = 1; a.t[0].step[3].note[0] = 200; a.t[0].step[3].note[2] = 128;
-        a.t[0].step[3].vel = 255; a.t[0].step[3].hit = 0x05; a.t[0].step[3].acc = 0xF7;
+        a.t[0].step[3].vel = 255; a.t[0].step[3].hit = 0; a.t[0].step[3].acc = 0;
+        a.t[0].step[4] = (step_t){{0, 0, 0, 0}, 0, ST_NOTE, 0, 255, 0x8105u, 0xF7F7u, 0, 0, 0};   /* ((Vallée) 16 lanes */
         a.sum = proj_sum(&a);
         ok = proj_pack(&st, &a) && proj_import(&c, &st, sizeof st);
-        bad += check("FUN8: a step out of range packs inside it (note, velocity 127; accents on hits): it loads",
+        bad += check("FUN8: a step out of range packs inside it (note, velocity 127; accents on hits, its 8 lanes): it loads",
                      ok && c.t[0].step[3].note[0] == 127u && c.t[0].step[3].note[2] == 127u && c.t[0].step[3].vel == 127u &&
-                     c.t[0].step[3].hit == 0x05u && c.t[0].step[3].acc == 0x05u);
+                     !c.t[0].step[3].hit && c.t[0].step[4].hit == 0x8005u && c.t[0].step[4].acc == 0x8005u &&   /* (FUN8: the 8 lanes of before) */
+                     !c.t[0].step[4].n && c.t[0].step[4].vel == 127u);
     }
 
 #if !FELUCCA_FM4

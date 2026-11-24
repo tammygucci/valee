@@ -319,7 +319,11 @@ static int tracks_demo(const char *dir, const char *name, uint32_t solo)
     {
         const step_t *s4 = &td->step[4], *l1 = &t3->step[1], *p14 = &t2->step[14];
         /* (DRUM: the clap goes into the grid, its lane's hit, seq.c; a sampled kit took it as a 4th note) */
-        int clap = drum_track(td) ? s4->n == 3u && ((s4->hit >> DV_CLAP) & 1u) : s4->n == 4u && s4->note[3] == 39u;
+        /* ((Vallée) every drum note a lane's: the kick, snare, hat and the clap all hits, no notes left */
+        int clap = drum_track(td) ? !s4->n && (s4->hit & ((1u << LN_KICK) | (1u << LN_SNARE) | (1u << LN_HAT) |
+                                                          (1u << LN_CLAP))) == ((1u << LN_KICK) | (1u << LN_SNARE) |
+                                                          (1u << LN_HAT) | (1u << LN_CLAP))
+                                  : s4->n == 4u && s4->note[3] == 39u;
         int ok_clap = clap && clap_hits == 3u;
         int ok_lead = l1->n == 1u && l1->note[0] == 84u && l1->time == ST_NOTE;
         int ok_keys = p14->n == 2u && p14->time == ST_NOTE && p14->note[0] == 60u && p14->note[1] == 64u;

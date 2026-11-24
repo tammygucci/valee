@@ -972,7 +972,7 @@ static void grid_own(step_t *s, uint32_t l)
     step_to_grid(s);
     for (k = 0; k < s->n; k++)
         if (drum_lane(s->note[k]) == l)
-            s->hit |= (uint8_t)(1u << l);
+            s->hit |= (uint16_t)(1u << l);
         else
             s->note[j++] = s->note[k];
     for (k = j; k < 4u; k++)
@@ -995,10 +995,10 @@ static void grid_hit(track_t *t, uint32_t i, uint32_t l, uint32_t on)
     }
     grid_own(s, l % NLANE);
     if (on) {
-        s->hit |= (uint8_t)b;
+        s->hit |= (uint16_t)b;
     } else {
-        s->hit &= (uint8_t)~b;
-        s->acc &= (uint8_t)~b;
+        s->hit &= (uint16_t)~b;
+        s->acc &= (uint16_t)~b;
         if (!s->n && !s->hit)
             step_clear(s);
     }
@@ -1020,7 +1020,7 @@ static void grid_acc(track_t *t, uint32_t i, uint32_t l, uint32_t on)
         s->acc |= s->hit;
         s->flags &= (uint8_t)~SF_ACCENT;
     }
-    s->acc = (uint8_t)(on ? s->acc | b : s->acc & ~b);
+    s->acc = (uint16_t)(on ? s->acc | b : s->acc & ~b);
 }
 
 /* (Skiff 1.3, from Felucca 1.6 #242) SEQ's step pages ((2.0) NOTES, FEEL) follow the play position: a melodic
@@ -1132,7 +1132,7 @@ static void ed_unfold(step_t *d, const step_t *o, const step_t *p)
     for (m = ed_cont(p), k = 0; k < p->n; k++)
         if ((m >> k) & 1u) {
             d->note[d->n] = p->note[k];
-            d->acc |= (uint8_t)(1u << d->n++);
+            d->acc |= (uint16_t)(1u << d->n++);
         }
 }
 /* entry k out (the notes above down a place, their ties along); a step left with nothing: cleared; one left with notes
@@ -1144,7 +1144,7 @@ static void ed_del(step_t *s, uint32_t k)
         s->note[x] = s->note[x + 1u];
     s->n--;
     if (!s->hit)
-        s->acc = (uint8_t)((m & lo) | ((m >> 1) & ~lo));
+        s->acc = (uint16_t)((m & lo) | ((m >> 1) & ~lo));
     if (!s->n && !s->hit) {
         step_clear(s);
     } else if (start && !s->hit && step_ties(s) == (1u << s->n) - 1u) {
@@ -1160,7 +1160,7 @@ static int ed_add(step_t *s, uint32_t p, uint32_t tie)
     if (!s->n && !s->hit)
         s->time = ST_NOTE;
     if (!s->hit)
-        s->acc = (uint8_t)((s->acc & ~(1u << s->n)) | (tie ? 1u << s->n : 0u));
+        s->acc = (uint16_t)((s->acc & ~(1u << s->n)) | (tie ? 1u << s->n : 0u));
     s->note[s->n++] = (uint8_t)p;
     return 1;
 }

@@ -165,7 +165,7 @@ static uint32_t grid_leds(void)
             on = i < len && ((acc ? step_accents(&t->step[i]) : step_lanes(&t->step[i])) & b) != 0u;
             on ^= (uint32_t)(p == ph);
         } else {
-            on = p < NLANE ? p == ui.lane : p == GK_ACC ? acc : len > 16u;
+            on = p < KLANE ? lane_view + p == ui.lane : p == GK_ACC ? acc : len > 16u;
         }
         m |= on << k;
     }
@@ -198,7 +198,7 @@ static uint32_t grid_glow(void)
     uint32_t k, m = 0, len = (uint32_t)TSEL->p[P_SLEN];
     for (k = 0; k < 27u; k++) {
         uint32_t p = key_place(k);
-        m |= (uint32_t)(!key_black(k) ? ui.bank * 16u + p < len : p < NLANE || p == GK_ACC || len > 16u) << k;
+        m |= (uint32_t)(!key_black(k) ? ui.bank * 16u + p < len : p < KLANE || p == GK_ACC || len > 16u) << k;
     }
     return m;
 }
@@ -1082,6 +1082,7 @@ static void grid_edit(uint32_t slot, int32_t steps)
     uint32_t i;
     if (slot == 0u) {
         ui.lane = (uint8_t)clamp((int32_t)ui.lane + (steps > 0 ? 1 : -1), 0, NLANE - 1);
+        lane_view = (uint8_t)(ui.lane & KLANE);
         return;
     }
     if (slot == 3u) {
@@ -1145,7 +1146,7 @@ static void sel_copy(const track_t *t)
             continue;
         ed_vals(c, &w[i]);
         if (!nsel.picked && w[i].hit) {
-            c->hit = lane == CLIP_ALL ? w[i].hit : (uint8_t)(1u << lane);
+            c->hit = lane == CLIP_ALL ? w[i].hit : (uint16_t)(1u << lane);
             c->acc = w[i].acc & c->hit;
         }
         for (k = 0; lane == CLIP_ALL && k < w[i].n; k++) {
@@ -1199,8 +1200,8 @@ static void sel_paste(track_t *t)
         }
         if (c->hit) {                                 /* (a drum step's hits, their accents; (2.0) a lane's onto LANE) */
             uint32_t h = on ? 1u << ui.lane : c->hit;
-            s->hit |= (uint8_t)h;
-            s->acc |= (uint8_t)(on ? (c->acc ? h : 0u) : c->acc);
+            s->hit |= (uint16_t)h;
+            s->acc |= (uint16_t)(on ? (c->acc ? h : 0u) : c->acc);
             s->time = ST_NOTE;
         }
         if (step_starts(c) && !had)
@@ -1336,8 +1337,8 @@ static void grid_keys(uint32_t pressed)
                 }
             }
             cursor_set((int32_t)i);
-        } else if (p < NLANE) {
-            ui.lane = (uint8_t)p;
+        } else if (p < KLANE) {
+            ui.lane = (uint8_t)(lane_view + p);
         } else if (p != GK_ACC) {
             page_go(p == GK_PGUP ? 1 : -1);
         }

@@ -317,7 +317,7 @@ static int last_track(void)
     trk[s].p[P_LEVEL] = 0;
     for (i = 0; i < 16u; i++) {
         trk[s].step[i].time = ST_NOTE;
-        trk[s].step[i].hit = (uint8_t)(i % 4u == 0u ? 1u : 0u);   /* KICK on the beats */
+        trk[s].step[i].hit = (uint16_t)(i % 4u == 0u ? 1u : 0u);   /* KICK on the beats */
     }
     transport_req = 1;
     trk_note_on(&trk[k], 45, 100);

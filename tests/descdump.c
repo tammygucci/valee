@@ -232,7 +232,7 @@ int main(void)
 #endif
     printf(",\n\"LANE_OF\":\"");
     for (k = 35; k <= 81; k++)
-        printf("%u", (unsigned)drum_lane(k));
+        printf("%x", (unsigned)drum_lane(k));        /* ((Vallée) 16 lanes: a hex digit each */
     printf("\",\n\"PCT\":[");                          /* F_PCT as the firmware shows it (#31: SWG 0..100) */
     for (k = 0, e = 0; k < (uint32_t)P_E0 + G_COUNT; k++) {
         const param_desc_t *d = k < (uint32_t)P_E0 ? &TP[k] : &GP[k - P_E0];

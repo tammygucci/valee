@@ -416,20 +416,51 @@ enum { ST_NOTE, ST_TIE, ST_REST };
 #define SF_FLAM 32u                      /* Skiff: FLAM: a soft grace hit, the full one FLAM_SAMPLES later (seq.c
                                           * seq_step, seq_ratchet); RATCH x1 with it: RATCH's fifth value (step_rflam) */
 #define FLAM_SAMPLES 661u                /* 15 ms (at most half the step) */
-#define NLANE 8                  /* drum lanes of a step (the DRUM engine's: eng_drum.c DRUM_LANE_NOTE) */
+#define NLANE 16                 /* drum lanes of a step (the DRUM engine's: eng_drum.c DRUM_LANE_NOTE); ((Vallée, the
+                                  * SPAMPY sound) SPAMPY's 16 sounds, KICK .. COWBELL, in its order */
+#pragma pack(push, 1)            /* ((Vallée) step_t packed: 15 bytes, its 16-bit hits unaligned (read bytewise); a
+                                  * pragma, so the host tests (hostsim.c: no __attribute__) lay it out the same */
 typedef struct {                 /* acid-style step: up to 4 notes (POLY), time, accent, slide; drum hits */
     uint8_t note[4];
     uint8_t n;                   /* notes in use, 0 = empty */
     uint8_t time;                /* ST_NOTE / ST_TIE / ST_REST */
     uint8_t flags;               /* SF_ACCENT | SF_SLIDE | SF_RATCH */
     uint8_t vel;
-    uint8_t hit;                 /* bit l: lane l hits (its GM note, on any engine): the DRUM grid */
-    uint8_t acc;                 /* bit l: that hit is accented (velocity 127) */
+    uint16_t hit;                /* bit l: lane l hits (its GM note, on any engine): the DRUM grid. ((Vallée) A step
+                                  * with hits holds no notes: n 0 (seq.c, ui.c: on a DRUM track every drum note is a
+                                  * lane's), so its note bytes carry lanes 8..15 where they are stored (step_put9) */
+    uint16_t acc;                /* bit l: that hit is accented (velocity 127); without hits: the notes' ties */
     uint8_t probability;         /* 0 = legacy 100%; 1..100 = percent, 101 = silent */
     uint8_t cond;                /* Skiff: the trig condition (TC_*; 0 = always: every older pattern) */
     int8_t nudge;                /* Skiff: NUDGE, NUDGE_MIN..NUDGE_MAX 64ths of the step later (seq.c seq_enter); 0 =
                                   * on the grid: every older pattern */
 } step_t;
+#pragma pack(pop)
+_Static_assert(sizeof(step_t) == 15u, "step_t: 15 bytes (packed)");
+/* (Vallée, the SPAMPY sound) the 8 lanes a pattern of before held (BD SD CP CH OH TM RS CB: GM 36 38 39 42 46 45 37 56)
+ * as SPAMPY's 16 (eng_drum.c DRUM_LANE_NOTE: KICK SNARE CLAP HAT OPEN HAT LOW TOM RIM COWBELL): a stored pattern of
+ * before (bank.c BK_VER..BK_VER3, project.c's formats) is read through it; GEN writes in the 8 and maps once */
+/* (Vallée) the grid's lanes by name (SPAMPY's order: drums.c LANE_NOTE) */
+enum { LN_KICK, LN_KICK2, LN_SNARE, LN_CLAP, LN_HAT, LN_OHAT, LN_PEDAL, LN_RIM, LN_SNARE2, LN_LTOM, LN_HTOM, LN_CRASH,
+       LN_RIDE, LN_SHAKER, LN_CONGA, LN_BELL };
+static const uint8_t LANE_FROM8[8] = {0u, 2u, 3u, 4u, 5u, 9u, 7u, 15u};
+static uint32_t lanes_from8(uint32_t m)
+{
+    uint32_t r = 0, i;
+    for (i = 0; i < 8u; i++)
+        if ((m >> i) & 1u)
+            r |= 1u << LANE_FROM8[i];
+    return r;
+}
+/* .. and back: today's lanes as the 8 of before (lanes that had none there dropped: the converter's formats) */
+static uint32_t lanes_to8(uint32_t m)
+{
+    uint32_t r = 0, i;
+    for (i = 0; i < 8u; i++)
+        if ((m >> LANE_FROM8[i]) & 1u)
+            r |= 1u << i;
+    return r;
+}
 #define NUDGE_MIN (-32)
 #define NUDGE_MAX 31
 /* (Skiff 2.0, #25) per-note ties: bit k, note[k] goes on from the step before (seq.c: no note-on, no release; a tie never

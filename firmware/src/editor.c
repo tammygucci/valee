@@ -241,7 +241,7 @@ static uint32_t ed_step_sig(const step_t *s)
 {
     return ((uint32_t)s->note[0] | (uint32_t)s->note[1] << 7 | (uint32_t)s->note[2] << 14 | (uint32_t)s->note[3] << 21) ^
            ((uint32_t)s->n << 28) ^ ((uint32_t)s->time * 0x9E3779B1u) ^ ((uint32_t)s->flags * 0x85EBCA6Bu) ^
-           ((uint32_t)s->vel * 0xC2B2AE35u) ^ ((uint32_t)(s->hit | s->acc << 8) * 0x27D4EB2Fu) ^ ((uint32_t)s->probability * 0x165667B1u) ^
+           ((uint32_t)s->vel * 0xC2B2AE35u) ^ ((uint32_t)(s->hit | (uint32_t)s->acc << 16) * 0x27D4EB2Fu) ^ ((uint32_t)s->probability * 0x165667B1u) ^
            ((uint32_t)(s->cond | (uint8_t)s->nudge << 8) * 0x9E3779B9u);   /* ((Skiff W1) COND, NUDGE too) */
 }
 static void ed_shadow(void)                              /* the editor is in sync */
@@ -390,7 +390,9 @@ static const param_desc_t *ed_desc(uint32_t scope, uint32_t id, int16_t **vp)
  * its own (flags carry accent and slide only). (Skiff W1) The ratchet is set only when it changes: an editor of
  * before writes x1 back on a FLAM step, which kept its FLAM no longer. (2.0, #25, INFO 57 01 bit 6) Then its ties (bit
  * k: note k goes on from the step before; none on a step with hits or a TIE); a write without them (an editor of
- * before) leaves a step without hits none: that editor's step is whole */
+ * before) leaves a step without hits none: that editor's step is whole. ((Vallée, the SPAMPY sound, INFO 5A 01) Then
+ * lanes 8..15: their hits 8..14, accents 8..14, bit 0 hit 15 and bit 1 accent 15: 20 bytes; a write without them
+ * leaves the step's lanes 8..15 as they are) */
 static void ed_step_put(step_t *st, const uint8_t *a, uint32_t na)
 {
     uint32_t i;
@@ -401,8 +403,10 @@ static void ed_step_put(step_t *st, const uint8_t *a, uint32_t na)
     st->flags = (uint8_t)((a[6] & (SF_ACCENT | SF_SLIDE)) | (st->flags & (SF_RATCH | SF_FLAM)));   /* ((Skiff) FLAM kept) */
     st->vel = a[7] & 0x7Fu;
     if (na >= 11u) {
-        st->hit = (uint8_t)((a[8] & 0x7Fu) | (a[10] & 1u) << 7);
-        st->acc = (uint8_t)(((a[9] & 0x7Fu) | (a[10] & 2u) << 6) & st->hit);
+        uint32_t hh = na >= 20u ? (a[17] & 0x7Fu) | (a[19] & 1u) << 7 : (uint32_t)(st->n ? 0u : st->hit >> 8);
+        uint32_t ah = na >= 20u ? (a[18] & 0x7Fu) | (a[19] & 2u) << 6 : (uint32_t)(st->n ? 0u : (st->acc & st->hit) >> 8);
+        st->hit = (uint16_t)((a[8] & 0x7Fu) | (a[10] & 1u) << 7 | hh << 8);
+        st->acc = (uint16_t)((((a[9] & 0x7Fu) | (a[10] & 2u) << 6) | ah << 8) & st->hit);
     }
     if (na >= 12u) step_set_chance(st, a[11] <= 100u ? a[11] : 100u);
     if (na >= 13u && a[12] != step_ratchet(st)) step_set_ratchet(st, a[12]);
@@ -414,11 +418,15 @@ static void ed_step_put(step_t *st, const uint8_t *a, uint32_t na)
         st->cond = (uint8_t)(a[14] < TC_COUNT ? a[14] : 0u);
         st->nudge = (int8_t)((a[15] > 63u ? 63 : (int32_t)a[15]) - 32);
     }
+    if (st->n)                                        /* ((Vallée) a step holds notes or hits, never both */
+        st->hit = 0;                                  /* (project.c step_put9): notes written, its hits go */
+    else
+        memset(st->note, 0, 4);
     if (!st->hit)                                     /* ((2.0, #25) acc there: the ties) */
-        st->acc = (uint8_t)(na >= 17u && st->time != ST_TIE ? a[16] & ((1u << st->n) - 1u) : 0u);
+        st->acc = (uint16_t)(na >= 17u && st->time != ST_TIE ? a[16] & ((1u << st->n) - 1u) : 0u);
     ui.force = 1;
 }
-static void ed_step_reply(const step_t *st)              /* the same 17 bytes */
+static void ed_step_reply(const step_t *st)              /* the same 20 bytes */
 {
     uint32_t i;
     ed_b(st->n);
@@ -429,13 +437,16 @@ static void ed_step_reply(const step_t *st)              /* the same 17 bytes */
     ed_b(st->vel);
     ed_b(st->hit & 0x7Fu);
     ed_b(st->acc & st->hit & 0x7Fu);                     /* ((2.0) the hits' accents, not the ties acc holds without */
-    ed_b((uint32_t)(st->hit >> 7) | (uint32_t)(st->acc >> 7) << 1);   /* hits: the editor's step (#25)) */
+    ed_b(((uint32_t)st->hit >> 7 & 1u) | ((uint32_t)(st->acc & st->hit) >> 7 & 1u) << 1);   /* hits: (#25)) */
     ed_b(step_chance(st));
     ed_b(step_ratchet(st));
     ed_b((st->flags & SF_FLAM) != 0u);                   /* (Skiff W1, INFO 43 01) FLAM, COND, NUDGE + 32 */
     ed_b(st->cond % TC_COUNT);
     ed_b((uint32_t)(st->nudge + 32) & 63u);
     ed_b(step_ties(st));                                 /* ((2.0, #25, INFO 57 01 bit 6) its ties */
+    ed_b((uint32_t)st->hit >> 8 & 0x7Fu);                /* ((Vallée, INFO 5A 01) lanes 8..15 */
+    ed_b((uint32_t)(st->acc & st->hit) >> 8 & 0x7Fu);
+    ed_b(((uint32_t)st->hit >> 15 & 1u) | ((uint32_t)(st->acc & st->hit) >> 15 & 1u) << 1);
 }
 
 /* a flash write from the editor while the transport runs: stop it first (the erase silences the audio and
@@ -514,9 +525,11 @@ static int ed_args_ok(uint32_t cmd, const uint8_t *a, uint32_t n)
     case ED_STEP_SET:
         return n == 9u || n == 12u || (n == 13u && a[12] <= 100u) ||               /* notes only, or the complete grid extension, */
                (n == 14u && a[12] <= 100u && a[13] >= 1u && a[13] <= 4u) ||     /* its chance, its ratchet, */
-               ((n == 17u || (n == 18u && a[17] <= 15u)) && a[12] <= 100u && a[13] >= 1u && a[13] <= 4u &&
+               ((n == 17u || (n == 18u && a[17] <= 15u) || (n == 21u && a[17] <= 15u && a[20] <= 3u)) &&
+                a[12] <= 100u && a[13] >= 1u && a[13] <= 4u &&
                 a[14] <= 1u && a[15] < TC_COUNT && a[16] <= 63u);               /* (Skiff W1) FLAM, COND, NUDGE,
-                                                                                 * (2.0, #25) its ties */
+                                                                                 * (2.0, #25) its ties, ((Vallée,
+                                                                                 * INFO 5A 01) lanes 9..16 */
     case ED_TRACK:
         return n <= 1u;
     case ED_TRACK_MIX:
@@ -637,6 +650,8 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
 #if FELUCCA_CAST
             0x59, 1, 1,                                 /* (Skiff Studio) the cast, cmd 83 (cast.c) */
 #endif
+            0x5A, 1, NLANE,                             /* ((Vallée, the SPAMPY sound) the lanes a step holds: 16 in
+                                                         * SPAMPY's order; a step's 20 bytes (ed_step_put) */
         };
         ed_str("FELUCCA " FELUCCA_VERSION, 24);
         ed_b(NENGINES);

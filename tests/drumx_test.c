@@ -282,8 +282,8 @@ int main(int argc, char **argv)
         uint32_t n, bad = 0;
         track_t *t = kitx(127, 64);                      /* (MRPH 127: DRUM's KIT 127 would swap lanes 6..8) */
         for (n = 0; n < 128u; n++)
-            bad += (uint32_t)DX_GM[dx_gm_ix(n)][0] != drum_lane(n);
-        ok = drum_track(t) && !bad && str_eq(drum_lane_name(t, DV_TOM), "TOM") && str_eq(drum_lane_abbr(t, DV_RIM), "RS") &&
+            bad += (uint32_t)DX_GM[dx_gm_ix(n)][0] != dv_lane(n);
+        ok = drum_track(t) && !bad && str_eq(drum_lane_name(t, LN_LTOM), "LOW TOM") && str_eq(drum_lane_abbr(t, LN_RIM), "RS") &&
              eng_allowed(NTRK - 1u, ENGI_DRUMX) && str_eq(ENGINES[ENGI_DRUMX]->name, "DRUM-X");
         check("a drum track: the GM lanes drum_lane's, plain lane names, the light tracks", ok, "%u notes off", bad);
         {                                                /* the last track (with six: a light one, its eng_lite area) */

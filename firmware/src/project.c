@@ -144,7 +144,7 @@ typedef struct {
 #if FELUCCA_LEGACY
 /* Historical FUN5/6 types are frozen, independent of today's P_COUNT/step_t. */
 typedef struct { uint8_t note[4], n, time, flags, vel, hit, acc; } step10_t;
-typedef struct { int16_t p[69]; uint8_t engine, preset; step10_t step[NSTEP]; uint8_t lane[NLANE][5]; } proj_trk_v5_t;
+typedef struct { int16_t p[69]; uint8_t engine, preset; step10_t step[NSTEP]; uint8_t lane[8][5]; } proj_trk_v5_t;
 typedef struct {                               /* format 5, before the song chain */
     uint32_t magic, size;
     int16_t g[PROJ_NG_V2];
@@ -793,8 +793,14 @@ static int proj_import_old(project_t *q, const void *b, int n)
                 params_by_count(q->t[i].p, v->t[i].p, 69u, def);
                 q->t[i].engine = v->t[i].engine; q->t[i].preset = v->t[i].preset;
                 for (k = 0; k < NSTEP; k++) {
-                    memcpy(&q->t[i].step[k], &v->t[i].step[k], sizeof(step10_t));
-                    q->t[i].step[k].flags &= 3u;       /* (x1: no RATCH then) */
+                    const step10_t *o = &v->t[i].step[k];
+                    step_t *d = &q->t[i].step[k];
+                    memset(d, 0, sizeof *d);           /* ((Vallée) field by field: today's step is another shape */
+                    memcpy(d->note, o->note, 4);
+                    d->n = o->n; d->time = o->time; d->vel = o->vel;
+                    d->flags = o->flags & 3u;          /* (x1: no RATCH then) */
+                    d->hit = (uint16_t)lanes_from8(o->hit);   /* (the 8 lanes of before: SPAMPY's, core.h) */
+                    d->acc = (uint16_t)lanes_from8(o->acc);
                 }
             }
             if (bytes == sizeof *v6) q->chain = v6->chain; else chain_defaults(&q->chain);
@@ -829,24 +835,44 @@ static uint32_t proj_name_get(char *d, const uint8_t *s)   /* its length */
 /* a step as FUN7..FUN9 / SKF1 store it, 9 bytes: its four notes (bit 7 of each: (Skiff) a bit of the trig condition),
  * the meta byte (n, time, accent, slide; bit 7 (Skiff) FLAM), velocity, the lane hits and their accents, the chance;
  * RATCH in bit 7 of the velocity and chance bytes (see the top). What step_get9 checks, so what is stored always
- * loads: 0 for a step no format can hold. (Skiff: the pattern bank, bank.c, stores steps the same way) */
+ * loads: 0 for a step no format can hold. (Skiff: the pattern bank, bank.c, stores steps the same way)
+ * ((Vallée, the SPAMPY sound) 16 lanes: bytes 6, 7 lanes 0..7's hits and accents; a step with hits holds no notes,
+ * so its note bytes' low 7 bits carry lanes 8..15: byte 0 their hits 8..14, byte 1 bit 0 hit 15 and bits 1..6
+ * their accents 8..13, byte 2 bits 0..1 accents 14, 15 (bit 7 of each: the trig condition, as before). A record of
+ * before (old: 8 lanes, Vallée's order) is read through LANE_FROM8) */
 static int step_put9(uint8_t *b, const step_t *s)
 {
     uint32_t r = step_ratchet(s) - 1u, j;
     if (s->n > 4u || s->time > ST_REST || (s->flags & ~(3u | SF_RATCH | SF_FLAM)) || s->probability > 101u ||
         s->cond >= TC_COUNT || s->nudge < NUDGE_MIN || s->nudge > NUDGE_MAX)
         return 0;
-    for (j = 0; j < 4u; j++)
-        b[j] = (uint8_t)((s->note[j] > 127u ? 127u : s->note[j]) | ((s->cond >> j) & 1u) << 7);
+    if (!s->n) {                                        /* ((Vallée) no notes: lanes 8..15 in the note bytes (none:
+                                                     * 0, never a note left there to read as hits) */
+        uint32_t hh = (uint32_t)s->hit >> 8, ah = (uint32_t)(s->acc & s->hit) >> 8;
+        uint32_t w[4] = {hh & 127u, hh >> 7 | (ah & 63u) << 1, ah >> 6, 0u};
+        for (j = 0; j < 4u; j++)
+            b[j] = (uint8_t)(w[j] | ((s->cond >> j) & 1u) << 7);
+    } else
+        for (j = 0; j < 4u; j++)
+            b[j] = (uint8_t)((s->note[j] > 127u ? 127u : s->note[j]) | ((s->cond >> j) & 1u) << 7);
     b[4] = (uint8_t)(s->n | s->time << 3 | (s->flags & 3u) << 5 | ((s->flags & SF_FLAM) ? 128u : 0u));
     b[5] = (uint8_t)((s->vel > 127u ? 127u : s->vel) | (r & 1u) << 7);
-    b[6] = s->hit;
-    b[7] = (uint8_t)(s->hit ? s->acc & s->hit : step_ties(s));   /* ((2.0, #25) no hits: the per-note ties) */
+    b[6] = (uint8_t)(s->n ? 0u : s->hit);               /* ((Vallée) a step with notes keeps no hits (none is made) */
+    b[7] = (uint8_t)(s->hit && !s->n ? s->acc & s->hit : step_ties(s));   /* ((2.0, #25) no hits: the per-note ties) */
     b[8] = (uint8_t)(s->probability | (r >> 1) << 7);
     return 1;
 }
-/* 9 stored bytes -> *s (its nudge untouched): 0 for bytes no firmware wrote (FLAM with RATCH x2.., n above 4, ..) */
-static int step_get9(step_t *s, const uint8_t *b)
+/* ((Vallée) a step as the converter's formats (FUN8) store it: the 8 lanes of before (read back with old: 1) */
+static int step_put9_old(uint8_t *b, const step_t *s)
+{
+    step_t o = *s;
+    o.hit = (uint16_t)lanes_to8(s->hit);
+    o.acc = (uint16_t)(s->hit ? lanes_to8(s->acc & s->hit) : s->acc);
+    return step_put9(b, &o);
+}
+/* 9 stored bytes -> *s (its nudge untouched): 0 for bytes no firmware wrote (FLAM with RATCH x2.., n above 4, ..).
+ * ((Vallée) old: a record of before, 8 lanes in Vallée's order (LANE_FROM8); else 16, lanes 8..15 in the note bytes) */
+static int step_get9(step_t *s, const uint8_t *b, int old)
 {
     uint32_t meta = b[4], j;
     memcpy(s->note, b, 4);
@@ -863,6 +889,17 @@ static int step_get9(step_t *s, const uint8_t *b)
     }
     if (s->cond >= TC_COUNT || (s->acc & ~(s->hit ? s->hit : (1u << s->n) - 1u)))   /* ((2.0) no hits: ties of its */
         return 0;                                                                   /* notes; 1.4 refuses them) */
+    if (old && s->hit) {                                /* ((Vallée) 8 lanes of before: SPAMPY's (core.h LANE_FROM8) */
+        s->acc = (uint16_t)lanes_from8(s->acc);
+        s->hit = (uint16_t)lanes_from8(s->hit);
+    } else if (!old && !s->n) {                         /* lanes 8..15 from the note bytes (step_put9) */
+        uint32_t hh = s->note[0] | (s->note[1] & 1u) << 7, ah = (uint32_t)(s->note[1] >> 1) | (s->note[2] & 3u) << 6;
+        if ((s->note[2] & ~3u) || s->note[3] || (ah & ~hh))
+            return 0;
+        s->hit = (uint16_t)(s->hit | hh << 8);
+        s->acc = (uint16_t)(s->acc | ah << 8);
+        memset(s->note, 0, 4);
+    }
     step_set_ratchet(s, (meta >> 8) + 1u);
     if (meta & 128u)
         s->flags |= SF_FLAM;
@@ -958,7 +995,7 @@ static int proj_pack(project_store_t *out, const project_t *q)
         pos += PROJ_NP;
         b[pos++] = q->t[t].engine; b[pos++] = q->t[t].preset;
         for (i = 0; i < NSTEP; i++, pos += 9u)
-            if (!step_put9(b + pos, &q->t[t].step[i]))
+            if (!step_put9_old(b + pos, &q->t[t].step[i]))
                 return 0;
         nudge_pack(b + pos, q->t[t].step, NSTEP);       /* (Skiff) the NUDGE plane (core.h, see the top) */
         pos += PROJ_NUDGE_BYTES;
@@ -1016,7 +1053,7 @@ static int proj_unpack(project_t *q, const uint8_t *b, uint32_t st)
         for (i = 0; i < P_COUNT; i++) def[i] = param_desc_of(q->t[t].engine, i)->def;
         params_by_count(q->t[t].p, values, np, def);
         for (i = 0; i < NSTEP; i++, pos += 9u)
-            if (!step_get9(&q->t[t].step[i], b + pos))
+            if (!step_get9(&q->t[t].step[i], b + pos, 1))   /* ((Vallée) the converter's formats: 8 lanes of before */
                 return 0;
         if (nud) {                                      /* (Skiff) the NUDGE plane (core.h) */
             nudge_unpack(q->t[t].step, b + pos, NSTEP);
@@ -1402,7 +1439,7 @@ static void proj_steps(step_t *s)            /* a loaded sequence stays inside i
         if (s[i].n > 4u) s[i].n = 4;
         if (s[i].time > ST_REST) s[i].time = ST_REST;
         for (j = 0; j < 4u; j++) s[i].note[j] &= 127u;
-        s[i].acc &= s[i].hit ? s[i].hit : (uint8_t)((1u << s[i].n) - 1u);   /* ((2.0) no hits: its notes' ties) */
+        s[i].acc &= s[i].hit ? s[i].hit : (uint16_t)((1u << s[i].n) - 1u);   /* ((2.0) no hits: its notes' ties) */
     }
 }
 #endif

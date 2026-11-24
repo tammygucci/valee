@@ -41,13 +41,13 @@ static void ev_name(const track_t *t, uint32_t id, char *b)
                       id >= P_EG2_ATK && id <= P_EG2_REL ? "ENV2 " : id == P_DTYPE || id == P_DTONE ? "DRIVE " :
                       id >= P_ITYPE && id <= P_IMIX ? "INS " : "";   /* ((1.3) the INSERT's: INS TYPE, INS DEPTH) */
     if (id >= P_LTUNE0 && id <= P_LDECAY7) {
-        str_cpy(b, drum_lane_name(t, (id - P_LTUNE0) % NLANE), 12);
+        str_cpy(b, dv_lane_name(t, (id - P_LTUNE0) % DV_NLANE), 12);
         str_cpy(b + str_len(b), id < P_LDECAY0 ? " TUNE" : " DCAY", 12 - str_len(b));
         return;
     }
     str_cpy(b, pre, 12);
     str_cpy(b + str_len(b), id == P_LEVEL ? "LEVEL" : id == P_GLIDE ? "GLIDE" :
-                            id >= P_LN0 && id <= P_LN7 && t->eng_req % NENGINES == ENGI_DRUM ? drum_lane_name(t, id - P_LN0) :
+                            id >= P_LN0 && id <= P_LN7 && t->eng_req % NENGINES == ENGI_DRUM ? dv_lane_name(t, id - P_LN0) :
                             track_desc(t, id)->label, 12 - str_len(b));   /* ((Skiff U4, L9) a lane: the kit's name, CONGA) */
 }
 /* the next parameter after id in direction dir (+1 / -1) that is free on track t's step (a record there: skipped);
