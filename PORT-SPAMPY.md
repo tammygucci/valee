@@ -37,7 +37,10 @@ The old version stays installable: branch `vallee-skiff-engine` = release v0.9.1
 ## Phases (each ends with a commit that builds and passes the tests)
 
 - [x] 0. Safety branch `vallee-skiff-engine`; work branch `spampy-engine`; measurements.
-- [ ] 1. Factory sample block in the sample area (eng_sample.c, editor protocol, installer, tests).
+- [x] 1a. Factory sample block mechanism (eng_sample.c smp_fact_scan, editor SMP_* slot 127, INFO 56 01,
+      tests/factory_smp_test.c); Vallée's own PIANO FLUTE SAX moved there. Image 576,820 -> 490,632 B. CI green.
+- [ ] 1b. The block's contents: SPAMPY's PIANO VIBES FLUTE PERC (its gen_samples.py, byte-identical) + SAX
+      (with phase 2). The installer writes the block after the firmware (web/fm1ota.js or the installer page).
 - [ ] 2. SLOOP engines + SPAMPY presets + level trims replace Skiff's; old-id mapping.
 - [ ] 3. SPAMPY drums as the DRUM engine.
 - [ ] 4. SPAMPY's mix stage (levels, glide, master) in fx.c.
@@ -47,4 +50,11 @@ The old version stays installable: branch `vallee-skiff-engine` = release v0.9.1
 
 ## Status
 
-Phase 0 done. Next: phase 1.
+Phases 0 and 1a done (commits on `spampy-engine`, CI run 45310256392 green). Next: phase 2 (the engines),
+together with 1b. Notes for whoever resumes:
+- Local host builds need build/gen: copy the generated headers from a CI-like build, then run
+  tools/gen_factory_block.py on felucca_samples.h (tools/build.py does this in CI).
+- run_tests.sh stops without a real firmware image; run the host tests one by one (see the commands in it) and
+  let CI (gh workflow run vallee.yml --ref spampy-engine) run the whole suite.
+- The installer does not yet write the factory block: until it does, a unit given this branch's firmware would
+  play every sampled sound as a sine (safe, not useful). Do not install this branch on a unit yet.
