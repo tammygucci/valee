@@ -59,9 +59,15 @@ static uint32_t render(int32_t master, uint32_t eq)
     memset(trk, 0, sizeof trk);
     host_tracks_init();
     host_preset(&trk[0], 0, 0);
-    for (i = 0; i < NELEM(ANALOG_PRESETS); i++)
-        if (str_eq(ANALOG_PRESETS[i].name, "SUB BASS"))
-            host_preset(&trk[0], 0, i);
+    {   /* ((Vallée, the SPAMPY sound) a plain sine on ANALOG (SPAMPY's SUB BASS drives it, two octaves down). TODO
+         * (PORT-SPAMPY.md): SLOOP's engines and FM6 (in Classic too) keep a faint shape of their own as a note fades
+         * (some -115 dBFS: their amplitude in Q15 steps), so this check needs a precise test source of its own */
+        static const int16_t SINE[8] = {3, 0, 0, 0, 127, 0, 0, 0};   /* WAVE SIN, DTN, MIX, NOIS, CUT open, RES, DRV, KTR */
+        for (i = 0; i < 8u; i++)
+            trk[0].p[P_E0 + i] = SINE[i];
+        trk[0].p[P_TRANS] = 0;
+        trk[0].p[P_VOICE] = V_POLY;
+    }
     trk[0].p[P_CHOR] = trk[0].p[P_DLY] = trk[0].p[P_REV] = 0;
     trk[0].p[P_REL] = 120;                             /* a long release: the tail to measure */
     song.master_q12 = (uint32_t)master;

@@ -218,14 +218,14 @@ static const uint8_t MIDI_CC_MAP[][2] = {
     {91, P_REV}, {93, P_CHOR}, {94, P_DLY},
 };
 /* per engine (ENGINES[] order): CC74's E index + 1 in the high nibble, CC71's in the low one, 0 = none */
-static const uint8_t MIDI_CC_ENG[NENGINES] = {
-    0x56, 0x00, 0x30, 0x80, 0x50, 0x07, 0x67, 0x00,   /* ANALOG CUT RES, -, PHASE DCW, LOFI TONE, SAMPLE CUT, VOICE Q,
-                                                       * TRIO CUT RES, WHEEL - */
-    0x80, 0x30, 0x30, 0x34, 0x30,                     /* GRAIN TONE, PHYS BRIT, DRUM TONE, NOISE FREQ RES, FM6 MLVL */
-    FELUCCA_SLICE ? 0x80 : 0x00,                      /* SLICE TONE */
-    0x30,                                             /* DRUM-X TONE */
-    0x50,                                             /* (Vallée) SUMMON TONE */
+static const uint8_t MIDI_CC_ENG[NENGINES] = {   /* ((Vallée, the SPAMPY sound) SPAMPY's engine numbers */
+    0x56, 0x50, 0x30, 0x80, 0x50, 0x07, 0x67, 0x00,   /* ANALOG CUT RES, DIGITAL IDX, PHASE DCW, LOFI TONE, SAMPLE CUTOFF,
+                                                       * VOICE Q, TRIO CUT RES, WHEEL - */
+    0x00, 0x30, 0x00, 0x56, 0x00,                     /* -, FM6 MOD LVL, -, MORPH CUT RES, - */
+    0x12, 0x00, 0x50, 0x12, 0x00, 0x40,               /* PROPHET CUT RES, CZ-1 -, SID CUT, OBERVAVE CUT RES, -, DRONE COLOUR */
+    0x30, 0x50,                                       /* DRUM TONE, SUMMON TONE */
 };
+_Static_assert(NENGINES == 21, "MIDI_CC_ENG: one entry an engine");
 /* a CC sets parameter id of track t as a knob would: 0..127 over its range */
 static void midi_cc_set(track_t *t, uint32_t id, uint32_t value)
 {
