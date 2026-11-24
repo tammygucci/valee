@@ -147,10 +147,32 @@ enum {                          /* per-track parameters */
                                                 * voice.c strum_*); stored ids 146, 147 */
     P_AFLT,                                    /* (Vallée) ANALOG's FILTER: CLASSIC MOOG OBERHEIM JUNO (eng_analog.c); stored
                                                 * id 148 */
+    /* ((Vallée, the SPAMPY sound) the DRUM grid's lanes 9..16 (core.h NLANE): their LEVEL, PAN, TUNE and DECAY after
+     * the first 8's (P_LN0.., P_LPAN0.., P_LTUNE0.., P_LDECAY0..), and every lane's BODY (SPAMPY's drums.c); stored
+     * ids 149..196. Reach them by lane: lp_ln() .. lp_body() */
+    P_LN8, P_LN9, P_LN10, P_LN11, P_LN12, P_LN13, P_LN14, P_LN15,
+    P_LPAN8, P_LPAN9, P_LPAN10, P_LPAN11, P_LPAN12, P_LPAN13, P_LPAN14, P_LPAN15,
+    P_LTUNE8, P_LTUNE9, P_LTUNE10, P_LTUNE11, P_LTUNE12, P_LTUNE13, P_LTUNE14, P_LTUNE15,
+    P_LDECAY8, P_LDECAY9, P_LDECAY10, P_LDECAY11, P_LDECAY12, P_LDECAY13, P_LDECAY14, P_LDECAY15,
+    P_LBODY0, P_LBODY1, P_LBODY2, P_LBODY3, P_LBODY4, P_LBODY5, P_LBODY6, P_LBODY7,
+    P_LBODY8, P_LBODY9, P_LBODY10, P_LBODY11, P_LBODY12, P_LBODY13, P_LBODY14, P_LBODY15,
     P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7,
     P_COUNT
 };
 
+/* ((Vallée, the SPAMPY sound) lane l's (0..15) parameters */
+static inline uint32_t lp_ln(uint32_t l) { l &= 15u; return l < 8u ? P_LN0 + l : P_LN8 + (l - 8u); }
+static inline uint32_t lp_pan(uint32_t l) { l &= 15u; return l < 8u ? P_LPAN0 + l : P_LPAN8 + (l - 8u); }
+static inline uint32_t lp_tune(uint32_t l) { l &= 15u; return l < 8u ? P_LTUNE0 + l : P_LTUNE8 + (l - 8u); }
+static inline uint32_t lp_dec(uint32_t l) { l &= 15u; return l < 8u ? P_LDECAY0 + l : P_LDECAY8 + (l - 8u); }
+static inline uint32_t lp_body(uint32_t l) { return P_LBODY0 + (l & 15u); }
+/* .. a lane parameter id's lane, 16 none */
+static inline uint32_t lp_lane(uint32_t id)
+{
+    return id >= P_LN0 && id <= P_LN7 ? id - P_LN0 : id >= P_LTUNE0 && id <= P_LTUNE7 ? id - P_LTUNE0 :
+           id >= P_LDECAY0 && id <= P_LDECAY7 ? id - P_LDECAY0 : id >= P_LPAN0 && id <= P_LPAN7 ? id - P_LPAN0 :
+           id >= P_LN8 && id < P_LBODY0 ? 8u + (id - P_LN8) % 8u : id >= P_LBODY0 && id <= P_LBODY15 ? id - P_LBODY0 : 16u;
+}
 enum {                          /* global parameters */
     G_BPM, G_SWING, G_CLOCK, G_TUNE,
     G_DTIME, G_DFDBK, G_DCOLOR, G_DMIX,
@@ -210,18 +232,22 @@ static uint32_t p_sid(uint32_t p)              /* .. back */
 static uint32_t gsid_g(uint32_t sid) { return sid < GSID_COUNT ? sid : G_COUNT; }
 /* a track's parameters p into b by SID: their count, then each value + 64. How many bytes; 0 for a value no record
  * holds (below -64, above 127) */
-static uint32_t sid_put(uint8_t *b, const int16_t *p)
+#define SID_LANES 149u                         /* ((Vallée, the SPAMPY sound) the first of the drum lanes' later SIDs
+                                                * (P_LN8 .. P_LBODY15): a track not on DRUM stores the ones before */
+_Static_assert(SID_LANES == P_LN8 + 8u, "SID_LANES: P_LN8's SID");
+static uint32_t sid_put_n(uint8_t *b, const int16_t *p, uint32_t n)
 {
     uint32_t s;
-    b[0] = (uint8_t)SID_COUNT;
-    for (s = 0; s < SID_COUNT; s++) {
+    b[0] = (uint8_t)n;
+    for (s = 0; s < n; s++) {
         int32_t v = p[sid_p(s)];
         if (v < -64 || v > 127)
             return 0;
         b[1u + s] = (uint8_t)(v + 64);
     }
-    return 1u + SID_COUNT;
+    return 1u + n;
 }
+static uint32_t sid_put(uint8_t *b, const int16_t *p) { return sid_put_n(b, p, SID_COUNT); }
 /* .. back from b (max bytes there): the SIDs this firmware knows into p, the others passed over (a newer firmware's),
  * the ones b lacks left as p holds them (the caller's defaults: an older record's). How many bytes it took; 0 for a
  * record shorter than its count says or holding a byte past 191 (a value no record holds, as SKF3's reader refuses it).
@@ -316,16 +342,17 @@ static const uint8_t ENG_FROM_SKIFF[16] = {
     ENGI_DRAWBAR,   /* WHEEL */
     ENGI_NOISE,     /* GRAIN -> MORPH */
     ENGI_FM6,       /* PHYS -> FM6 */
-    ENGI_DRUM,      /* DRUM (kept) */
+    ENGI_DRUM,      /* DRUM (SPAMPY's kits now) */
     ENGI_NOISE,     /* NOISE -> MORPH */
     ENGI_FM6,       /* FM6 */
     4,              /* SLICE -> SAMPLE */
     ENGI_DRUM,      /* DRUM-X -> DRUM */
     ENGI_SUMMON,    /* SUMMON (kept) */
 };
-/* the engines whose sound stays as it was: SAMPLE (its sets by number: SAX 3), DRUM, FM6 (the same core, the patch
- * stored with the sound), SUMMON */
-static int eng_skiff_kept(uint32_t e) { return e == 4u || e == 10u || e == 12u || e == 15u; }
+/* the engines whose sound stays as it was: SAMPLE (its sets by number: SAX 3), FM6 (the same core, the patch stored
+ * with the sound), SUMMON. ((Vallée) DRUM no longer: SPAMPY's kits, another KIT list; an old DRUM sound is the new
+ * engine's first) */
+static int eng_skiff_kept(uint32_t e) { return e == 4u || e == 12u || e == 15u; }
 /* ------------------------------------------------- voices, engines --- */
 enum { V_POLY, V_MONO, V_LEGATO, V_UNISON };   /* P_VOICE */
 typedef struct {

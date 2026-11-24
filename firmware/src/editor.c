@@ -729,8 +729,9 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         ed_v(d->def);
         ed_str(d->label, 8);
         ed_str(PD_UNIT_OF(d), 8);
-        if (d->fmt == F_ENUM && d->names)                  /* up to 24 (the matrix DST has 20) */
-            for (i = 0; i <= (uint32_t)(d->max - d->min) && i < 24u; i++)
+        if (d->fmt == F_ENUM && d->names)                  /* up to 40 ((Vallée) DRUM's KIT has 35; 24 before: an
+                                                            * editor of before reads its 24, the rest unread) */
+            for (i = 0; i <= (uint32_t)(d->max - d->min) && i < 40u; i++)
                 ed_str(d->names[i], 8);
         break;
     case ED_STEP_GET:

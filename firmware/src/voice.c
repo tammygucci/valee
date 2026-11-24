@@ -337,7 +337,7 @@ static void voice_start(track_t *t, voice_t *v, uint32_t note, uint32_t vel, int
         t->sp_alt ^= 1u;                                /* sounding voice keeps its side: no jump) */
     }                                                   /* sounding: the attack starts from the current level */
     e->note_on(t, v);
-    if (sounding && !e->sampled && !(t->engine == ENGI_DRUM && drum_user(t->p))) {   /* retrigger / steal: keep */
+    if (sounding && !e->sampled) {   /* retrigger / steal: keep */
         v->ph[0] = ph0;                                 /* phases and filter states (resetting them clicks); ((#35) a
                                                          * DRUM user kit's sample starts again: its declick, drum_note_on) */
         v->ph[1] = ph1;
@@ -837,12 +837,13 @@ static int32_t lpan_buf[C1_NP][CTL];
 #define LPAN_BUF(t) lpan_buf[C1_PI(t)]
 static int lanes_panned(const track_t *t)
 {
-    const int16_t *p = &t->p[P_LPAN0];
-    return (p[0] | p[1] | p[2] | p[3] | p[4] | p[5] | p[6] | p[7]) != 0;
+    const int16_t *p = &t->p[P_LPAN0], *q = &t->p[P_LPAN8];   /* ((Vallée) the 16 lanes' */
+    return (p[0] | p[1] | p[2] | p[3] | p[4] | p[5] | p[6] | p[7] | q[0] | q[1] | q[2] | q[3] | q[4] | q[5] | q[6] |
+            q[7]) != 0;
 }
 static __attribute__((noinline)) AUDIO_RAM void lpan_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const vmod_t *m)
 {
-    int32_t vb[CTL], pan = t->p[P_LPAN0 + ((uint32_t)v->s[0] & 7u)], w = pan < 0 ? -pan : pan;
+    int32_t vb[CTL], pan = t->p[lp_pan(drum_vlane(t, v))], w = pan < 0 ? -pan : pan;
     int32_t *sd = pan > 0 ? SPREAD_BUF(t) : LPAN_BUF(t);
     uint32_t i;
     n = n > CTL ? CTL : n;
@@ -966,7 +967,7 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
                 env2_tick(t, v);
             mod_voice(t, v, &m, v->fine + tune_fine + bend_fine);
         }
-        if (t->lpan_on && t->p[P_LPAN0 + ((uint32_t)v->s[0] & 7u)])   /* ((2.0, #36) a lane off C: its share of the
+        if (t->lpan_on && t->p[lp_pan(drum_vlane(t, v))])   /* ((2.0, #36) a lane off C: its share of the
                                                                       * sides (lpan_render) */
             lpan_render(t, v, out, n, &m);
         else if (t->engine == ENGI_SAMPLE && v->s[4] >= 0x8000)   /* ((Skiff, #21) a user sample's sound: its LEVEL and

@@ -215,11 +215,17 @@ static const proj_fmt_t PROJ_SKF3 = {PROJ_MAGIC3, PROJ_STORE3, 6u, PROJ_SCENES, 
 #define PROJ_MAGIC4 0x534B4634u
 #define PROJ_STORE4 2560u
 #define PROJ_LAYOUT4 1u
+/* ((Vallée, the SPAMPY sound) layout 2, what a save writes: as 1 without the DRUM-X kit's block (retired), each track's FM6
+ * patch after its parameters, only on an FM6 track (another's: FM6_INIT), and a track not on DRUM without the drum lanes'
+ * later SIDs (SID_LANES on: at their defaults, as any sound load leaves them there). Room for SPAMPY's 16 lanes on
+ * every track. Vallée 0.9.1 and Skiff read it as none (the layout is not theirs): OLD FORMAT there */
+#define PROJ_LAYOUT4S 2u
 #define PROJ_ENT4 10u
 static const proj_fmt_t PROJ_SKF4 = {PROJ_MAGIC4, PROJ_STORE4, 6u, PROJ_SCENES, 1u};
-_Static_assert(PROJ_ENT4 + NTRK * (NENT * 4u + 1u) + PROJ_SCENES + 2u + 1u + DV_NLANE * 11u + NTRK * FM6_PACKED +
-               1u + 2u * GSID_COUNT + NTRK * (4u + SID_COUNT) + 2u + 1u + sizeof gch + PROJ_NAME_LEN + 4u <= PROJ_STORE4,
-               "SKF4 holds it all ((Vallée) GEN's own chords too)");
+_Static_assert(PROJ_ENT4 + NTRK * (NENT * 4u + 1u) + PROJ_SCENES + 2u + 1u + 2u * GSID_COUNT +
+               NTRK * (4u + (SID_COUNT > SID_LANES + FM6_PACKED ? SID_COUNT : SID_LANES + FM6_PACKED)) + 2u + 1u +
+               sizeof gch + PROJ_NAME_LEN + 4u <= PROJ_STORE4,
+               "SKF4 layout 2 holds it all ((Vallée) GEN's own chords too, SPAMPY's 16 lanes on every track)");
 #define PROJ_SKF (&PROJ_SKF4)                  /* the format a save writes */
 /* ((Vallée, the SPAMPY sound) the format to write a record back in after it was read: today's whatever it was. A read
  * maps every format but SKF4 from Skiff's engine numbers (proj_import_any), so one written back in its own format would
@@ -1117,7 +1123,7 @@ static int proj_pack4(project_store_t *out, const project_t *q)
             if (q->fm6[t][e] > 127u) return 0;
     if (!proj_ent_ok(q)) return 0;
     memset(out, 0, sizeof *out); memcpy(b, &PROJ_SKF4.magic, 4); memcpy(b + 4, &PROJ_SKF4.size, 4);
-    b[8] = PROJ_LAYOUT4;
+    b[8] = PROJ_LAYOUT4S;
     for (t = 0; t < NTRK; t++)
         for (e = 0; e < NENT; e++, pos += 4u) {            /* (+2, +3: the entry's sound, #30) */
             b[pos] = q->ent[t][e][0];
@@ -1128,17 +1134,15 @@ static int proj_pack4(project_store_t *out, const project_t *q)
     memcpy(b + pos, q->cur, NTRK); pos += NTRK;
     memcpy(b + pos, q->scene, PROJ_SCENES); pos += PROJ_SCENES;
     b[pos++] = q->sel; b[pos++] = q->song;
-    if (q->dx_on && dx_kit_ok(q->dx)) {
-        b[pos] = PROJ_DX_MARK;
-        memcpy(b + pos + 1u, q->dx, sizeof q->dx);
-    }
-    pos += 1u + sizeof q->dx;
-    memcpy(b + pos, q->fm6, sizeof q->fm6); pos += sizeof q->fm6;
-    pos += gsid_put(b + pos, q->g);
+    pos += gsid_put(b + pos, q->g);                      /* ((Vallée) layout 2: no DRUM-X kit, the patches below */
     for (t = 0; t < NTRK; t++) {
         b[pos] = q->t[t].engine; b[pos + 1u] = q->t[t].preset; b[pos + 2u] = q->t[t].user; pos += 3u;   /* (#20) */
-        if (!(n = sid_put(b + pos, q->t[t].p))) return 0;
+        if (!(n = sid_put_n(b + pos, q->t[t].p, q->t[t].engine == ENGI_DRUM ? SID_COUNT : SID_LANES))) return 0;
         pos += n;
+        if (q->t[t].engine == ENGI_FM6) {
+            memcpy(b + pos, q->fm6[t], FM6_PACKED);
+            pos += FM6_PACKED;
+        }
     }
     b[pos++] = PROJ_ERA_MARK;                            /* ((Vallée, the SPAMPY sound) SPAMPY's engine numbers */
     b[pos++] = 1u;
@@ -1168,6 +1172,9 @@ static void proj_from_skiff(project_t *q, uint32_t skip)   /* (skip: tracks alre
             continue;
         uint32_t old = q->t[t].engine % 16u, ne = ENG_FROM_SKIFF[old];
         q->t[t].engine = (uint8_t)ne;
+        for (i = 0; i < P_COUNT; i++)                   /* ((Vallée) the drum lanes: SPAMPY's 16, TUNE DECAY in its units: */
+            if (lp_lane(i) < 16u)                       /* the old 8's values mean other things, back to the kit's */
+                q->t[t].p[i] = TP[i].def;
         if (!eng_skiff_kept(old)) {
             for (i = P_E0; i < P_COUNT && i < P_E0 + 8u; i++)
                 q->t[t].p[i] = param_desc_of(ne, i)->def;
@@ -1180,7 +1187,7 @@ static void proj_from_skiff(project_t *q, uint32_t skip)   /* (skip: tracks alre
                 old = (s[0] - 1u) % 16u;
                 s[0] = (uint8_t)(ENG_FROM_SKIFF[old] + 1u);
                 if (!eng_skiff_kept(old))
-                    s[1] = 0;
+                    s[1] = (uint8_t)eng_first_sound(ENG_FROM_SKIFF[old]);
             }
         }
     }
@@ -1190,7 +1197,7 @@ static int proj_unpack4(project_t *q, const uint8_t *b)
 {
     uint32_t pos = PROJ_ENT4, end = PROJ_NAME_AT(&PROJ_SKF4), t, e, n, sum;
     memcpy(&sum, b + PROJ_STORE4 - 4u, 4);
-    if (b[8] != PROJ_LAYOUT4 || sum != proj_hash(b, PROJ_STORE4 - 4u)) return 0;
+    if ((b[8] != PROJ_LAYOUT4 && b[8] != PROJ_LAYOUT4S) || sum != proj_hash(b, PROJ_STORE4 - 4u)) return 0;
     memset(q, 0, sizeof *q); q->magic = PROJ_MAGIC; q->size = sizeof *q;
     q->parts = PROJ_PARTS; q->phys = PROJ_PHYS;
     for (t = 0; t < NTRK; t++)
@@ -1204,14 +1211,19 @@ static int proj_unpack4(project_t *q, const uint8_t *b)
     memcpy(q->scene, b + pos, PROJ_SCENES); pos += PROJ_SCENES;
     q->sel = b[pos++]; q->song = b[pos++];
     if (!proj_ent_ok(q)) return 0;
-    if (b[pos] == PROJ_DX_MARK && dx_kit_ok((const dx_lane_t *)(b + pos + 1u))) {
-        memcpy(q->dx, b + pos + 1u, sizeof q->dx);
-        q->dx_on = 1;
+    if (b[8] == PROJ_LAYOUT4) {                          /* (layout 1: the DRUM-X kit, the FM6 patches here) */
+        if (b[pos] == PROJ_DX_MARK && dx_kit_ok((const dx_lane_t *)(b + pos + 1u))) {
+            memcpy(q->dx, b + pos + 1u, sizeof q->dx);
+            q->dx_on = 1;
+        }
+        pos += 1u + sizeof q->dx;
+        for (t = 0; t < NTRK; t++)
+            for (e = 0; e < FM6_PACKED; e++)
+                q->fm6[t][e] = b[pos++] & 0x7Fu;
+    } else {
+        for (t = 0; t < NTRK; t++)
+            memcpy(q->fm6[t], FM6_INIT, FM6_PACKED);
     }
-    pos += 1u + sizeof q->dx;
-    for (t = 0; t < NTRK; t++)
-        for (e = 0; e < FM6_PACKED; e++)
-            q->fm6[t][e] = b[pos++] & 0x7Fu;
     for (e = 0; e < G_COUNT; e++)
         q->g[e] = GP[e].def;
     if (!(n = gsid_get(q->g, b + pos, end - pos))) return 0;
@@ -1228,6 +1240,11 @@ static int proj_unpack4(project_t *q, const uint8_t *b)
             q->t[t].p[e] = param_desc_of(q->t[t].engine, e)->def;
         if (!(n = sid_get(q->t[t].p, b + pos, end - pos))) return 0;
         pos += n;
+        if (b[8] == PROJ_LAYOUT4S && q->t[t].engine == ENGI_FM6) {   /* ((Vallée) layout 2: an FM6 track's patch */
+            if (end - pos < FM6_PACKED) return 0;
+            for (e = 0; e < FM6_PACKED; e++)
+                q->fm6[t][e] = b[pos++] & 0x7Fu;
+        }
 #if FELUCCA_LEGACY
         for (e = 0; e < NSTEP; e++)
             q->t[t].step[e].time = ST_REST;               /* (empty: the patterns hold the steps) */
@@ -1727,7 +1744,7 @@ static int project_restore_runtime(const project_t *input)
             apply_preset_to(t, TRK_DEF[k][1]);
             track_defaults_steps(t);
         } else if (p->t[k].preset == PROJ_NEW_ENG)       /* ((Vallée, the SPAMPY sound) an old project's mapped track: */
-            apply_preset_to(t, 0);                       /* its new engine's first sound, the mix and patterns kept */
+            apply_preset_to(t, eng_first_sound(p->t[k].engine));   /* its new engine's first sound, the mix and patterns kept */
 #if FELUCCA_LEGACY
         else if (p->t[k].preset == PROJ_DEF_KEEP) {     /* the steps, LEVEL PAN MUTE, LEN DIV SWING GATE kept */
             int16_t keep[P_COUNT];

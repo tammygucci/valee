@@ -163,10 +163,11 @@ static const param_desc_t TP[P_COUNT] = {
 #undef FMOP
     [P_CHRD] = PE("CHORD", N_CHRD, 0),
     [P_VOIC] = PE("VOICING", N_VOIC, 0),
-/* the DRUM engine's lane levels (eng_drum.c, #97): 100 % = the kit as designed (the sound before 1.1) */
+/* the DRUM engine's lane levels (eng_drum.c, #97): 100 % = the kit as designed. ((Vallée, the SPAMPY sound) the grid's
+ * 16 lanes, SPAMPY's names; 9..16 at P_LN8.. (core.h lp_ln) */
 #define LANE(k, l) [P_LN0 + (k)] = PD(l, F_PCT, 0, 127, 127)
-    LANE(0, "KICK"), LANE(1, "SNARE"), LANE(2, "CLAP"), LANE(3, "CL HAT"),
-    LANE(4, "OP HAT"), LANE(5, "TOM"), LANE(6, "RIM"), LANE(7, "BELL"),
+    LANE(0, "KICK"), LANE(1, "KICK 2"), LANE(2, "SNARE"), LANE(3, "CLAP"),
+    LANE(4, "HAT"), LANE(5, "OPEN HAT"), LANE(6, "PEDAL"), LANE(7, "RIM"),
 #undef LANE
     [P_DIR] = PE("DIR", N_DIR, 0),                 /* (Skiff) the play direction */
     [P_DKSRC] = PE("BY", N_DKSRC, 0),              /* (Skiff) ducking (duck.c): under that track's hits, */
@@ -189,8 +190,9 @@ static const param_desc_t TP[P_COUNT] = {
     [P_IMIX] = PD("MIX", F_PCT, 0, 127, 127),
     [P_ESYNC] = PE("ENV SYNC", N_ONOFF, 0),        /* (1.3) ENV SYNC: OFF, ATK DEC REL in ms, as before ((2.0) on LFO 2:
                                                     * its whole name) */
-/* (Skiff phase 9) the DRUM engine's lanes, each moved from its design (eng_drum.c drum_render): 64 = as designed */
-#define LANE2(k) [P_LTUNE0 + (k)] = PD("TUNE", F_ST16, 0, 127, 64), [P_LDECAY0 + (k)] = PD("DECAY", F_BIPCT, -64, 63, 0)
+/* (Skiff phase 9) the DRUM engine's lanes, each moved from its design (eng_drum.c). ((Vallée, the SPAMPY sound) as
+ * SPAMPY's DRUMS > SOUND: TUNE -8 .. +7 semitones, DECAY -4 .. +3 (0: as the kit has it) */
+#define LANE2(k) [P_LTUNE0 + (k)] = PD("TUNE", F_SEMI, -8, 7, 0), [P_LDECAY0 + (k)] = PD("DECAY", F_INT, -4, 3, 0)
     LANE2(0), LANE2(1), LANE2(2), LANE2(3), LANE2(4), LANE2(5), LANE2(6), LANE2(7),
 #undef LANE2
 /* (2.0, #36) DRUM's and DRUM-X's lanes, each panned as the track's PAN (voice.c lpan_render): C as before */
@@ -203,6 +205,17 @@ static const param_desc_t TP[P_COUNT] = {
     [P_STRUM] = {"STRUM", 0, 0, 100, 0, F_INT, U_MS},   /* (2.5, the user's 7B) ms, 0 OFF: the chord at once */
     [P_SDIR] = PE("DIR", N_SDIR, 0),
     [P_AFLT] = PE("FILTER", N_AFLT, 0),                 /* ((Vallée) ANALOG only: its EDIT > FILTER page) */
+/* ((Vallée, the SPAMPY sound) lanes 9..16 (core.h P_LN8..), and every lane's BODY: SPAMPY's low reinforcement,
+ * -4 .. +4 (0: none, bit for bit) */
+#define LANE(k, l) [P_LN8 + (k)] = PD(l, F_PCT, 0, 127, 127), [P_LPAN8 + (k)] = PD("PAN", F_BIPCT, -64, 63, 0), \
+                   [P_LTUNE8 + (k)] = PD("TUNE", F_SEMI, -8, 7, 0), [P_LDECAY8 + (k)] = PD("DECAY", F_INT, -4, 3, 0)
+    LANE(0, "SNARE 2"), LANE(1, "LOW TOM"), LANE(2, "HI TOM"), LANE(3, "CRASH"),
+    LANE(4, "RIDE"), LANE(5, "SHAKER"), LANE(6, "CONGA"), LANE(7, "COWBELL"),
+#undef LANE
+#define LANE(k) [P_LBODY0 + (k)] = PD("BODY", F_INT, -4, 4, 0)
+    LANE(0), LANE(1), LANE(2), LANE(3), LANE(4), LANE(5), LANE(6), LANE(7),
+    LANE(8), LANE(9), LANE(10), LANE(11), LANE(12), LANE(13), LANE(14), LANE(15),
+#undef LANE
 };
 
 static const param_desc_t GP[G_COUNT] = {
@@ -301,8 +314,6 @@ static int32_t enum_orig(const param_desc_t *d, int32_t v)
     if (d->names == N_SLC_SRC && (v == 2 || v == 3))  /* (SMK-37: USR2, USR3 have no flash; the knob steps over them) */
         return 1;
 #endif
-    if (d->names == N_DRUM_KIT)
-        return v >= 0 && v < DK_COUNT ? (int32_t)DK_PLAYS[v] : v;
     return d->names == SMP_ALL_NAMES && v >= 0 && v < SMP_NSETS ? SMP_SET_ORIG[v] : v;
 }
 
@@ -646,9 +657,10 @@ static int16_t smx_sel __attribute__((section(".pool")));   /* (#21) .. KNOB 1's
 
 static const param_desc_t *page_desc(const page_t *pg, uint32_t slot, int16_t **valp)
 {
-    uint32_t id = pg->graph == GR_LMIX ? (slot == 1u ? P_LN0 + page_lane() : slot == 2u ? P_LPAN0 + page_lane() : 0xFFu) :
-                  pg->graph != GR_LANES ? pg->id[slot] : slot == 1u ? P_LN0 + page_lane() :   /* (LANES: its LEVEL, */
-                  slot == 2u ? P_LTUNE0 + page_lane() : slot == 3u ? P_LDECAY0 + page_lane() : 0xFFu;   /* (phase 9)
+    uint32_t id = pg->graph == GR_LMIX ? (slot == 1u ? lp_ln(page_lane()) : slot == 2u ? lp_pan(page_lane()) :
+                                          slot == 3u ? lp_body(page_lane()) : 0xFFu) :   /* ((Vallée) LANE MIX: + BODY */
+                  pg->graph != GR_LANES ? pg->id[slot] : slot == 1u ? lp_ln(page_lane()) :   /* (LANES: its LEVEL, */
+                  slot == 2u ? lp_tune(page_lane()) : slot == 3u ? lp_dec(page_lane()) : 0xFFu;   /* (phase 9)
                                                        * TUNE, DECAY; (2.0) LANE MIX: LEVEL, PAN) */
     if (pg->graph == GR_SMIX) {                       /* (#21) SAMPLES: KNOB 1 the sample, 2..4 its LEVEL, REVERB, DELAY */
         static const param_desc_t SMX_D[4] = {PD("SAMPLE", F_INT, 1, 16, 1), PD("LEVEL", F_PCT, 0, 127, 127),

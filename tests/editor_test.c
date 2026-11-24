@@ -739,7 +739,7 @@ static int user_preset_roundtrip(void)
     for (i = 0; i < 16u; i++) { a[k++] = i & 1u ? 0u : (uint8_t)(48u + i); a[k++] = 0; }
     request(ED_UP_PUT, a, k);
     bad += check("UP_PUT stores a version 7 record (6's layout, SPAMPY's engine numbers; no flash here: kept in RAM)",
-                 host_wire[6] != 1u && up_used(3) && up_rec(3)->ver == UP_VER_SPAMPY && up_rec(3)->np == SID_COUNT);
+                 host_wire[6] != 1u && up_used(3) && up_rec(3)->ver == UP_VER_SPAMPY && up_rec(3)->np == UP_NSID);
     up_values(up_rec(3), got);
     for (i = 0, ok = 1; i < P_COUNT; i++) ok &= got[i] == want[i];
     bad += check("UP_PUT keeps every value (PAN -20, FLT -40, min and max)", ok);
@@ -1124,60 +1124,46 @@ static int menu_protocol(void)
     return bad;
 }
 
-/* DRUM KIT 1..3 (HAND CYM H+CYM until 1.0.4, retired): DESC names them as the kit they play (66 10 77), a SET of
- * one lands on that kit (the reply says so), a user preset sent with one loads as that kit */
+/* ((Vallée, the SPAMPY sound) DRUM's KIT: SPAMPY's 35, DESC names them (ACOUSTIC DEEP TIGHT BRIGHT DUST, then 808 ..
+ * SYNWAVE), a SET lands on the kit asked for (the reply says so), a project's kits load as they are */
 static int drum_kit_retired(void)
 {
-    static const uint8_t MAP[4] = {0, 6, 5, 8};
-    static uint8_t a[16 + 2u * P_COUNT + 32u];
-    int16_t got[P_COUNT];
-    uint32_t r, i, k = 0, ok = 1;
+    static const char *const WANT[8] = {"ACOUSTIC", "DEEP", "TIGHT", "BRIGHT", "DUST", "808", "909", "606"};
+    static uint8_t a[16];
+    uint32_t r, i, ok = 1;
     int bad = 0;
     reset();
     a[0] = 1; a[1] = G_ENGSEL; a[2] = (8192 + ENGI_DRUM) & 127; a[3] = (8192 + ENGI_DRUM) >> 7;
     request(ED_SET, a, 4);
-    a[0] = P_E0 > 127u ? 2 : 0; a[1] = P_E0 & 127u;     /* ((2.0, #36) P_E0 135: scope 2, wide) */
+    a[0] = P_E0 > 127u ? 2 : 0; a[1] = P_E0 & 127u;     /* ((2.0, #36) P_E0 past 127: scope 2, wide) */
     request(ED_DESC, a, 2);
-    {   /* scope, id, fmt, min, max, def (v14 each), "KIT", "", then the 9 names */
+    {   /* scope, id, fmt, min, max, def (v14 each), "KIT", "", then the names */
         const char *n = (const char *)host_wire + 5 + 3 + 6;
-        static const char *const WANT[9] = {"STD", "66", "10", "77", "80", "10", "66", "55", "77"};
         n += strlen(n) + 1; n += strlen(n) + 1;
-        for (i = 0; i < 9u; i++, n += strlen(n) + 1)
+        for (i = 0; i < 8u; i++, n += strlen(n) + 1)
             ok &= !strcmp(n, WANT[i]);
     }
-    bad += check("DESC of DRUM KIT: STD 66 10 77 80 10 66 55 77 (1..3 as the kits they play)", ok);
-    for (r = 1, ok = ed_eng(TSEL) == ENGI_DRUM; r < 4u; r++) {
+    bad += check("(Vallée) DESC of DRUM KIT: SPAMPY's, ACOUSTIC DEEP TIGHT BRIGHT DUST 808 909 606 ..", ok &&
+                 ENGINES[ENGI_DRUM]->edit[0].max == 34 && ENGINES[ENGI_DRUM]->edit[0].def == 5);
+    for (r = 1, ok = ed_eng(TSEL) == ENGI_DRUM; r < 35u; r += 11u) {
         uint32_t u = r + 8192u;
         a[0] = P_E0 > 127u ? 2 : 0; a[1] = P_E0 & 127u; a[2] = u & 127u; a[3] = u >> 7;
         request(ED_SET, a, 4);
-        ok &= TSEL->p[P_E0] == MAP[r] && (int32_t)(host_wire[7] | host_wire[8] << 7) - 8192 == MAP[r];
+        ok &= TSEL->p[P_E0] == (int16_t)r && (int32_t)(host_wire[7] | host_wire[8] << 7) - 8192 == (int32_t)r;
     }
-    bad += check("SET of DRUM KIT 1..3 lands on 66 10 77 (and replies it)", ok);
-    a[k++] = 5; a[k++] = ENGI_DRUM;                        /* slot U06, DRUM, KIT 3 (H+CYM) */
-    memcpy(a + k, "OLDKIT", 6); k += 6; a[k++] = 0;
-    for (i = 0; i < P_COUNT; i++) {
-        uint32_t u = (uint32_t)((i == P_E0 ? 3 : param_desc_of(ENGI_DRUM, i)->def) + 8192);
-        a[k++] = u & 127u; a[k++] = (u >> 7) & 127u;
-    }
-    for (i = 0; i < 16u; i++) { a[k++] = 0; a[k++] = 0; }
-    request(ED_UP_PUT, a, k);
-    up_values(up_rec(5), got);
-    bad += check("a user preset of DRUM KIT 3 (H+CYM) loads as 77", up_used(5) && got[P_E0] == 8);
-    {   /* a project whose DRUM tracks hold KIT 0..3: loaded (and bounded, as from flash) as STD 66 10 77 */
+    bad += check("(Vallée) SET of DRUM KIT lands on the kit asked for (and replies it)", ok);
+    {   /* a project whose DRUM tracks hold kits 0, 7, 14, ..: loaded (and bounded, as from flash) as they are */
         static project_t p;
         for (r = 0; r < NTRK; r++) {
             set_engine_of(&trk[r], ENGI_DRUM); apply_preset_to(&trk[r], 0);
             trk[r].engine = trk[r].eng_req;
         }
         project_capture(&p);
-        for (r = 0; r < NTRK; r++) p.t[r].p[P_E0] = (int16_t)r;
+        for (r = 0; r < NTRK; r++) p.t[r].p[P_E0] = (int16_t)(r * 7u);
         p.sum = proj_sum(&p);
         ok = !project_restore_runtime(&p);
-        for (r = 0; r < NTRK; r++) ok &= trk[r].p[P_E0] == (r < 4u ? MAP[r] : r);   /* (4..: kits as they are) */
-        for (r = 0; r < NTRK; r++) p.t[r].p[P_E0] = (int16_t)r;
-        proj_bound(&p);
-        for (r = 0; r < NTRK; r++) ok &= p.t[r].p[P_E0] == (r < 4u ? MAP[r] : r);
-        bad += check("a project of DRUM KIT 1..3 loads as 66 10 77 (STD stays)", ok);
+        for (r = 0; r < NTRK; r++) ok &= trk[r].p[P_E0] == (int16_t)(r * 7u > 34u ? 34u : r * 7u);
+        bad += check("(Vallée) a project's DRUM kits load as they are", ok);
     }
     return bad;
 }

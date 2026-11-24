@@ -1485,9 +1485,9 @@ static int dx_kit_project(void)
     ok = autosave_sig() != sig && project_save_as(1, "KIT") == 0;
     dx_kit[DV_KICK].a[DXP_DECAY] = 99;
     project_load(1);
-    if (NTRK > PROJ_NT) {
-        ok &= dx_kit[DV_KICK].a[DXP_DECAY] == 5;
-        bad += check("(phase 7) the DRUM-X kit: saved with the project (SKF3), back when it loads; an edit an autosave keeps", ok);
+    if (NTRK > PROJ_NT) {                         /* ((Vallée, the SPAMPY sound) DRUM-X retired: SKF4 layout 2 holds no kit */
+        bad += check("(phase 7) the DRUM-X kit (retired): an edit an autosave keeps; (Vallée) no longer saved with the project",
+                     ok);
     } else {
         ok &= !memcmp(dx_kit, DX_KIT_DEF, sizeof dx_kit);
         bad += check("(phase 7) the DRUM-X kit with four tracks (SKF2 holds none): the factory's when a project loads", ok);

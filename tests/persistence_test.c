@@ -768,7 +768,7 @@ static int skiff_era_test(void)
     pj.t[4].engine = 14;                                  /* DRUM-X */
     pj.t[5].engine = 0; pj.t[5].preset = 4;               /* ANALOG */
     pj.snd[0][1][0] = 12 + 1; pj.snd[0][1][1] = 7;        /* an entry's sound: Skiff's FM6, its 8th */
-    pj.snd[3][2][0] = 10 + 1; pj.snd[3][2][1] = 4;        /* .. DRUM's 5th (kept) */
+    pj.snd[3][2][0] = 10 + 1; pj.snd[3][2][1] = 4;        /* .. DRUM's 5th ((Vallée) SPAMPY's kits: the first) */
     ok = proj_pack4(&w, &pj);
     for (i = PROJ_ENT4; i + 1u < PROJ_NAME_AT(&PROJ_SKF4); i++)
         if (w.raw[i] == PROJ_ERA_MARK && w.raw[i + 1u] == 1u)
@@ -781,16 +781,17 @@ static int skiff_era_test(void)
     ok &= back.t[0].engine == ENGI_FM6 && back.t[0].preset == 3u &&   /* (FM6: kept) */
           back.t[1].engine == ENGI_NOISE && back.t[1].preset == PROJ_NEW_ENG &&
           back.t[2].engine == ENGI_SUMMON && back.t[2].preset == 2u && back.t[2].p[P_E0] == 3 &&
-          back.t[3].engine == ENGI_DRUM && back.t[3].preset == 5u && back.t[3].p[P_E0] == 9 &&
+          back.t[3].engine == ENGI_DRUM && back.t[3].preset == PROJ_NEW_ENG &&
           back.t[4].engine == ENGI_DRUM && back.t[4].preset == PROJ_NEW_ENG &&
           back.t[5].engine == 0u && back.t[5].preset == PROJ_NEW_ENG;
     ok &= back.snd[0][1][0] == ENGI_FM6 + 1u && back.snd[0][1][1] == 7u && back.snd[3][2][0] == ENGI_DRUM + 1u &&
-          back.snd[3][2][1] == 4u;
+          back.snd[3][2][1] == 5u;
     ok &= project_restore_runtime(&back) == 0 && trk[0].eng_req == ENGI_FM6 && trk[0].preset == 3u &&
-          trk[3].eng_req == ENGI_DRUM && trk[3].p[P_E0] == 9 && trk[2].eng_req == ENGI_SUMMON;
+          trk[3].eng_req == ENGI_DRUM && trk[3].p[P_E0] == ENGINES[ENGI_DRUM]->presets[5].e[0] &&
+          trk[2].eng_req == ENGI_SUMMON;
     for (i = 0; i < NTRK; i++)
         ok &= eng_ok(trk[i].eng_req);
-    return check("(Vallee) a project of the Skiff engines: mapped (SAMPLE DRUM FM6 SUMMON kept, the others the new engine's first); "
+    return check("(Vallee) a project of the Skiff engines: mapped (SAMPLE FM6 SUMMON kept, the others, DRUM too, the new engine's first); "
                  "one of now: as saved", ok);
 }
 
@@ -1102,7 +1103,7 @@ int main(void)
     memset(&r, 0, sizeof r);
     r.used = UP_USED;
     r.ver = UP_VER_SPAMPY;                    /* ((Vallée) version 7, as SAVE and UP_PUT write (6's layout): P_COUNT is past what a */
-    r.np = (uint8_t)SID_COUNT;                /* record by count holds) */
+    r.np = (uint8_t)UP_NSID;                  /* record by count holds; (Vallée) the SIDs a record holds) */
     memcpy(r.name, "First", 6);
     erase_error = 1;
     bank = up_bank[1];

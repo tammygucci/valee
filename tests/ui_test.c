@@ -408,7 +408,7 @@ static int test_sound_loads(void)
     for (i = 0; i < NTRK; i++)
         empty &= (uint32_t)seq_is_empty(&trk[i]);
     bad += check("power-on: the four sounds, every sequencer empty, no undo copy", empty && undo.trk == 0 && undo_depth == 0 &&
-                 trk[3].eng_req == ENGI_DRUM && trk[3].preset == 0u && trk[0].preset == TRK_DEF[0][1]);
+                 trk[3].eng_req == ENGI_DRUM && trk[3].preset == TRK_DEF[3][1] && trk[3].p[P_E0] == 5 && trk[0].preset == TRK_DEF[0][1]);
     my_steps(t);
     t->p[P_E0 + 1] = 77;                          /* a sound edit */
     t->p[P_AMODE] = 2;                            /* and the track's own settings */
@@ -473,7 +473,7 @@ static int test_sound_loads(void)
     trk[0].p[P_SDIV] = 2;
     up_store(3, "MINE");
     bad += check("(Skiff) a user preset is the sound: no pattern in the record ((2.0) version 6: by stored id)",
-                 up_used(3) && !up_pat(up_rec(3)) && up_rec(3)->ver == UP_VER_SPAMPY && up_rec(3)->np == SID_COUNT);
+                 up_used(3) && !up_pat(up_rec(3)) && up_rec(3)->ver == UP_VER_SPAMPY && up_rec(3)->np == UP_NSID);
     trk[0].p[P_SDIV] = 0;
     trk[0].user = 0;                              /* ((2.0) a store puts the track on the slot: off it again, so the */
     track_defaults_steps(&trk[0]);                /* load's undo has a slot to take back) */
@@ -1298,7 +1298,7 @@ static int test_grid(void)
     frame();
     t->seq_idx = 9;
     t->seq_pos = 0;
-    fm1_in.notes = (1u << 7) | (1u << 13) | (1u << 6);   /* C 36 KICK, F# 42 HAT CL, E 35 (a kick 2 st down) */
+    fm1_in.notes = (1u << 0) | (1u << 7) | (1u << 2);   /* ((Vallée) SPAMPY's keys: F KICK, C HAT, G KICK 2 */
     keyboard_block();
     fm1_in.notes = 0;
     keyboard_block();
@@ -1306,7 +1306,7 @@ static int test_grid(void)
          step_lanes(&t->step[9]) == t->step[9].hit;
     song.rec = 0;
     song.playing = 0;
-    bad += check("REC on HOME: GM keys quantised into the grid (35 on the KICK 2 lane)", ok);
+    bad += check("REC on HOME: the keys (SPAMPY's: a white key a lane) quantised into the grid", ok);
     /* the BEAT phrase (tests/phrases.h) into the DRUM track fills the grid */
     track_defaults_steps(t);
     load_pat16(t, PATTERNS[11].note, PATTERNS[11].flags);
@@ -3064,9 +3064,9 @@ static int test_edit_cycle(void)
 #endif
     {   /* #97: a DRUM track's lane levels on EDIT > LANES ((Skiff U3, R6) one page: KNOB 1 the lane, KNOB 2 its level;
          * N5: VOICE and VOICE 2 change nothing on the hits, not there) */
-        static const char *const CYC_K[] = {"EDIT 1", "EDIT 2", "LANES", "LANE MIX", "EDIT 1"};
+        static const char *const CYC_K[] = {"EDIT 1", "LANES", "LANE MIX", "EDIT 1"};   /* ((Vallée) SPAMPY's: KIT alone */
         set_engine_of(TSEL, ENGI_DRUM);
-        bad += check("EDIT cycle (DRUM): EDIT 1 EDIT 2 LANES (2.0) LANE MIX, EDIT 1", engine_cycle(CYC_K, NELEM(CYC_K)));
+        bad += check("EDIT cycle (DRUM): EDIT 1 (KIT) LANES (2.0) LANE MIX, EDIT 1", engine_cycle(CYC_K, NELEM(CYC_K)));
         {   /* ((Vallée, the SPAMPY sound) CZ-1: its EDIT 1 has no knob ("-" x 4), so it is not shown */
             static const char *const CYC_CZ[] = {"EDIT 2", "VOICE", "VOICE 2", "EDIT 2"};
             set_engine_of(TSEL, ENGI_CZ);
@@ -3087,13 +3087,13 @@ static int test_edit_cycle(void)
         turn(EN_K3, -10);
         turn(EN_K2, -2);
         ok &= ui.lane == 2u && TSEL->p[P_LPAN0 + 2] == -10 && TSEL->p[P_LN2] == 125 && !TSEL->p[P_LPAN0 + 5] &&
-              TSEL->p[P_LN5] == 124 && lock_id(1) == P_LN0 + 2u && lock_id(2) == P_LPAN0 + 2u && lock_id(3) == 0xFFu;
-        key_down(13); frame(); key_up(13); frame();  /* (13: F#, HAT) */
+              TSEL->p[P_LN5] == 124 && lock_id(1) == P_LN0 + 2u && lock_id(2) == P_LPAN0 + 2u && lock_id(3) == lp_body(2);
+        key_down(7); frame(); key_up(7); frame();    /* ((Vallée) SPAMPY's keys: 7, C: HAT) */
         ok &= ui.lane == LN_HAT;
         turn(EN_K1, -1);
-        key_down(13); frame(); key_up(13); frame();  /* (the same key again: its lane again) */
+        key_down(7); frame(); key_up(7); frame();    /* (the same key again: its lane again) */
         ok &= ui.lane == LN_HAT;
-        bad += check("(2.0, #36) LANE MIX: LANES' lane; KNOB 1 CLAP, 3 its PAN, 2 its LEVEL, a held step's lock them; a "
+        bad += check("(2.0, #36) LANE MIX: LANES' lane; KNOB 1 SNARE, 3 its PAN, 2 its LEVEL, (Vallée) 4 its BODY, a held step's lock them; a "
                      "key struck picks its lane, the same key again too", ok);
         apply_preset_to(TSEL, 0);
         bad += check("  a factory preset load: every lane at C again, as their levels at 100 %", !TSEL->p[P_LPAN0 + 2]);
@@ -8004,8 +8004,8 @@ static int test_u1(void)
     ui_power_on();
     /* ((Vallée, the SPAMPY sound) DRUM-X retired: its sheet's BPM LOCK check and its TUNE gone with it (its number,
      * 0xFF, is no engine: param_desc_of would read another's names) */
-    ok = param_desc_of(ENGI_DRUM, P_E1)->fmt == F_ST16;
-    bad += check("U1: DRUM's PITCH in semitones", ok);
+    ok = TP[P_LTUNE0].fmt == F_SEMI && TP[P_LTUNE8 + 7].min == -8 && TP[P_LTUNE8 + 7].max == 7;
+    bad += check("U1: (Vallée) a DRUM lane's TUNE in semitones, -8 .. +7 (SPAMPY's)", ok);
     ui_power_on();
     return bad;
 }
@@ -8082,9 +8082,12 @@ static int test_u4(void)
     bad += check("U4 V5: values in full (SPRING); a longer name its first 7 letters (PROPHET's TANGERINE..)", ok);
     set_engine_of(TSEL, ENGI_DRUM);
     TSEL->engine = TSEL->eng_req;
-    TSEL->p[P_E0] = DK_66;                              /* (66: a conga on TOM) */
-    ev_name(TSEL, P_LN0 + DV_TOM, nm);
-    bad += check("U4 L9: AUTOMATION names a lane as the kit plays it (66: CONGA)", str_eq(nm, "CONGA"));
+    ev_name(TSEL, lp_ln(14), nm);                       /* ((Vallée) SPAMPY's lanes: 15 CONGA; its TUNE, lane 10's PAN */
+    ok = str_eq(nm, "CONGA");
+    ev_name(TSEL, lp_tune(14), nm);
+    ok &= str_eq(nm, "CONGA TUNE");
+    ev_name(TSEL, lp_pan(9), nm);
+    bad += check("U4 L9: AUTOMATION names a lane (CONGA), its TUNE (CONGA TUNE), PAN (TOM L PAN)", ok && str_eq(nm, "TOM L PAN"));
     bad += check("U4 R9: the REC layer says CLICK, COUNT-IN, CLICK LVL; GLOBAL's swing is SWING+",
                  str_eq(RL_LABEL[1], "COUNT-IN") && str_eq(GP[G_SWING].label, "SWING+"));
     {   /* L5: the header the page (EDIT 1 on ANALOG: OSC), the footer where it is */
@@ -8318,7 +8321,7 @@ static int test_u3(void)
     turn(EN_K3, 5);                                     /* ((Skiff phase 9) KNOB 3 4: the lane's TUNE, DECAY) */
     turn(EN_K4, -7);
     bad += check("  (phase 9) KNOB 3 TUNE, KNOB 4 DECAY: that lane's, the others untouched; a held step's locks them",
-                 TSEL->p[P_LTUNE0 + 3u] == 69 && TSEL->p[P_LDECAY0 + 3u] == -7 && TSEL->p[P_LTUNE0 + 2u] == 64 &&
+                 TSEL->p[P_LTUNE0 + 3u] == 5 && TSEL->p[P_LDECAY0 + 3u] == -4 && TSEL->p[P_LTUNE0 + 2u] == 0 &&
                  !TSEL->p[P_LDECAY0 + 4u] && lock_id(2) == P_LTUNE0 + 3u && lock_id(3) == P_LDECAY0 + 3u);
     ui_power_on();                                      /* A2: the project in the header, changed since */
     ok = !project_mark();

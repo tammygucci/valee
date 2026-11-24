@@ -847,9 +847,9 @@ static void lp_hit(uint32_t eng, uint32_t lane, int32_t kick, int32_t snare, int
     t->p[P_PAN] = (int16_t)pan;
     memset(t->v, 0, sizeof t->v);
     lc_l1 = lc_l2 = lc_r1 = lc_r2 = dc_l = dc_r = dce_l = dce_r = 0;
-    trk_note_on(t, DV_LANE_NOTE[lane], 100);
+    trk_note_on(t, DRUM_LANE_NOTE[lane], 100);
     sp_run(40, l, r, &h);
-    trk_note_off(t, DV_LANE_NOTE[lane]);
+    trk_note_off(t, DRUM_LANE_NOTE[lane]);
 }
 static int lane_pans(void)
 {

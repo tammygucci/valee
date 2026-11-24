@@ -1,96 +1,32 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
-/* DRUM: a drum kit of 8 lanes (drum_voice.c, Felucca's own): KICK, SNARE, CLAP, HAT CL, HAT OP, TOM, RIM,
- * BELL. Before 1.0 it was PHYS's MODEL DRUM; projects and user presets saved then load as this engine
- * (drum_from_phys in core.h).
+/* DRUM ((Vallée, the SPAMPY sound): SPAMPY's drum player, its drums.c and drum_synth.c (github.com/Spampy-Droid/
+ * SPAMPY-0.0-r949, on SLOOP by isod89 and Felucca, GPL-3.0), as an engine any track plays.
  *
- * Keys and notes: the keys play the General MIDI drum map with the kick on the first C (C KICK, C# RIM,
- * D SNARE, D# CLAP, F# HAT CL, A# HAT OP, F G A B C D TOMS, C# CYM, G# BELL; OCT -/+ move it), and a note
- * plays its GM drum (35..81: kicks, snares, toms, hats, cymbals, bells, congas, claves; other notes as
- * their octave of 36..47), so GM patterns and MIDI parts play as they did on SAMPLE PERC (retired: its sounds
- * load as this engine, core.h drum_from_perc).
+ * KIT (E0): SPAMPY's 35. ACOUSTIC, the General MIDI sample kit (the factory block's PERC set, eng_sample.c), and its four
+ * treatments DEEP (pitched down, darker), TIGHT (a short fade), BRIGHT (up 2 semitones), DUST (darker, 8 bits); then 30
+ * synthesised kits (drum_synth.c, tools/spampy/gen_drumkits.py: 808 .. LINNDRUM). Not taken: SPAMPY's user kits USR1..
+ * (the FM-1's sample area holds the factory samples) and SYN1..SYN4 (their own flash bank and editor page).
  *
- * Parameters: KIT the kit: STD (Felucca's own: TOM RIM BELL on lanes 6..8, other GM notes their congas, claves,
- * cymbals) or a model kit (80 10 66 55 77, 1.5.6 DEEP TIGHT PERC: every lane that kit's own piece, drum_voice.c DV_KIT; KICK does not
- * apply), or ((2.0, #35) USR1..3) a user sample slot: each lane its sample (drum_smp; TONE below its middle a low-pass,
- * SNAP and KICK do not apply). Its stored values 1..3 were HAND CYM H+CYM (STD with CONGA CLAVE / CYM on lanes 6..8) until 1.0.4: they
- * play 66 10 77 now (DK_PLAYS), and whatever stores them lands there (params.c enum_orig, param_fit: the knob
- * steps over them, the editor's SET, projects, user presets, motion). KICK the kick (PUNCH, ROUND). TUNE (64: as
- * designed, +-12 semitones), TONE, DECY and SNAP (each lane's extra: the kick's drive, the snare's snappiness,
- * the clap's spread, the hats' noise, the toms' bend, the rim's drive, the bell's strike) move every lane from its designed value. ACC
- * is the accent at full velocity (velocity scales it), DRV a soft clip on every hit (x1..x4, level kept).
- * Each lane has its LEVEL (P_LN0..P_LN7, EDIT > LANES / LANES 2, #97: square law, 100 % the kit as designed, the
- * default, so every older sound plays as it did), on the voice amplitude after the knee (a quieter lane is cleaner).
- * A hit keeps the drum and the variant it was struck with; the knobs move it while it rings.
+ * The 16 lanes (core.h NLANE, SPAMPY's order: KICK .. COWBELL), each with its TUNE (-8 .. +7 semitones), DECAY (-4 ..
+ * +3) and BODY (-4 .. +4, a low reinforcement; 0: none, bit for bit), as SPAMPY's DRUMS > SOUND, and Vallée's LEVEL and
+ * PAN (EDIT > LANES, LANE MIX). Notes: a GM note plays its sound (SPAMPY: the sample kit its zone, a synthesised kit
+ * DS_MAP's lane and pitch); the lane it counts as (TUNE DECAY BODY LEVEL PAN, the mutes) is LANE_OF_GM's. The keys:
+ * SPAMPY's, a white key a lane from F3 (KICK) to G5 (COWBELL), a black key its left neighbour's.
  *
- * Polyphony: a lane per drum and part, mono: a hit reuses its lane's voice even at another pitch, the 8 lanes ring
- * together. A sounding voice plays one lane (s[0]); the lane remembers its voice (owner), and a voice
- * whose lane was struck again by another voice, or has rung out (-84 dB), ends itself (drum_amp). The
- * voices come from the shared budget (voice.c), up to 8 per part. A closed hat chokes the open one.
+ * Voices: SPAMPY's 6 (DRUM_NV), from the shared budget: a hit takes a free one, else the oldest (its sound fades out,
+ * no click); a closed or pedal hat chokes the open one. Each voice its own envelope (engine_t.ownenv): the ADSR, GLIDE,
+ * the pitch LFO and the matrix's PITCH do nothing; LEVEL, PAN, the sends, DIST, the SLICER, LFO AMP and velocity (the
+ * hit's: SPAMPY's own velocity response) do.
  *
- * What applies (engine_t.oneshot): the hit is the envelope. VOICE (always POLY), GLIDE, the ADSR, ENV DEST,
- * LFO DEST PIT / FLT / SHP, the global TUNE and the matrix's PITCH CUT SHP do nothing; LEVEL, PAN, the
- * sends, DIST, the SLICER, LFO DEST AMP, velocity, the matrix's AMP and its E1..E8 (the knobs, per
- * block) do. A released key does not end a hit.
- *
- * State: 8 lanes per part in the part's shared engine area (engines.c eng_mem: the parameters, coefficients, voice
- * and metal source of each lane). */
-#include "drum_voice.c"
+ * State: the part's shared engine area (engines.c eng_mem): the voices' synth state and their sample treatments. */
+#include "drum_voice.c"                       /* (DRUM-X's lanes and types, retired with it) */
+#include "drum_synth.c"
 
-/* 1.5.6 (Discussion #216): DEEP TIGHT PERC (9..11), kits put together from the five's pieces (drum_voice.c DV_KIT),
- * appended. Firmware before (Skiff 1.2, Felucca before 1.5.6) clamps 9..11 to 8 (77) when it loads them (param_fit) */
-/* (2.0, #35, the user's pick A of design/mockups/v2_kits.png) USR1..USR3 (12..14): a user sample slot as the kit
- * (drum_user), appended; the SMK-37 offers USR1 only (SMP_SHOWN) */
-enum { DK_STD, DK_HAND, DK_CYM, DK_HCYM, DK_80, DK_10, DK_66, DK_55, DK_77, DK_DEEP, DK_TIGHT, DK_PERC, DK_USR1, DK_USR2,
-       DK_USR3, DK_DEAD, DK_TAPE, DK_CRUSH, DK_COUNT };   /* (stored values; (Vallée) DEAD TAPE CRUSH appended, after
-                                                         * the user kits) */
-/* the kit a stored KIT value plays: HAND CYM H+CYM (retired after 1.0.4) -> 66 (a conga on TOM), 10 (a cymbal on
- * BELL), 77 (claves on RIM, a cymbal on BELL) */
-/* ((Vallée) USR1..USR3 without flash (the FM-1: the sample area holds the factory samples, eng_sample.c): retired as
- * HAND CYM H+CYM were, aliases of STD: the knob steps over them, a stored one (an old project) plays STD) */
-#define DK_UPLAY(k) (SMP_USER_HAS((k) - DK_USR1) ? (k) : DK_STD)
-static const uint8_t DK_PLAYS[DK_COUNT] = {DK_STD, DK_66, DK_10, DK_77, DK_80, DK_10, DK_66, DK_55, DK_77, DK_DEEP,
-                                           DK_TIGHT, DK_PERC, DK_UPLAY(DK_USR1), DK_UPLAY(DK_USR2), DK_UPLAY(DK_USR3),
-                                           DK_DEAD, DK_TAPE, DK_CRUSH};
-static uint32_t drum_kit_plays(int32_t v) { return DK_PLAYS[clamp(v, 0, DK_COUNT - 1)]; }
-/* a kit's model (DV_KIT's row), DV_NKIT none (STD, a user kit) */
-static uint32_t drum_model(uint32_t kit)
-{
-    return kit >= DK_80 && kit < DK_USR1 ? kit - DK_80 : kit >= DK_DEAD && kit < DK_COUNT ? 8u + (kit - DK_DEAD) : DV_NKIT;
-}
-/* the model kits' pieces where a lane plays another than its own (the lane's name): 1 TOM -> CONGA, 2 RIM -> CLAVE,
- * 4 BELL -> CYM */
-static const uint8_t DK_SWAP[DV_NKIT] = {0, 4, 1, 0, 2 | 4, 4, 0, 1 | 2, 0, 4, 0};   /* ((Vallée) TAPE: a ride on BELL) */
 static const uint8_t DV_TYPE_LANE[DVT_COUNT] = {
     DV_KICK, DV_KICK, DV_SNARE, DV_CLAP, DV_HATC, DV_HATO, DV_TOM, DV_TOM, DV_RIM, DV_RIM, DV_BELL, DV_BELL,
 };
 
-/* .. a user kit's: its slot + 1, 0 a kit of DRUM's own */
-static uint32_t drum_user(const int16_t *p)
-{
-    uint32_t k = drum_kit_plays(p[P_E0]);
-    return k >= DK_USR1 && k <= DK_USR3 ? k - DK_USR1 + 1u : 0u;   /* ((Vallée) DEAD after them: not one) */
-}
-
-typedef struct {
-    dv_param_t key;              /* the parameters the coefficients were set up with */
-    dv_coef_t c;
-    dv_voice_t v;
-    dv_metal_t mb;
-    uint8_t owner;               /* the voice playing the lane: index + 1, 0 = none */
-    uint8_t role;                /* the drum struck (DVT_*) */
-    int8_t st;                   /* its semitones from the designed pitch (the GM map) */
-    uint8_t pad;
-    int16_t dk[2];               /* (2.1.1) the declick (drum_declick): its last sample and the step falling away, halved */
-} drum_lane_t;
-
-
-/* 1..3 named as the kit they play: aliases, never shown or offered (EDITOR_PROTOCOL.md: retired values) */
-/* ((Vallée) USR1..3 without flash (the FM-1): named STD, the kit they play (DK_UPLAY): hidden as 1..3 are) */
-static const char *const N_DRUM_KIT[] = {"STD", "66", "10", "77", "80", "10", "66", "55", "77", "DEEP", "TIGHT", "PERC",
-                                         SMP_USER_HAS(0) ? "USR1" : "STD", SMP_USER_HAS(1) ? "USR2" : "STD",
-                                         SMP_USER_HAS(2) ? "USR3" : "STD", "DEAD", "TAPE", "CRUSH"};
-static const char *const N_DRUM_KICK[] = {"PUNCH", "ROUND"};
 
 /* General MIDI notes 35..81 -> the drum (DVT_*; DVT_PUNCH: the kick KICK picks) and semitones from its
  * designed pitch */
@@ -104,17 +40,6 @@ static const int8_t DRUM_GM[47][2] = {
     {DVT_CLAVE, 7}, {DVT_CLAVE, 5}, {DVT_HATC, -4}, {DVT_HATC, -6}, {DVT_CLAVE, 0}, {DVT_CLAVE, -4},  /* 71 */
     {DVT_CLAVE, -7}, {DVT_CONGA, 7}, {DVT_CONGA, 3}, {DVT_BELL, 12}, {DVT_BELL, 12},                  /* 77 */
 };
-/* the drum of a note (DVT_*, or a model kit's lane: DV_KTYPE) and its semitones; KICK picks the kick; a model kit
- * plays its own piece on the note's lane */
-static uint32_t drum_gm(const int16_t *p, uint32_t note, int32_t *st)
-{
-    uint32_t n = note >= 35u && note <= 81u ? note : 36u + (note + 120u - 36u) % 12u, t = (uint32_t)DRUM_GM[n - 35u][0];
-    uint32_t kit = drum_kit_plays(p[P_E0]);           /* STD, the model kits */
-    *st = DRUM_GM[n - 35u][1];
-    if (drum_model(kit) < DV_NKIT)
-        return DV_KTYPE(drum_model(kit) + 1u, DV_TYPE_LANE[t]);
-    return t == DVT_PUNCH && p[P_E6] > 0 ? DVT_ROUND : t;
-}
 
 /* ----------------------------------------------------- the grid's lanes --- */
 /* A step's lane hits (step_t.hit / acc, the DRUM grid: SEQ > NOTES on a DRUM track) play these GM notes, on any
@@ -134,44 +59,12 @@ static uint32_t drum_lane(uint32_t note)
 {
     return note < 35u ? 0u : note > 81u ? 13u : LANE_OF_GM[note - 35u];
 }
-/* the drum voices' own 8 (drum_voice.c, until SPAMPY's player: phase 3b): their notes (the 8 lanes of before), a
- * note's DV lane by its GM piece, their names as the kit plays them (the LANES pages' 8: P_LN0.., P_LTUNE0..) */
+/* (DRUM-X's, retired with it: drum_voice.c's 8 lanes, a note's by its GM piece; tests/drum_test.c's old kit checks) */
 static const uint8_t DV_LANE_NOTE[DV_NLANE] = {36, 38, 39, 42, 46, 45, 37, 56};
 static uint32_t dv_lane(uint32_t note)
 {
     uint32_t n = note >= 35u && note <= 81u ? note : 36u + (note + 120u - 36u) % 12u;
     return DV_TYPE_LANE[DRUM_GM[n - 35u][0]];
-}
-
-/* KIT's swaps of lanes 6..8 (1 TOM -> CONGA, 2 RIM -> CLAVE, 4 BELL -> CYM) */
-static uint32_t drum_swaps(const track_t *t)
-{
-    uint32_t kit = drum_kit_plays(t->p[P_E0]);
-    if (t->eng_req % NENGINES != ENGI_DRUM)          /* ((Skiff) DRUM-X: its E0 is MRPH, its lanes their own names) */
-        return 0u;
-    return drum_model(kit) < DV_NKIT ? DK_SWAP[drum_model(kit)] : 0u;
-}
-
-/* (2.0, #35) user kit slot k's sample for lane l: the narrowest zone holding the lane's note (DRUM_LANE_NOTE, as
- * SAMPLE picks one), as a voice keeps it (0x8000 | k << 5 | zone); 0 none: the lane silent */
-static uint32_t drum_user_zone(uint32_t k, uint32_t l)
-{
-    uint32_t i, zi = 0, w = 128u, note = DV_LANE_NOTE[l & (DV_NLANE - 1u)];
-    k %= SMP_USER_SLOTS;
-    for (i = 0; i < usr_nz[k]; i++) {
-        const smp_zone_t *z = &usr_zone[k][i];
-        if (note >= z->lo && note <= z->hi && (uint32_t)(z->hi - z->lo) <= w) {
-            zi = 0x8000u | k << 5 | i;
-            w = (uint32_t)(z->hi - z->lo);
-        }
-    }
-    return zi;
-}
-/* .. lane l of track t sounds: a user kit's has a sample (LANES and LANE MIX draw one without it empty); every other's */
-static int drum_lane_has(const track_t *t, uint32_t l)
-{
-    uint32_t u = t->eng_req % NENGINES == ENGI_DRUM ? drum_user(t->p) : 0u;
-    return !u || drum_user_zone(u - 1u, l) != 0u;
 }
 
 /* the lane's name as the track's KIT plays it (5 characters at most) */
@@ -186,27 +79,13 @@ static const char *drum_lane_name(const track_t *t, uint32_t l)   /* ((Vallée) 
     (void)t;
     return N[l & (NLANE - 1u)];
 }
-static const char *dv_lane_name(const track_t *t, uint32_t l)
+/* .. in 5 letters at most (SPAMPY's LANE_SHORT): a lane's parameter in the AUTOMATION list (KICK TUNE, OPEN PAN) */
+static const char *drum_lane_short(const track_t *t, uint32_t l)
 {
-    static const char *const N[DV_NLANE] = {"KICK", "SNARE", "CLAP", "CL HAT", "OP HAT", "TOM", "RIM", "BELL"};
-    uint32_t kit = drum_swaps(t);
-    l &= DV_NLANE - 1u;
-    if (l == DV_TOM && (kit & 1u))
-        return "CONGA";
-    if (l == DV_RIM && (kit & 2u))
-        return "CLAVE";
-    return (kit & 4u) && l == DV_BELL ? "CYM" : N[l];
-}
-static const char *dv_lane_abbr(const track_t *t, uint32_t l)
-{
-    static const char *const N[DV_NLANE] = {"BD", "SD", "CP", "CH", "OH", "TM", "RS", "CB"};
-    uint32_t kit = drum_swaps(t);
-    l &= DV_NLANE - 1u;
-    if (l == DV_TOM && (kit & 1u))
-        return "CG";
-    if (l == DV_RIM && (kit & 2u))
-        return "CL";
-    return (kit & 4u) && l == DV_BELL ? "CY" : N[l];
+    static const char *const N[NLANE] = {"KICK", "KICK2", "SNARE", "CLAP", "HAT", "OPEN", "PEDAL", "RIM",
+                                         "SNR 2", "TOM L", "TOM H", "CRASH", "RIDE", "SHAKE", "CONGA", "BELL"};
+    (void)t;
+    return N[l & (NLANE - 1u)];
 }
 /* .. in two letters, the drum machine way (the grid's lane column) */
 static const char *drum_lane_abbr(const track_t *t, uint32_t l)
@@ -250,297 +129,278 @@ static void step_to_grid(step_t *s)
     }
 }
 
-static drum_lane_t *drum_kit_of(const track_t *t)
-{
-    return t >= &trk[0] && t < &trk[NPART] ? (drum_lane_t *)eng_part(t) : 0;   /* (Skiff: the shared area, engines.c) */
-}
+/* ---------------------------------------------------------- the kits --- */
+#define DRUM_SAMPLED 5u                         /* KIT 0..4: the GM sample kit and its treatments; 5..: drum_synth.c */
+#define DRUM_KITS (DRUM_SAMPLED + DS_NKITS)
+#define DRUM_NV 6u                              /* SPAMPY's NDRUM: the voices a kit sounds at once */
+static const char *const N_DRUM_KIT[] = {"ACOUSTIC", "DEEP", "TIGHT", "BRIGHT", "DUST", DS_KIT_NAME_LIST};
+_Static_assert(sizeof(N_DRUM_KIT) / sizeof(N_DRUM_KIT[0]) == DRUM_KITS, "a name per kit");
+static const uint8_t DK_SMP[4] = {47, 60, 74, 87};   /* a sample's DECAY -4 .. -1: -60 dB in 60, 120, 250, 500 ms */
+static uint32_t drum_kit(const track_t *t) { return (uint32_t)clamp(t->p[P_E0], 0, DRUM_KITS - 1); }
 
-/* the lane voice v plays, 0 when it plays none (any more) */
-static drum_lane_t *drum_lane_of(track_t *t, const voice_t *v)
+/* a part's voices' state (the part's shared area): voice i of the track (its DRUM_NV) uses slot i */
+typedef struct {
+    dsv_t ds[DRUM_NV];                          /* a synthesised kit's voice (drum_synth.c) */
+    int32_t filter[DRUM_NV], env[DRUM_NV], denv[DRUM_NV];   /* the sample kit's treatments, its DECAY's fade (Q15) */
+    int32_t bodylp[DRUM_NV];                    /* BODY's low band */
+    int32_t tail[DRUM_NV];                      /* a hit on a sounding voice: where it was, falling away (no click) */
+    int32_t last[DRUM_NV];                      /* the voice's last output (the tail's start) */
+    int32_t choke[DRUM_NV];                     /* a choked open hat: its fade out, Q15 (0: not choked) */
+    uint16_t dk[DRUM_NV];                       /* the sample's DECAY factor a sample (DECAY_K), 0: none */
+    uint8_t kit[DRUM_NV], synth[DRUM_NV], lane[DRUM_NV], over[DRUM_NV];
+    uint32_t seed;                              /* the synth voices' noise seeds (drum_synth.c ds_on) */
+    int16_t set;                                /* SMP_SETS' PERC: its index + 1, 0 not looked for, -1 none */
+} drum_part_t;
+
+static drum_part_t *drum_part_of(const track_t *t)
 {
-    drum_lane_t *K = drum_kit_of(t), *L;
+    return t >= &trk[0] && t < &trk[NPART] ? (drum_part_t *)eng_part(t) : 0;   /* (the shared area, engines.c) */
+}
+/* the lane voice v counts as (LANES' LEVEL, LANE MIX's PAN: voice.c lpan_render; the mutes) */
+static uint32_t drum_vlane(const track_t *t, const voice_t *v)
+{
+    const drum_part_t *P = drum_part_of(t);
     uint32_t i = (uint32_t)(v - t->v);
-    if (!K || i >= NVOICE)
-        return 0;
-    L = &K[(uint32_t)v->s[0] & (DV_NLANE - 1u)];
-    return L->owner == i + 1u ? L : 0;
+    return P && i < DRUM_NV ? P->lane[i] : drum_lane(v->note);
+}
+static int drum_lane_has(const track_t *t, uint32_t l) { (void)t; (void)l; return 1; }   /* (no user kits) */
+static voice_t *drum_reuse(track_t *t, uint32_t note) { (void)t; (void)note; return 0; }   /* (SPAMPY: a free voice) */
+
+static int32_t drum_perc_set(drum_part_t *P)
+{
+    uint32_t i;
+    if (!P->set) {
+        P->set = -1;
+        for (i = 0; i < SMP_NSETS; i++)
+            if (str_eq(SMP_SETS[i].name, "PERC"))
+                P->set = (int16_t)(i + 1u);
+    }
+    return P->set > 0 && !smp_set_missing((uint32_t)P->set - 1u) ? P->set - 1 : -1;
 }
 
-/* Different GM pitches on a lane still share its one sounding voice. */
-static voice_t *drum_reuse(track_t *t, uint32_t note)
+/* BODY: a low reinforcement (+) or its removal (-) on lane l's voice k; 0 bypassed (SPAMPY's drum_body_apply) */
+static inline int32_t drum_body(drum_part_t *P, uint32_t k, int32_t body, int32_t s)
 {
-    drum_lane_t *K = drum_kit_of(t);
-    uint32_t lane = dv_lane(note), owner = K ? K[lane].owner : 0;
-    voice_t *v;
-    if (!owner || owner > NVOICE)
-        return 0;
-    v = &t->v[owner - 1u];
-    return v->active && (uint32_t)v->s[0] == lane ? v : 0;
+    P->bodylp[k] += (s - P->bodylp[k]) >> 5;
+    if (body >= 0)
+        return s + (int32_t)(((int64_t)P->bodylp[k] * body * 14000) >> 15);
+    return s - (int32_t)(((int64_t)P->bodylp[k] * (-body) * 8192) >> 15);
 }
 
 static void drum_note_on(track_t *t, voice_t *v)
 {
-    drum_lane_t *K = drum_kit_of(t), *L;
-    uint32_t i = (uint32_t)(v - t->v), role, lane, u;
-    int32_t st;
-    if (!K || i >= NVOICE)
+    drum_part_t *P = drum_part_of(t);
+    uint32_t k = (uint32_t)(v - t->v), note = v->note, kit = drum_kit(t), ln = drum_lane(note), i;
+    int32_t tune = t->p[lp_tune(ln)], dec = t->p[lp_dec(ln)];
+    if (!P || k >= DRUM_NV)
         return;
-    role = drum_gm(t->p, v->note, &st);
-    lane = dv_lane(v->note);
-    L = &K[(uint32_t)v->s[0] & (DV_NLANE - 1u)];
-    u = drum_user(t->p);
-    if (u && v->env && L->owner == i + 1u && (v->s[5] & 0x8000) && v->s[6] != 1) {   /* ((#35) its sample still */
-        int32_t o = v->s[3] + (((v->s[1] - v->s[3]) * (int32_t)(v->ph[1] >> 1)) >> 15);   /* playing (env: sounding, */
-        o = t->p[P_E2] < 64 ? (int32_t)v->ph[2] : (o * (v->s[7] >> 9)) >> 15;    /* voice_start): where it is now, */
-        v->s[4] = clamp(o + v->s[4], -32767, 32767);    /* the new hit's declick (drum_smp) */
-    } else {
-        v->s[4] = 0;
-    }
-    if (L->owner == i + 1u)                              /* this voice played another lane: it stops there */
-        L->owner = 0;
-    L = &K[lane];
-    if (u) {                                             /* ((2.0, #35) a user kit: the lane's sample, from its start */
-        L->st = (int8_t)st;
-        L->owner = (uint8_t)(i + 1u);
-        v->s[0] = (int32_t)lane;
-        v->s[5] = (int32_t)drum_user_zone(u - 1u, lane);
-        v->ph[0] = v->ph[1] = v->ph[2] = 0;
-        v->s[1] = v->s[2] = v->s[3] = 0;
-        v->s[6] = !v->s[5];                              /* (no sample: ended, the lane silent) */
-        v->s[7] = 1 << 24;
-        v->env_out = v->vel * 258;
-        v->env = 1 << 24;
-        if (lane == DV_HATC && K[DV_HATO].owner && t->v[K[DV_HATO].owner - 1u].active &&
-            !t->v[K[DV_HATO].owner - 1u].s[6])
-            t->v[K[DV_HATO].owner - 1u].s[6] = 2;       /* (the open hat fades out: drum_smp) */
+    tune = clamp(tune, -8, 7);
+    dec = clamp(dec, -4, 3);
+    P->tail[k] = v->active && !P->over[k] ? P->last[k] : 0;   /* (a sounding voice taken: from where it was) */
+    P->last[k] = 0;
+    P->over[k] = 0;
+    P->choke[k] = 0;
+    P->kit[k] = (uint8_t)kit;
+    P->lane[k] = (uint8_t)ln;
+    P->bodylp[k] = 0;
+    if (note == 42u || note == 44u)             /* a closed or pedal hat chokes the open one */
+        for (i = 0; i < DRUM_NV; i++)
+            if (i != k && t->v[i].active && t->v[i].note == 46u && !P->over[i] && !P->choke[i])
+                P->choke[i] = 32767;
+    v->env = 1 << 24;                            /* (the ADSR held: the voice is its own envelope, drum_done) */
+    if (kit >= DRUM_SAMPLED) {                   /* a synthesised kit */
+        const dkit_t *d = &DS_KITS[kit - DRUM_SAMPLED];
+        P->synth[k] = 1;
+        P->seed = P->seed * 1664525u + 1013904223u;
+        ds_on(&P->ds[k], d->s, d->crush, note, v->vel, tune * 16, (uint32_t)(dec + 4), P->seed);
         return;
     }
-    if (L->role != role || L->v.type != dv_run_type(role)) {   /* another drum on this lane: from rest */
-        dv_init(&L->v, role);
-        L->key.type = 0xFF;
-        L->role = (uint8_t)role;
+    P->synth[k] = 0;                             /* the GM sample kit: the note's zone of PERC */
+    {
+        int32_t si = drum_perc_set(P), shift;
+        uint32_t zi = 0xFFFFu;
+        const smp_zone_t *z;
+        if (si >= 0)
+            for (i = 0; i < SMP_SETS[si].nz; i++)
+                if (note >= SMP_ZONES[SMP_SETS[si].z0 + i].lo && note <= SMP_ZONES[SMP_SETS[si].z0 + i].hi)
+                    zi = SMP_SETS[si].z0 + i;
+        if (zi == 0xFFFFu) {                     /* (no sample there, or the factory samples not written: silent) */
+            P->over[k] = 1;
+            return;
+        }
+        v->s[4] = (int32_t)zi;
+        v->ph[0] = v->ph[1] = 0;
+        v->s[0] = v->s[1] = v->s[2] = 0;
+        z = smp_zone(zi);
+        v->s[3] = sample_next(z, v, 0);
+        shift = kit == 1u ? (note <= 36u ? -5 : -2) : kit == 3u ? 2 : kit == 4u ? -1 : 0;   /* DEEP BRIGHT DUST */
+        shift = shift * 16 + tune * 16;
+        v->s[5] = (int32_t)((pow2_q16((int32_t)note * 16 + shift - z->root16) >> 8) * (z->rate >> 8));
+        P->filter[k] = 0;
+        P->env[k] = 32767;
+        P->denv[k] = 32767;
+        P->dk[k] = dec < 0 ? DECAY_K[DK_SMP[dec + 4]] : 0u;
     }
-    L->st = (int8_t)st;
-    L->owner = (uint8_t)(i + 1u);                        /* (its last voice, if another, ends: drum_amp) */
-    v->s[0] = (int32_t)lane;
-    v->env_out = v->vel * 258;                           /* the hit starts at its level (no ramp from 0) */
-    v->env = 1 << 24;                                    /* the ADSR held at full from here, not from drum_amp:
-                                                          * a key-off before the first block (zero-length MIDI
-                                                          * notes) would end a fresh voice at env 0 in env_tick */
-    dv_trigger(&L->v);
-    if (lane == DV_HATC && K[DV_HATO].v.live)            /* a closed hat chokes the open one */
-        dv_choke(&K[DV_HATO].v);
 }
 
-/* the voice's amplitude: the hit, not the ADSR (which still runs, held at full so a release never ends
- * it). A voice that plays no lane any more, or whose drum has rung out, ends here */
-static int32_t drum_amp(track_t *t, voice_t *v, int32_t adsr)
+/* the voice's amplitude: its own (drum_render), at full here */
+static int32_t drum_amp(track_t *t, voice_t *v, int32_t env)
 {
-    const drum_lane_t *L = drum_lane_of(t, v);
-    (void)adsr;
-    if (!v->active)                                      /* (taken for another part: env_tick ended it) */
-        return 0;
-    if (!L || (drum_user(t->p) ? v->s[6] == 1 : !L->v.live && !L->v.trig)) {   /* ((#35) a user kit's: its sample over) */
-        v->active = v->gate = 0;
-        v->stage = 0;
-        v->env = 0;
-        return 0;
-    }
-    v->env = 1 << 24;
+    (void)t;
+    (void)v;
+    (void)env;
     return 32767;
 }
-
-/* (2.0, #35) a user kit's lane's next sample: ph[0] the position, s[1] s[2] the ADPCM state (s[1] the sample; a call
- * per sample decoded, as SAMPLE's sample_next) */
-static __attribute__((noinline)) void drum_dec(const smp_zone_t *z, voice_t *v)
+/* .. ended: its sound over, its fade done */
+static int drum_done(track_t *t, voice_t *v)
 {
-    adpcm_next(z, &v->ph[0], &v->s[1]);
+    const drum_part_t *P = drum_part_of(t);
+    uint32_t k = (uint32_t)(v - t->v);
+    return !P || k >= DRUM_NV || (P->over[k] && !P->tail[k]);
 }
-/* .. its render: its sample (s[5] the zone, 0 none) decoded as SAMPLE's (drum_dec; s[3] s[1] the samples interpolated,
- * ph[1] the fraction); PITCH and the lane's TUNE its rate (st, the GM map's semitones), DECAY and the lane's below their
- * middle a fall (s[7] Q24, a time constant of 2^sh samples; s[6] 2, a closed hat's choke: 3 ms), TONE below 64 a
- * low-pass (ph[2]), DRIVE and the lane's LEVEL (m) as the kit's; a muted lane plays on unheard. s[6] 1: over (drum_amp
- * ends the voice). s[4]: a hit struck while the lane's last still played starts from where that one was, the step
- * falling away (a time constant of 32 samples, -40 dB in 3 ms; drum_note_on), not a click. Not inlined: drum_render's
- * own cost stays its synth's (tests/target_budget.txt) */
-static __attribute__((noinline)) void drum_smp(track_t *t, voice_t *v, int32_t *out, uint32_t n, const vmod_t *m,
-                                               uint32_t ln, int32_t st)
+
+static __attribute__((noinline)) void drum_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const vmod_t *m)
 {
-    const int16_t *p = t->p;
-    const smp_zone_t *z = smp_zone((uint32_t)v->s[5]);
-    int32_t d16 = clamp(st * 16 + (p[P_E1] - 64) * 3 + (p[P_LTUNE0 + ln] - 64) * 3, -1536, 576);
-    int32_t dd = p[P_E3] - 64 + p[P_LDECAY0 + ln], sh = v->s[6] == 2 ? 4 : dd < 0 ? clamp(17 + dd / 4, 6, 17) : 0;
-    int32_t lp = p[P_E2] < 64 ? 2000 + p[P_E2] * 480 : 0, y = (int32_t)v->ph[2], drv = p[P_E7], g = 0, mk = 0, s;
-    int32_t off = v->s[4];
-    uint32_t stepq = (pow2_q16(d16) >> 8) * (z->rate >> 8), frac = v->ph[1], i;
-    int heard = !((drum_mute[(uint32_t)(t - trk) % NTRK] >> drum_lane(v->note)) & 1u);
-    if (!v->s[5] || !z->n || v->s[6] == 1) {             /* (no sample, its slot emptied since: over) */
-        v->s[6] = 1;
+    drum_part_t *P = drum_part_of(t);
+    uint32_t k = (uint32_t)(v - t->v), i, ln;
+    int32_t y[CTL], body, tail, ck;
+    vmod_t ml;
+    int heard;
+    if (!P || k >= DRUM_NV)
         return;
+    n = n > CTL ? CTL : n;
+    ln = P->lane[k];
+    body = clamp(t->p[lp_body(ln)], -4, 4);
+    heard = !((drum_mute[(uint32_t)(t - trk) % NTRK] >> ln) & 1u);
+    m = vmod_level(m, &ml, clamp(t->p[lp_ln(ln)], 0, 127));   /* the lane's LEVEL (dsp.c) */
+    if (P->over[k]) {
+        for (i = 0; i < n; i++)
+            y[i] = 0;
+    } else if (P->synth[k]) {                    /* a synthesised kit's voice */
+        if (!ds_render(&P->ds[k], y, n))
+            P->over[k] = 1;
+    } else {                                     /* the sample kit's: SPAMPY's drums_mix */
+        const smp_zone_t *z = smp_zone((uint32_t)v->s[4]);
+        uint32_t frac = v->ph[1], stepq = (uint32_t)v->s[5], kt = P->kit[k];
+        int32_t g = v->vel * 258;
+        g += g * 3 >> 2;                         /* x1.75 (+5 dB): as loud as the synthesised kits */
+        for (i = 0; i < n; i++) {
+            int32_t s;
+            if (P->over[k]) {
+                y[i] = 0;
+                continue;
+            }
+            frac += stepq;
+            while (frac >= 65536u) {
+                frac -= 65536u;
+                v->s[2] = v->s[3];
+                if (v->ph[0] >= z->n) {
+                    P->over[k] = 1;
+                    break;
+                }
+                v->s[3] = sample_next(z, v, 0);
+            }
+            if (P->over[k]) {
+                y[i] = 0;
+                continue;
+            }
+            s = v->s[2] + (((v->s[3] - v->s[2]) * (int32_t)(frac >> 1)) >> 15);
+            s = mulq15(s, g);
+            if (kt == 1u || kt == 4u) {          /* DEEP, DUST: darker; DUST 8 bits */
+                P->filter[k] += (s - P->filter[k]) >> (kt == 1u ? 2 : 1);
+                s = P->filter[k];
+                if (kt == 4u)
+                    s = (s >> 8) * 256;
+            } else if (kt == 2u) {               /* TIGHT: a short fade */
+                s = mulq15(s, P->env[k]);
+                P->env[k] -= (P->env[k] >> 11) + 1;
+                if (P->env[k] <= 0)
+                    P->over[k] = 1;
+            }
+            if (P->dk[k]) {                      /* a shorter DECAY: the sample fades out */
+                s = mulq15(s, P->denv[k]);
+                P->denv[k] = (int32_t)(((uint32_t)P->denv[k] * P->dk[k]) >> 16);
+                if (P->denv[k] < 8)
+                    P->over[k] = 1;
+            }
+            y[i] = s;
+        }
+        v->ph[1] = frac;
     }
-    if (drv > 0) {                                       /* DRV: the kit's soft clip */
-        g = 4096 + drv * 3 * 4096 / 127;
-        mk = (int32_t)((19661u << 15) / (uint32_t)softclip((19661 * g) >> 12));
-    }
-    if (!v->ph[0] && !frac)                              /* (its first sample in) */
-        drum_dec(z, v);
+    tail = P->tail[k];
+    ck = P->choke[k];
     for (i = 0; i < n; i++) {
-        frac += stepq;
-        while (frac >= 65536u) {
-            frac -= 65536u;
-            v->s[3] = v->s[1];
-            if (v->ph[0] >= z->n) {                      /* its end */
-                v->s[6] = 1;
-                break;
+        int32_t s = y[i];
+        if (body)
+            s = drum_body(P, k, body, s);
+        if (ck) {                                /* choked: gone in ~1.5 ms */
+            s = mulq15(s, ck);
+            ck -= ck >> 4;
+            if (ck < 64) {
+                ck = 0;
+                P->over[k] = 1;
+                P->choke[k] = 0;
+                s = 0;
             }
-            drum_dec(z, v);
         }
-        if (v->s[6] == 1)
-            break;
-        s = v->s[3] + (((v->s[1] - v->s[3]) * (int32_t)(frac >> 1)) >> 15);
-        if (sh) {
-            v->s[7] -= v->s[7] >> sh;
-            if (v->s[7] < 1 << 12) {                     /* (-72 dB: over) */
-                v->s[6] = 1;
-                break;
-            }
-            s = (s * (v->s[7] >> 9)) >> 15;
-        }
-        if (lp)
-            s = y += mulq15(s - y, lp);
-        if (off) {                                       /* (the declick: s[4]; no divide here, and it reaches 0) */
-            s += off;
-            off -= (off >> 5) + (off > 0);
-        }
-        if (g)
-            s = (softclip((s * g) >> 12) * mk) >> 15;
+        P->last[k] = s;
+        s += tail;                               /* (a hit on a sounding voice: the old sound falling away) */
+        tail -= tail / 16 + (tail > 0 ? 1 : tail < 0 ? -1 : 0);
         if (heard)
             out[i] += voice_amp2(s, m, i);
     }
-    v->ph[1] = frac;
-    v->ph[2] = (uint32_t)y;
-    v->s[4] = off;
+    if (P->choke[k])
+        P->choke[k] = ck ? ck : 0;
+    P->tail[k] = tail;
 }
 
-/* (2.1.1, found making the 2.1 video) a synthesized lane struck again while it still rings (dv_run starts the hit from
- * rest) starts from where it was: the step from its last sample to the new hit's first falls away (a time constant of 32
- * samples, -40 dB in 3 ms), as a user kit's (drum_smp) and SAMPLE's re-strikes, not a click. Not inlined: drum_render's
- * own cost stays its synth's (tests/target_budget.txt) */
-static __attribute__((noinline)) void drum_declick(drum_lane_t *L, int32_t *y, uint32_t n, int again)
-{
-    int32_t dc = again ? L->dk[0] * 2 - y[0] : L->dk[1] * 2;
-    uint32_t i;
-    for (i = 0; dc && i < n; i++) {
-        y[i] += dc;
-        dc -= (dc >> 5) + (dc > 0);
-    }
-    L->dk[0] = (int16_t)clamp(y[n - 1] >> 1, -32768, 32767);
-    L->dk[1] = (int16_t)clamp(dc >> 1, -32768, 32767);
-}
-
-static void drum_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const vmod_t *m)
-{
-    const int16_t *p = t->p;
-    drum_lane_t *L = drum_lane_of(t, v);
-    dv_param_t k;
-    int32_t y[CTL], mb[CTL], acc = clamp(p[P_E5] * v->vel * 4, 0, 65536), drv = p[P_E7], g = 0, mk = 0;   /* acc Q16 */
-    uint32_t ln = (uint32_t)v->s[0] & (DV_NLANE - 1u), i, r;
-    int again;
-    vmod_t ml;
-    if (!L)
-        return;
-    m = vmod_level(m, &ml, clamp(p[P_LN0 + ln], 0, 127));   /* the lane's LEVEL (dsp.c); 100 %: the ramp as it was */
-    if (n > CTL)
-        n = CTL;
-    if (drum_user(p)) {                                  /* ((2.0, #35) a user kit: the lane's sample) */
-        drum_smp(t, v, out, n, m, ln, L->st);
-        return;
-    }
-    r = L->role;
-    dv_default(&k, r);                                   /* the knobs move every lane from its design (64) */
-    k.decay = (uint8_t)clamp(k.decay + p[P_E3] - 64 + p[P_LDECAY0 + ln], 0, 127);   /* ((Skiff phase 9) and the */
-    k.tone = (uint8_t)clamp(k.tone + p[P_E2] - 64, 0, 127);                              /* lane its own: LANES) */
-    k.extra = (uint8_t)clamp(k.extra + p[P_E4] - 64, 0, 127);
-    k.accent = (uint8_t)clamp(acc >> 9, 0, 127);         /* (Q16 -> 0..127) */
-    k.tune = (int16_t)(L->st * 16 + (p[P_E1] - 64) * 3 + (p[P_LTUNE0 + ln] - 64) * 3);   /* +-12 semitones, each */
-    if (((const uint32_t *)&k)[0] != ((const uint32_t *)&L->key)[0] ||
-        ((const uint32_t *)&k)[1] != ((const uint32_t *)&L->key)[1]) {
-        dv_setup(&L->c, &k);                             /* (a parameter moved) */
-        L->key = k;
-        if (dv_uses_metal(L->c.type))
-            dv_metal_tune(&L->mb, &L->c);
-    }
-    if (dv_uses_metal(L->c.type) && (L->v.live || L->v.trig))
-        dv_metal_run(&L->mb, mb, n);
-    again = L->v.trig && L->v.live;                      /* (2.1.1) struck again while it rings */
-    dv_run(&L->c, &L->v, mb, y, n);
-    drum_declick(L, y, n, again);
-    if ((drum_mute[(uint32_t)(t - trk) % NTRK] >> drum_lane(v->note)) & 1u)
-        return;                                          /* ((1.3) a muted lane rings on unheard) */
-    if (drv > 0) {                                       /* DRV: x1..x4 into the soft clip, the level kept (Q12) */
-        g = 4096 + drv * 3 * 4096 / 127;
-        mk = (int32_t)((19661u << 15) / (uint32_t)softclip((19661 * g) >> 12));
-    }
-    for (i = 0; i < n; i++) {                            /* x1.25 and the knee below, in 32 bits */
-        int32_t s = y[i];
-        if (g)
-            s = (softclip((s * g) >> 12) * mk) >> 15;
-        out[i] += voice_amp2(soft_knee(s + (s >> 2), 24000), m, i);
-    }
-}
-
-/* the GM drum map, the first C (key 7) is the kick (C2, 36) */
+/* SPAMPY's keys: a white key a lane, F3 (key 0) KICK .. G5 COWBELL; a black key its left neighbour's */
 static int32_t drum_keys(const track_t *t, uint32_t k)
 {
+    static const int8_t W[12] = {0, -1, 1, -1, 2, -1, 3, 4, -1, 5, -1, 6};   /* from F */
+    int32_t i = W[k % 12u];
     (void)t;
-    return clamp(29 + 12 * song.octave + (int32_t)k, 0, 127);
+    if (i < 0)
+        i = W[(k + 11u) % 12u];
+    return DRUM_LANE_NOTE[(uint32_t)((int32_t)(k / 12u) * 7 + i) & 15u];
 }
 
-/* {KIT, TUNE, TONE, DECY, SNAP, ACC, KICK, DRV}; every kit suggests the BEAT pattern (GM notes) */
+/* the kits, each a sound: KIT, the rest the lanes' (the track's own: LANES, LANE MIX) */
+#define DK(k, nm) {nm, {k, 0, 0, 0, 0, 0, 0, 0}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 16), TAG(PT_DRUM)}
 static const preset_t DRUM_PRESETS[] = {
-    {"DRUM KIT", DRUM_KIT_E, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 20), TAG(PT_DRUM)},   /* (core.h: SAMPLE PERC's too) */
-    /* (Skiff) for the themes: CRYPT (dungeon synth), NEON (synthwave), QUARK (particles) */
-    {"WAR DRUMS", {0, 40, 38, 108, 40, 110, 1, 24}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 75), TAG(PT_DRUM)},
-    {"NEON KIT", {4, 60, 80, 56, 90, 100, 0, 20}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 40), TAG(PT_DRUM)},
-    /* (Skiff phase 9) more for every engine: basses, kits */
-    {"BOOM KIT", {4, 58, 60, 100, 50, 100, 0, 10}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 25), TAG(PT_DRUM)},
-    {"CRISP KIT", {5, 64, 76, 60, 80, 100, 0, 0}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 20), TAG(PT_DRUM)},
-    {"RHYTHM BOX", {6, 66, 64, 56, 64, 100, 0, 0}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 20), TAG(PT_DRUM)},
-    {"ELECTRO KIT", {7, 64, 70, 60, 70, 100, 0, 15}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 20), TAG(PT_DRUM)},
-    {"STUDIO KIT", {8, 64, 64, 64, 64, 100, 0, 0}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 25), TAG(PT_DRUM)},
-    {"TIGHT KIT", {0, 70, 80, 30, 100, 110, 0, 10}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 12), TAG(PT_DRUM)},
-    {"LOFI KIT", {0, 56, 30, 70, 40, 100, 1, 50}, {0, 100, 127, 100}, 0, 0, FX(20, 0, 0, 30), TAG(PT_DRUM)},
-    /* (1.3, from Felucca 1.5.6) the kits DEEP TIGHT PERC (KIT's values appended), each a preset (appended) */
-    {"DEEP DRUMS", {DK_DEEP, 64, 64, 64, 64, 100, 0, 0}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 28), TAG(PT_DRUM)},
-    {"SNAP KIT", {DK_TIGHT, 64, 64, 56, 64, 100, 0, 16}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 8), TAG(PT_DRUM)},
-    {"PERC KIT", {DK_PERC, 64, 64, 64, 64, 100, 0, 0}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 24), TAG(PT_DRUM)},
-    /* (Vallée) the towel-muted seventies kit (KIT DEAD), appended */
-    {"DEAD DRUMS", {DK_DEAD, 64, 64, 64, 64, 90, 0, 6}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 6), TAG(PT_DRUM)},
-    /* (Vallée) TAPE, a warm soul session; CRUSH, a drum machine run hot through DIST CRUSH */
-    {"TAPE KIT", {DK_TAPE, 64, 64, 64, 64, 100, 0, 8}, {0, 100, 127, 100}, 0, 0, FX(0, 0, 0, 14), TAG(PT_DRUM)},
-    {"CRUSH KIT", {DK_CRUSH, 64, 60, 64, 70, 100, 0, 30}, {0, 100, 127, 100}, 0, 0, FX(28, 0, 0, 8), MORE({P_DTYPE, 3}), TAG(PT_DRUM)},
+    DK(0, "ACOUSTIC"), DK(1, "DEEP"), DK(2, "TIGHT"), DK(3, "BRIGHT"), DK(4, "DUST"), DK(5, "808"), DK(6, "909"),
+    DK(7, "606"), DK(8, "80S"), DK(9, "VINTAGE"), DK(10, "TRAP"), DK(11, "DRILL"), DK(12, "BOOMBAP"),
+    DK(13, "LO-FI"), DK(14, "PHONK"), DK(15, "HOUSE"), DK(16, "TECHNO"), DK(17, "ELECTRO"), DK(18, "DISCO"),
+    DK(19, "GARAGE"), DK(20, "JUNGLE"), DK(21, "DUBSTEP"), DK(22, "DEMBOW"), DK(23, "AMAPIANO"), DK(24, "AFRO"),
+    DK(25, "SYNTHWV"), DK(26, "CHIP"), DK(27, "GLITCH"), DK(28, "INDUSTR"), DK(29, "HYPER"), DK(30, "AMBIENT"),
+    DK(31, "JAZZ"), DK(32, "LM-1"), DK(33, "LINNDRUM"), DK(34, "SYNWAVE"),
 };
+#undef DK
+_Static_assert(sizeof(DRUM_PRESETS) / sizeof(DRUM_PRESETS[0]) == DRUM_KITS, "a sound per kit");
 
 static const engine_t ENG_DRUM = {
     .name = "DRUM",
-    .page_title = {"KIT", "HIT"},
+    .page_title = {"KIT", "-"},
     .edit = {
-        {"KIT", N_DRUM_KIT, 0, SMP_SHOWN == 3 || !SMP_SHOWN ? DK_CRUSH : DK_PERC + SMP_SHOWN, DK_STD, F_ENUM, 0},   /* ((Vallée) DEAD TAPE CRUSH last) */   /* ((2.0, #35) .. USR1..3; SMK: USR1) */
-        {"PITCH", 0, 0, 127, 64, F_ST16, 0},
-        {"TONE", 0, 0, 127, 64, F_PCT, 0},
-        {"DECAY", 0, 0, 127, 64, F_PCT, 0},
-        {"SNAP", 0, 0, 127, 64, F_PCT, 0},
-        {"ACCENT", 0, 0, 127, 100, F_PCT, 0},
-        {"KICK", N_DRUM_KICK, 0, 1, 0, F_ENUM, 0},
-        {"DRIVE", 0, 0, 127, 0, F_PCT, 0},
+        {"KIT", N_DRUM_KIT, 0, DRUM_KITS - 1, DRUM_SAMPLED, F_ENUM, 0},   /* (808 at power-on, as SPAMPY's) */
+        {"-", 0, 0, 0, 0, F_INT, 0},
+        {"-", 0, 0, 0, 0, F_INT, 0},
+        {"-", 0, 0, 0, 0, F_INT, 0},
+        {"-", 0, 0, 0, 0, F_INT, 0},
+        {"-", 0, 0, 0, 0, F_INT, 0},
+        {"-", 0, 0, 0, 0, F_INT, 0},
+        {"-", 0, 0, 0, 0, F_INT, 0},
     },
     .presets = DRUM_PRESETS,
     .npresets = NELEM(DRUM_PRESETS),
     .note_on = drum_note_on,
     .render = drum_render,
     .amp = drum_amp,
-    .knob = {P_E1, P_E2, P_E3, P_E4},
-    .poly = DV_NLANE,
+    .knob = {P_E0, P_DIST, P_DLY, P_REV},
+    .poly = DRUM_NV,
+    .sampled = 1,
     .oneshot = 1,
     .keys = drum_keys,
+    .ownenv = 1,
+    .done = drum_done,
 };

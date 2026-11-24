@@ -77,7 +77,9 @@ typedef struct {
     up_rec_t r[UP_PER_BANK];
 } up_bank_t;
 _Static_assert(sizeof(up_rec_t) == 192, "user preset record layout");
-_Static_assert(SID_COUNT <= UP_SIDS, "user preset record: the SIDs");
+/* ((Vallée, the SPAMPY sound) the SIDs a record holds: the first UP_SIDS (176). The drum lanes' later ones (lanes 9..16's
+ * DECAY, every BODY: SIDs 173..196) are past it: a user sound keeps them at their defaults */
+#define UP_NSID (SID_COUNT < UP_SIDS ? SID_COUNT : UP_SIDS)
 /* (Skiff) packed[132..143] held the pattern's NUDGE (see the top); (phase 5) a user preset holds no pattern and nothing
  * reads one, so (1.3) the parameters may pass 132 into it: firmware before maps them by count, as any np. (2.1) Past
  * UP_PMAX * 2 (P_COUNT 146) only version 6 holds them all: SAVE and UP_PUT write nothing else */
@@ -115,9 +117,9 @@ static void up_set_sound(up_rec_t *r, const int16_t *v)
 {
     uint32_t s;
     r->ver = UP_VER_SPAMPY;                       /* ((Vallée) v6's layout, SPAMPY's engine numbers */
-    r->np = (uint8_t)SID_COUNT;
+    r->np = (uint8_t)UP_NSID;
     memset(r->sid, 0, sizeof r->sid);
-    for (s = 0; s < SID_COUNT; s++)
+    for (s = 0; s < UP_NSID; s++)
         r->sid[s] = (uint8_t)(v[sid_p(s)] + 64);
 }
 #if FELUCCA_LEGACY
@@ -161,6 +163,9 @@ static void up_from_skiff(up_rec_t *r)
             v[P_E0 + i] = param_desc_of(ne, P_E0 + i)->def;
     for (i = P_E0; i < P_E0 + 8u; i++)
         v[i] = (int16_t)param_fit(param_desc_of(ne, i), v[i]);
+    for (i = 0; i < P_COUNT; i++)                   /* ((Vallée) the drum lanes: SPAMPY's 16, in its units (project.c) */
+        if (lp_lane(i) < 16u)
+            v[i] = TP[i].def;
     up_set_sound(r, v);
 }
 #endif

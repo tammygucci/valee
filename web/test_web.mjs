@@ -53,25 +53,25 @@ async function editorMock() {
   const info = E.parse[E.CMD.INFO](await rq(E.req.info()));
   ok(info.nengines === 21 && info.engines.join() === m.tables.ENG.map((e) => e.name).join() && info.engines[1] === "DIGITAL" &&
      info.engines[8] === "-" && info.engines[9] === "FM6" && info.engines[13] === "PROPHET" && info.engines[19] === "DRUM" &&
-     info.engines[20] === "SUMMON" && info.pcount === 149 && info.pe0 === 141,
-    "editor: INFO ((Vallée, the SPAMPY sound) 21 engines by SPAMPY's numbers; P_COUNT 149, P_E0 141 from its wide-ids tag)");
+     info.engines[20] === "SUMMON" && info.pcount === 197 && info.pe0 === 189,
+    "editor: INFO ((Vallée, the SPAMPY sound) 21 engines by SPAMPY's numbers; P_COUNT 197, P_E0 189 from its wide-ids tag)");
   {
     /* (Skiff 1.3) wide ids: a track id from 128 on ((2.0) E0..E7 since P_E0 135, after the lane pans 127..134; (2.1) P_E0
        138, after the chord follow 135..137; (2.5) P_E0 140, after STRUM DIR 138, 139) goes as scope 2 and comes back whole
        (GET, SET, DESC), in TRACK_PARAM's track byte (bit 6) and in a MOTION record's step byte (bit 6); 127 (a lane's PAN)
        is still scope 0. The ids: E3 (SET / GET), E7 (DESC: ANALOG's KEYTRK), E2 (TRACK_PARAM), E4 (MOTION) */
-    const v0 = E.parse[E.CMD.GET](await rq(E.req.get(0, 144))).value;
-    const a = E.req.set(0, 144, 10), s = E.parse[E.CMD.SET](await rq(a)), g = E.parse[E.CMD.GET](await rq(E.req.get(0, 144)));
-    const d = E.parse[E.CMD.DESC](await rq(E.req.desc(0, 148)));
-    const tp = E.parse[E.CMD.TRACK_PARAM](await rq(E.req.trackParam(3, 143)));
+    const v0 = E.parse[E.CMD.GET](await rq(E.req.get(0, 192))).value;   /* ((Vallée) P_E0 189: E3 192, E7 196, E2 191, E4 193 */
+    const a = E.req.set(0, 192, 10), s = E.parse[E.CMD.SET](await rq(a)), g = E.parse[E.CMD.GET](await rq(E.req.get(0, 192)));
+    const d = E.parse[E.CMD.DESC](await rq(E.req.desc(0, 196)));
+    const tp = E.parse[E.CMD.TRACK_PARAM](await rq(E.req.trackParam(3, 191)));
     const e0 = E.req.get(0, 127);
-    const mo = E.parse[E.CMD.MOTION](await rq(E.req.motion(0, 3, { step: 5, param: 145, value: 9 }, info.ntrk)));
-    ok(a[1][0] === 2 && a[1][1] === 16 && s.scope === 0 && s.id === 144 && s.value === 10 && g.id === 144 && g.value === 10 &&
-       d.scope === 0 && d.id === 148 && d.label === m.tables.ENG[0].edit[7].label && tp.track === 3 && tp.id === 143 && e0[1][0] === 0 && e0[1][1] === 127 &&
-       mo.events.some((e) => e.step === 5 && e.param === 145 && e.value === 9),
-       "editor: wide ids ((Vallée) P_E0 141): SET / GET 144 and DESC 148 as scope 2, TRACK_PARAM 143 (bit 6), a motion record of 145; 127 scope 0");
+    const mo = E.parse[E.CMD.MOTION](await rq(E.req.motion(0, 3, { step: 5, param: 193, value: 9 }, info.ntrk)));
+    ok(a[1][0] === 2 && a[1][1] === 64 && s.scope === 0 && s.id === 192 && s.value === 10 && g.id === 192 && g.value === 10 &&
+       d.scope === 0 && d.id === 196 && d.label === m.tables.ENG[0].edit[7].label && tp.track === 3 && tp.id === 191 && e0[1][0] === 0 && e0[1][1] === 127 &&
+       mo.events.some((e) => e.step === 5 && e.param === 193 && e.value === 9),
+       "editor: wide ids ((Vallée) P_E0 189): SET / GET 192 and DESC 196 as scope 2, TRACK_PARAM 191 (bit 6), a motion record of 193; 127 scope 0");
     await rq(E.req.motion(0, 2, {}, info.ntrk));
-    await rq(E.req.set(0, 143, v0));
+    await rq(E.req.set(0, 191, v0));
   }
   let descs = 0;
   for (let i = 0; i < info.pcount; i++) if (E.parse[E.CMD.DESC](await rq(E.req.desc(0, i))).label) descs++;
@@ -152,7 +152,7 @@ async function editorMock() {
        a factory preset sets them back */
     const lanes = [];
     for (let i = 83; i <= 90; i++) lanes.push(E.parse[E.CMD.DESC](await rq(E.req.desc(0, i))));
-    ok(lanes.map((d) => d.label).join() === "KICK,SNARE,CLAP,CL HAT,OP HAT,TOM,RIM,BELL" &&
+    ok(lanes.map((d) => d.label).join() === "KICK,KICK 2,SNARE,CLAP,HAT,OPEN HAT,PEDAL,RIM" &&   /* ((Vallée) SPAMPY's */
        lanes.every((d) => d.fmt === E.F.PCT && d.min === 0 && d.max === 127 && d.def === 127),
       "editor: the DRUM lane levels 83..90 over DESC (percent, 100 % default)");
     await rq(E.req.set(0, 84, 40));
@@ -421,13 +421,10 @@ async function editorSamplePresets() {
   await rq(E.req.preset(19, 0));
   const kitD = E.parse[C.DESC](await rq(E.req.desc(0, info.pe0)));
   const kitSet = [];
-  for (const v of [1, 2, 3]) kitSet.push(E.parse[C.SET](await rq(E.req.set(0, info.pe0, v))).value);
-  ok(eq(kitD.names, ["STD", "66", "10", "77", "80", "10", "66", "55", "77", "DEEP", "TIGHT", "PERC", "STD", "STD", "STD", "DEAD", "TAPE", "CRUSH"]) &&
-     eq([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((v) => E.aliasOf(kitD.names, v)), [0, 6, 5, 8, 4, 5, 6, 7, 8, 9, 10, 11]) &&
-     eq(E.enumShown(kitD).filter((v) => E.aliasOf(kitD.names, v) === v).map((v) => kitD.names[v]),
-        ["STD", "80", "10", "66", "55", "77", "DEEP", "TIGHT", "PERC", "DEAD", "TAPE", "CRUSH"]) &&
-     eq(kitSet, [6, 5, 8]),
-    "DRUM: KIT 1..3 (once HAND CYM H+CYM) named 66 10 77, aliases of 6 5 8: hidden, a SET lands there; ((2.0, #35) USR1..3 after)");
+  for (const v of [1, 12, 34]) kitSet.push(E.parse[C.SET](await rq(E.req.set(0, info.pe0, v))).value);
+  ok(kitD.names.length === 35 && eq(kitD.names.slice(0, 8), ["ACOUSTIC", "DEEP", "TIGHT", "BRIGHT", "DUST", "808", "909", "606"]) &&
+     kitD.names[34] === "SYNWAVE" && E.enumShown(kitD).length === 35 && eq(kitSet, [1, 12, 34]),
+    "DRUM: (Vallée) SPAMPY's 35 kits (ACOUSTIC .. DUST, 808 .. SYNWAVE), no aliases, a SET lands on the kit asked for");
   const DR = info.engines.indexOf("DRUM");
   await rq(E.req.preset(4, 0));
   m.state.p[info.pe0] = 4;                        /* an old PERC sound (SET 4, no loop: the editor cannot set it now) */
@@ -458,9 +455,9 @@ function mockTables() {
     ok(f6.name === "FM6" && f6.presets.length === 22 && p5.name === "PROPHET" && p5.presets.length === 41 &&
        m0.tables.ENG[8].name === "-" && !m0.tables.ENG[8].presets.length,
        "editor: FM6 9 (22 sounds), PROPHET 13 (41), reserved 8 empty");
-    ok(dr.name === "DRUM" && dr.edit.map((d) => d.label).join() === "KIT,PITCH,TONE,DECAY,SNAP,ACCENT,KICK,DRIVE" &&
-       dr.presets.length === 16 && dr.presets[0].name === "DRUM KIT" && dr.presets[15].name === "CRUSH KIT",
-       "editor: DRUM engine 19 (KIT PITCH TONE DECAY SNAP ACCENT KICK DRIVE), DRUM KIT first of 16 (.. DEAD TAPE CRUSH last)");
+    ok(dr.name === "DRUM" && dr.edit.map((d) => d.label).join() === "KIT,-,-,-,-,-,-,-" &&
+       dr.presets.length === 35 && dr.presets[0].name === "ACOUSTIC" && dr.presets[34].name === "SYNWAVE",
+       "editor: DRUM engine 19 ((Vallée) SPAMPY's: KIT alone), a sound a kit, ACOUSTIC first of 35 (.. SYNWAVE last)");
   }
   const dj = DESC;
   if (!existsSync(dj)) { console.log("editor: mock tables == firmware (no build/host/desc.json)        skip"); return; }
@@ -779,7 +776,7 @@ async function editorLibrarian() {
   const pts = [cap, { ...bass, engineName: info.engines[bass.engine], tags: ["bass", "device"] }];
   const file = JSON.parse(JSON.stringify(E.libraryFile("library", pts, ctx)));
   ok(file.format === "felucca-library" && file.version === 1 && file.pCount === PC && file.paramLabels.length === PC && file.paramLabels[81] === "CHORD" && file.paramLabels[82] === "VOICING" &&
-    file.paramLabels[83] === "KICK" && file.paramLabels[90] === "BELL" && file.paramLabels[91] === "DIR" && file.paramLabels[92] === "BY" && file.engines.length === 21,   /* ((Vallée) SPAMPY's 21 numbers */
+    file.paramLabels[83] === "KICK" && file.paramLabels[90] === "RIM" && file.paramLabels[91] === "DIR" && file.paramLabels[92] === "BY" && file.engines.length === 21,   /* ((Vallée) SPAMPY's 21 numbers */
     "library file: versioned, with P_COUNT, labels and engines");
   const back = E.readLibraryFile(file, ctx);
   ok(back.patches.length === 2 && !back.skipped && eq(back.patches[0].p, cap.p) && eq(back.patches[1].p, bass.p)
@@ -1287,7 +1284,7 @@ async function editorLive() {
   const dump = E.parse[C.DUMP](await pend, info);
   const ch = ev.pushes.find((f) => f.cmd === C.CHANGED);
   const cv = ch && E.parse[C.CHANGED](ch.a);
-  ok(dump.p.length === 149 && ch && ch.pending === C.DUMP && cv.scope === 0 && cv.id === 9 && cv.value === kn.value && !ev.unknown.length,
+  ok(dump.p.length === 197 && ch && ch.pending === C.DUMP && cv.scope === 0 && cv.id === 9 && cv.value === kn.value && !ev.unknown.length,
     "live: CHANGED while DUMP waits -> push handler, reply still matched");
   const rl = m.sim.reload();
   m.sim.step(3);
@@ -1376,8 +1373,8 @@ async function editorTracks() {
   const info = E.parse[C.INFO](await rq(E.req.info()));
   const tr = E.parse[C.TRACK](await rq(E.req.track()));
   ok(info.ntrk === 6 && tr.sel === 0 && tr.ntrk === 6 && tr.tracks[0].engine === 0 && tr.tracks[1].engine === 1
-    && tr.tracks[3].engine === 19 && tr.tracks[3].preset === 0 && tr.tracks[4].engine === 4 && tr.tracks[4].preset === 0
-    && tr.tracks[5].engine === 19, "tracks: INFO NTRK, TRACK lists 6 parts (2: DIGITAL RHODES; 4: DRUM KIT; 5 VIBES, 6 DRUM KIT)");
+    && tr.tracks[3].engine === 19 && tr.tracks[3].preset === 5 && tr.tracks[4].engine === 4 && tr.tracks[4].preset === 0
+    && tr.tracks[5].engine === 19, "tracks: INFO NTRK, TRACK lists 6 parts (2: DIGITAL RHODES; 4: DRUM 808; 5 VIBES, 6 DRUM 808)");
   {   /* (Skiff phase 6) INFO 54: the light tracks and the engines they may not play; MOTION's track bound is INFO's */
     const heavy = ["PROPHET", "CZ-1", "SID", "OBERVAVE"].reduce((a, n) => a | 1 << info.engines.indexOf(n), 0);   /* ((Vallée) SLOOP's big ones */
     let threw = false;

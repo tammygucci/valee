@@ -1024,12 +1024,11 @@ static void setup(int s)
     case S_USER: song.playing = 0; up_store(3, "MY LONG BASS NAME"); up_store(4, "PAD"); ui.uslot = 3; go_page(GR_USER); break;
     case S_PROJECT: song.playing = 0; project_save(1); song.g[G_SLOT] = 2; go_page(GR_SLOTS); ui.act = 4; break;
     case S_LANES: drum(0); go_title("LANES"); ui.lane = 1; ui.hot_col = 1; ui.hot_t = 30; break;   /* ((U3, R6) the one page) */
-    case S_DRUM_KIT_USR:                            /* ((2.0, #35, design/mockups/v2_kits.png A) DRUM's KIT on USR1, MY KIT; */
-    case S_LANES_USR:                               /* LANES on it: BELL without a sample) */
-        host_kit_make();
-        drum(DK_USR1);
+    case S_DRUM_KIT_USR:                            /* ((Vallée, the SPAMPY sound) no user kits: DRUM's KIT on a long name */
+    case S_LANES_USR:                               /* (LINNDRUM); LANES on its second page of 8 (CONGA) */
+        drum(DRUM_SAMPLED + 28u);
         go_title(s == S_DRUM_KIT_USR ? "EDIT 1" : "LANES");
-        ui.lane = 1;
+        ui.lane = 14;
         ui.hot_col = s == S_DRUM_KIT_USR ? 0 : 1; ui.hot_t = 30;
         break;
     case S_DRIVE_SOFT: case S_DRIVE_HARD: case S_DRIVE_FOLD:   /* (Skiff phase 9) each TYPE at 96 ((2.0) INSERT's) */
@@ -1067,7 +1066,7 @@ static void setup(int s)
         break;
     case S_ENV2: TSEL->p[P_EG2_ATK] = 30; TSEL->p[P_EG2_DEC] = 70; TSEL->p[P_EG2_SUS] = 40; TSEL->p[P_EG2_REL] = 60;
         go_title("ENV 2"); break;
-    case S_LANES_TUNE: drum(0); go_title("LANES"); ui.lane = 1; TSEL->p[P_LTUNE0 + 1] = 80; TSEL->p[P_LDECAY0 + 1] = -24;
+    case S_LANES_TUNE: drum(0); go_title("LANES"); ui.lane = 1; TSEL->p[P_LTUNE0 + 1] = 5; TSEL->p[P_LDECAY0 + 1] = -2;   /* ((Vallée) SPAMPY's units */
         ui.hot_col = 2; ui.hot_t = 30; break;
     case S_REVERB_HALL: go_page(GR_REVERB); song.g[G_RTYPE] = 2; ui.hot_col = 0; ui.hot_t = 30; break;
     case S_CHORUS_FB: go_title("CHORUS"); song.g[G_CFDBK] = 70; ui.hot_col = 3; ui.hot_t = 30; break;

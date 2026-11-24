@@ -402,27 +402,27 @@ static const gstyle_t GSTY[GS_N] = {
      {{{E_ANALOG, "MONO BASS"}, {E_DIGITAL, "FM BASS"}, {E_TRIO, "TURBO BASS"}},
       {{E_ANALOG, "JP8 PAD"}, {E_ANALOG, "VHS PAD"}, {E_PHASE, "CZ STRING"}},   /* ((Vallée) SPAMPY's sounds */
       {{E_ANALOG, "JUNO LEAD"}, {E_TRIO, "SQR LEAD"}, {E_LOFI, "WAVE LEAD"}},
-      {{E_DRUM, "DEAD DRUMS"}, {E_DRUM, "DEEP DRUMS"}, {E_DRUM, "BOOM KIT"}},
+      {{E_DRUM, "VINTAGE"}, {E_DRUM, "ACOUSTIC"}, {E_DRUM, "LO-FI"}},
       {{E_TRIO, "MIDNIGHT ARP"}, {E_LOFI, "8BIT ARP"}, {E_VOICE, "CHOIR AAH"}},
-      {{E_DRUM, "PERC KIT"}, {E_DRUM, "LOFI KIT"}, {0, 0}}},
+      {{E_DRUM, "JAZZ"}, {E_DRUM, "LO-FI"}, {0, 0}}},
      2, 100, 10, 70, 70, 2, {6, 36, 30, 22, 30, 16}, {0, 10, 40, 0, 50, 0}, 6, 0, 0},
     /* DEMARCO */
     {72, 96, 18, 2, 1, {7, 2, 9, 4}, 3, 1, DEM_D, DEM_L, 3, 4, DEM_DR, &DEM_PC, DEM_B, DEM_C, DEM_L_, XC_JANGLE, 62, 81,
      {{{E_DIGITAL, "FM BASS"}, {E_ANALOG, "FUNK BASS"}, {E_FM6, "DX BASS 4"}},
       {{E_DIGITAL, "WURLI"}, {E_DIGITAL, "RHODES"}, {E_FM6, "TINE EP"}},   /* ((Vallée) SPAMPY's sounds */
       {{E_LOFI, "WAVE LEAD"}, {E_ANALOG, "PAN FLUTE"}, {E_DIGITAL, "HARP"}},
-      {{E_DRUM, "DEAD DRUMS"}, {E_DRUM, "TIGHT KIT"}, {E_DRUM, "LOFI KIT"}},
+      {{E_DRUM, "VINTAGE"}, {E_DRUM, "LO-FI"}, {E_DRUM, "DUST"}},
       {{E_FM6, "NYLON PICK"}, {E_DIGITAL, "KALIMBA"}, {E_DIGITAL, "MUSIC BOX"}},
-      {{E_DRUM, "PERC KIT"}, {0, 0}, {0, 0}}},
+      {{E_DRUM, "JAZZ"}, {0, 0}, {0, 0}}},
      0, 70, 11, 50, 50, 0, {10, 24, 26, 14, 30, 10}, {0, 0, 20, 0, 12, 0}, 8, 1, 0},
     /* DAFT */
     {118, 126, 8, 1, 0, {9, 5, 2, 0}, 2, 1, DAF_D, DAF_L, 3, 3, DAF_DR, &DAF_PC, DAF_B, DAF_C, DAF_L_, XC_ROBOT, 60, 76,
      {{{E_ANALOG, "FUNK BASS"}, {E_DIGITAL, "FM BASS"}, {E_TRIO, "TURBO BASS"}},
       {{E_ANALOG, "POLY COMP"}, {E_ANALOG, "JUNO CHORUS"}, {E_FM6, "TINE EP"}},   /* ((Vallée) SPAMPY's sounds */
       {{E_VOICE, "TALKBOX"}, {E_TRIO, "SYNC LEAD"}, {E_ANALOG, "FAT LEAD"}},
-      {{E_DRUM, "ELECTRO KIT"}, {E_DRUM, "RHYTHM BOX"}, {E_DRUM, "CRISP KIT"}},
+      {{E_DRUM, "HOUSE"}, {E_DRUM, "909"}, {E_DRUM, "DISCO"}},
       {{E_VOICE, "TALKBOX"}, {E_TRIO, "RAVE STAB"}, {E_LOFI, "CHIP CHORD"}},
-      {{E_DRUM, "CRISP KIT"}, {E_DRUM, "PERC KIT"}, {0, 0}}},
+      {{E_DRUM, "GARAGE"}, {E_DRUM, "HOUSE"}, {0, 0}}},
      0, 60, 11, 40, 60, 2, {0, 16, 16, 10, 18, 8}, {0, 10, 30, 0, 24, 0}, 0, 0, 1},
     /* HEAD */
     {132, 140, 0, 1, 0, {9, 2, 7, 4}, 2, 9, HEA_D, HEA_L, 4, 3, HEA_DR, &HEA_PC, HEA_B, HEA_C, HEA_L_, XC_TEXTURE, 64,
@@ -430,18 +430,18 @@ static const gstyle_t GSTY[GS_N] = {
      {{{E_ANALOG, "SUB BASS"}, {E_ANALOG, "REESE"}, {E_TRIO, "TURBO BASS"}},
       {{E_ANALOG, "DARK STR"}, {E_OBV, "DARK PAD"}, {E_ANALOG, "ATMOS PAD"}},   /* ((Vallée) SPAMPY's sounds */
       {{E_VOICE, "SOUL OOH"}, {E_VOICE, "VOX PAD"}, {E_DIGITAL, "GLASS PAD"}},
-      {{E_DRUM, "CRUSH KIT"}, {E_DRUM, "ELECTRO KIT"}, {E_DRUM, "RHYTHM BOX"}},
+      {{E_DRUM, "GLITCH"}, {E_DRUM, "ELECTRO"}, {E_DRUM, "INDUSTR"}},
       {{E_MORPH, "NEON SWEEP"}, {E_MORPH, "GLASS MOTION"}, {E_DRONE, "DARK TIDE"}},
-      {{E_DRUM, "SNAP KIT"}, {E_DRUM, "RHYTHM BOX"}, {0, 0}}},
+      {{E_DRUM, "606"}, {E_DRUM, "GLITCH"}, {0, 0}}},
      0, 70, 11, 50, 50, 0, {6, 34, 30, 8, 30, 16}, {0, 10, 30, 0, 24, 18}, 0, 0, 0},
     /* ENO */
     {54, 80, 0, 1, 0, {3, 2, 4, 9}, 3, 9, ENO_D, ENO_L, 7, 8, ENO_DR, &ENO_PC, ENO_B, ENO_C, ENO_L_, XC_BELLS, 67, 91,
      {{{E_ANALOG, "SUB BASS"}, {E_DRONE, "DEEP SPACE"}, {E_FM6, "PAD"}},
       {{E_MORPH, "VECTOR PAD"}, {E_VOICE, "CHOIR AAH"}, {E_OBV, "AIR CHOIR"}},   /* ((Vallée) SPAMPY's sounds */
       {{E_DIGITAL, "TUBE BELL"}, {E_DIGITAL, "KALIMBA"}, {E_DIGITAL, "MUSIC BOX"}},
-      {{E_DRUM, "DEEP DRUMS"}, {E_DRUM, "LOFI KIT"}, {0, 0}},
+      {{E_DRUM, "AMBIENT"}, {E_DRUM, "LO-FI"}, {0, 0}},
       {{E_DIGITAL, "GLASS PAD"}, {E_SAMPLE, "LOFI FLUTE"}, {E_DIGITAL, "CELESTA"}},
-      {{E_DRUM, "PERC KIT"}, {0, 0}, {0, 0}}},
+      {{E_DRUM, "AMBIENT"}, {0, 0}, {0, 0}}},
      2, 127, 12, 82, 60, 0, {30, 80, 70, 40, 70, 40}, {0, 20, 50, 0, 50, 0}, 0, 0, 0},
     /* STEELY */
     {124, 132, 10, 3, 0, {7, 2, 9, 4}, 4, 1, STE_D, STE_L, 3, 4, STE_DR, &STE_PC, STE_B, STE_C, STE_L_, XC_FILLS, 64,
@@ -449,45 +449,45 @@ static const gstyle_t GSTY[GS_N] = {
      {{{E_ANALOG, "FUNK BASS"}, {E_DIGITAL, "FM BASS"}, {E_FM6, "DX BASS 5"}},
       {{E_DIGITAL, "RHODES"}, {E_DIGITAL, "DX7 EP"}, {E_PHASE, "SOFT KEYS"}},   /* ((Vallée) SPAMPY's sounds */
       {{E_VOICE, "CHOIR AAH"}, {E_FM6, "BRASS 6"}, {E_ANALOG, "SYN BRASS"}},
-      {{E_DRUM, "TAPE KIT"}, {E_DRUM, "STUDIO KIT"}, {E_DRUM, "TIGHT KIT"}},
+      {{E_DRUM, "ACOUSTIC"}, {E_DRUM, "TIGHT"}, {E_DRUM, "JAZZ"}},
       {{E_FM6, "NYLON PICK"}, {E_ANALOG, "TRAP PLUCK"}, {E_DIGITAL, "HARP"}},
-      {{E_DRUM, "PERC KIT"}, {0, 0}, {0, 0}}},
+      {{E_DRUM, "JAZZ"}, {0, 0}, {0, 0}}},
      0, 50, 11, 34, 30, 0, {4, 14, 22, 8, 14, 6}, {0, 0, 12, 0, 10, 0}, 8, 0, 0},
     /* YACHT */
     {116, 124, 4, 2, 0, {1, 8, 3, 10}, 3, 1, YAC_D, YAC_L, 2, 3, YAC_DR, &YAC_PC, YAC_B, YAC_C, YAC_L_, XC_PAD, 64, 84,
      {{{E_DIGITAL, "FM BASS"}, {E_FM6, "DX BASS 2"}, {E_ANALOG, "FUNK BASS"}},
       {{E_DIGITAL, "M1 PIANO"}, {E_DIGITAL, "RHODES"}, {E_DIGITAL, "FM GRAND"}},   /* ((Vallée) SPAMPY's sounds */
       {{E_VOICE, "SOUL OOH"}, {E_SAMPLE, "SAX"}, {E_ANALOG, "JP8 BRASS"}},
-      {{E_DRUM, "TAPE KIT"}, {E_DRUM, "STUDIO KIT"}, {E_DRUM, "TIGHT KIT"}},
+      {{E_DRUM, "LINNDRUM"}, {E_DRUM, "ACOUSTIC"}, {E_DRUM, "LM-1"}},
       {{E_ANALOG, "JUNO STRINGS"}, {E_VOICE, "M1 STRINGS"}, {E_ANALOG, "SYN BRASS"}},
-      {{E_DRUM, "PERC KIT"}, {0, 0}, {0, 0}}},
+      {{E_DRUM, "JAZZ"}, {0, 0}, {0, 0}}},
      2, 70, 11, 36, 34, 0, {6, 18, 24, 10, 32, 8}, {0, 0, 16, 0, 0, 0}, 8, 0, 0},
     /* LCD */
     {86, 100, 0, 1, 0, {0, 9, 4, 2}, 2, 1, LCD_D, LCD_L, 3, 4, LCD_DR, &LCD_PC, LCD_B, LCD_C, LCD_L_, XC_ARP16, 60, 79,
      {{{E_ANALOG, "MONO BASS"}, {E_ANALOG, "SAW BASS"}, {E_ANALOG, "REESE"}},
       {{E_ANALOG, "JP8 PAD"}, {E_ANALOG, "JUNO STRINGS"}, {E_ANALOG, "VHS PAD"}},   /* ((Vallée) SPAMPY's sounds */
       {{E_VOICE, "VOX PAD"}, {E_ANALOG, "JUNO LEAD"}, {E_VOICE, "CHOIR AAH"}},
-      {{E_DRUM, "CRUSH KIT"}, {E_DRUM, "RHYTHM BOX"}, {E_DRUM, "ELECTRO KIT"}},
+      {{E_DRUM, "DISCO"}, {E_DRUM, "909"}, {E_DRUM, "ELECTRO"}},
       {{E_TRIO, "MIDNIGHT ARP"}, {E_MORPH, "ORBIT ARP"}, {E_LOFI, "8BIT ARP"}},
-      {{E_DRUM, "PERC KIT"}, {E_DRUM, "LOFI KIT"}, {0, 0}}},
+      {{E_DRUM, "606"}, {E_DRUM, "HOUSE"}, {0, 0}}},
      2, 78, 11, 44, 30, 0, {4, 26, 30, 8, 26, 8}, {0, 6, 26, 0, 20, 0}, 0, 0, 0},
     /* STROKE */
     {124, 146, 0, 0, 0, {9, 4, 2, 7}, 2, 1, STR_D, STR_L, 3, 4, STR_DR, &STR_PC, STR_B, STR_C, STR_L_, XC_JANGLE, 60, 79,
      {{{E_DIGITAL, "FM BASS"}, {E_ANALOG, "SAW BASS"}, {E_FM6, "DX BASS 6"}},
       {{E_FM6, "NYLON PICK"}, {E_DIGITAL, "HARP"}, {E_ANALOG, "TRAP PLUCK"}},   /* ((Vallée) SPAMPY's sounds */
       {{E_ANALOG, "TRAP PLUCK"}, {E_FM6, "NYLON PICK"}, {E_MORPH, "ICE PLUCK"}},
-      {{E_DRUM, "DEAD DRUMS"}, {E_DRUM, "TIGHT KIT"}, {E_DRUM, "DRUM KIT"}},
+      {{E_DRUM, "VINTAGE"}, {E_DRUM, "TIGHT"}, {E_DRUM, "ACOUSTIC"}},
       {{E_WHEEL, "STREET ORGAN"}, {E_FM6, "NYLON PICK"}, {E_ANALOG, "TRAP PLUCK"}},
-      {{E_DRUM, "CRISP KIT"}, {0, 0}, {0, 0}}},
+      {{E_DRUM, "BRIGHT"}, {0, 0}, {0, 0}}},
      0, 44, 11, 30, 30, 0, {4, 10, 10, 8, 10, 6}, {0, 0, 6, 0, 0, 0}, 0, 0, 0},
     /* SLAB */
     {120, 138, 0, 1, 0, {4, 9, 2, 7}, 3, 1, SLB_D, SLB_L, 3, 3, SLB_DR, &SLB_PC, SLB_B, SLB_C, SLB_L_, XC_ARP16, 62, 79,
      {{{E_ANALOG, "MONO BASS"}, {E_ANALOG, "SAW BASS"}, {E_TRIO, "TURBO BASS"}},
       {{E_WHEEL, "JAZZ ORGAN"}, {E_WHEEL, "STREET ORGAN"}, {E_WHEEL, "CHAPEL"}},   /* ((Vallée) SPAMPY's sounds */
       {{E_VOICE, "CHOIR AAH"}, {E_VOICE, "SOUL OOH"}, {E_ANALOG, "SINE PAD"}},
-      {{E_DRUM, "TIGHT KIT"}, {E_DRUM, "DRUM KIT"}, {E_DRUM, "LOFI KIT"}},
+      {{E_DRUM, "TIGHT"}, {E_DRUM, "ACOUSTIC"}, {E_DRUM, "LO-FI"}},
       {{E_LOFI, "8BIT ARP"}, {E_LOFI, "GAME LEAD"}, {E_TRIO, "SEQ PULSE"}},
-      {{E_DRUM, "PERC KIT"}, {E_DRUM, "LOFI KIT"}, {0, 0}}},
+      {{E_DRUM, "JAZZ"}, {E_DRUM, "DUST"}, {0, 0}}},
      0, 60, 10, 40, 40, 2, {4, 16, 24, 8, 20, 8}, {0, 0, 24, 0, 26, 0}, 8, 0, 0},
     /* WINWOOD */
     {116, 124, 0, 1, 0, {0, 7, 2, 9}, 3, 1, WIN_D, WIN_L, 2, 4, WIN_DR, &WIN_PC, WIN_B, WIN_C, WIN_L_, XC_ARP16, 64,
@@ -495,18 +495,18 @@ static const gstyle_t GSTY[GS_N] = {
      {{{E_ANALOG, "SAW BASS"}, {E_ANALOG, "MONO BASS"}, {E_DIGITAL, "FM BASS"}},
       {{E_ANALOG, "JP8 BRASS"}, {E_ANALOG, "WARM PAD"}, {E_DIGITAL, "DX7 EP"}},   /* ((Vallée) SPAMPY's sounds */
       {{E_ANALOG, "JUNO LEAD"}, {E_ANALOG, "FAT LEAD"}, {E_ANALOG, "PWM LEAD"}},
-      {{E_DRUM, "NEON KIT"}, {E_DRUM, "ELECTRO KIT"}, {E_DRUM, "BOOM KIT"}},
+      {{E_DRUM, "LINNDRUM"}, {E_DRUM, "80S"}, {E_DRUM, "LM-1"}},
       {{E_TRIO, "MIDNIGHT ARP"}, {E_DIGITAL, "DX7 BELL"}, {E_ANALOG, "TRAP PLUCK"}},
-      {{E_DRUM, "PERC KIT"}, {0, 0}, {0, 0}}},
+      {{E_DRUM, "SYNWAVE"}, {0, 0}, {0, 0}}},
      0, 64, 11, 40, 30, 0, {4, 20, 24, 14, 20, 8}, {0, 0, 18, 0, 20, 0}, 8, 0, 0},
     /* GEE */
     {88, 100, 6, 1, 1, {4, 9, 2, 7}, 3, 1, GEE_D, GEE_L, 2, 3, GEE_DR, &GEE_PC, GEE_B, GEE_C, GEE_L_, XC_JANGLE, 67, 88,
      {{{E_DIGITAL, "FM BASS"}, {E_ANALOG, "SUB BASS"}, {E_TRIO, "TURBO BASS"}},
       {{E_FM6, "NYLON PICK"}, {E_DIGITAL, "MUSIC BOX"}, {E_DIGITAL, "M1 PIANO"}},   /* ((Vallée) SPAMPY's sounds */
       {{E_VOICE, "VOX PAD"}, {E_VOICE, "SOUL OOH"}, {E_VOICE, "CHOIR AAH"}},
-      {{E_DRUM, "CRUSH KIT"}, {E_DRUM, "LOFI KIT"}, {E_DRUM, "BOOM KIT"}},
+      {{E_DRUM, "BOOMBAP"}, {E_DRUM, "LO-FI"}, {E_DRUM, "DUST"}},
       {{E_FM6, "NYLON PICK"}, {E_LOFI, "WAVE LEAD"}, {E_DIGITAL, "HARP"}},
-      {{E_DRUM, "PERC KIT"}, {E_DRUM, "LOFI KIT"}, {0, 0}}},
+      {{E_DRUM, "LO-FI"}, {E_DRUM, "DUST"}, {0, 0}}},
      2, 66, 11, 40, 34, 0, {6, 26, 34, 10, 24, 8}, {0, 10, 24, 0, 14, 0}, 8, 1, 1},
 };
 

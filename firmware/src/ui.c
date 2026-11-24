@@ -804,7 +804,7 @@ static uint32_t page_vis_first(uint32_t fam)
 }
 /* (params.c page_desc: LANES' LEVEL; (2.0, #36) LANE MIX's: on DRUM-X the sound sheet's lane, ui_dx.c) */
 static uint8_t *page_lane_p(void) { return TSEL->eng_req % NENGINES == ENGI_DRUMX ? &dx_ui_lane : &ui.lane; }
-static uint32_t page_lane(void) { return *page_lane_p() % 8u; }
+static uint32_t page_lane(void) { return *page_lane_p() % NLANE; }   /* ((Vallée) 16 */
 
 /* transient message in the top bar, right of the transport and the BPM: a + b, for MSG_T frames (a second one,
  * ui.msg2, as long after it). (Skiff U1) 90 frames, about 1.5 s: 40 (0.6 s) went by unread while playing */
@@ -894,11 +894,12 @@ static int lock_page_ok(uint32_t i)
 static uint32_t lock_id(uint32_t k)
 {
     uint32_t id = !ui.plk_src || !lock_page_ok(ui.plk_src - 1u) ? ENGINES[TSEL->eng_req % NENGINES]->knob[k & 3u] :
-                  PAGES[ui.plk_src - 1u].graph == GR_LANES ? ((k & 3u) == 1u ? P_LN0 + page_lane() :
-                                                              (k & 3u) == 2u ? P_LTUNE0 + page_lane() :
-                                                              (k & 3u) == 3u ? P_LDECAY0 + page_lane() : 0xFFu) :
-                  PAGES[ui.plk_src - 1u].graph == GR_LMIX ? ((k & 3u) == 1u ? P_LN0 + page_lane() :
-                                                             (k & 3u) == 2u ? P_LPAN0 + page_lane() : 0xFFu) :
+                  PAGES[ui.plk_src - 1u].graph == GR_LANES ? ((k & 3u) == 1u ? lp_ln(page_lane()) :
+                                                              (k & 3u) == 2u ? lp_tune(page_lane()) :
+                                                              (k & 3u) == 3u ? lp_dec(page_lane()) : 0xFFu) :
+                  PAGES[ui.plk_src - 1u].graph == GR_LMIX ? ((k & 3u) == 1u ? lp_ln(page_lane()) :
+                                                             (k & 3u) == 2u ? lp_pan(page_lane()) :
+                                                             (k & 3u) == 3u ? lp_body(page_lane()) : 0xFFu) :
                   PAGES[ui.plk_src - 1u].graph == GR_MOD ? ((k & 3u) == 3u && mod_ui_route < MOD_SLOT0 ?
                                                             MOD_FIXED[mod_ui_route] : 0xFFu) :   /* (a slot's: none,
                                                                                                   * as before) */

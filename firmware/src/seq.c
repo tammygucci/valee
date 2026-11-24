@@ -154,6 +154,9 @@ static __attribute__((noinline)) int mo_note(track_t *t, uint32_t note, uint32_t
     }
     if ((mn.on[i][w] & bit) && !mo_off(i, note))
         return (int)ext;
+    for (uint32_t j = 0; j < NTRK; j++)                 /* ((Vallée) another track on this channel with this note on: */
+        if (j != i && mn.ch[j] == ch && (mn.on[j][w] & bit) && !mo_off(j, note))   /* it ends first (one note-off a */
+            return (int)ext;                            /* note-on on the channel; its own off then none) */
     vel = vel > 127u ? 127u : vel ? vel : 1u;
     if (mo_put(0x09u | (0x90u | ch) << 8 | note << 16 | vel << 24, mo.tick))
         mn.on[i][w] |= bit;
@@ -1183,6 +1186,17 @@ static __attribute__((noinline)) void keyboard_block(void)
                 kb_note[k] = (uint8_t)kb_map(&trk[kb_trk[k]], k);
             if (kb_note[k] == KB_SILENT)
                 continue;
+            if (ENGINES[trk[kb_trk[k]].engine]->oneshot)   /* ((Vallée, the SPAMPY sound) DRUM: a black key plays its
+                                                          * left neighbour's lane, two fingers on one sound: the other
+                                                          * key held on that note lets it go first (one note-off a
+                                                          * note-on, MIDI OUT), its own release then nothing */
+                for (uint32_t j = 0; j < 27u; j++)
+                    if (j != k && (((kb_prev | (cur & ((1u << k) - 1u))) >> j) & 1u) && !((kb_layer >> j) & 1u) &&
+                        kb_trk[j] == kb_trk[k] &&
+                        kb_note[j] == kb_note[k]) {
+                        kb_up(j);
+                        kb_note[j] = KB_SILENT;
+                    }
             kb_fresh(k);                          /* ((2.0.3, #72) KBD HOLD: a new chord, or one joined) */
             key_on(k, &trk[kb_trk[k]]);
 #ifdef FM1_INPUT_LAT

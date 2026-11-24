@@ -1017,7 +1017,7 @@ static void slug(char *d, const char *s, size_t n)
 }
 
 /* ------------------------------------------------------------- main --- */
-#define MAXJ 512
+#define MAXJ 768                                /* ((Vallée) SPAMPY's sounds and its 35 kits: past 512 jobs */
 static job_t J[MAXJ];
 static uint32_t nj;
 static job_t *add(uint32_t kind, const char *name)
@@ -1062,10 +1062,7 @@ int main(int argc, char **argv)
             j->pi = (uint8_t)pi;
         }
     add(J_DRUMS, "drums/drum_gm_kit");
-    for (i = 0; i < DV_NKIT; i++) {                 /* the model kits (KIT 80 10 66 55 77) */
-        snprintf(name, sizeof name, "drums/kit_%s", N_DRUM_KIT[i < 8u ? DK_80 + i : DK_DEAD + i - 8u]);
-        add(J_DRUMS, name)->arg = (uint8_t)(i < 8u ? DK_80 + i : DK_DEAD + i - 8u);
-    }
+    /* ((Vallée, the SPAMPY sound) every kit: DRUM's presets above (a sound per kit) */
     for (i = 0; i < 3u; i++)
         for (k0 = 0; k0 < 4u && eng_ok(MODE_E[i][0]); k0++) {
             job_t *j;
@@ -1133,16 +1130,17 @@ int main(int argc, char **argv)
             j->e = (uint8_t)e;
             j->pi = (uint8_t)pi;
         }
-    for (i = 0; i < DV_NKIT; i++) {                 /* DRUM's model kits: the 8 lanes, as its preset above */
+    for (i = 0; i < 5u; i++) {                      /* ((Vallée, the SPAMPY sound) a few of DRUM's kits: the sample kit, */
+        static const uint8_t KITS[5] = {0, 5, 6, 16, 34};   /* 808, 909, TECHNO, SYNWAVE */
         job_t *j;
-        snprintf(name, sizeof name, "cpu/DRUM/kit_%s", N_DRUM_KIT[i < 8u ? DK_80 + i : DK_DEAD + i - 8u]);
+        snprintf(name, sizeof name, "cpu/DRUM/kit_%s", N_DRUM_KIT[KITS[i]]);
         j = add(J_CPU, name);
         memset(cpu_parts[ncpu], 0, sizeof cpu_parts[ncpu]);
         cpu_parts[ncpu][0][0] = ENGI_DRUM, cpu_parts[ncpu][0][1] = 0, cpu_parts[ncpu][0][2] = 8;
         j->parts = (const uint8_t (*)[3])cpu_parts[ncpu++];
         j->e = ENGI_DRUM;
         j->pi = 0;
-        j->arg = (uint8_t)(i < 8u ? DK_80 + i : DK_DEAD + i - 8u);
+        j->arg = KITS[i];
     }
     {   /* mixes: idle (subtracted from the presets' counts), idle + drums (part 4 DRUM; SAMPLE PERC until 1.0.2), FM (DIGITAL with
          * FELUCCA_FM4, else FM6) + PHASE + VOICE asking 8 + 8 + 4 + the drums (the budget keeps 8; FM6 plays 6) */

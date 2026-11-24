@@ -76,6 +76,21 @@ The old version stays installable: branch `vallee-skiff-engine` = release v0.9.1
          steps yet); user-preset grid records (old format) 8 lanes.
       3b engine: drums.c, drum_synth.c, punch.c (GM sample kit + 4 treatments, 30 synth kits, punch, per-lane TUNE /
          DECAY / BODY) as Vallée's DRUM engine on any track; voices in Vallée's model.
+         DONE (2026-11-24): eng_drum.c rewritten on SPAMPY's drums.c (its sample kit and treatments, its voice logic:
+         6 voices, the hat choke, a taken voice's tail) and drum_synth.c (verbatim but the SYN1..4 bank; the noise
+         seed the part's own, so both cores render the same); tools/spampy/gen_drumkits.py + drumkit_levels.json
+         byte-identical output. KIT 0..34 (808 at power-on, TRK_DEF; an old project's DRUM track: 808), a sound per
+         kit; HOME's knobs KIT DIST DLY REV; SPAMPY's keys (a white key a lane F3..G5, a black key its left one's).
+         The 16 lanes' parameters: P_LN8.. P_LPAN8.. P_LTUNE8.. P_LDECAY8.. and P_LBODY0..15 before P_E0 (SIDs
+         149..196); TUNE -8..7 st, DECAY -4..3, BODY -4..4 (SPAMPY's units; an old project's lanes reset).
+         LANES: LANE LEVEL TUNE DECAY; LANE MIX: LANE LEVEL PAN BODY; both show the page of 8 lanes holding the
+         selected one. SKF4 layout 2 (writes): no DRUM-X kit, an FM6 track's patch after its parameters, the lane
+         SIDs only on a DRUM track (room for 16 lanes on every track); layout 1 still read. User presets keep the
+         first 176 SIDs (UP_NSID): lanes 9..16's DECAY and every BODY at their defaults in a user sound.
+         Editor DESC sends up to 40 names (DRUM's KIT 35). MIDI OUT: two tracks on one channel never stack a note.
+         NOT taken (ask the owner): punch.c is SPAMPY's PUNCH-IN FX (hold FX + a key: the whole mix through a
+         loop / filter / stop), not part of the drums; SYN1..SYN4 (the editor's DRUM SYNTH page, a flash bank);
+         user sample kits USR1..4 (the FM-1's sample area holds the factory block).
       3c screens and features: the grid and LANES / LANE MIX on 16 lanes; keys F3..G5 the 16 lanes (SPAMPY's
          lane_of_key); GEN's drum writer, THE SPELL, SUMMON; the web editor and emulator; both themes reviewed.
       3d verify: tests, CI, renders, old projects, RAM / CPU budgets.

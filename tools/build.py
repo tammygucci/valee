@@ -129,6 +129,7 @@ def generate():
             [tools / "gen_sprites.py", GEN / "ui_sprites.h"],
             [tools / "gen_tables.py", GEN / "felucca_tables.h"],
             [tools / "spampy" / "gen_fm6_patches.py", GEN / "felucca_fm6.h"],   # ((Vallée) SPAMPY's FM6 patches
+            [tools / "spampy" / "gen_drumkits.py", GEN / "felucca_drumkits.h"],   # ((Vallée) SPAMPY's 30 drum kits
             [tools / "gen_samples_vallee.py", GEN / "felucca_samples.h"],   # ((Vallée) SPAMPY's sets + SAX)
             [tools / "gen_p5_tables.py", GEN / "p5_tables.h"]]   # ((Vallée) SLOOP's PROPHET, from SPAMPY)
     procs = [subprocess.Popen([sys.executable, *map(str, c)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,

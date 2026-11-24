@@ -96,10 +96,10 @@
 # PHYS (tests/phys_test.c): stability over the whole parameter and pitch range, the worst-case cost against
 #                   the heaviest factory preset, demos in build/phys_demo/; tests/phys_ref.cpp compares the
 #                   fixed-point models with DaisySP's float originals when DaisySP is there (DAISYSP=path).
-# DRUM (tests/drum_test.c): the drum voices (src/drum_voice.c): pitch, decay, centroid and level against
-#                   Felucca's targets, the controls' directions, no clipping, DC, retriggers, the hat choke, the
-#                   kick on a small speaker; the DRUM engine (src/eng_drum.c): its key map, the 8 lanes together,
-#                   one hit per lane, the choke between lanes; the cost per voice; demos in build/drum_demo/.
+# DRUM (tests/drum_test.c): ((Vallée, the SPAMPY sound) SPAMPY's drum player as the DRUM engine (src/eng_drum.c,
+#                   src/drum_synth.c): every kit x lane heard, bounded, ending; the synth voice sample for sample
+#                   drum_synth.c's; the lanes' TUNE DECAY BODY LEVEL PAN and mutes; 6 voices, the hat choke, no
+#                   click on a taken voice; SPAMPY's keys; the cost; a bar of each kit in build/drum_demo/.
 # DRUM-X (tests/drumx_test.c, after JIANT FM's): the engine (src/eng_drumx.c, src/drumx_voice.c): every lane sounds,
 #                   under full scale, ends; MORPH between A and B and while a hit rings; TUNE; the hat choke; the
 #                   knobs, FOLD and FM; a drum track as DRUM's; the project's kit plays; demos in build/drumx_demo/.
@@ -423,7 +423,7 @@ EOF
     # ((Vallée, the SPAMPY sound) PHYS retired (SPAMPY has none): phys_test, phys_ref not run
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/drum_test" tests/drum_test.c -lm
     mkdir -p build/drum_demo
-    run "DRUM: voice targets, controls, no clipping, retrigger, hat choke, the kick on a small speaker, keys, 8 lanes, cost, demos" "$OUT/drum_test" build/drum_demo
+    run "DRUM (SPAMPY's kits): every kit x lane, the synth voice exact, TUNE DECAY BODY LEVEL PAN, 6 voices, choke, keys, cost, demos" "$OUT/drum_test" build/drum_demo
     # ((Vallée, the SPAMPY sound) DRUM-X and NOISE retired (MORPH plays at NOISE's number): drumx_test, noise_test not run
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/fm6_test" tests/fm6_test.c -lm
     mkdir -p build/fm6_demo

@@ -580,8 +580,7 @@ static int card_dead(const page_t *pg, uint32_t c)
         return 1;
     if (id == P_SDIR && !t->p[P_STRUM])                 /* ((2.5) STRUM OFF: its DIR does nothing) */
         return 1;
-    return pg->scope == SC_ENGINE && t->eng_req % NENGINES == ENGI_DRUM && id == P_E6 &&
-           drum_kit_plays(t->p[P_E0]) != DK_STD;
+    return 0;
 }
 
 /* action pages: the footer's first row says what OCT+ and OCT- do ("OCT+ LOAD   OCT- BACK") */
@@ -599,12 +598,9 @@ static void foot_hint(char *a, char *b)
 static void sound_name(const track_t *t, char *b)
 {
     const engine_t *e = ENGINES[t->eng_req % NENGINES];
-    uint32_t u = t->eng_req % NENGINES == ENGI_DRUM ? drum_user(t->p) : 0u;
     b[0] = 0;
     if (user_of(t) < UP_SLOTS)
         up_name(user_of(t), b);
-    else if (u && usr_nz[u - 1u])
-        smp_user_name(u - 1u, b);
     else if (t->eng_req % NENGINES == ENGI_FM6 && t->p[P_E7] == FM6_OWN) {
         uint32_t n = 10;
         memcpy(b, fm6_patch[trk_index(t) % NTRK] + FP_NAME, 10);
@@ -967,7 +963,7 @@ static void draw_columns(void)
         lane_follow(page_lane_p());                    /* keys and DRUM-X's sheet do (ui_dx.c) */
     if (cur_page()->graph == GR_LANES || cur_page()->graph == GR_LMIX)   /* ((Skiff U3, R6) LANES: KNOB 1 the lane, by its
                                                                          * name; (2.0) LANE MIX's) */
-        draw_column(0, "LANE", dv_lane_name(TSEL, page_lane()), "", VR_LIVE, (int32_t)page_lane() * 1000 / 7, ICON_AUTO);
+        draw_column(0, "LANE", drum_lane_name(TSEL, page_lane()), "", VR_LIVE, (int32_t)page_lane() * 1000 / 15, ICON_AUTO);
     if (cur_page()->scope == SC_TRK) {                 /* LEVEL PAN REV MUTE of the selected track */
         const track_t *t = TSEL;
         uint32_t lvl = trk_level(song.sel);

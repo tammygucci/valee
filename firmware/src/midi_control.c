@@ -223,7 +223,7 @@ static const uint8_t MIDI_CC_ENG[NENGINES] = {   /* ((Vallée, the SPAMPY sound)
                                                        * VOICE Q, TRIO CUT RES, WHEEL - */
     0x00, 0x30, 0x00, 0x56, 0x00,                     /* -, FM6 MOD LVL, -, MORPH CUT RES, - */
     0x12, 0x00, 0x50, 0x12, 0x00, 0x40,               /* PROPHET CUT RES, CZ-1 -, SID CUT, OBERVAVE CUT RES, -, DRONE COLOUR */
-    0x30, 0x50,                                       /* DRUM TONE, SUMMON TONE */
+    0x00, 0x50,                                       /* DRUM - ((Vallée) SPAMPY's: KIT alone), SUMMON TONE */
 };
 _Static_assert(NENGINES == 21, "MIDI_CC_ENG: one entry an engine");
 /* a CC sets parameter id of track t as a knob would: 0..127 over its range */

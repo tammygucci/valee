@@ -318,8 +318,8 @@ static int cc_map_test(void)
     trk[1].eng_req = trk[1].engine = ENGI_FM6;
     queued(0xB1, 74, 64, 1); queued(0xB1, 74, 127, 1);
     bad += check("CC74 on FM6: MOD LVL, bipolar (127: +63)", trk[1].p[P_E2] == 63);
-    queued(0xB3, 74, 10, 1);
-    bad += check("CC74 on DRUM (channel 4): TONE", trk[3].p[P_E2] == 10);
+    memcpy(before, trk[3].p, sizeof before); queued(0xB3, 74, 10, 1);
+    bad += check("CC74 on DRUM (channel 4): ((Vallée) SPAMPY's kits, no tone) ignored", !memcmp(before, trk[3].p, sizeof before));
     for (e = 0, ok = 1; e < NENGINES; e++) {   /* the table names a continuous EDIT value of every engine */
         uint32_t m = MIDI_CC_ENG[e], k;
         for (k = 0; k < 2u; k++) {

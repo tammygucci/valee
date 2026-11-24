@@ -14,17 +14,6 @@ drum_render 89
 fm6_render 372
 fm6_op_run 72
 fm6_op_fb 26
-dv_metal_run 26
-dv_kick_run 153
-dv_snare_run 158
-dv_clap_run 74
-dv_hat_run 61
-dv_tom_run 75
-dv_rim_run 61
-dv_bell_run 52
-dv_cym_run 67
-dv_out 35
-dv_metal_mix 16
 slice_render 453
 slc_rev 120
 fm1_alnk0_irq 1266
@@ -83,7 +72,6 @@ cho_st 92
 perf_pre_st 79
 lpan_render 11
 lpan_mix 91
-drum_smp 139
 digital_render 333
 drawbar_render 263
 wt_render 110

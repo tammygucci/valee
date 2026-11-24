@@ -21,9 +21,8 @@ FUNCS = ["analog_render", "digital_render", "digital_render_legacy", "digital_re
          # retired (Vallée Classic keeps them)
          "drawbar_render", "wt_render", "p5_render", "p5_block", "p5_samples", "cz_native_render", "cz_native_block",
          "sid_render", "obv_render", "drone_render",
-         "drum_render", "fm6_render", "fm6_op_run", "fm6_op_fb",
-         "dv_metal_run", "dv_kick_run", "dv_snare_run", "dv_clap_run", "dv_hat_run", "dv_tom_run",   # drum_voice.c
-         "dv_rim_run", "dv_bell_run", "dv_cym_run", "dv_out", "dv_metal_mix",
+         "drum_render", "ds_render", "fm6_render", "fm6_op_run", "fm6_op_fb",   # ((Vallée) DRUM: SPAMPY's drum player and
+                                                                                # its synthesised voice (drum_synth.c)
          # ((2.5) slicer_track: inlined into mix_part, which runs from RAM (fx.c AUDIO_RAM, flatten): counted there)
          "slice_render", "slc_rev",                          # SLICE (eng_slice.c): the render, the reverse windows
          "fm1_alnk0_irq", "fm1_timer5_irq",               # the audio ISR; TIMER5: the key / LED scan (hal/fm1_input.h)
@@ -52,8 +51,7 @@ FUNCS = ["analog_render", "digital_render", "digital_render_legacy", "digital_re
          "smx_render",                           # (Skiff, #21) a user sample's sound with its own sends (fx.c)
          "smx_right", "dly_mono", "dly_stereo", "cho_st", "perf_pre_st",   # ((2.5) the DELAY MODE: a user sample's right
                                                  # send, MONO's line, STEREO / PING's, the stereo chorus, THROW / DUB in stereo)
-         "lpan_render", "lpan_mix",              # (2.0, #36) a kit's lane panned: its voice, the mix (voice.c, fx.c)
-         "drum_smp"]                             # (2.0, #35) a user kit's lane (eng_drum.c)
+         "lpan_render", "lpan_mix"]              # (2.0, #36) a kit's lane panned: its voice, the mix (voice.c, fx.c)
 # built only with FELUCCA_FM4=1 (DIGITAL, src/eng_digital.c; not in the default build, so not in BUDGET): absent,
 # they are skipped; present, checked against these (their budget lines until the engine was retired in 1.0)
 OPTIONAL = {"digital_render_legacy": 333, "digital_render_custom": 558,   # ((Vallée) digital_render: SPAMPY's, budgeted

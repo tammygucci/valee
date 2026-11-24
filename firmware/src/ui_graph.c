@@ -960,17 +960,17 @@ static void lane_tile(const track_t *t, uint32_t i, int32_t x, int32_t y, int se
     if (sel)
         cv_rect(x + 2, y, 24, 16, T_THEME);
     GFX_HOOK_ALIGN(x + 2, y, x + 26, y + 16, AL_HV, "lane name centred under its fader");
-    cv_text_in(x + 2, y + CAP_IN(S, 16), 24, &AF_S, dv_lane_abbr(t, i), sel ? T_INK : drum_lane_has(t, i) ? T_MID : T_DIM,
+    cv_text_in(x + 2, y + CAP_IN(S, 16), 24, &AF_S, drum_lane_abbr(t, i), sel ? T_INK : drum_lane_has(t, i) ? T_MID : T_DIM,
                sel ? T_THEME : T_SURF);
 }
 static void graph_lanes(const track_t *t, uint16_t c)
 {
-    uint32_t i;
+    uint32_t i, b = page_lane() & 8u;                  /* ((Vallée) the page of 8 lanes holding the selected one */
     for (i = 0; i < 8u; i++) {
         int32_t x = 3 + 29 * (int32_t)i;
-        int sel = i == ui.lane % 8u;
-        lane_fader_of(t, i, x, 82, 76, t->p[P_LN0 + i] * 70 / 127, sel, c);
-        lane_tile(t, i, x, 90, sel);
+        int sel = b + i == page_lane();
+        lane_fader_of(t, b + i, x, 82, 76, t->p[lp_ln(b + i)] * 70 / 127, sel, c);
+        lane_tile(t, b + i, x, 90, sel);
     }
 }
 /* PAN as the MIXER writes it: C, L31, R100 (params.c F_BIPCT's); v holds 6 */
@@ -990,13 +990,13 @@ static void pan_txt(char *v, int32_t pan)
  * nucleus on its energy levels */
 static void graph_lmix(const track_t *t, uint16_t c)
 {
-    uint32_t i, l = page_lane();
+    uint32_t i, l = page_lane(), b = l & 8u;          /* ((Vallée) the page of 8 lanes holding the selected one */
     for (i = 0; i < 8u; i++) {
-        int32_t x = 3 + 29 * (int32_t)i, pan = clamp(t->p[P_LPAN0 + i], -64, 63), px = x + 13 + pan * 9 / 64, k;
-        int sel = i == l;
+        int32_t x = 3 + 29 * (int32_t)i, pan = clamp(t->p[lp_pan(b + i)], -64, 63), px = x + 13 + pan * 9 / 64, k;
+        int sel = b + i == l;
         uint16_t col = sel ? T_THEME : c;
         char v[6];
-        lane_fader_of(t, i, x, 62, 56, t->p[P_LN0 + i] * 53 / 127, sel, c);   /* (100 %: the cap on the track's top) */
+        lane_fader_of(t, b + i, x, 62, 56, t->p[lp_ln(b + i)] * 53 / 127, sel, c);   /* (100 %: the cap on the track's top) */
         if (UX_CRYPT) {
             cr_leader(x + 4, x + 24, 72);
             cr_skull(px - 4, 68, col, T_SURF, 0);
@@ -1015,7 +1015,7 @@ static void graph_lmix(const track_t *t, uint16_t c)
         pan_txt(v, pan);
         GFX_HOOK_ALIGN(x, 0, x + 28, 0, AL_H, "lane pan centred under its fader");
         cv_text_in(x, 78 + CAP_IN(S, 12), 28, &AF_S, v, sel ? T_TEXT : T_MID, T_SURF);
-        lane_tile(t, i, x, 92, sel);
+        lane_tile(t, b + i, x, 92, sel);
     }
 }
 /* SLICER page: the pattern's 16 steps, a 'x' step a full bar; a '.' step: GATE a bar as high as it stays
@@ -1729,8 +1729,8 @@ static uint32_t graph_signature(void)
         h += graph_pname_sig;
     }
     if (pg->graph == GR_LANES || pg->graph == GR_LMIX)   /* (Skiff U3) the levels, the lane; ((2.0, #36) the pans; #35 */
-        for (i = 0; i < 8u; i++)                         /* a user kit's lanes: an upload) */
-            h = (h ^ (uint32_t)t->p[P_LN0 + i] << 8 ^ (uint32_t)(t->p[P_LPAN0 + i] + 64) << 16 ^ (i == page_lane()) ^
+        for (i = 0; i < NLANE; i++)                      /* a user kit's lanes: an upload) */
+            h = (h ^ (uint32_t)t->p[lp_ln(i)] << 8 ^ (uint32_t)(t->p[lp_pan(i)] + 64) << 16 ^ (i == page_lane()) ^
                  smp_user_gen << 24) * 16777619u;
     if (pg->graph == GR_EVENTS) {                    /* AUTOMATION: the rows, the one selected, + ADD LOCK's place; (U3)
                                                       * the top row's PLAY and count */

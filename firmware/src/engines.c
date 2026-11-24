@@ -24,7 +24,7 @@ static void *eng_part(const track_t *t);
  * notes, blocks and renders); the switch zeroes it, the state each engine starts from at power-on (GRAIN rebuilds
  * its index, PHYS its model, from zero). Data the main loop writes (FM6's patches, WHEEL's bars) stays out. */
 typedef union {
-    drum_lane_t drum[DV_NLANE];
+    drum_part_t drum;                /* ((Vallée) SPAMPY's drum voices (eng_drum.c) */
     drumx_lane_t drumx[DV_NLANE];
     fm6_note_t fm6[FM6_POLY];
     drw_part_t drawbar;              /* ((Vallée) SLOOP's WHEEL */
@@ -40,7 +40,7 @@ static eng_mem_t eng_mem[NHEAVY] __attribute__((section(".pool")));
 /* (Skiff phase 6) a light track's area (the tracks past NHEAVY): the engines it may play, no PHYS, no GRAIN (their
  * accessors give it none: a heavy engine forced there is silent); DRUM's lanes the biggest, 1.8 KB */
 typedef union {
-    drum_lane_t drum[DV_NLANE];
+    drum_part_t drum;                /* ((Vallée) SPAMPY's drum voices (eng_drum.c) */
     drumx_lane_t drumx[DV_NLANE];
     fm6_note_t fm6[FM6_POLY];
     drw_part_t drawbar;
@@ -208,5 +208,9 @@ static uint32_t eng_step_for(uint32_t k, uint32_t e, int32_t dir)   /* eng_step 
 /* ((Vallée, the SPAMPY sound) as SPAMPY powers on (its ui.c TRK_DEF: ANALOG, DIGITAL RHODES, LOFI; its ANALOG and LOFI
  * picks were trimmed from its list, so it plays those engines' plain settings): ANALOG JP8 PAD, RHODES, LOFI CHIP CHORD,
  * then Vallée's DRUM, SAMPLE VIBES, DRUM */
-static const uint8_t TRK_DEF[NPART][2] = {{0, 11}, {1, 0}, {3, 4}, {ENGI_DRUM, 0}, {ENGI_SAMPLE, 0}, {ENGI_DRUM, 0}};
+/* ((Vallée, the SPAMPY sound) DRUM's power-on kit SPAMPY's: 808 (its sound 5, DRUM_PRESETS) */
+static const uint8_t TRK_DEF[NPART][2] = {{0, 11}, {1, 0}, {3, 4}, {ENGI_DRUM, 5}, {ENGI_SAMPLE, 0}, {ENGI_DRUM, 5}};
+/* an engine's first sound for a track mapped to it (an old project's, project.c PROJ_NEW_ENG): DRUM's power-on kit (808:
+ * no factory samples needed), the others' first */
+static uint32_t eng_first_sound(uint32_t e) { return e == ENGI_DRUM ? 5u : 0u; }
 static uint32_t trk_def_engine(uint32_t i) { return TRK_DEF[i % NPART][0]; }

@@ -1546,7 +1546,7 @@ static void edit_param(uint32_t slot, int32_t steps)
                                                          * grid's too), KNOB 2 its level (params.c page_desc); ((2.0, #36)
                                                          * LANE MIX the same, DRUM-X's: the sound sheet's) */
         uint8_t *l = page_lane_p();
-        *l = (uint8_t)clamp((int32_t)(*l % 8u) + steps, 0, 7);
+        *l = (uint8_t)clamp((int32_t)(*l % NLANE) + steps, 0, NLANE - 1);   /* ((Vallée) 16 */
         return;
     }
     if (pg->scope == SC_STEP) {

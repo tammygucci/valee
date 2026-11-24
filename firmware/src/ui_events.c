@@ -25,10 +25,8 @@ static int ev_id_ok(const track_t *t, uint32_t id)
     const param_desc_t *d;
     if (id >= P_COUNT || !motion_param(id) || id == P_ED_FX || (id >= P_FM1_ATK && id <= P_FM4_LEVEL))
         return 0;
-    if (id >= P_LN0 && id <= P_LN7)
+    if (lp_lane(id) < 16u)                            /* ((Vallée) the 16 lanes' LEVEL PAN TUNE DECAY BODY: DRUM's own */
         return drum_track(t);
-    if (id >= P_LTUNE0 && id <= P_LDECAY7)            /* ((Skiff phase 9) the lanes' TUNE and DECAY: DRUM's own) */
-        return t->eng_req % NENGINES == ENGI_DRUM;
     d = track_desc(t, id);
     return d && d->label && d->label[0] && d->label[0] != '-' && d->max > d->min;
 }
@@ -40,15 +38,16 @@ static void ev_name(const track_t *t, uint32_t id, char *b)
     const char *pre = id >= P_ATK && id <= P_ED_SHP ? "ENV " : id >= P_LRATE && id <= P_LD_AMP ? "LFO " :
                       id >= P_EG2_ATK && id <= P_EG2_REL ? "ENV2 " : id == P_DTYPE || id == P_DTONE ? "DRIVE " :
                       id >= P_ITYPE && id <= P_IMIX ? "INS " : "";   /* ((1.3) the INSERT's: INS TYPE, INS DEPTH) */
-    if (id >= P_LTUNE0 && id <= P_LDECAY7) {
-        str_cpy(b, dv_lane_name(t, (id - P_LTUNE0) % DV_NLANE), 12);
-        str_cpy(b + str_len(b), id < P_LDECAY0 ? " TUNE" : " DCAY", 12 - str_len(b));
+    if (lp_lane(id) < 16u) {                          /* ((Vallée) a lane's: SNARE TUNE, OPEN PAN, KICK (its LEVEL) */
+        uint32_t l = lp_lane(id);
+        str_cpy(b, drum_lane_short(t, l), 12);
+        str_cpy(b + str_len(b), id == lp_tune(l) ? " TUNE" : id == lp_dec(l) ? " DCAY" : id == lp_body(l) ? " BODY" :
+                                id == lp_pan(l) ? " PAN" : "", 12 - str_len(b));
         return;
     }
     str_cpy(b, pre, 12);
     str_cpy(b + str_len(b), id == P_LEVEL ? "LEVEL" : id == P_GLIDE ? "GLIDE" :
-                            id >= P_LN0 && id <= P_LN7 && t->eng_req % NENGINES == ENGI_DRUM ? dv_lane_name(t, id - P_LN0) :
-                            track_desc(t, id)->label, 12 - str_len(b));   /* ((Skiff U4, L9) a lane: the kit's name, CONGA) */
+                            track_desc(t, id)->label, 12 - str_len(b));
 }
 /* the next parameter after id in direction dir (+1 / -1) that is free on track t's step (a record there: skipped);
  * id itself when there is none */
