@@ -10,7 +10,7 @@ typedef struct {float rate[8],level[8];uint8_t sustain,end;} cz_native_def_t;
 typedef struct {cz_voice_t v[NPOLY];cz_native_def_t native_def[2][3];uint8_t native_raw[128],native_valid;} cz_part_t;
 static cz_part_t *cz_part(uint32_t part);
 static uint8_t cz_voice_was[NPART];
-static uint8_t cz_patch[NPART][144];
+static uint8_t cz_patch[NPART][144] __attribute__((section(".pool")));
 static cz_voice_t *cz_voice(track_t*t,voice_t*v){return &cz_part((uint32_t)(t-trk)%NPART)->v[(uint32_t)(v-t->v)%NPOLY];}
 static void cz_reset(track_t*t,voice_t*v){cz_voice_t*c=cz_voice(t,v);memset(c,0,sizeof *c);v->ph[0]=v->ph[1]=v->ph[2]=0;v->s[0]=v->s[1]=v->s[4]=0;if(!cz_voice_was[t-trk])v->s[2]=v->s[3]=0;c->noise=0x6D2B79F5u^(uint32_t)(v-t->v)*0x9E3779B9u;}
 static void cz_native_block(track_t*t);

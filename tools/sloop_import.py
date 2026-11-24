@@ -103,6 +103,9 @@ def presets(t, f):
 
 # small fixes where Vallée already has the same thing (asserted to match exactly once)
 PATCHES = {
+    # (RAM: Vallée's .data/.bss is fuller than SPAMPY's) CZ's per-part patch copy in the POOL (zeroed at boot as .bss)
+    "eng_cz.c": [(r"static uint8_t cz_patch\[NPART\]\[144\];",
+                  'static uint8_t cz_patch[NPART][144] __attribute__((section(".pool")));')],
     # OBERVAVE's per-card tables have 8 entries (the original's 8 voice cards); SPAMPY reads them by its voice number
     # (up to 9 there, 15 in Vallée): past the tables. The 8 cards again for voices 9..16 (as many as the original had)
     "eng_obervave.c": [(r"pan=\(OB_PAN_CARD\[card\]", "pan=(OB_PAN_CARD[card%OB_NV]")],
