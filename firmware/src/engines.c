@@ -84,6 +84,12 @@ static void rsv_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const v
     v->stage = 0;
 }
 static const engine_t ENG_FM4_GONE = {.name = "-", .page_title = {"-", "-"}, .note_on = rsv_note_on, .render = rsv_render};
+#ifdef HOST_TEST_ENGINE
+#include HOST_TEST_ENGINE                       /* (host tests only: a test engine at 8, e.g. tests/host_sine.h) */
+#define ENG_RSV8 ENG_HOSTTEST
+#else
+#define ENG_RSV8 ENG_FM4_GONE
+#endif
 static const engine_t *const ENGINES[NENGINES] = {
     &ENG_ANALOG,                 /* 0 */
     &ENG_DIGITAL,                /* 1 */
@@ -93,7 +99,7 @@ static const engine_t *const ENGINES[NENGINES] = {
     &ENG_FORMANT,                /* 5 VOICE */
     &ENG_TRIO,                   /* 6 */
     &ENG_DRAWBAR,                /* 7 WHEEL (SLOOP's drawbar organ) */
-    &ENG_FM4_GONE,               /* 8: reserved */
+    &ENG_RSV8,                   /* 8: reserved (host tests: HOST_TEST_ENGINE) */
     &ENG_FM6,                    /* 9 (ENGI_FM6) */
     &ENG_FM4_GONE,               /* 10: reserved */
     &ENG_WAVETABLE,              /* 11 MORPH (ENGI_NOISE) */

@@ -123,9 +123,9 @@ after the second core's tests, so the web pages and later were not reached):
   LIST BASS, types and unique names, RAVE arp preset, GEN style sounds), PHYS's key on T5, PRESETS elsewhere,
   the undo/redo of loads, user preset version, MIDI after overflow.
 - follow_test (chord follow, 6), motion, ratchet, insert (MIX 0 bit for bit), tracks (PHASE PD BRASS block edge),
-  midi_control (done: CC74 / CC71 table rebuilt for the new engines), tail (SPEAKER EQ H3/H1 as a note fades: not a
-  regression, the output path is unchanged; the test's source was Skiff's ANALOG, whose amplitude path was finer than
-  SLOOP's and FM6's (FM6 measures the same on Classic): needs a precise test-only source),
+  midi_control (done: CC74 / CC71 table rebuilt for the new engines), tail (done: its source is a host-only exact
+  sine at reserved engine 8, tests/host_sine.h + engines.c HOST_TEST_ENGINE; each case's limit Classic's own
+  measurement with that source + 1.5 dB: Classic and this branch measure the same, the way out is unchanged),
   persistence (FM6 bank -> user presets migration), bank (a DRUM-X favourite row), backup (SKF3 objects: now
   mapped, not kept as they are), robustness, regress goldens (expected: re-record after listening).
 Since then fixed: midi_control, follow (TRANS: ACID 303 is an octave down), motion and ratchet (old formats with
