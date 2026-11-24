@@ -300,6 +300,9 @@ static uint32_t engine_icon(const char *name)
         {"NOISE", ICON_NOISE},
         {"SUMMON", ICON_GRAIN},               /* ((Vallée) a cloud of partials, as GRAIN's) */
         {"FM6", ICON_MOD},                    /* (symbol_modular: six operators patched; a glyph of its own wanted) */
+        /* ((Vallée, the SPAMPY sound) SPAMPY's engines: a wave or symbol of each */
+        {"PROPHET", ICON_W_SAW}, {"OBERVAVE", ICON_W_PWM}, {"CZ-1", ICON_W_SPLS}, {"SID", ICON_CHIP},
+        {"MORPH", ICON_SWEEP}, {"DRONE", ICON_SUSTAIN},   /* (DRONE: a held level) */
     };
     uint32_t i;
     for (i = 0; i < sizeof M / sizeof M[0]; i++)

@@ -823,7 +823,7 @@ static const char *const S_NAME[S_COUNT] = {"home", "home_idle", "message", "mes
     "project", "lanes", "step", "pattern", "chance", "motion", "drum",
     "drum_hand", "drum_cym", "mixer", "mixer_pan", "env", "mod_env", "lfo", "mod", "fx", "slicer", "dly", "scl", "chord", "chord_wide", "chord_off", "chord_kit", "arp",
     "voice", "global", "chorus", "edit_analog", FELUCCA_FM4 ? "edit_digital" : "edit_fm6", "op_env", "edit_wheel", "edit_sample",
-    "edit_grain", "edit_phys", "alg_1", "alg_2", "alg_3", "alg_4", "alg_5", "alg_6", "alg_7", "alg_8", "op_level", "fm6_alg_01", "fm6_alg_05", "fm6_alg_22", "fm6_alg_32", "confirm_seq", "confirm_project", "confirm_load", "confirm_user",
+    "edit_prophet", "edit_obervave", "alg_1", "alg_2", "alg_3", "alg_4", "alg_5", "alg_6", "alg_7", "alg_8", "op_level", "fm6_alg_01", "fm6_alg_05", "fm6_alg_22", "fm6_alg_32", "confirm_seq", "confirm_project", "confirm_load", "confirm_user",
     "confirm_motion", "confirm_erase", "menu", "menu_speaker", "about", "about_rec", "about_credits", "about_end", "uboot", "calibration", "splash",
     "batt_0", "batt_1", "batt_2", "batt_3", "batt_usb", "motion_rec", "motion_off", "motion_card",
     "perform_peek", "perform_held", "perform_wait", "perform_harm", "menu_hold", "menu_leds", "menu_end", "menu_system", "menu_slide", "reverb_spring",
@@ -840,7 +840,7 @@ static const char *const S_NAME[S_COUNT] = {"home", "home_idle", "message", "mes
     "confirm_pool", "layer_perform", "fx_duck", "fx_duck_off", "play_gate", "layer_perform_scenes",
     "step_tiles", "step_tiles_bar2", "step_tiles_drum",
     "song", "song_playing", "song_copy", "song_clear", "confirm_entry", "confirm_entry_last", "step_mark",
-    "dx_sound", "dx_sound_2", "dx_sound_3", "confirm_init_dx",
+    "edit_cz", "edit_sid", "edit_morph", "confirm_init_drum",
     "six_home", "six_song", "six_perform", "six_mixer", "six_glo", "six_fx", "six_edit", "six_edit_said",
     "mod_grid", "voice_2", "voice_2_uni", "arp_on", "arp_2", "edit_flt", "global_swing", "voice_glide",
     "shift_env", "shift_step", "shift_home", "lfo_run", "home_scope", "home_scope_play",
@@ -849,7 +849,7 @@ static const char *const S_NAME[S_COUNT] = {"home", "home_idle", "message", "mes
     "menu_midi", "menu_midi_scroll", "learn", "learn_cc", "lfo_2", "env_2", "lanes_tune", "reverb_hall", "chorus_feedback",
     "chorus_flanger", "chorus_phaser", "presets_bass", "song_rest", "song_rest_pick",
     "notes_range", "notes_pick", "feel_range", "notes_overlap", "momentary", "pool_empty", "pool_unused", "confirm_empty",
-    "song_once", "song_new", "song_copyplus", "song_chain", "song_chain3", "notes_chain", "lane_mix", "lane_mix_dx",
+    "song_once", "song_new", "song_copyplus", "song_chain", "song_chain3", "notes_chain", "lane_mix", "lane_mix_t6",
     "song_sound", "song_sounds", "song_chains", "song_chain_copy", "drum_kit_usr", "lanes_usr",
     "follow", "follow_scale", "follow_fit", "follow_off", "follow_wait", "free_take", "free_take_turned", "dly_mono", "dly_ping", "fx_delay", "fx_reverb", "fx_sends", "pattern_64", "song_strip", "project_new",
     "project_clear", "confirm_clear_song", "confirm_clear_trks", "insert_filter", "insert_filter_hp", "chord_strum",
@@ -1243,8 +1243,8 @@ static void setup(int s)
         for (i = 0; i < 4000u && !sample_wave.ready; i++) sample_wave_tick(TSEL);
         break;
     }
-    case S_EDIT_GRAIN: eng(8); go_title("EDIT 2"); break;
-    case S_EDIT_PHYS: eng(9); go_title("EDIT 1"); break;
+    case S_EDIT_GRAIN: eng(ENGI_PROPHET); go_title("EDIT 1"); break;   /* ((Vallée) SPAMPY's: PROPHET, OBERVAVE */
+    case S_EDIT_PHYS: eng(ENGI_OBERVAVE); go_title("EDIT 1"); break;
     case S_ALG1: case S_ALG2: case S_ALG3: case S_ALG4: case S_ALG5: case S_ALG6: case S_ALG7: case S_ALG8:
         eng(1); TSEL->p[P_E0] = (int16_t)(s - S_ALG1);      /* the 8 DIGITAL charts; FB on the odd ones, IDX high .. 0 */
         TSEL->p[P_E6] = (s - S_ALG1) & 1 ? 40 : 0; TSEL->p[P_E4] = (int16_t)((S_ALG8 - s) * 18);
@@ -1267,8 +1267,8 @@ static void setup(int s)
     case S_CONFIRM_MOTION: ui.confirm = CF_CLEAR_MOTION; ui.confirm_trk = 3; break;
     case S_CONFIRM_ERASE: song.playing = 0; up_store(6, "A VERY LONG SOUND NAME"); ui.confirm = CF_ERASE_USER; ui.confirm_trk = 6; break;
     case S_CONFIRM_INIT: ui.confirm = CF_INIT_SOUND; ui.confirm_trk = 0; break;     /* (the longest action: INITIALIZE) */
-    case S_CONFIRM_INIT_DX:                         /* (Skiff phase 7) on DRUM-X: and the DRUM-X kit */
-        sel_set(3); eng(ENGI_DRUMX); ui.confirm = CF_INIT_SOUND; ui.confirm_trk = 3; break;
+    case S_CONFIRM_INIT_DX:                         /* ((Vallée) on DRUM, track 4 (DRUM-X retired) */
+        sel_set(3); eng(ENGI_DRUM); ui.confirm = CF_INIT_SOUND; ui.confirm_trk = 3; break;
     case S_TAKE_BOX:                                /* Skiff BLOCKS: the TAKE box over HOME (ui_take.c) */
         take_box.trk = 1; take_box.gen++; take_box.kind = 0; ui.take_t = TB_FRAMES;   /* ((U2) kind: not an undo box left over) */
         str_cpy(take_box.title, "TAKE KEPT", sizeof take_box.title);
@@ -1395,9 +1395,9 @@ static void setup(int s)
             drum(0);
             ui.lane = 1;
         } else {
-            sel_set(NTRK - 1u);
-            eng(ENGI_DRUMX);
-            dx_ui_lane = DV_SNARE;
+            sel_set(NTRK - 1u);                     /* ((Vallée) DRUM on T6 (DRUM-X retired) */
+            drum(0);
+            ui.lane = 1;
         }
         dx_ui_seen = last_note;                     /* (no key struck since: the lane stays) */
         dx_ui_hits = last_hits;
@@ -1553,21 +1553,12 @@ static void setup(int s)
         ui.hot_col = HOT[i] & 3u; ui.hot_t = HOT[i] == 0xFFu ? 0 : 30;
         break;
     }
-    case S_DX_SOUND:                                /* (Skiff phase 8) EDIT > SOUND, DRUM-X's sheet on track 6 as the */
-    case S_DX_SOUND2:                               /* mockup's (design/mock_p8.py): the snare, its PTCH B turned; its */
-    case S_DX_SOUND3:                               /* switches, WAVE turned; the kick's COLR LEVL DRV (DRV ON, PMOD LONG) */
-        sel_set(NTRK - 1u);
-        eng(ENGI_DRUMX);
-        TSEL->p[P_E0] = 40;
-        dx_ui_seen = last_note;
-        dx_ui_hits = last_hits;
-        dx_ui_lane = s == S_DX_SOUND3 ? DV_KICK : DV_SNARE;
-        dx_ui_win = s == S_DX_SOUND ? 0u : s == S_DX_SOUND2 ? 3u : 2u;
-        memcpy(dx_kit, DX_KIT_DEF, sizeof dx_kit);
-        if (s == S_DX_SOUND3)
-            dx_kit[DV_KICK].mode = (uint8_t)((dx_kit[DV_KICK].mode & ~0x60u) | DXM_LONG << 5 | DX_DRIVE);
-        go_title("SOUND");
-        ui.hot_col = s == S_DX_SOUND ? 1 : s == S_DX_SOUND2 ? 0 : 3; ui.hot_t = 30;
+    case S_DX_SOUND:                                /* ((Vallée, the SPAMPY sound) DRUM-X retired: CZ-1, SID, MORPH's */
+    case S_DX_SOUND2:                               /* EDIT 1, a knob just turned */
+    case S_DX_SOUND3:
+        eng(s == S_DX_SOUND ? ENGI_CZ : s == S_DX_SOUND2 ? ENGI_SID : ENGI_NOISE);
+        go_title(s == S_DX_SOUND ? "EDIT 2" : "EDIT 1");   /* (CZ-1: EDIT 2 alone, TONE) */
+        ui.hot_col = s == S_DX_SOUND ? 3 : s == S_DX_SOUND2 ? 0 : 3; ui.hot_t = 30;
         break;
     case S_PERF_SCENES:                             /* (Skiff) PERFORM, KEYS SCENE: 1 3 5 kept, 3 recalled with its */
         song.playing = 0;                           /* patterns still to come (NEXT); the entries: A C on T1 */
@@ -1698,7 +1689,7 @@ static void setup(int s)
     case S_SIX_EDIT:                                /* ((Skiff phase 6) EDIT held on the last track but one (T5 with */
     case S_SIX_EDIT_SAID:                           /* six: SAMPLE, GRAIN and PHYS dimmed), PHYS pressed: said why */
         sel_set(NTRK - 2u); go_home(); ui.layer = LAYER_EDIT; ui.hot_col = 0; ui.hot_t = 30;
-        if (s == S_SIX_EDIT_SAID) edit_load(ENGI_PHYS, 0);
+        if (s == S_SIX_EDIT_SAID) edit_load(ENGI_PROPHET, 0);   /* ((Vallée) heavy only, as PHYS was */
         break;
     case S_EDIT_ACTIVE: eng(E_FM); apply_preset_to(TSEL, 2); favorite_set(E_FM, 2, 1); go_home(); ui.layer = LAYER_EDIT;
         ui.hot_col = 0; ui.hot_t = 30; break;
@@ -1815,7 +1806,7 @@ static void setup(int s)
     case S_BEAST: case S_BEAST_LONG: case S_BEAST_HOOD: case S_BEAST_MUTED:   /* ((Vallée) PRESETS on HOME: the creature
                                                      * box; the longest name (PHYS HARPSICHORD), VOICE's hood, muted */
         sel_set(s == S_BEAST ? 0 : 2);
-        if (s == S_BEAST_LONG) { eng(ENGI_PHYS); apply_preset_to(TSEL, 9); }
+        if (s == S_BEAST_LONG) { eng(ENGI_PROPHET); apply_preset_to(TSEL, 7); }   /* ((Vallée) TANGERINE CHRCH THM */
         if (s == S_BEAST_HOOD) { eng(5u); apply_preset_to(TSEL, 4);   /* (VOICE: CRYPT CHOIR) */ }
         if (s == S_BEAST_MUTED) TSEL->p[P_MUTE] = 1;
         go_home();
@@ -2479,7 +2470,7 @@ int main(int argc, char **argv)
         for (s = 0; s < S_COUNT; s++) {
             char name[64];
             uint32_t k;
-            if (!FELUCCA_FM4 && (s == S_OP_ENV || (s >= S_ALG1 && s <= S_OP_LEVEL)))
+            if (s == S_OP_ENV || s == S_OP_LEVEL || (!FELUCCA_FM4 && s >= S_ALG1 && s <= S_ALG8))
                 continue;                           /* (DIGITAL's own screens: FELUCCA_FM4=1 only) */
             snprintf(name, sizeof name, "%s/%s", UI_PALETTES[p].name, S_NAME[s]);
             cur_name = name;
@@ -2504,7 +2495,7 @@ int main(int argc, char **argv)
         for (l = 0; l < 2u; l++)
             for (s = 0; s < S_COUNT; s++) {
                 char name[64], tag[24];
-                if (!FELUCCA_FM4 && (s == S_OP_ENV || (s >= S_ALG1 && s <= S_OP_LEVEL)))
+                if (s == S_OP_ENV || s == S_OP_LEVEL || (!FELUCCA_FM4 && s >= S_ALG1 && s <= S_ALG8))
                     continue;
                 snprintf(tag, sizeof tag, "CUSTOM_%s", UI_PALETTES[LOOKS[l]].name);
                 snprintf(name, sizeof name, "%s/%s", tag, S_NAME[s]);
@@ -2550,7 +2541,7 @@ int main(int argc, char **argv)
             for (p = 0; p < NPALETTES; p++)
                 for (s = 0; s < S_COUNT; s++) {
                     char name[64], tag[24];
-                    if (!FELUCCA_FM4 && (s == S_OP_ENV || (s >= S_ALG1 && s <= S_OP_LEVEL)))
+                    if (s == S_OP_ENV || s == S_OP_LEVEL || (!FELUCCA_FM4 && s >= S_ALG1 && s <= S_ALG8))
                         continue;
                     snprintf(tag, sizeof tag, "LARGE_%s", UI_PALETTES[p].name);
                     snprintf(name, sizeof name, "%s/%s", tag, S_NAME[s]);

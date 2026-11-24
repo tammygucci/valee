@@ -689,6 +689,17 @@ static int page_visible(uint32_t i)
         return sh->eng == SHEET_ANY || TSEL->eng_req % NENGINES == sh->eng;   /* ((Vallée) GEN: every one) */
     if (PAGES[i].graph == GR_LANES)
         return TSEL->eng_req % NENGINES == ENGI_DRUM;
+    if (PAGES[i].fam == FAM_EDIT && PAGES[i].scope == SC_ENGINE) {   /* ((Vallée, the SPAMPY sound) an engine page all of
+                                                       * whose knobs are unused ("-": CZ-1's EDIT 1): not shown */
+        uint32_t k, used = 0, ours = 1;            /* (EDIT 1, EDIT 2: the eight engine knobs alone; LANES & co. not) */
+        for (k = 0; k < 4u; k++) {
+            ours &= PAGES[i].id[k] >= P_E0 && PAGES[i].id[k] < P_E0 + 8u;
+            used |= ours && !(e->edit[PAGES[i].id[k] - P_E0].max == e->edit[PAGES[i].id[k] - P_E0].min &&
+                              str_eq(e->edit[PAGES[i].id[k] - P_E0].label, "-"));
+        }
+        if (ours && !used)
+            return 0;
+    }
     if (id == P_AFLT)                                   /* ((Vallée) EDIT > FILTER: ANALOG's) */
         return TSEL->eng_req % NENGINES == ENGI_ANALOG;
     if (PAGES[i].graph == GR_LMIX)                      /* ((2.0, #36) a kit's: DRUM, DRUM-X) */
@@ -709,7 +720,8 @@ static int page_visible(uint32_t i)
         return 0;
 #endif
     return !(PAGES[i].fam == FAM_EDIT && PAGES[i].id[0] >= P_FM1_ATK &&
-             PAGES[i].id[0] <= P_FM4_LEVEL) || (FELUCCA_FM4 && TSEL->eng_req % NENGINES == ENGI_DIGITAL);
+             PAGES[i].id[0] <= P_FM4_LEVEL);   /* ((Vallée, the SPAMPY sound) the OP ENV / OP LEVEL pages: Classic's FM4
+                                                * DIGITAL's; SPAMPY's DIGITAL has no per-operator envelope or level */
 }
 
 /* every frame: song.g -> the bytes when they changed (the MENU, the editor), saved a second after the last change (the

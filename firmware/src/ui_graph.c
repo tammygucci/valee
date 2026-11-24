@@ -1522,7 +1522,6 @@ static void graph_fm(const track_t *t, uint16_t c)
     int32_t x[4], y[4], lo = 7, hi = 0, top = 0, bus, cl = 240, cr = 0, idx = t->p[P_E4];
     uint16_t ec = hot == P_E4 ? T_ACCENT : !idx ? T_DIM : idx < 64 ? T_MID : c;
     if (hot >= P_E1 && hot <= P_E3) hop = hot - P_E1 + 1u;
-    else if (hot >= P_FM1_ATK && hot < P_E0) hop = (hot - P_FM1_ATK) / 5u;
     for (k = 0; k < 4u; k++) {
         int32_t col = FM_CELL[alg][k] & 7, row = FM_CELL[alg][k] >> 4;
         lo = col < lo ? col : lo; hi = col > hi ? col : hi; top = row > top ? row : top;
@@ -1550,7 +1549,8 @@ static void graph_fm(const track_t *t, uint16_t c)
     fm_loop(x[3], y[3], hot == P_E6 ? T_ACCENT : t->p[P_E6] ? T_MID : T_DIM);   /* op 4's feedback */
     for (k = 0; k < 4u; k++) {
         char b[2] = {(char)('1' + k), 0};
-        uint32_t on = t->p[P_FM1_LEVEL + k * 5u] != 0, fill_c = (car >> k & 1u) && on;
+        uint32_t on = 1u, fill_c = (car >> k & 1u) && on;   /* ((Vallée) SPAMPY's DIGITAL: no operator LEVEL, every one
+                                                       * sounds) */
         uint16_t f = k == hop ? T_ACCENT : c, fill = fill_c ? f : T_RAISE;
         cv_rrect(x[k] - 10, y[k], 21, FM_BH, 3, fill, T_SURF);
         GFX_HOOK_ALIGN(x[k] - 10, y[k], x[k] + 11, y[k] + FM_BH, AL_HV, "DIGITAL operator number in its box");
@@ -1820,7 +1820,9 @@ static const char *eng_abbr(const char *name)
                                        {"PHASE", "PHAS"}, {"LOFI", "LOFI"},
                                        {"SAMPLE", "SMPL"}, {"VOICE", "VOCL"}, {"TRIO", "TRIO"}, {"WHEEL", "WHEL"},
                                        {"GRAIN", "GRAN"}, {"PHYS", "PHYS"}, {"DRUM", "DRUM"},
-                                       {"NOISE", "NOIS"}, {"FM6", "FM6"}, {"SLICE", "SLCE"}, {"DRUM-X", "DRMX"}, {"SUMMON", "SUMN"}};
+                                       {"NOISE", "NOIS"}, {"FM6", "FM6"}, {"SLICE", "SLCE"}, {"DRUM-X", "DRMX"}, {"SUMMON", "SUMN"},
+                                       /* ((Vallée, the SPAMPY sound) SPAMPY's: CZ-1, SID fit as they are */
+                                       {"PROPHET", "PRPH"}, {"OBERVAVE", "OBRV"}, {"MORPH", "MRPH"}, {"DRONE", "DRON"}};
     uint32_t i;
     for (i = 0; i < sizeof A / sizeof A[0]; i++)
         if (str_eq(name, A[i][0]))

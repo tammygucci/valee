@@ -2218,11 +2218,11 @@ static int test_product_ux(void)
     ui_power_on(); open_family(FAM_EDIT);
     ok = 1;
     for (i = 0; i < 8u; i++) { open_family(FAM_EDIT); ok &= page_visible(ui.page) && !(cur_page()->id[0] >= P_FM1_ATK && cur_page()->id[0] <= P_FM4_LEVEL); }
-    bad += check("operator envelope pages are hidden on non-DIGITAL instruments", ok);
+    bad += check("operator envelope pages are hidden on every instrument but (Classic's) DIGITAL", ok);
 #if FELUCCA_FM4
-    set_engine_of(TSEL, 1); open_family(FAM_EDIT); ok = 0;
-    for (i = 0; i < 12u; i++) { if (cur_page()->id[0] == P_FM1_ATK) ok = 1; open_family(FAM_EDIT); }
-    bad += check("DIGITAL exposes four envelopes and independent operator levels", ok);
+    set_engine_of(TSEL, 1); open_family(FAM_EDIT); ok = 1;
+    for (i = 0; i < 12u; i++) { if (cur_page()->id[0] >= P_FM1_ATK && cur_page()->id[0] <= P_FM4_LEVEL) ok = 0; open_family(FAM_EDIT); }
+    bad += check("(Vallée) SPAMPY's DIGITAL: no operator envelope or level pages (Classic's FM4 had them)", ok);
     go_title("OP1 ENV"); turn(EN_K1, 4);
     bad += check("operator envelope K1 edits only OP1 attack", TSEL->p[P_FM1_ATK] == 4 && !TSEL->p[P_FM2_ATK]);
     track_select(2); frame();
@@ -3049,9 +3049,12 @@ static int test_edit_cycle(void)
     set_engine_of(TSEL, 0);
     bad += check("EDIT cycle (ANALOG): EDIT 1 EDIT 2 FILTER VOICE VOICE 2 EDIT 1", engine_cycle(CYC_A, NELEM(CYC_A)));
 #if FELUCCA_FM4
-    set_engine_of(TSEL, 1);
-    bad += check("EDIT cycle (DIGITAL): EDIT 1 EDIT 2 OP1..OP4 ENV OP LEVEL VOICE VOICE 2 EDIT 1",
-                 engine_cycle(CYC_D, NELEM(CYC_D)));
+    {   /* ((Vallée, the SPAMPY sound) SPAMPY's DIGITAL: no per-operator envelope or level pages; CZ-1: EDIT 2 alone */
+        static const char *const CYC_SD[] = {"EDIT 1", "EDIT 2", "VOICE", "VOICE 2", "EDIT 1"};
+        set_engine_of(TSEL, 1);
+        bad += check("EDIT cycle (DIGITAL, SPAMPY's): EDIT 1 EDIT 2 VOICE VOICE 2 EDIT 1", engine_cycle(CYC_SD, NELEM(CYC_SD)));
+        (void)CYC_D;
+    }
 #else
     set_engine_of(TSEL, ENGI_DIGITAL);
     bad += check("EDIT cycle (engine 1 asked for: FM6, DIGITAL retired): EDIT 1 EDIT 2 OPERATOR ALL OPS VOICE VOICE 2 EDIT 1",
@@ -3063,6 +3066,13 @@ static int test_edit_cycle(void)
         static const char *const CYC_K[] = {"EDIT 1", "EDIT 2", "LANES", "LANE MIX", "EDIT 1"};
         set_engine_of(TSEL, ENGI_DRUM);
         bad += check("EDIT cycle (DRUM): EDIT 1 EDIT 2 LANES (2.0) LANE MIX, EDIT 1", engine_cycle(CYC_K, NELEM(CYC_K)));
+        {   /* ((Vallée, the SPAMPY sound) CZ-1: its EDIT 1 has no knob ("-" x 4), so it is not shown */
+            static const char *const CYC_CZ[] = {"EDIT 2", "VOICE", "VOICE 2", "EDIT 2"};
+            set_engine_of(TSEL, ENGI_CZ);
+            bad += check("EDIT cycle (CZ-1): its empty EDIT 1 not shown: EDIT 2 VOICE VOICE 2 EDIT 2",
+                         engine_cycle(CYC_CZ, NELEM(CYC_CZ)));
+            set_engine_of(TSEL, ENGI_DRUM);
+        }
         go_title("LANES"); frame();
         ok = TSEL->p[P_LN5] == 127;
         turn(EN_K1, 5 - (int32_t)ui.lane);
