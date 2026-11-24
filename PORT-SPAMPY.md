@@ -134,6 +134,10 @@ project; DIGITAL is an engine again; old v4/v5 records mapped to v7 sounds as th
 GEN's style sounds: phase 5).
 Found on the way (pre-existing, Classic too, not from the swap): with an INSERT TYPE set the track runs 64 blocks of
 tail instead of 16, so a short sound's last few ms differ by rounding at MIX 0 (inaudible; the test's pad hides it).
+QUESTION for the user: SPAMPY's PHASE steps its DCW once a block (measured in SPAMPY's own host build: SOFT KEYS
+~108 x the in-block change at block edges, CZ LEAD ~14 x, CZ BRASS ~24 x without touching the knob; Skiff fixed the same
+in its PHASE, #41, by fading the step). Keep it as SPAMPY's, or apply the fade (a faint buzz gone; not bit-identical to
+SPAMPY then)? Kept as SPAMPY's for now (tests/hostsim.c reports, does not fail).
 Then re-record the goldens after listening / looking.
 Then 3 (drums), 4 (mix), 5 (GEN, SUMMON...), 6 (tests), 7 (installer).
 Local host builds: build/gen from a CI-like build + tools/gen_factory_block.py + tools/gen_p5_tables.py.
