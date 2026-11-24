@@ -1101,7 +1101,7 @@ int main(void)
     transport_req = 0;
     memset(&r, 0, sizeof r);
     r.used = UP_USED;
-    r.ver = UP_VER_SID;                       /* ((2.1) version 6, as SAVE and UP_PUT write: P_COUNT is past what a */
+    r.ver = UP_VER_SPAMPY;                    /* ((Vallée) version 7, as SAVE and UP_PUT write (6's layout): P_COUNT is past what a */
     r.np = (uint8_t)SID_COUNT;                /* record by count holds) */
     memcpy(r.name, "First", 6);
     erase_error = 1;

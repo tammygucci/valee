@@ -220,7 +220,8 @@ static int preferences(void)
         host_wire[n - 9 - 13] == 0x52 && host_wire[n - 9 - 12] == 1 && host_wire[n - 9 - 11] == 4 &&   /* RATCH */
         host_wire[n - 9 - 10] == 0x4C && host_wire[n - 9 - 9] == 1 && host_wire[n - 9 - 8] == 1 &&   /* 1.1 parameter locks */
         host_wire[n - 9 - 7] == 0x54 && host_wire[n - 9 - 6] == 1 && host_wire[n - 9 - 5] == 0x30 &&  /* (Skiff phase 6) T5, T6 */
-        host_wire[n - 9 - 4] == 0 && host_wire[n - 9 - 3] == 6 && host_wire[n - 9 - 2] == 0 &&         /* light: no GRAIN, PHYS */
+        host_wire[n - 9 - 4] == 0 && host_wire[n - 9 - 3] == 64 && host_wire[n - 9 - 2] == 7 &&        /* ((Vallée, the SPAMPY
+                                                     * sound) light: no PROPHET CZ SID OBERVAVE, 13..16) */
         host_wire[n - 10] == 0x43 && host_wire[n - 9] == 1 && host_wire[n - 8] == TC_COUNT &&
         host_wire[n - 7] == 0x4B && host_wire[n - 6] == 1 && host_wire[n - 5] == 8 &&    /* (Skiff W3) the kit, */
         host_wire[n - 4] == 0x57 && host_wire[n - 3] == 1 && host_wire[n - 2] == 127);   /* TRANSPORT .. PERFORM, (#21) SMP_MIX, (2.0) ties */   /* (Skiff W1) the step's FLAM
@@ -604,24 +605,28 @@ static int fm6_patches(void)
     a[1] = 2;
     n = request(ED_FM6_GET, a, 2);
     bad += check("FM6_GET track 3: as sent", host_wire[7] == 0 && !memcmp(host_wire + 8, pk, FM6_PACKED));
-    a[0] = ED_FM6_TRACK; a[1] = 2; memcpy(a + 2, FM6_FACTORY[5], FM6_PACKED);
+    a[0] = ED_FM6_TRACK; a[1] = 2; memcpy(a + 2, FM6_FACTORY[6], FM6_PACKED);   /* ((Vallée) F7: SPAMPY keeps F1 F5 F7 F8 */
     request(ED_FM6_PUT, a, sizeof a);
-    bad += check("FM6_PUT of a factory patch unchanged: SLOT shows it (F6)", trk[2].p[P_E7] == 5 && fm6_slot[2] == 5u);
+    bad += check("FM6_PUT of a factory patch unchanged: SLOT shows it (F7)", trk[2].p[P_E7] == 6 && fm6_slot[2] == 6u);
     trk[2].p[P_E7] = FM6_OWN;                            /* (back to MY PATCH for the SLOT trip below) */
     a[0] = ED_FM6_TRACK; a[1] = 2; memcpy(a + 2, pk, FM6_PACKED);
     request(ED_FM6_PUT, a, sizeof a);
-    trk[2].p[P_E7] = 1;
+    trk[2].p[P_E7] = 4;
     fm6_poll();
-    bad += check("SLOT OWN -> F2 loads the factory patch", !memcmp(fm6_patch[2] + FP_NAME, FM6_FACTORY[1] + 118, 10));
+    bad += check("SLOT OWN -> F5 loads the factory patch", !memcmp(fm6_patch[2] + FP_NAME, FM6_FACTORY[4] + 118, 10));
+    trk[2].p[P_E7] = (int16_t)FM6_O1 + 2;               /* ((Vallée) O3: a voice of the FM-1's own bank (SPAMPY's) */
+    fm6_poll();
+    bad += check("(Vallée) SLOT O3 loads that voice of the FM-1's bank", !memcmp(fm6_patch[2] + FP_NAME,
+                 FM6_EXTRA[2] + 118, 10) && fm6_slot[2] == FM6_O1 + 2u);
     trk[2].p[P_E7] = 6;
     fm6_poll();
     trk[2].p[P_E7] = FM6_OWN;
     fm6_poll();
     bad += check("  .. and back to OWN brings the own patch back", !memcmp(fm6_patch[2] + FP_NAME, "MY PATCH  ", 10) &&
                  fm6_slot[2] == FM6_OWN);
-    trk[2].p[P_E7] = 20;                                 /* (a 1.0.2 B slot that escaped a clamp) */
+    trk[2].p[P_E7] = (int16_t)FM6_SLOTS;                 /* (past O17: a value that escaped a clamp) */
     fm6_poll();
-    bad += check("a SLOT past OWN is OWN: the patch stays, nothing reloads", trk[2].p[P_E7] == FM6_OWN &&
+    bad += check("a SLOT past the last is OWN: the patch stays, nothing reloads", trk[2].p[P_E7] == FM6_OWN &&
                  !memcmp(fm6_patch[2] + FP_NAME, "MY PATCH  ", 10));
     for (i = 0; i < 3u; i++) {                           /* the bank: GET, PUT, ERASE answer "no bank" (3) */
         a[0] = ED_FM6_BANK; a[1] = 4; memcpy(a + 2, pk, FM6_PACKED);
@@ -721,8 +726,8 @@ static int user_preset_roundtrip(void)
     }
     for (i = 0; i < 16u; i++) { a[k++] = i & 1u ? 0u : (uint8_t)(48u + i); a[k++] = 0; }
     request(ED_UP_PUT, a, k);
-    bad += check("UP_PUT stores a version 6 record (no flash here: kept in RAM)",
-                 host_wire[6] != 1u && up_used(3) && up_rec(3)->ver == UP_VER_SID && up_rec(3)->np == SID_COUNT);
+    bad += check("UP_PUT stores a version 7 record (6's layout, SPAMPY's engine numbers; no flash here: kept in RAM)",
+                 host_wire[6] != 1u && up_used(3) && up_rec(3)->ver == UP_VER_SPAMPY && up_rec(3)->np == SID_COUNT);
     up_values(up_rec(3), got);
     for (i = 0, ok = 1; i < P_COUNT; i++) ok &= got[i] == want[i];
     bad += check("UP_PUT keeps every value (PAN -20, FLT -40, min and max)", ok);
@@ -1165,7 +1170,7 @@ static int drum_kit_retired(void)
     return bad;
 }
 
-/* (Skiff phase 6) the light tracks (past NHEAVY: 5 and 6 of six) play no PHYS and no GRAIN, whichever way it is asked:
+/* (Skiff phase 6) the light tracks (past NHEAVY: 5 and 6 of six) play none of SLOOP's big engines ((Vallée) PROPHET CZ SID OBERVAVE; Skiff's PHYS and GRAIN before), whichever way it is asked:
  * the editor's SET of G_ENGSEL and PRESET, a user preset (UP_LOAD), the PRESETS list, the ENG knob; nothing changes and
  * it is said. The last track is light only with six: with four, it plays them all */
 static int light_tracks(void)
@@ -1176,29 +1181,29 @@ static int light_tracks(void)
     reset();
     sel_set((uint8_t)k);
     e0 = TSEL->eng_req; p0 = TSEL->preset;
-    a[0] = 1; a[1] = G_ENGSEL; a[2] = (8192u + ENGI_PHYS) & 127u; a[3] = (8192u + ENGI_PHYS) >> 7;
+    a[0] = 1; a[1] = G_ENGSEL; a[2] = (8192u + ENGI_OBERVAVE) & 127u; a[3] = (8192u + ENGI_OBERVAVE) >> 7;
     request(ED_SET, a, 4);
-    ok = light ? TSEL->eng_req == e0 && TSEL->preset == p0 && strstr(ui.msg, "PHYS") && strstr(ui.msg, "T1-T4 ONLY")
-               : TSEL->eng_req == ENGI_PHYS;
-    bad += check("the last track: SET G_ENGSEL PHYS refused when light (the sound unchanged, said)", ok);
+    ok = light ? TSEL->eng_req == e0 && TSEL->preset == p0 && strstr(ui.msg, "OBERVAVE") && strstr(ui.msg, "T1-T4 ONLY")
+               : TSEL->eng_req == ENGI_OBERVAVE;
+    bad += check("the last track: SET G_ENGSEL OBERVAVE refused when light (the sound unchanged, said)", ok);
     reset();
     sel_set((uint8_t)k);
     e0 = TSEL->eng_req; p0 = TSEL->preset;
-    a[0] = ENGI_GRAIN; a[1] = 1;
+    a[0] = ENGI_PROPHET; a[1] = 1;
     request(ED_PRESET, a, 2);
-    bad += check("  PRESET of GRAIN: refused, not its preset either (light)",
-                 light ? TSEL->eng_req == e0 && TSEL->preset == p0 : TSEL->eng_req == ENGI_GRAIN && TSEL->preset == 1u);
+    bad += check("  PRESET of PROPHET: refused, not its preset either (light)",
+                 light ? TSEL->eng_req == e0 && TSEL->preset == p0 : TSEL->eng_req == ENGI_PROPHET && TSEL->preset == 1u);
     reset();                                               /* a GRAIN sound stored from track 1, loaded on the last */
-    set_engine_of(&trk[0], ENGI_GRAIN);
-    (void)up_store(5, "GRN");                             /* (3: RAM only, this build has no flash) */
-    ok = up_used(5) && up_engine(5) == ENGI_GRAIN;
+    set_engine_of(&trk[0], ENGI_PROPHET);
+    (void)up_store(5, "P5");                             /* (3: RAM only, this build has no flash) */
+    ok = up_used(5) && up_engine(5) == ENGI_PROPHET;
     sel_set((uint8_t)k);
     e0 = TSEL->eng_req;
     a[0] = 5;
     request(ED_UP_LOAD, a, 1);
-    bad += check("  a user preset of GRAIN: refused (light)", ok && (light ? TSEL->eng_req == e0 : TSEL->eng_req == ENGI_GRAIN));
+    bad += check("  a user preset of PROPHET: refused (light)", ok && (light ? TSEL->eng_req == e0 : TSEL->eng_req == ENGI_PROPHET));
     reset();
-    set_engine_of(&trk[0], ENGI_PHYS);
+    set_engine_of(&trk[0], ENGI_OBERVAVE);
     (void)up_store(6, "PHY");
     sel_set((uint8_t)k);
     preset_pos(&total);
@@ -1247,9 +1252,11 @@ static int preset_more(void)
     for (i = 0; i < NELEM(w->more) && w->more[i].id; i++)
         ok &= TSEL->p[w->more[i].id] == w->more[i].v;
     bad += check("  a load sets them (the first with a vibrato)", ok);
-    a[0] = 0; a[1] = 0;                                   /* ANALOG SAW LEAD: none */
+    for (k = 0; k < ENGINES[0]->npresets && ENGINES[0]->presets[k].more[0].id; k++)
+        ;                                                 /* ((Vallée) ANALOG's first sound with none (SPAMPY's ACID 303 has) */
+    a[0] = 0; a[1] = (uint8_t)k;
     request(ED_PRESET, a, 2);
-    ok = TSEL->preset == 0u && !ENGINES[0]->presets[0].more[0].id;
+    ok = k < ENGINES[0]->npresets && TSEL->preset == k && !ENGINES[0]->presets[k].more[0].id;
     for (i = 0; i < NELEM(w->more) && w->more[i].id; i++)
         ok &= TSEL->p[w->more[i].id] == TP[w->more[i].id].def;
     bad += check("  the next preset (none of its own) puts them back to their defaults", ok);
@@ -1480,7 +1487,8 @@ static int song2_cmds(void)
          * + 1 and its preset; 64 + a user slot), 0 0 takes it off; rc 1 for an empty entry or a sound it can't carry */
         uint8_t b[5] = {9, 0, 0, 1, 2};               /* (T1 A: ANALOG's preset 3) */
         ok = request(ED_LIST2, b, 5) && !host_wire[6] && lists.snd[0][0][0] == 1u && lists.snd[0][0][1] == 2u &&
-             host_wire[13] == 1u && host_wire[14] == 2u && strstr(ui.msg, "T1 A SOUND SQR BASS");
+             host_wire[13] == 1u && host_wire[14] == 2u && strstr(ui.msg, "T1 A SOUND") &&
+             strstr(ui.msg, ENGINES[0]->presets[2].name);   /* ((Vallée) SPAMPY's ANALOG 3rd: its name */
         up_store(3, "EDSND");                         /* (a user sound in slot 4) */
         b[2] = 1; b[3] = 64 + 3; b[4] = 0;
         ok &= request(ED_LIST2, b, 5) && !host_wire[6] && lists.snd[0][1][0] == (0x80u | 3u) && !lists.snd[0][1][1] &&
@@ -1492,19 +1500,19 @@ static int song2_cmds(void)
         b[2] = 0;
         b[3] = 63;                                    /* (no engine 62) */
         ok &= request(ED_LIST2, b, 5) && host_wire[6] == 1u;
-        b[3] = 2;                                     /* (DIGITAL, retired) */
+        b[3] = ENGI_GRAIN + 1u;                       /* ((Vallée) a reserved number (8: SPAMPY's, nothing) */
         ok &= request(ED_LIST2, b, 5) && host_wire[6] == 1u;
         b[3] = 1; b[4] = 127;                         /* (no preset 128) */
         ok &= request(ED_LIST2, b, 5) && host_wire[6] == 1u;
         b[3] = 64 + 20; b[4] = 0;                     /* (slot 21 empty) */
         ok &= request(ED_LIST2, b, 5) && host_wire[6] == 1u;
-        lists.ent[4][0][0] = (uint8_t)(p1 + 1u);      /* (T5 A: a light track's entry, PHYS) */
-        b[1] = 4; b[3] = ENGI_PHYS + 1u;
+        lists.ent[4][0][0] = (uint8_t)(p1 + 1u);      /* (T5 A: a light track's entry, (Vallée) OBERVAVE) */
+        b[1] = 4; b[3] = ENGI_OBERVAVE + 1u;
         ok &= request(ED_LIST2, b, 5) && host_wire[6] == 1u && lists.snd[0][0][0] == 1u && !lists.snd[4][0][0];
         b[1] = 0; b[3] = 0; b[4] = 0;
         ok &= request(ED_LIST2, b, 5) && !host_wire[6] && !lists.snd[0][0][0] && !lists.snd[0][0][1] && strstr(ui.msg, "T1 A NO SOUND");
         ok &= !request(ED_LIST2, b, 4) && !request(ED_LIST, b, 5) && request(ED_LIST, 0, 0) == 219u;
-        bad += check("  refused (rc 1): an empty entry, no such engine, DIGITAL, no such preset or user sound, PHYS on a "
+        bad += check("  refused (rc 1): an empty entry, no such engine, a reserved one, no such preset or user sound, OBERVAVE on a "
                      "light track; 0 0 takes it off; LIST has no op 9, its reply as before", ok);
         lists.ent[4][0][0] = 0;
         up_put(3, 0);

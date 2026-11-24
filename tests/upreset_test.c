@@ -71,7 +71,7 @@ int main(void)
         ok &= up_value(&r, p_sid(i)) == (int16_t)(-40 + (int32_t)(i % 100u));
     bad += check("UP_PUT values (negative v14 too)", ok);
     bad += check("(2.1) a version 6 record, the pattern passed over",   /* (P_COUNT past UP_PMAX * 2: the pattern's */
-                 r.ver == UP_VER_SID && r.np == SID_COUNT && !up_pat(&r) && !r.sid[SID_COUNT]);   /* bytes were E6 E7) */
+                 r.ver == UP_VER_SPAMPY && r.np == SID_COUNT && !up_pat(&r) && !r.sid[SID_COUNT]);   /* bytes were E6 E7) */
     bad += check("UP_PUT short frame -> args", up_parse(a, n - 1u, &r, &slot) == 1);
     {
         up_rec_t keep = r;
@@ -94,6 +94,10 @@ int main(void)
     up_migrate(&r);
     bad += check("  a bank read keeps it engine 1 (its values DIGITAL's)", r.engine == ENGI_DIGITAL &&
                                                                        up_value(&r, p_sid(P_E4)) == (int16_t)(P_E4 % 100u));
+#elif FELUCCA_FM4
+    /* ((Vallée, the SPAMPY sound) DIGITAL is SPAMPY's engine 1 again: a record of it is a sound like any other */
+    bad += check("(Vallée) UP_PUT engine 1 (DIGITAL, SPAMPY's): taken", up_parse(a, n, &r, &slot) == 0 && slot == 3u &&
+                 r.engine == ENGI_DIGITAL && up_valid(&r) && r.ver == UP_VER_SPAMPY);
 #else
     {   /* (2.0) no DIGITAL record: UP_PUT refuses one; a bank's (and versions 1..3) are OLD FORMAT, their bytes kept */
         up_rec_t keep = r;
@@ -157,7 +161,7 @@ int main(void)
     up_bank[1].rsize = sizeof(up_rec_t);
     up_bank[1].nslot = UP_PER_BANK;
     *up_rec(17) = r;
-    up_rec(17)->ver = UP_VER_SID + 1u;
+    up_rec(17)->ver = UP_VER_SPAMPY + 1u;
     bad += check("record with another version -> empty", !up_used(17));
     up_rec(17)->ver = UP_VER_GRID;
     up_rec(17)->np = (uint8_t)(UP_PMAX * 2u);               /* ((2.1) a record by count: at most UP_PMAX * 2) */
@@ -174,11 +178,11 @@ int main(void)
         g[m++] = 1;
         for (k = 0; k < 16u; k++)
             g[m++] = (uint8_t)(k == 2u ? 3u : k == 5u ? 2u : 0u);  /* step 3: BELL hit + accent; 6: an accent alone */
-        ok = up_parse(g, m, &got, &slot) == 0 && slot == 9u && got.ver == UP_VER_SID && up_valid(&got) &&
+        ok = up_parse(g, m, &got, &slot) == 0 && slot == 9u && got.ver == UP_VER_SPAMPY && up_valid(&got) &&
              !up_grid(&got) && got.engine == ENGI_DRUM;
         bad += check("UP_PUT kind 1 (a grid): taken, (2.1) passed over", ok);
         g[m - 17u] = 0;                                     /* kind 0: the notes and flags as before */
-        ok = up_parse(g, m, &got, &slot) == 0 && got.ver == UP_VER_SID && up_valid(&got) && !up_pat(&got);
+        ok = up_parse(g, m, &got, &slot) == 0 && got.ver == UP_VER_SPAMPY && up_valid(&got) && !up_pat(&got);
         bad += check("UP_PUT kind 0 (a note pattern): taken, passed over", ok);
         g[m - 17u] = 1;
         {
@@ -390,7 +394,7 @@ int main(void)
         six.used = UP_USED; six.engine = 2; memcpy(six.name, "SIX", 3);
         up_set_sound(&six, s);
         up_params(&six, v, def);
-        ok = six.ver == UP_VER_SID && six.np == SID_COUNT && up_valid(&six) && !up_pat(&six) && !up_grid(&six) &&
+        ok = six.ver == UP_VER_SPAMPY && six.np == SID_COUNT && up_valid(&six) && !up_pat(&six) && !up_grid(&six) &&
              !memcmp(v, s, sizeof s) && UP_SIDS == 176u;
         for (k = SID_COUNT; k < UP_SIDS; k++)
             ok &= !six.sid[k];

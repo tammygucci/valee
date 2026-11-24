@@ -166,7 +166,8 @@ static uint32_t menu_serial_at;                        /* fm1_ms | 1 of the edit
 static void usb_serial_apply(void)
 {
 #if FELUCCA_CDC
-    if (menu_serial_at && fm1_ms - menu_serial_at < 200u)
+    /* ((Vallée) at = fm1_ms | 1 is one past an even clock: without the & ~1 the difference wrapped, applied at once) */
+    if (menu_serial_at && fm1_ms - (menu_serial_at & ~1u) < 200u)
         return;
     menu_serial_at = 0;
     usb_cdc_switch(FELUCCA_CDC_DEFAULT && !(ui_prefs & PREF_SERIAL_OFF));   /* (a FELUCCA_CDC_DEFAULT=0 build: off) */

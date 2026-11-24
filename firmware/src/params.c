@@ -331,7 +331,9 @@ static int param_kept(uint32_t i)
 {
     if ((i == P_CHOR || i == P_DLY || i == P_REV) && ks_io && (*ks_io & 32u))
         return 1;
-    return i == P_LEVEL || i == P_PAN || i == P_MUTE || (i >= P_AMODE && i <= P_SGATE) ||
+    /* ((Vallée, the SPAMPY sound) TRANS is the sound's, as SPAMPY's: its basses play an octave or two down (their
+     * TRANS -12, -24), and the next sound starts from 0 again; the arp and the scale stay the track's */
+    return i == P_LEVEL || i == P_PAN || i == P_MUTE || (i >= P_AMODE && i <= P_SGATE && i != P_TRANS) ||
            (i >= P_SLCR && i <= P_SLDEPTH) || i == P_CHRD || i == P_VOIC || i == P_DIR ||   /* ((Skiff) DIR: the pattern's; */
            (i >= P_DKSRC && i <= P_DKREL) ||         /* the ducking: the mix's; */
            (i >= P_FOLLOW && i <= P_SDIR);           /* (2.1) the chord follow, (2.5) STRUM and DIR: SCL's) */

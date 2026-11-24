@@ -1894,7 +1894,7 @@ static void project_clean(void)                     /* a save or a load: the mus
 }
 static int project_dirty(void)
 {
-    if (!pj_at || fm1_ms - pj_at >= 250u) {
+    if (!pj_at || fm1_ms - (pj_at & ~1u) >= 250u) {   /* ((Vallée) & ~1: fm1_ms | 1 is one past an even clock) */
         pj_at = fm1_ms | 1u;
         pj_dirty = autosave_sig() != pj_clean;
     }
