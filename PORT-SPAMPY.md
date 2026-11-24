@@ -107,9 +107,26 @@ Done since:
 - FM-1 build (CI run 45324607136): image 528,088 B of 581,564 (53 KB free); RAM .data+.bss 97,640 of 98,304 (664 B
   free: phase 3 puts new state in the POOL); pool 313,144 of 344,064 (31 KB spare); RAM code 29,756 of 32,512.
   Not yet measured on the unit: PROPHET's CPU (it runs on the FPU from RAM, as in SPAMPY).
-Next: update the tests written for the old engines (editor_test: PHYS/GRAIN light tracks, F2/F6 patches, version 6,
-INFO's engine names; upreset_test: version 7, DIGITAL back; persistence: preset save/erase compare with v7), the
-editor's mock tables (web/editor.html), then re-record the goldens after listening / looking.
+- Tests moved to the new engines: editor, upreset, persistence, settings, drum, chord, feat13, dualcore (0 of 47
+  scenes differ: VOICE's breath noise per track under FELUCCA_CPU2, as Skiff's own fix), project, descdump; the
+  editor mock's tables regenerated from desc.json (tools/gen_editor_mock.py). Power-on sounds: JP8 PAD, RHODES,
+  CHIP CHORD, DRUM, VIBES, DRUM.
+- Every project format of before is mapped once on import (project.c proj_import_any; SKF4 by its mark): a Classic
+  SKF3 had kept its old numbers. Old user presets mapped before their values are clamped (they had been clamped by
+  the wrong engine's ranges).
+- Retired here (kept on Classic): DIGITAL/FM4, PHYS, NOISE, DRUM-X tests, the FELUCCA_FM4=1 UI builds, conv_test.
+- Decision for phase 7: the installer converts archives of before 2.0 with Classic's converter (tested there);
+  this firmware maps Classic's formats on load. web/conv still builds here (the DIGITAL path Classic's alone).
+Next: the rest of the host suite's failures (full run 2026-11-24, /tmp/all2.log; the run stops at its time limit
+after the second core's tests, so the web pages and later were not reached):
+- ui_test (all three builds): sound-browser checks written for the old factory list (SAMPLE PIANO/PERC aliases,
+  LIST BASS, types and unique names, RAVE arp preset, GEN style sounds), PHYS's key on T5, PRESETS elsewhere,
+  the undo/redo of loads, user preset version, MIDI after overflow.
+- follow_test (chord follow, 6), motion, ratchet, insert (MIX 0 bit for bit), tracks (PHASE PD BRASS block edge),
+  midi_control (power-on parts list, CC74 targets), tail (SPEAKER EQ H3/H1 as a note fades: ANALOG's sound changed),
+  persistence (FM6 bank -> user presets migration), bank (a DRUM-X favourite row), backup (SKF3 objects: now
+  mapped, not kept as they are), robustness, regress goldens (expected: re-record after listening).
+Then re-record the goldens after listening / looking.
 Then 3 (drums), 4 (mix), 5 (GEN, SUMMON...), 6 (tests), 7 (installer).
 Local host builds: build/gen from a CI-like build + tools/gen_factory_block.py + tools/gen_p5_tables.py.
 Do not install this branch on a unit yet (the installer does not write the sample block).
