@@ -10237,10 +10237,17 @@ static int test_noslice(void)
     lvl = TSEL->p[P_LEVEL];
     ok = !project_save(1);
     set_engine_of(TSEL, 0);
-    project_load(1);
-    frames(200);
-    ok &= trk[2].eng_req == ENGI_FM6 && !memcmp(trk[2].step, keep, sizeof keep) && trk[2].p[P_LEVEL] == lvl;
-    bad += check("(Vallée) no SLICE: a project's SLICE track loads as FM6's first sound, its steps and level kept", ok);
+    TSEL->engine = TSEL->eng_req;
+    {   /* ((Vallée, the SPAMPY sound) 12 is a reserved number now (a Skiff project's SLICE, 13, maps to SAMPLE:
+         * project_test, persistence_test): a project holding it is refused, the music playing stays as it is */
+        track_t before = trk[2];
+        project_load(1);
+        frames(200);
+        ok &= trk[2].eng_req == 0u && !memcmp(trk[2].step, before.step, sizeof before.step) &&
+              trk[2].p[P_LEVEL] == before.p[P_LEVEL];
+    }
+    (void)keep; (void)lvl;
+    bad += check("(Vallée) a project holding a reserved engine (12): refused, the music playing kept", ok);
     sel_set(2);
     TSEL->eng_req = TSEL->engine = ENGI_SLICE;
     {
