@@ -20,8 +20,9 @@ MEMORY
 {
     XIP    (rx)  : ORIGIN = 0x02000120, LENGTH = 0x8DFBC
     RAMTEXT (rwx): ORIGIN = 0x01C00000, LENGTH = 0x7F00
-    RAM    (rwx) : ORIGIN = 0x01C08000, LENGTH = 92K
-    POOL   (rw)  : ORIGIN = 0x01C1F000, LENGTH = 0x58000
+    RAM    (rwx) : ORIGIN = 0x01C08000, LENGTH = 96K       /* ((Vallée, the SPAMPY sound) as SPAMPY's: + 4 KiB from the POOL
+                                                         * (GRAIN's and PHYS's state gone): PROPHET's RAM kernels */
+    POOL   (rw)  : ORIGIN = 0x01C20000, LENGTH = 0x54000
     NOINIT (rw)  : ORIGIN = 0x01C7C000, LENGTH = 0x3D20
 }
 SECTIONS
@@ -31,7 +32,10 @@ SECTIONS
                   KEEP(*(.c1_text*)) . = ALIGN(4); _rt_end = .; } > RAMTEXT AT > XIP
     _rt_load = LOADADDR(.ram_text);
     .ramx (NOLOAD) : { . = ALIGN(4); _ramx_start = .; *(.ramx*) . = ALIGN(4); _ramx_end = .; } > RAMTEXT
-    .data : { . = ALIGN(4); _data_start = .; *(.data*) *(.sdata*) . = ALIGN(4); _data_end = .; } > RAM AT > XIP
+    /* ((Vallée, the SPAMPY sound) as SPAMPY's app.ld: PROPHET's kernels (.p5_text) at the start of .data, run from RAM,
+     * and its float tables (.p5_tables); the guard's RAM PC window reaches past them (_guard_ram_end, fm1_guard.h) */
+    .data : { . = ALIGN(4); _data_start = .; _p5_text_start = .; *(.p5_text) . = ALIGN(4); _p5_text_end = .; *(.data*) *(.sdata*) *(.p5_tables) . = ALIGN(4); _data_end = .; } > RAM AT > XIP
+    _guard_ram_end = MAX(_rt_end, _p5_text_end);
     _data_load = LOADADDR(.data);
     .bss (NOLOAD) : { _bss_start = .; *(.bss*) *(.sbss*) *(COMMON) . = ALIGN(4); _bss_end = .; } > RAM
     .pool (NOLOAD) : { _pool_start = .; *(.pool*) . = ALIGN(4); _pool_end = .; } > POOL

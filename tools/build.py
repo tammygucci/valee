@@ -322,7 +322,7 @@ def check(img, syms, dis, rt):
     def sym(name):
         mm = re.search(r"^([0-9a-f]+) .*\s" + name + r"$", syms, re.M)
         return int(mm.group(1), 16) if mm else 0
-    ram_len, pool_len, rt_len = 92 * 1024, 0x58000, 0x7F00   # (2.5) app.ld's RAM, POOL and RAMTEXT
+    ram_len, pool_len, rt_len = 96 * 1024, 0x54000, 0x7F00   # ((Vallée, the SPAMPY sound) app.ld's RAM, POOL, RAMTEXT
     bss = sym("_bss_end") - 0x01C08000
     pool = sym("_pool_end") - sym("_pool_start")
     rtx = sym("_ramx_end") - sym("_rt_start")      # (Skiff) the RAM code and .ramx after it (app.ld)
