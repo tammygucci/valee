@@ -223,7 +223,10 @@ def write_smk_ldr(ota):
 
 def build_app():
     flags = [*CFLAGS, *BOARD_DEFS[BOARD], "-Ifirmware/hal", "-Ifirmware/src", "-Ibuild/gen",
-             "-DSMP_FACT_FLASH=1"]   # (Vallée) the factory samples read from the sample area (eng_sample.c)
+             "-DSMP_FACT_FLASH=1",   # (Vallée) the factory samples read from the sample area (eng_sample.c)
+             # ((Vallée, the SPAMPY sound) as SPAMPY's build: the FM-1's FPU for PROPHET's float kernels (no soft-float
+             # helpers are linked), fused multiply-adds off so they round as SPAMPY's do
+             "-mcpu=r3", "-mfprev1", "-ffp-contract=off"]
     for flag in ("FELUCCA_FLASH", "FELUCCA_OTA", "FELUCCA_OTA_DRYRUN", "FELUCCA_OTA_RAMONLY", "FELUCCA_CDC",
                  "FELUCCA_UART", "FELUCCA_UAC", "FELUCCA_UAC_TONE", "FELUCCA_UAC_48K", "FELUCCA_ICONS", "FELUCCA_SLICE", "FELUCCA_FM4",
                  "FELUCCA_CDC_DEFAULT", "FELUCCA_CPU2"):
