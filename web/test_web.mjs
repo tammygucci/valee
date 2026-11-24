@@ -535,6 +535,11 @@ function mockTables() {
    DIGITAL values in an engine 1 slot (UP_LOAD converts it), the device's DIGITAL slot reads back as FM6 */
 async function editorFm4() {
   const dj = DESC;
+  if (existsSync(dj) && JSON.parse(readFileSync(dj, "utf8")).FM4 === null) {   /* ((Vallée, the SPAMPY sound) DIGITAL is
+                                                                             SPAMPY's engine: no FM4 conversion here */
+    ok(true, "DIGITAL: SPAMPY's engine (the FM4 conversion: Vallée Classic's)");
+    return;
+  }
   if (existsSync(dj)) {
     const all = JSON.parse(readFileSync(dj, "utf8")), fw = all.FM4, fpe0 = all.P_E0;
     let bad = 0;
@@ -774,11 +779,13 @@ async function editorLibrarian() {
   const pts = [cap, { ...bass, engineName: info.engines[bass.engine], tags: ["bass", "device"] }];
   const file = JSON.parse(JSON.stringify(E.libraryFile("library", pts, ctx)));
   ok(file.format === "felucca-library" && file.version === 1 && file.pCount === PC && file.paramLabels.length === PC && file.paramLabels[81] === "CHORD" && file.paramLabels[82] === "VOICING" &&
-    file.paramLabels[83] === "KICK" && file.paramLabels[90] === "BELL" && file.paramLabels[91] === "DIR" && file.paramLabels[92] === "BY" && file.engines.length === 16,
+    file.paramLabels[83] === "KICK" && file.paramLabels[90] === "BELL" && file.paramLabels[91] === "DIR" && file.paramLabels[92] === "BY" && file.engines.length === 21,   /* ((Vallée) SPAMPY's 21 numbers */
     "library file: versioned, with P_COUNT, labels and engines");
   const back = E.readLibraryFile(file, ctx);
   ok(back.patches.length === 2 && !back.skipped && eq(back.patches[0].p, cap.p) && eq(back.patches[1].p, bass.p)
-    && js(back.patches[1].pattern) === js(bass.pattern) && back.patches[1].tags.join() === "bass,device" && back.patches[1].engineName === "PHASE",
+    && js(back.patches[1].pattern) === js(bass.pattern && bass.pattern.some((x) => x[0] || x[1]) ? bass.pattern : null)   /* ((Vallée) SPAMPY's
+       sounds carry no pattern: an empty one is none in the file) */
+    && back.patches[1].tags.join() === "bass,device" && back.patches[1].engineName === "PHASE",
     "library file: write -> read round trip");
   {   /* (Skiff U4, the words) a file of before: its keys LVL ATK .. (the labels then) still find their values, by id */
     const OLD = ["LVL", "ATK", "DEC", "SUS", "REL", "FLT", "PIT", "SHP", "FX", "RATE", "WAVE", "PHS", "FADE", "PIT", "FLT",
@@ -895,13 +902,14 @@ async function editorLight() {
   const C = E.CMD;
   const { rq, done } = attachMock({});
   const info = E.parse[C.INFO](await rq(E.req.info()));
-  const phys = info.engines.indexOf("PHYS"), before = E.parse[C.DUMP](await rq(E.req.dump()), info);
+  const phys = info.engines.indexOf("PROPHET"), before = E.parse[C.DUMP](await rq(E.req.dump()), info);   /* ((Vallée) a
+     heavy-only engine, as PHYS was */
   let threw = "";
   try { await E.auditionPatch(rq, info, { engine: phys, p: [1, 2, 3] }, { gEng: 20, track: 4 }); } catch (e) { threw = e.message; }
   const after = E.parse[C.DUMP](await rq(E.req.dump()), info);
   ok(E.lightRefuses(info, 4, phys) && E.lightRefuses(info, 5, phys) && !E.lightRefuses(info, 0, phys) &&
      !E.lightRefuses(info, 4, info.engines.indexOf("ANALOG")) && /T5/.test(threw) && JSON.stringify(after) === JSON.stringify(before),
-     "light: T5 may not play PHYS: Audition refuses before writing (the sound as it was)");
+     "light: T5 may not play PROPHET: Audition refuses before writing (the sound as it was)");
   done();
 }
 
@@ -1495,12 +1503,13 @@ async function editorTrackParam() {
   const g = E.parse[C.TRACK_PARAM](await rq(E.req.trackParam(1, PAN)));
   const p2 = await E.mixer.setPan(rq, 2, 0, PAN, -40, true);
   const p1 = await E.mixer.setPan(rq, 1, 0, PAN, 99, true);
-  const alg = E.parse[C.TRACK_PARAM](await rq(E.req.trackParam(1, info.pe0, 50)));   /* track 2 is FM6 PAD: ALG 0..32 */
+  const alg = E.parse[C.TRACK_PARAM](await rq(E.req.trackParam(1, info.pe0, 50)));   /* ((Vallée) track 2 is DIGITAL RHODES:
+                                                                                        ALG 0..7 */
   const lv = E.parse[C.TRACK_PARAM](await rq(E.req.trackParam(3, 0, -5)));
   const sel = E.parse[C.TRACK](await rq(E.req.track()));
   const td2 = E.parse[C.TRACK_DUMP](await rq(E.req.trackDump(2)), info);
   await sleep(10);
-  ok(g.track === 1 && g.id === PAN && g.value === -24 && p2 === -40 && p1 === 63 && alg.value === 32 && lv.value === 0 && td2.p[PAN] === -40
+  ok(g.track === 1 && g.id === PAN && g.value === -24 && p2 === -40 && p1 === 63 && alg.value === 7 && lv.value === 0 && td2.p[PAN] === -40
     && sel.sel === 0 && (sent[C.TRACK] || 0) === tracks0 + 1 && ev.pushes.length === pushes,
     "v4: TRACK_PARAM get / set on other tracks (clamped as SET, selection kept, no push)");
   {   /* (Skiff W3) the mixer's REV (P_REV 36): read with the pans, set as they are (its own key), kept over a light read */
@@ -1532,12 +1541,16 @@ async function editorTrackParam() {
   o.done();
 }
 
+/* ((Vallée, the SPAMPY sound) the SysEx tests' sample bank: SPAMPY's four factory patches (F1 TINE EP, F5 SOFT PAD,
+   F7 DRAWBARS, F8 NYLON PICK; F2 F3 F4 F6 are EMPTY) twice over */
+const fm6Sample = (F6) => { const real = F6.FACTORY_PK.filter((pk) => pk.some(Boolean)); return F6.FACTORY_PK.map((_, k) => real[k % real.length]); };
 /* ------------------------------------------------------ FM6 patches --- */
 /* the 6-operator patch formats (FM6 in editor.html == eng_fm6.c / fm6_test.c), the SysEx files, the protocol
    (cmds 68..71) against the mock, PTCH, the macros at the pe0 INFO gives */
 async function editorFm6() {
   const F6 = E.FM6;
-  ok(F6.FACTORY_PK.every((pk) => eq(F6.pack(F6.unpack(pk)), pk)) && eq(F6.pack(F6.unpack(F6.INIT_PK)), F6.INIT_PK),
+  ok(F6.FACTORY_PK.filter((pk) => pk.some(Boolean)).every((pk) => eq(F6.pack(F6.unpack(pk)), pk)) &&
+     eq(F6.pack(F6.unpack(F6.INIT_PK)), F6.INIT_PK),   /* ((Vallée) SPAMPY's EMPTY slots (F2 F3 F4 F6): zeros, no patch */
     "FM6: pack(unpack(x)) == x for the factory patches and the init voice");
   let inrange = true, seed = 7;
   for (let k = 0; k < 500; k++) {
@@ -1546,15 +1559,15 @@ async function editorFm6() {
     for (let i = 0; i < F6.SIZE; i++) inrange &&= i >= F6.NAME ? v[i] >= 32 && v[i] <= 126 : v[i] <= F6.max(i);
   }
   ok(inrange, "FM6: any 128 bytes unpack into range");
-  const voices = F6.FACTORY_PK.map((pk) => F6.unpack(pk));
+  const SPK = fm6Sample(F6), voices = SPK.map((pk) => F6.unpack(pk));
   const bank = F6.bankSysex(voices), one = F6.singleSysex(voices[3]);
   ok(bank.length === 4104 && bank[0] === 0xF0 && bank[3] === 9 && bank[4103] === 0xF7 && one.length === 163 && one[5] === 0x1B,
     "FM6: a 32-voice bank SysEx is 4104 bytes, a single voice 163");
   let r = F6.parseSysex(bank);
-  ok(r.voices.length === 32 && !r.badSum && r.voices.slice(0, 8).every((x, k) => eq(F6.pack(x.v), F6.FACTORY_PK[k])) &&
-     r.voices[8].name === "INIT VOICE" && r.voices[1].name === "GLASS BELL", "FM6: bank SysEx round trip (names, checksum)");
+  ok(r.voices.length === 32 && !r.badSum && r.voices.slice(0, 8).every((x, k) => eq(F6.pack(x.v), SPK[k])) &&
+     r.voices[8].name === "INIT VOICE" && r.voices[1].name === "SOFT PAD", "FM6: bank SysEx round trip (names, checksum)");
   r = F6.parseSysex(Uint8Array.from([...one, ...one]));
-  ok(r.voices.length === 2 && eq(F6.pack(r.voices[1].v), F6.FACTORY_PK[3]), "FM6: two single-voice messages in one file");
+  ok(r.voices.length === 2 && eq(F6.pack(r.voices[1].v), SPK[3]), "FM6: two single-voice messages in one file");
   const bad = Uint8Array.from(one); bad[161] ^= 1;
   ok(F6.parseSysex(bad).badSum === 1, "FM6: a wrong checksum is reported (the voice still read)");
   ok(F6.parseSysex(bank.subarray(6, 4102)).voices.length === 32 && F6.parseSysex(one.subarray(6, 161)).voices.length === 1,
@@ -1630,8 +1643,9 @@ async function editorFm6() {
 function fm6Tolerant(F6, voices, bank, one) {
   const U = (...xs) => Uint8Array.from(xs.flatMap((x) => Array.from(x)));
   const names = (r) => r.voices.map((x) => x.name);
-  const bankOk = (r, n = 32) => r.voices.length === n && r.voices.slice(0, 8).every((x, k) => eq(F6.pack(x.v), F6.FACTORY_PK[k]))
-    && r.voices[1].name === "GLASS BELL" && r.voices[8].name === "INIT VOICE";
+  const SPK = fm6Sample(F6);
+  const bankOk = (r, n = 32) => r.voices.length === n && r.voices.slice(0, 8).every((x, k) => eq(F6.pack(x.v), SPK[k]))
+    && r.voices[1].name === "SOFT PAD" && r.voices[8].name === "INIT VOICE";
   const msg = (hdr, n, fill = 0) => { const d = new Array(n).fill(fill); return U(hdr, d, [F6.checksum(d), 0xF7]); };
   const otherMaker = U([0xF0, 0x41, 0x10, 0x42, 0x12, 0x40, 0, 0x7F, 0, 0x41, 0xF7]);
   let r = F6.parseSysex(U(bank.subarray(0, 4102), [0xF7]));
@@ -1641,19 +1655,19 @@ function fm6Tolerant(F6, voices, bank, one) {
   r = F6.parseSysex(U(bank.subarray(0, 4103), [0x00], [0xF7]));
   ok(bankOk(r) && !r.badSum, "FM6 import: bank with a stray byte before F7 (4105 bytes)");
   r = F6.parseSysex(U(bank.subarray(0, 4103), one));
-  ok(r.voices.length === 33 && bankOk({ voices: r.voices.slice(0, 32) }) && r.voices[32].name === "BRASS SECT",
+  ok(r.voices.length === 33 && bankOk({ voices: r.voices.slice(0, 32) }) && r.voices[32].name === "NYLON PICK",
     "FM6 import: bank without F7, a single voice right after");
   r = F6.parseSysex(bank.subarray(0, 4000));
   ok(r.voices.length === 31 && r.short === 1 && r.voices[30].name === F6.name(F6.init()), "FM6 import: bank cut at EOF: its 31 whole voices");
   r = F6.parseSysex(one.subarray(0, 6 + 150));
-  ok(r.voices.length === 1 && r.short === 1 && r.voices[0].name === "BRASS", "FM6 import: single voice cut in its name");
+  ok(r.voices.length === 1 && r.short === 1 && r.voices[0].name === "NYLON", "FM6 import: single voice cut in its name");
   r = F6.parseSysex(one.subarray(0, 6 + 120));
   ok(r.voices.length === 0, "FM6 import: single voice cut before its voice bytes: none");
   const b10 = Uint8Array.from(bank); b10[4] = 0x10; b10[2] = 0x05;
   r = F6.parseSysex(b10);
   ok(bankOk(r), "FM6 import: byte count written 10 00, device 6");
   const one0 = Uint8Array.from(one); one0[4] = 0; one0[5] = 0;
-  ok(names(F6.parseSysex(one0)).join() === "BRASS SECT", "FM6 import: single voice with an odd byte count");
+  ok(names(F6.parseSysex(one0)).join() === "NYLON PICK", "FM6 import: single voice with an odd byte count");
   r = F6.parseSysex(U([0x00, 0x13, 0x55, 0xF7, 0x80], otherMaker, bank, [0xFE, 0x00, 0x00], one, [0x0A, 0x0D]));
   ok(r.voices.length === 33 && r.skipped === 1 && r.kinds.join() === "maker:41", "FM6 import: junk and another maker's message around the voices");
   r = F6.parseSysex(U(bank, bank));
@@ -1661,7 +1675,7 @@ function fm6Tolerant(F6, voices, bank, one) {
   const raw = bank.subarray(6, 4102);
   r = F6.parseSysex(U(raw, raw, raw));
   ok(r.voices.length === 96 && bankOk({ voices: r.voices.slice(64) }) && !r.sysex, "FM6 import: raw 3 x 4096 bytes: 96 voices");
-  ok(names(F6.parseSysex(Uint8Array.from(F6.FACTORY_PK[1]))).join() === "GLASS BELL", "FM6 import: raw 128-byte packed voice");
+  ok(names(F6.parseSysex(Uint8Array.from(SPK[1]))).join() === "SOFT PAD", "FM6 import: raw 128-byte packed voice");
   /* a file of the format's second generation: the supplement bank (format 6, 1120 bytes), the voices, a performance (format 1, 94 bytes),
      a universal LM block: only the voices kept */
   const lm = U([0xF0, 0x43, 0x00, 0x7E, 0x01, 0x28], Array.from("LM  8973PM", (c) => c.charCodeAt(0)), new Array(30).fill(0), [0, 0xF7]);
