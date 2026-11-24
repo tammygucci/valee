@@ -644,38 +644,36 @@ static int engmem_switch(track_t *t, uint32_t e)      /* the UI's engine change;
         engmem_run(1);
     return t->engine == e;
 }
-static int engmem_test(void)
+static int engmem_test(void)   /* ((Vallée, the SPAMPY sound) OBERVAVE (the biggest part state) -> PROPHET -> back */
 {
     track_t *t = &trk[0];
-    uint32_t grain = 0;
     const uint8_t *a = (const uint8_t *)&eng_mem[0], *b = (const uint8_t *)&eng_mem[1];
-    uint32_t i, phys_tail = 0, tail = 0, other = 0;
-    int32_t pk_grain, pk_phys;
+    uint32_t i, big_tail = 0, tail = 0, other = 0;
+    int32_t pk_p5, pk_obv;
     int ok;
-    while (grain < NENGINES && ENGINES[grain] != &ENG_GRAIN)
-        grain++;
     host_tracks_init();
     memset(&eng_mem[1], 0x5A, sizeof eng_mem[1]);
-    host_preset(t, ENGI_PHYS, 0);
+    host_preset(t, ENGI_OBERVAVE, 0);
     for (i = 0; i < 3u; i++)
         trk_note_on(t, 48u + 7u * i, 100);
     engmem_run(50);
-    for (i = sizeof(gr_part_t); i < sizeof(eng_mem_t); i++)
-        phys_tail += a[i] != 0;
-    ok = engmem_switch(t, grain);
-    for (i = sizeof(gr_part_t); i < sizeof(eng_mem_t); i++)
+    for (i = sizeof(p5_part_t); i < sizeof(eng_mem_t); i++)
+        big_tail += a[i] != 0;
+    ok = engmem_switch(t, ENGI_PROPHET);
+    for (i = sizeof(p5_part_t); i < sizeof(eng_mem_t); i++)
         tail += a[i] != 0;
     trk_note_on(t, 60, 100);
-    pk_grain = engmem_run(100);
-    ok &= engmem_switch(t, ENGI_PHYS);
+    pk_p5 = engmem_run(100);
+    ok &= engmem_switch(t, ENGI_OBERVAVE);
     trk_note_on(t, 60, 100);
-    pk_phys = engmem_run(100);
+    pk_obv = engmem_run(100);
     for (i = 0; i < sizeof(eng_mem_t); i++)
         other += b[i] != 0x5A;
-    ok &= phys_tail > 0 && !tail && pk_grain > 300 && pk_phys > 300 && !other;
-    printf("tracks: shared engine area (%u B a part): PHYS -> GRAIN zeroes it (%u B of PHYS's past GRAIN's part, %u "
-           "left), GRAIN peak %d, back to PHYS peak %d, track 2's area changed in %u B %s\n", (unsigned)sizeof(eng_mem_t),
-           (unsigned)phys_tail, (unsigned)tail, (int)pk_grain, (int)pk_phys, (unsigned)other, ok ? "ok" : "FAIL");
+    ok &= big_tail > 0 && !tail && pk_p5 > 300 && pk_obv > 300 && !other;
+    printf("tracks: shared engine area (%u B a part): OBERVAVE -> PROPHET zeroes it (%u B of OBERVAVE's past PROPHET's "
+           "part, %u left), PROPHET peak %d, back to OBERVAVE peak %d, track 2's area changed in %u B %s\n",
+           (unsigned)sizeof(eng_mem_t), (unsigned)big_tail, (unsigned)tail, (int)pk_p5, (int)pk_obv, (unsigned)other,
+           ok ? "ok" : "FAIL");
     return !ok;
 }
 

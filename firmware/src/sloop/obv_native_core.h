@@ -166,7 +166,7 @@ static inline uint32_t OB_pw_mod(uint32_t OB_base, int32_t OB_mod)
 static void OB_voice_block(OB_voice_t *OB_v, uint32_t OB_card,const OB_part_t *OB_g)
 {
     const uint8_t *OB_pv = OB_g->OB_p->OB_v;
-    int32_t OB_lfo, OB_p8, OB_p1, OB_p2, OB_cut, OB_fenv, OB_tmp, OB_velg, OB_trem, OB_vint = OB_g->OB_vint, OB_vt = (OB_vint * OB_VINT_ENV[OB_card]) >> 7, OB_lfo_to, OB_a;
+    int32_t OB_lfo, OB_p8, OB_p1, OB_p2, OB_cut, OB_fenv, OB_tmp, OB_velg, OB_trem, OB_vint = OB_g->OB_vint, OB_vt = (OB_vint * OB_VINT_ENV[OB_card % OB_NV]) >> 7, OB_lfo_to, OB_a;
     uint32_t OB_ph, OB_glide_k = OB_g->OB_glide_k;
     /* glide */
     if (OB_v->OB_pitch16 != OB_v->OB_target16) {
@@ -195,7 +195,7 @@ static void OB_voice_block(OB_voice_t *OB_v, uint32_t OB_card,const OB_part_t *O
     OB_v->OB_drift += (int32_t)(OB_xorshift(&OB_v->OB_noise) & 31u) - 16;
     OB_v->OB_drift -= OB_v->OB_drift >> 11;
     /* pitch, Q8 semitones */
-    OB_p8 = (OB_v->OB_pitch16 >> 8) + OB_g->OB_bend8 + 0 + OB_v->OB_det8 + ((OB_VINT_TUNE8[OB_card] * OB_vint) >> 7) + ((OB_v->OB_drift * OB_vint) >> 10);
+    OB_p8 = (OB_v->OB_pitch16 >> 8) + OB_g->OB_bend8 + 0 + OB_v->OB_det8 + ((OB_VINT_TUNE8[OB_card % OB_NV] * OB_vint) >> 7) + ((OB_v->OB_drift * OB_vint) >> 10);
     OB_p8 += (OB_lfo * OB_g->OB_wheel_q * 4) >> 15;         /* the wheel's vibrato */
 #if OB_BOARD_SMK37
     OB_p8 += (OB_lfo * OB_ctl_vib) >> 15;                /* the SMK-37's mod wheel: pitch only, gentle */
@@ -212,7 +212,7 @@ static void OB_voice_block(OB_voice_t *OB_v, uint32_t OB_card,const OB_part_t *O
     /* cutoff, Q8 semitones */
     OB_cut = OB_g->OB_cut_sm + 8 * 256 + ((OB_fenv * OB_g->OB_fenv_amt * 390) >> 15)
         + ((int32_t)OB_v->OB_note - 60) * OB_g->OB_keytrk * 2 + (((int32_t)OB_v->OB_vel - 64) * OB_g->OB_velflt >> 1)
-        + ((OB_lfo * OB_g->OB_lfo_fd * 97) >> 15) + ((OB_lfo * OB_g->OB_wheel_q * 48) >> 15) + ((OB_VINT_CUT8[OB_card] * OB_vint) >> 7);
+        + ((OB_lfo * OB_g->OB_lfo_fd * 97) >> 15) + ((OB_lfo * OB_g->OB_wheel_q * 48) >> 15) + ((OB_VINT_CUT8[OB_card % OB_NV] * OB_vint) >> 7);
     OB_svf_coef(&OB_v->OB_c1, OB_cut, OB_g->OB_reso_k);
     if (OB_g->OB_ftype == OB_F_LP24) OB_svf_coef(&OB_v->OB_c2, OB_cut, 5793);
     /* amp */

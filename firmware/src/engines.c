@@ -6,25 +6,14 @@
  * part's area, never in arrays of its own for all the parts */
 static void *eng_part(const track_t *t);
 #include "dsp.c"
-#include "eng_analog.c"
-#include "eng_phase.c"
-#include "eng_lofi.c"
-#include "eng_sample.c"
-#include "eng_formant.c"
-#include "eng_trio.c"
-#include "eng_wheel.c"
-#include "eng_grain.c"
-#include "eng_phys.c"           /* PHYS: DaisySP physical models (phys_dsp.c, MIT) */
-#include "eng_drum.c"           /* DRUM: the 8-lane kit (drum_voice.c) */
-#include "eng_drumx.c"          /* (Skiff) DRUM-X: JIANT FM's drum engine (drumx_voice.c, GPL-3.0-only) */
-#include "eng_noise.c"
+#include "eng_sample.c"          /* (Vallée: the factory sample block; SPAMPY's sets, phase 1b) */
+#include "eng_drum.c"           /* DRUM: the 8-lane kit (drum_voice.c); (Vallée) SPAMPY's kits: phase 3 */
+#include "eng_drumx.c"          /* (Skiff) DRUM-X: retired with the SPAMPY sound (ENGI_DRUMX never matches); cleanup */
 #include "eng_summon.c"          /* (Vallée) SUMMON: SUMMONER (XENO), AURA (TEEN) */
-#include "sloop/sloop_engines.c"    /* (Vallée, the SPAMPY port) SLOOP's engines */
+#include "sloop/sloop_engines.c"    /* ((Vallée) the SPAMPY sound: SLOOP's engines, as SPAMPY uses them) */
 #include "eng_fm6.c"            /* FM6: 6-operator FM, msfa ported (fm6_core.c, Apache-2.0) */
-#include "fm4_convert.c"        /* DIGITAL's tables, and its sounds -> FM6 */
-#if FELUCCA_FM4
-#include "eng_digital.c"        /* DIGITAL: four-operator FM (retired; FELUCCA_FM4=1 builds it) */
-#endif
+/* (fm4_convert.c: DIGITAL -> FM6 conversion retired: SPAMPY plays DIGITAL itself) */
+/* (DIGITAL: sloop/eng_digital.c) */
 #if FELUCCA_SLICE
 #include "eng_slice.c"
 #endif
@@ -35,12 +24,10 @@ static void *eng_part(const track_t *t);
  * notes, blocks and renders); the switch zeroes it, the state each engine starts from at power-on (GRAIN rebuilds
  * its index, PHYS its model, from zero). Data the main loop writes (FM6's patches, WHEEL's bars) stays out. */
 typedef union {
-    phys_slot_t phys[PHYS_POLY];
-    gr_part_t grain;
     drum_lane_t drum[DV_NLANE];
     drumx_lane_t drumx[DV_NLANE];
     fm6_note_t fm6[FM6_POLY];
-    drw_vc_t wheel[NVOICE];
+    drw_part_t drawbar;              /* ((Vallée) SLOOP's WHEEL */
     p5_part_t prophet;               /* ((Vallée) SLOOP's engines, sloop/sloop_engines.c: their part state here, as */
     cz_part_t cz;                    /* SPAMPY's eng_arena: zeroed by the switch) */
     sid_part_t sid;
@@ -56,7 +43,7 @@ typedef union {
     drum_lane_t drum[DV_NLANE];
     drumx_lane_t drumx[DV_NLANE];
     fm6_note_t fm6[FM6_POLY];
-    drw_vc_t wheel[NVOICE];
+    drw_part_t drawbar;
     /* ((Vallée) SLOOP's engines: not on the light tracks yet (the pool's 8 KB headroom); phase 2b, once PHYS and
      * GRAIN leave the heavy area, decides: until then eng_allowed keeps them off these tracks) */
 #if FELUCCA_SLICE
@@ -86,31 +73,39 @@ static uint32_t eng_size(const track_t *t)            /* its area's bytes (the e
 }
 
 /* the editor protocol, user presets and projects store these indices: append, never reorder */
+/* ((Vallée, the SPAMPY sound) SPAMPY's numbers 0..18 (core.h); its reserved ones play nothing and are never offered
+ * (eng_ok): an empty engine, as DIGITAL's was */
+/* a reserved number: never offered (eng_ok), and a track that holds one anyway (a damaged store) plays silence, never
+ * a call through 0 */
+static void rsv_note_on(track_t *t, voice_t *v) { (void)t; v->stage = 0; }
+static void rsv_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const vmod_t *m)
+{
+    (void)t; (void)out; (void)n; (void)m;
+    v->stage = 0;
+}
+static const engine_t ENG_FM4_GONE = {.name = "-", .page_title = {"-", "-"}, .note_on = rsv_note_on, .render = rsv_render};
 static const engine_t *const ENGINES[NENGINES] = {
     &ENG_ANALOG,                 /* 0 */
-#if FELUCCA_FM4
-    &ENG_DIGITAL,                /* 1 (ENGI_DIGITAL) */
-#else
-    &ENG_FM4_GONE,               /* 1: reserved (DIGITAL, retired: its sounds convert to FM6, fm4_convert.c) */
-#endif
+    &ENG_DIGITAL,                /* 1 */
     &ENG_PHASE,                  /* 2 */
     &ENG_LOFI,                   /* 3 */
     &ENG_SAMPLE,                 /* 4 */
-    &ENG_FORMANT,                /* 5 VOICE (eng_formant.c: "voice" is a sounding note in voice.c) */
+    &ENG_FORMANT,                /* 5 VOICE */
     &ENG_TRIO,                   /* 6 */
-    &ENG_WHEEL,                  /* 7 */
-    &ENG_GRAIN,                  /* 8 */
-    &ENG_PHYS,                   /* 9 (ENGI_PHYS) */
-    &ENG_DRUM,                   /* 10 (ENGI_DRUM) */
-    &ENG_NOISE,                  /* 11 */
-    &ENG_FM6,                    /* 12 (ENGI_FM6) */
-#if FELUCCA_SLICE
-    &ENG_SLICE,                  /* 13 (ENGI_SLICE) */
-#else
-    &ENG_FM4_GONE,               /* 13: reserved (FELUCCA_SLICE=0 builds without SLICE: never offered, eng_ok) */
-#endif
-    &ENG_DRUMX,                  /* 14 (ENGI_DRUMX, Skiff) */
-    &ENG_SUMMON,                 /* 15 (ENGI_SUMMON, Vallée) */
+    &ENG_DRAWBAR,                /* 7 WHEEL (SLOOP's drawbar organ) */
+    &ENG_FM4_GONE,               /* 8: reserved */
+    &ENG_FM6,                    /* 9 (ENGI_FM6) */
+    &ENG_FM4_GONE,               /* 10: reserved */
+    &ENG_WAVETABLE,              /* 11 MORPH (ENGI_NOISE) */
+    &ENG_FM4_GONE,               /* 12: reserved (SLICE) */
+    &ENG_PROPHET,                /* 13 */
+    &ENG_CZ,                     /* 14 */
+    &ENG_SID,                    /* 15 */
+    &ENG_OBERVAVE,               /* 16 */
+    &ENG_FM4_GONE,               /* 17: reserved (MORPH's second number in SPAMPY) */
+    &ENG_DRONE,                  /* 18 */
+    &ENG_DRUM,                   /* 19 (ENGI_DRUM, Vallée) */
+    &ENG_SUMMON,                 /* 20 (ENGI_SUMMON, Vallée) */
 };
 
 /* a track's engine number as an index (the audio paths: a compare, cheaper than % NENGINES; a bad number: 0) */
@@ -131,9 +126,9 @@ static const char *snd_missing(const track_t *t, uint32_t *code)
         return slc_get(si) ? 0 : N_SLC_SRC[si];
     }
 #endif
-    if (e != &ENG_SAMPLE && e != &ENG_GRAIN)
+    if (e != &ENG_SAMPLE)
         return 0;
-    *code = (e == &ENG_GRAIN ? 32u : 1u) + si % 32u;
+    *code = 1u + si % 32u;
     return smp_set_missing(si) ? SMP_ALL_NAMES[si] : 0;
 }
 
@@ -141,30 +136,25 @@ static const char *snd_missing(const track_t *t, uint32_t *code)
  * engine indices, never DIGITAL's reserved 1 (with FELUCCA_FM4 it follows FM6). The indices stay as they are (the
  * stores and the protocol hold them); only this table orders them */
 static const uint8_t ENGINE_ORDER[NENG_SHOWN] = {
-    0,                           /* ANALOG */
-    12,                          /* FM6 */
-#if FELUCCA_FM4
-    1,                           /* DIGITAL */
-#endif
-    2, 3, 4, 5, 6, 7, 8, 9,      /* PHASE LOFI SAMPLE VOICE TRIO WHEEL GRAIN PHYS */
-    11,                          /* NOISE */
-    15,                          /* (Vallée) SUMMON */
-#if FELUCCA_SLICE
-    13,                          /* SLICE */
-#endif
-    10,                          /* DRUM */
-    14,                          /* DRUM-X */
+    0, ENGI_PROPHET, ENGI_OBERVAVE, 6, 9, 1, ENGI_CZ, 3, 2, 5, 7, ENGI_NOISE, ENGI_DRONE,   /* ((Vallée) SPAMPY's
+                                  * engines, the most used first: the EDIT layer's keys hold the first 15) */
+    ENGI_SUMMON,                 /* (Vallée) SUMMON */
+    ENGI_DRUM,                   /* DRUM */
+    ENGI_SID, 4,                 /* SID, SAMPLE (2 and 1 of SPAMPY's sounds): PRESETS' ENG knob, not the EDIT layer's keys */
 };
 
 /* the engines one can pick (engine 1 only with FELUCCA_FM4), in ENGINE_ORDER: eng_ok(e), the n-th of them
  * eng_vis(n), e's place among them eng_rank(e), the next / previous one eng_step(e, dir) (wraps) */
-static int eng_ok(uint32_t e) { return e < NENGINES && (FELUCCA_FM4 || e != ENGI_DIGITAL) && (FELUCCA_SLICE || e != ENGI_SLICE); }
+static int eng_ok(uint32_t e)
+{
+    return e < NENGINES && ENGINES[e] != &ENG_FM4_GONE;   /* ((Vallée) SPAMPY's reserved numbers: 8 10 12 17) */
+}
 static uint32_t eng_vis(uint32_t n) { return ENGINE_ORDER[n % NENG_SHOWN]; }
 static uint32_t eng_rank(uint32_t e)
 {
     uint32_t n;
     if (!eng_ok(e))
-        e = ENGI_FM6;                            /* (DIGITAL without FELUCCA_FM4: its sounds play as FM6) */
+        e = 0;                                   /* ((Vallée) a reserved number: shown as ANALOG's place) */
     for (n = 0; n < NENG_SHOWN && ENGINE_ORDER[n] != e; n++)
         ;
     return n < NENG_SHOWN ? n : 0u;
@@ -177,7 +167,16 @@ static uint32_t eng_step(uint32_t e, int32_t dir)
  * NHEAVY). The one rule: picking, presets, user presets, the editor, projects ask it */
 static int eng_allowed(uint32_t k, uint32_t e)
 {
-    return k < NHEAVY || (e % NENGINES != ENGI_PHYS && e % NENGINES != ENGI_GRAIN);
+    return k < NHEAVY || (e % NENGINES != ENGI_PROPHET && e % NENGINES != ENGI_CZ && e % NENGINES != ENGI_SID &&
+                          e % NENGINES != ENGI_OBERVAVE);   /* ((Vallée) SLOOP's big part state: the heavy area only) */
+}
+/* ((Vallée, the SPAMPY sound) the engine the audio plays for a track: what it asks for, unless that may not play there
+ * (a light track and one of SLOOP's big engines, whichever path asked: MIDI, a store, the editor): then a reserved
+ * number, silence, never another engine's state past the light track's area */
+static inline uint32_t eng_eff(const track_t *t)
+{
+    uint32_t e = eng_idx(t->eng_req);
+    return eng_allowed((uint32_t)(t - trk) % NTRK, e) ? e : ENGI_GRAIN;   /* (8: reserved, silent) */
 }
 static uint32_t eng_step_for(uint32_t k, uint32_t e, int32_t dir)   /* eng_step past what track k may not play */
 {
@@ -190,5 +189,5 @@ static uint32_t eng_step_for(uint32_t k, uint32_t e, int32_t dir)   /* eng_step 
 
 /* the parts at power-on (engine, preset; the sequencers empty): bass, pad, lead, drums, (phase 6) a sample sound
  * and a second kit: ANALOG ACID, FM6 PAD (was DIGITAL PAD), LOFI PULSE LD, DRUM KIT, PIANO, DRUM KIT */
-static const uint8_t TRK_DEF[NPART][2] = {{0, 4}, {ENGI_FM6, 4}, {3, 0}, {ENGI_DRUM, 0}, {ENGI_SAMPLE, 0}, {ENGI_DRUM, 0}};
+static const uint8_t TRK_DEF[NPART][2] = {{0, 0}, {ENGI_PROPHET, 0}, {3, 0}, {ENGI_DRUM, 0}, {ENGI_SAMPLE, 0}, {ENGI_DRUM, 0}};
 static uint32_t trk_def_engine(uint32_t i) { return TRK_DEF[i % NPART][0]; }

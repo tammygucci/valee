@@ -198,6 +198,28 @@ static const proj_fmt_t PROJ_SKF3 = {PROJ_MAGIC3, PROJ_STORE3, 6u, PROJ_SCENES, 
  * where the readers before (Skiff's, Vallée 0.9's) stop: they open the project as ever, the chords passed over; none: the
  * record as before, byte for byte) */
 #define PROJ_GC_MARK 0x43u                    /* ('C') */
+/* ((Vallée, the SPAMPY sound) 'S' 1 right after the last track (the chords' block after it): the engines by SPAMPY's
+ * numbers (core.h). A record without it is of before (Skiff's numbers): eng_from_skiff maps its tracks' and its
+ * entries' engines, each sound but DRUM's and SUMMON's to the new engine's first (PROJ_NEW_ENG), the patterns, the
+ * mix and the rest kept. Vallée 0.9.1 and Skiff read the mark as no chords (the block not found there) */
+#define PROJ_ERA_MARK 0x53u                    /* ('S') */
+#define PROJ_NEW_ENG 0xFDu                     /* preset byte: the engine's first sound (an old project's mapped track) */
+static const uint8_t ENG_FROM_SKIFF[16] = {
+    0,              /* ANALOG */
+    ENGI_FM6,       /* DIGITAL (retired: played as FM6) */
+    2, 3, 4,        /* PHASE LOFI SAMPLE */
+    5, 6,           /* VOICE TRIO */
+    ENGI_DRAWBAR,   /* WHEEL */
+    ENGI_NOISE,     /* GRAIN -> MORPH */
+    ENGI_FM6,       /* PHYS -> FM6 */
+    ENGI_DRUM,      /* DRUM (kept) */
+    ENGI_NOISE,     /* NOISE -> MORPH */
+    ENGI_FM6,       /* FM6 */
+    4,              /* SLICE -> SAMPLE */
+    ENGI_DRUM,      /* DRUM-X -> DRUM */
+    ENGI_SUMMON,    /* SUMMON (kept) */
+};
+static int eng_skiff_kept(uint32_t e) { return e == 10u || e == 15u; }   /* DRUM, SUMMON: their sound as it was */
 /* (Skiff 2.0, Tier B: design/TIER_B.md 5) "SKF4": 2560 bytes, the parameters by stored id (core.h sid_put): one added
  * or moved never shifts the others. 8 the layout (PROJ_LAYOUT4; another is not one this firmware reads), 9 flags (0);
  * from 10 (PROJ_ENT4) the lists, 4 bytes an entry (pattern id + 1 or PAT_REST, the REPS byte, the entry's sound: #30's,
@@ -212,7 +234,7 @@ static const proj_fmt_t PROJ_SKF3 = {PROJ_MAGIC3, PROJ_STORE3, 6u, PROJ_SCENES, 
 #define PROJ_ENT4 10u
 static const proj_fmt_t PROJ_SKF4 = {PROJ_MAGIC4, PROJ_STORE4, 6u, PROJ_SCENES, 1u};
 _Static_assert(PROJ_ENT4 + NTRK * (NENT * 4u + 1u) + PROJ_SCENES + 2u + 1u + DV_NLANE * 11u + NTRK * FM6_PACKED +
-               1u + 2u * GSID_COUNT + NTRK * (4u + SID_COUNT) + 1u + sizeof gch + PROJ_NAME_LEN + 4u <= PROJ_STORE4,
+               1u + 2u * GSID_COUNT + NTRK * (4u + SID_COUNT) + 2u + 1u + sizeof gch + PROJ_NAME_LEN + 4u <= PROJ_STORE4,
                "SKF4 holds it all ((Vallée) GEN's own chords too)");
 #define PROJ_SKF (&PROJ_SKF4)                  /* the format a save writes */
 #define PROJ_NAME_AT(f) ((f)->size - 4u - PROJ_NAME_LEN)
@@ -1052,6 +1074,8 @@ static int proj_pack4(project_store_t *out, const project_t *q)
         if (!(n = sid_put(b + pos, q->t[t].p))) return 0;
         pos += n;
     }
+    b[pos++] = PROJ_ERA_MARK;                            /* ((Vallée, the SPAMPY sound) SPAMPY's engine numbers */
+    b[pos++] = 1u;
     for (n = 0; n < sizeof q->gch && !q->gch[n]; n++)
         ;
     if (n < sizeof q->gch) {                             /* ((Vallée) GEN's own chords, when any) */
@@ -1065,6 +1089,33 @@ static int proj_pack4(project_store_t *out, const project_t *q)
     }
     sum = proj_hash(b, PROJ_STORE4 - 4u); memcpy(b + PROJ_STORE4 - 4u, &sum, 4);
     return 1;
+}
+/* ((Vallée, the SPAMPY sound) a project of Skiff's engine numbers: each track's engine and each entry's sound mapped
+ * (ENG_FROM_SKIFF); a mapped track's sound the new engine's first (its values at the new engine's defaults until
+ * then: never another engine's), DRUM's and SUMMON's kept. Idempotent on what it changed only once (the caller reads
+ * the mark) */
+static void proj_from_skiff(project_t *q)
+{
+    uint32_t t, e, i;
+    for (t = 0; t < NTRK; t++) {
+        uint32_t old = q->t[t].engine % 16u, ne = ENG_FROM_SKIFF[old];
+        q->t[t].engine = (uint8_t)ne;
+        if (!eng_skiff_kept(old)) {
+            for (i = P_E0; i < P_COUNT && i < P_E0 + 8u; i++)
+                q->t[t].p[i] = param_desc_of(ne, i)->def;
+            q->t[t].preset = PROJ_NEW_ENG;
+            q->t[t].user = 0;
+        }
+        for (e = 0; e < NENT; e++) {
+            uint8_t *s = q->snd[t][e];
+            if (s[0] && !(s[0] & 128u)) {               /* a factory sound: engine + 1, its preset */
+                old = (s[0] - 1u) % 16u;
+                s[0] = (uint8_t)(ENG_FROM_SKIFF[old] + 1u);
+                if (!eng_skiff_kept(old))
+                    s[1] = 0;
+            }
+        }
+    }
 }
 /* (2.0) an SKF4 record (its magic and size checked: proj_fmt_of) -> q; 0 if it is not one this firmware reads */
 static int proj_unpack4(project_t *q, const uint8_t *b)
@@ -1114,6 +1165,10 @@ static int proj_unpack4(project_t *q, const uint8_t *b)
             q->t[t].step[e].time = ST_REST;               /* (empty: the patterns hold the steps) */
 #endif
     }
+    if (end - pos >= 2u && b[pos] == PROJ_ERA_MARK && b[pos + 1u] == 1u)
+        pos += 2u;                                         /* ((Vallée, the SPAMPY sound) SPAMPY's numbers */
+    else
+        proj_from_skiff(q);                                /* a record of before: its engines mapped */
     if (end - pos > sizeof q->gch && b[pos] == PROJ_GC_MARK)   /* ((Vallée) GEN's own chords; none: none) */
         memcpy(q->gch, b + pos + 1u, sizeof q->gch);
 #if FELUCCA_LEGACY
@@ -1570,7 +1625,7 @@ static int project_restore_runtime(const project_t *input)
             const param_desc_t *d = param_desc_of(e, i);
             t->p[i] = (int16_t)param_fit(d, s->p[i]);
         }
-        t->preset = (uint8_t)(ENGINES[e]->npresets ? (s->preset >= PROJ_DEF_KEEP ? 0u : s->preset) % ENGINES[e]->npresets : 0u);
+        t->preset = (uint8_t)(ENGINES[e]->npresets ? (s->preset >= PROJ_NEW_ENG ? 0u : s->preset) % ENGINES[e]->npresets : 0u);
 #if FELUCCA_LEGACY
         memcpy(t->step, s->step, sizeof t->step);
         proj_steps(t->step);
@@ -1598,7 +1653,8 @@ static int project_restore_runtime(const project_t *input)
         if (p->t[k].preset == PROJ_DEF_SOUND) {
             apply_preset_to(t, TRK_DEF[k][1]);
             track_defaults_steps(t);
-        }
+        } else if (p->t[k].preset == PROJ_NEW_ENG)       /* ((Vallée, the SPAMPY sound) an old project's mapped track: */
+            apply_preset_to(t, 0);                       /* its new engine's first sound, the mix and patterns kept */
 #if FELUCCA_LEGACY
         else if (p->t[k].preset == PROJ_DEF_KEEP) {     /* the steps, LEVEL PAN MUTE, LEN DIV SWING GATE kept */
             int16_t keep[P_COUNT];
@@ -1705,6 +1761,7 @@ static void persist_boot(void)                    /* before settings_init / pane
             persist_saved = p.sks;
             settings_export(&persist_saved);
         }
+        favorites_era();                           /* ((Vallée, the SPAMPY sound) the stars of the old sounds: once */
     }
     {   /* projects: fill empty RAM slots from flash, so the slot list is right after power-on */
         uint32_t i;

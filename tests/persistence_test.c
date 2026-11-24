@@ -750,6 +750,50 @@ static int gen_chords_test(void)
                  ok);
 }
 
+/* ((Vallée, the SPAMPY sound) a project of before (Skiff's engine numbers, no 'S' mark): its tracks and entries mapped,
+ * DRUM's and SUMMON's sounds kept, the others the new engine's first; a project of now: as saved */
+static int skiff_era_test(void)
+{
+    static project_t pj, back;
+    static project_store_t w;
+    uint32_t i, at = 0, sum;
+    int ok;
+    reset();
+    memset(gch, 0, sizeof gch);
+    project_capture(&pj);
+    pj.t[0].engine = 12; pj.t[0].preset = 3;              /* Skiff's FM6 */
+    pj.t[1].engine = 8;                                   /* GRAIN */
+    pj.t[2].engine = 15; pj.t[2].preset = 2; pj.t[2].p[P_E0] = 3;   /* SUMMON, its being */
+    pj.t[3].engine = 10; pj.t[3].preset = 5; pj.t[3].p[P_E0] = 9;   /* DRUM, kit DEEP */
+    pj.t[4].engine = 14;                                  /* DRUM-X */
+    pj.t[5].engine = 0; pj.t[5].preset = 4;               /* ANALOG */
+    pj.snd[0][1][0] = 12 + 1; pj.snd[0][1][1] = 7;        /* an entry's sound: Skiff's FM6, its 8th */
+    pj.snd[3][2][0] = 10 + 1; pj.snd[3][2][1] = 4;        /* .. DRUM's 5th (kept) */
+    ok = proj_pack4(&w, &pj);
+    for (i = PROJ_ENT4; i + 1u < PROJ_NAME_AT(&PROJ_SKF4); i++)
+        if (w.raw[i] == PROJ_ERA_MARK && w.raw[i + 1u] == 1u)
+            at = i;                                       /* (the last: the mark after the tracks) */
+    ok &= at != 0;
+    ok &= proj_unpack4(&back, w.raw) && back.t[0].engine == 12u && back.t[0].preset == 3u && back.snd[0][1][0] == 13u;
+    w.raw[at] = w.raw[at + 1u] = 0;                       /* a record of before: no mark */
+    sum = proj_hash(w.raw, PROJ_STORE4 - 4u); memcpy(w.raw + PROJ_STORE4 - 4u, &sum, 4);
+    ok &= proj_unpack4(&back, w.raw);
+    ok &= back.t[0].engine == ENGI_FM6 && back.t[0].preset == PROJ_NEW_ENG &&
+          back.t[1].engine == ENGI_NOISE && back.t[1].preset == PROJ_NEW_ENG &&
+          back.t[2].engine == ENGI_SUMMON && back.t[2].preset == 2u && back.t[2].p[P_E0] == 3 &&
+          back.t[3].engine == ENGI_DRUM && back.t[3].preset == 5u && back.t[3].p[P_E0] == 9 &&
+          back.t[4].engine == ENGI_DRUM && back.t[4].preset == PROJ_NEW_ENG &&
+          back.t[5].engine == 0u && back.t[5].preset == PROJ_NEW_ENG;
+    ok &= back.snd[0][1][0] == ENGI_FM6 + 1u && back.snd[0][1][1] == 0u && back.snd[3][2][0] == ENGI_DRUM + 1u &&
+          back.snd[3][2][1] == 4u;
+    ok &= project_restore_runtime(&back) == 0 && trk[0].eng_req == ENGI_FM6 && trk[0].preset == 0u &&
+          trk[3].eng_req == ENGI_DRUM && trk[3].p[P_E0] == 9 && trk[2].eng_req == ENGI_SUMMON;
+    for (i = 0; i < NTRK; i++)
+        ok &= eng_ok(trk[i].eng_req);
+    return check("(Vallee) a project of the Skiff engines: mapped (DRUM, SUMMON kept, the others the new engine's first); "
+                 "one of now: as saved", ok);
+}
+
 int main(void)
 {
     int bad = 0, ok;
@@ -1112,7 +1156,7 @@ int main(void)
     bad += other_fw_test();
     bad += cpu2_once_test();
 #if !FELUCCA_LEGACY
-    bad += gen_chords_test();
+    bad += gen_chords_test() + skiff_era_test();
 #endif
     printf("%s\n", bad ? "PERSISTENCE TEST FAILED" : "persistence test passed");
     return bad != 0;

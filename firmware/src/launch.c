@@ -74,7 +74,7 @@ static __attribute__((noinline)) void esnd_put(track_t *t, const esnd_t *s)
     drum_mute[k] = 0;                              /* (the lanes' mutes go with the sound) */
     trk_all_off(t);                                /* (MONO / POLY may change: what sounds let go) */
     memcpy(motion_base[k], t->p, sizeof t->p);
-    if (t->eng_req != t->engine) {
+    if (eng_eff(t) != t->engine) {
         t->xf_on = 1;
         t->xf = XF_BLOCKS;
     }

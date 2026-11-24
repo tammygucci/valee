@@ -57,8 +57,7 @@ _Static_assert(NTRK <= 8 && NPART < VOICES_1CORE && VOICES_2CORE <= NVOICE * NPA
                                   * as FM6, as DIGITAL's do without FELUCCA_FM4 (engines.c eng_ok) */
 #endif
 #ifndef FELUCCA_FM4
-#define FELUCCA_FM4 0            /* the DIGITAL engine (eng_digital.c, four-operator FM): kept in the tree, not built
-                                  * by default; replaced by FM6, its sounds convert (fm4_convert.c) */
+#define FELUCCA_FM4 1            /* ((Vallée, the SPAMPY sound) DIGITAL is SPAMPY's again: sloop/eng_digital.c, engine 1) */
 #endif
 #ifndef FELUCCA_LEGACY
 #define FELUCCA_LEGACY 0         /* (2.0, Tier B: design/TIER_B.md 10) the formats of before and their conversions: projects
@@ -66,11 +65,21 @@ _Static_assert(NTRK <= 8 && NPART < VOICES_1CORE && VOICES_2CORE <= NVOICE * NPA
                                   * sounds (fm4_convert.c), settings PER1..PER3, 1.0's FM6 bank. Only the converter
                                   * (web/conv) and its tests build them; 2.0 keeps such a record's bytes (OLD FORMAT) */
 #endif
-#define NENGINES 16u             /* (Skiff) DRUM-X (14) after SLICE (13); (Vallée) SUMMON (15): the others keep their numbers */
-#define ENGI_DIGITAL 1u          /* reserved without FELUCCA_FM4: never selectable (eng_ok), its sounds load as FM6 */
-#define ENGI_SLICE 13u           /* reserved without FELUCCA_SLICE, as DIGITAL is without FELUCCA_FM4 */
-#define NENG_SHOWN (NENGINES - !FELUCCA_FM4 - !FELUCCA_SLICE)   /* the engines one can pick: PRESETS, the EDIT layer,
-                                                * the editor, in the display order of engines.c ENGINE_ORDER */
+/* ((Vallée, the SPAMPY sound) the engines are SPAMPY's, by SPAMPY's numbers 0..18 (its presets, level trims and
+ * catalogue name them so: sloop/), then DRUM 19 and SUMMON 20. 8, 10, 12 and 17 are SPAMPY's reserved numbers: never
+ * offered (engines.c eng_ok). Projects saved before this numbering are mapped on load (project.c eng_from_skiff) */
+#define NENGINES 21u
+#define ENGI_DIGITAL 1u
+#define ENGI_DRAWBAR 7u          /* (SLOOP's drawbar organ, named WHEEL as Vallée's was) */
+#define ENGI_NOISE 11u           /* MORPH (SLOOP's wavetable engine: SPAMPY keeps it at NOISE's old number) */
+#define ENGI_SLICE 12u           /* reserved (SLICE is not built: FELUCCA_SLICE 0) */
+#define ENGI_PROPHET 13u
+#define ENGI_CZ 14u
+#define ENGI_SID 15u
+#define ENGI_OBERVAVE 16u
+#define ENGI_WAVETABLE 17u       /* reserved: MORPH plays from 11 (SPAMPY's catalogue) */
+#define ENGI_DRONE 18u
+#define NENG_SHOWN 17u           /* the engines one can pick: PRESETS, the EDIT layer, the editor (engines.c ENGINE_ORDER) */
 #define UP_SLOTS 32u             /* user presets (upreset.c) */
 #define NELEM(a) (sizeof(a) / sizeof((a)[0]))
 
@@ -254,12 +263,12 @@ static uint32_t gsid_get(int16_t *g, const uint8_t *b, uint32_t max)
 }
 
 /* engine indices the stores name (engines.c ENGINES[]: append-only) */
-#define ENGI_GRAIN 8u
-#define ENGI_PHYS 9u
-#define ENGI_DRUM 10u
-#define ENGI_ANALOG 0u                 /* ((Vallée) eng_analog.c: EDIT > FILTER) */
-#define ENGI_SUMMON 15u          /* (Vallée) SUMMON (eng_summon.c): SUMMONER, AURA */
-#define ENGI_DRUMX 14u           /* (Skiff) DRUM-X (eng_drumx.c): a drum track as DRUM's (seq.c drum_track) */
+#define ENGI_GRAIN 8u            /* reserved (SPAMPY's number of GRAIN, not built) */
+#define ENGI_PHYS 10u            /* reserved (SPAMPY's number of PHYS, not built) */
+#define ENGI_DRUM 19u            /* (Vallée) DRUM */
+#define ENGI_DRUMX 0xFFu         /* (Skiff) DRUM-X: retired with the SPAMPY sound, no engine has it (its paths never run) */
+#define ENGI_ANALOG 0u
+#define ENGI_SUMMON 20u          /* (Vallée) SUMMON (eng_summon.c): SUMMONER, AURA */
 #define NHEAVY 4u                /* (Skiff phase 6) the tracks that play every engine; the ones after them are light: no
                                   * PHYS, no GRAIN (engines.c eng_allowed: their state is the big one) */
 _Static_assert(NTRK >= NHEAVY, "the light tracks come after the four");

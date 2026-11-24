@@ -1785,7 +1785,7 @@ static uint32_t graph_signature(void)
             h = (h ^ (bank_cur(i) | bank_next(i) << 8 | (uint32_t)trk_pid[i] << 16)) * 16777619u;
         h = (h ^ (sg.entry * 40503u + song_pick() * 769u + bank_gen() * 2654435761u)) * 16777619u;   /* ((2.0) COPY+) */
     }
-    if (pg->scope == SC_ENGINE && (ENGINES[t->eng_req % NENGINES] == &ENG_WHEEL || t->eng_req % NENGINES == ENGI_FM6 ||
+    if (pg->scope == SC_ENGINE && (t->eng_req % NENGINES == ENGI_FM6 ||
                                    (FELUCCA_FM4 && t->eng_req % NENGINES == ENGI_DIGITAL)))
         h ^= (ui.hot_t ? ui.hot_col + 1u : 0u) * 65537u;
     if (pg->scope == SC_ENGINE && t->eng_req % NENGINES == ENGI_FM6)   /* the patch (PAT's algorithm, levels, FB) */
@@ -2948,7 +2948,6 @@ static void draw_graph(void)
 #endif
         default:
             if (pg->scope == SC_ENGINE && ENGINES[t->eng_req % NENGINES] == &ENG_SUMMON) graph_summon(t);   /* (Vallée) */
-            else if (pg->scope == SC_ENGINE && ENGINES[t->eng_req % NENGINES] == &ENG_WHEEL) graph_wheel(t, c);
             else if ((pg->scope == SC_ENGINE || pg->graph == GR_SMIX) && ENGINES[t->eng_req % NENGINES] == &ENG_SAMPLE &&
                      sample_wave.ready) graph_sample(c);   /* ((#21) SAMPLES: the sample's) */
             else if (pg->scope == SC_ENGINE && t->eng_req % NENGINES == ENGI_FM6) graph_fm6(t, c);   /* EDIT 1 and 2 */

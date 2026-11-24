@@ -31,7 +31,7 @@ _Static_assert(sizeof N_DKSRC / sizeof N_DKSRC[0] == NTRK + 1u, "DUCK's BY: OFF 
 static const char *const N_FMODE[] = {"KEY", "SCALE", "FIT"};
 static const char *const N_FNOTE[] = {"ROOT", "LOW", "HIGH", "LAST"};
 static const char *const N_SDIR[] = {"DOWN", "UP", "ALT"};
-static const char *const N_AFLT[] = {"CLASSIC", "MOOG", "OBERHEIM", "JUNO"};   /* ((Vallée) ANALOG's FILTER; append-only) */   /* (2.5) STRUM's DIR (voice.c strum_flush; append-only) */
+static const char *const N_AFLT[] = {"LP", "BP", "HP"};   /* ((Vallée, the SPAMPY sound) ANALOG's filter TYPE (SLOOP: P_FTYPE) */   /* (2.5) STRUM's DIR (voice.c strum_flush; append-only) */
 static const char *const N_DTYPE[] = {"SOFT", "HARD", "FOLD", "CRUSH", "FUZZ"};   /* (Skiff phase 9) P_DTYPE: DT_* (fx.c) */
 #define TRK_STR_(n) #n
 #define TRK_STR(n) TRK_STR_(n)

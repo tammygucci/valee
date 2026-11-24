@@ -926,8 +926,10 @@ static int32_t wet[CTL];                                 /* (the dry mix and the
  * DIST / SLICER while it sounds or its tail runs. ENGINES[] order. An estimate: it only steers the split, the sound does
  * not depend on it */
 static uint16_t part_cost[NPART];                       /* the last block's, per track */
-static const uint16_t ENG_VCOST[NENGINES] = {163, 0, 162, 67, 70, 174, 144, 143, 189, 309, 113, 134, 181, 129, 120, 170};
-_Static_assert(NENGINES == 16, "ENG_VCOST: a cost per engine");
+/* ((Vallée, the SPAMPY sound) SPAMPY's numbers; SLOOP's engines estimated until regress measures them) */
+static const uint16_t ENG_VCOST[NENGINES] = {163, 200, 162, 67, 70, 174, 144, 143, 0, 309, 0, 134, 0, 300, 200, 150, 300,
+                                             0, 120, 113, 170};
+_Static_assert(NENGINES == 21, "ENG_VCOST: a cost per engine");
 #else
 static int32_t send_c[CTL], send_d[CTL], send_e[CTL], send_r[CTL], wet[CTL], mix_l[CTL], mix_r[CTL];
 #endif

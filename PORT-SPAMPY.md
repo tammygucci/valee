@@ -43,7 +43,7 @@ The old version stays installable: branch `vallee-skiff-engine` = release v0.9.1
       (with phase 2). The installer writes the block after the firmware (web/fm1ota.js or the installer page).
 - [x] 2a. SPAMPY's new engines (PROPHET CZ SID OBERVAVE MORPH DRONE; DRAWBAR waiting) compile in Vallée
       (tools/sloop_import.py -> firmware/src/sloop/), state in Vallée's shared engine areas. Not in the table yet.
-- [ ] 2b. The table: SPAMPY's numbering 0..18 kept (its presets, PRESET_MAP, preset_trim, catalogue carry over),
+- [~] 2b. The table (WIP commit, see Status): SPAMPY's numbering 0..18 kept (its presets, PRESET_MAP, preset_trim, catalogue carry over),
       19 DRUM (SPAMPY's kits), 20 SUMMON: NENGINES 21 (the light-track mask holds 21). Findings from a trial compile
       of SPAMPY's shared engines in Vallée (scratch, not committed):
       - ANALOG PHASE LOFI FORMANT TRIO: drop in; ANALOG needs P_FTYPE (LP BP HP): reuse Vallée's P_AFLT slot
@@ -66,11 +66,28 @@ The old version stays installable: branch `vallee-skiff-engine` = release v0.9.1
 
 ## Status
 
-Phases 0, 1a and 2a done (commits on `spampy-engine`, CI run 45310256392 green). Next: phase 2 (the engines),
-together with 1b. Notes for whoever resumes:
-- Local host builds need build/gen: copy the generated headers from a CI-like build, then run
-  tools/gen_factory_block.py on felucca_samples.h (tools/build.py does this in CI).
-- run_tests.sh stops without a real firmware image; run the host tests one by one (see the commands in it) and
-  let CI (gh workflow run vallee.yml --ref spampy-engine) run the whole suite.
-- The installer does not yet write the factory block: until it does, a unit given this branch's firmware would
-  play every sampled sound as a sine (safe, not useful). Do not install this branch on a unit yet.
+Phases 0, 1a, 2a done; 2b in progress (a WIP commit: CI is expected to fail until the goldens are re-recorded).
+Done in 2b so far:
+- The engine table by SPAMPY's numbers (core.h, engines.c): SPAMPY's ANALOG DIGITAL PHASE LOFI VOICE TRIO WHEEL
+  (drawbar) MORPH PROPHET CZ SID OBERVAVE DRONE (sloop/), Vallée's SAMPLE (factory block), FM6, DRUM, SUMMON.
+  GRAIN PHYS NOISE (Skiff's) WHEEL (Vallée's) DRUM-X SLICE gone from the table (DRUM-X's UI code still compiled,
+  never reached: ENGI_DRUMX 0xFF; remove in a cleanup).
+- Reserved numbers 8 10 12 17: a silent engine (never a call through 0), never offered.
+- eng_eff (engines.c): the audio never plays PROPHET CZ SID OBERVAVE on a light track, whatever asked (found by
+  regress: CZ on track 6 by MIDI wrote past the light area).
+- OBERVAVE's per-card tables read past their 8 entries in SPAMPY too (voice 9, 10): wrapped to the 8 cards
+  (tools/sloop_import.py PATCHES; found by vallee_stress under ASan).
+- The EDIT layer: 15 engines on F3..F5, INIT on G5; SID and SAMPLE by PRESETS' ENG knob.
+- Favourites: each engine an 8-byte slice in rows 0, 2..5, clear of the settings in rows 1, 14, 15 (DIGITAL's
+  return would have collided with AUTO and MIDI LEARN); the old stars cleared once (FAV_ERA in row 7).
+- Projects: 'S' 1 after the tracks marks SPAMPY's numbers; a record without it is mapped (ENG_FROM_SKIFF), DRUM and
+  SUMMON kept, the others the new engine's first sound (PROJ_NEW_ENG); entries' sounds too. persistence_test.
+- ANALOG's FILTER slot holds SPAMPY's TYPE (LP BP HP).
+- GEN's engine constants follow; its sound names are still the old ones (a missing name: the engine's first).
+- regress: PROPHET's long releases (Sequential's programs, up to ~60 s) allowed 60 s; every check else unchanged.
+Next in 2b: SPAMPY's FM6 (fm6_core + its patches), SPAMPY's SAMPLE sets (1b), level trims (preset_trim via the logical
+id) in the mix, the editor's mock tables (web/editor.html) and editor_test's PHYS/GRAIN light-track checks, user
+presets of the old numbers (upreset.c: map as projects), then re-record the goldens after listening/looking.
+Then 3 (drums), 4 (mix), 5 (GEN, SUMMON...), 6 (tests), 7 (installer).
+Local host builds: build/gen from a CI-like build + tools/gen_factory_block.py + tools/gen_p5_tables.py.
+Do not install this branch on a unit yet (the installer does not write the sample block).

@@ -139,8 +139,10 @@ typedef struct {
     uint8_t duck;                           /* BASS KEYS COLOR ducked under the drums */
 } gstyle_t;
 enum { XC_ARP16, XC_JANGLE, XC_PAD, XC_ROBOT, XC_TEXTURE, XC_FILLS, XC_BELLS };
-enum { E_ANALOG = 0, E_PHASE = 2, E_LOFI = 3, E_SAMPLE = 4, E_VOICE = 5, E_TRIO = 6, E_WHEEL = 7, E_GRAIN = 8,
-       E_PHYS = 9, E_DRUM = 10, E_NOISE = 11, E_FM6 = 12 };
+/* ((Vallée, the SPAMPY sound) SPAMPY's numbers (core.h); GRAIN and PHYS are gone: MORPH and FM6 take their roles until
+ * the styles name SPAMPY's sounds (a name not found: the engine's first sound, g_preset) */
+enum { E_ANALOG = 0, E_PHASE = 2, E_LOFI = 3, E_SAMPLE = 4, E_VOICE = 5, E_TRIO = 6, E_WHEEL = ENGI_DRAWBAR,
+       E_GRAIN = ENGI_NOISE, E_PHYS = ENGI_FM6, E_DRUM = ENGI_DRUM, E_NOISE = ENGI_NOISE, E_FM6 = ENGI_FM6 };
 
 /* IMPALA: psychedelic pop: big laid-back drums, melodic bass, phased synth pads, a hazy synth hook, a 16th arp */
 static const gprog_t IMP_D[] = {

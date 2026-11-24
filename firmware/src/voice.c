@@ -552,7 +552,7 @@ static void trk_note_go(track_t *t, uint32_t note, uint32_t vel)
     note = fol_on(t, note);                             /* ((2.1) a follower's: into the chord it follows) */
     if (mo_note(t, note, vel, 0))
         return;                                         /* ((2.2) EXT: MIDI only) */
-    if (t->xf_on || t->eng_req != t->engine) {          /* engine switch under way: after the fade (the note moved) */
+    if (t->xf_on || eng_eff(t) != t->engine) {          /* engine switch under way: after the fade (the note moved) */
         for (i = 0; i < t->xp_n && t->xp_note[i] != note; i++)
             ;
         if (i == t->xp_n && t->xp_n < 4u)
@@ -662,7 +662,7 @@ static void trk_all_off(track_t *t)
 static void engine_block(track_t *t)
 {
     uint32_t i, any = 0;
-    if (t->xf_on || t->eng_req != t->engine) {
+    if (t->xf_on || eng_eff(t) != t->engine) {
         if (!t->xf_on) {
             for (i = 0; i < NVOICE; i++)
                 any |= t->v[i].active;
@@ -680,7 +680,7 @@ static void engine_block(track_t *t)
             v->stage = v->stage2 = 0;
             v->env = v->env_out = v->env2 = 0;
         }
-        t->engine = eng_idx(t->eng_req);
+        t->engine = eng_eff(t);                         /* ((Vallée) never a big engine on a light track: engines.c) */
         memset(eng_part(t), 0, eng_size(t));          /* (Skiff) the part's shared engine area, the new engine's now: from
                                                        * zero, as at power-on (engines.c eng_mem; a light track's eng_lite) */
         t->xf_on = 0;

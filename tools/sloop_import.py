@@ -15,7 +15,8 @@ import re
 import sys
 from pathlib import Path
 
-FILES = ["eng_prophet.c", "eng_cz.c", "eng_sid.c", "eng_obervave.c", "eng_wavetable.c", "eng_drone.c",
+FILES = ["eng_analog.c", "eng_digital.c", "eng_phase.c", "eng_lofi.c", "eng_formant.c", "eng_trio.c",
+         "preset_trim.h", "eng_prophet.c", "eng_cz.c", "eng_sid.c", "eng_obervave.c", "eng_wavetable.c", "eng_drone.c",
          "eng_drawbar.c", "prophet_patch.c", "obv_native_core.h", "obv_native_dsp.h", "obv_native_params.h",
          "obv_native_tables.h", "obv_selected.h", "cz_patch.h", "cz_selected.h", "p5_selected.h", "sid_tables.h",
          "x0x/fastmath.h"]
@@ -102,6 +103,12 @@ def presets(t, f):
 
 # small fixes where Vallée already has the same thing (asserted to match exactly once)
 PATCHES = {
+    # OBERVAVE's per-card tables have 8 entries (the original's 8 voice cards); SPAMPY reads them by its voice number
+    # (up to 9 there, 15 in Vallée): past the tables. The 8 cards again for voices 9..16 (as many as the original had)
+    "eng_obervave.c": [(r"pan=\(OB_PAN_CARD\[card\]", "pan=(OB_PAN_CARD[card%OB_NV]")],
+    "obv_native_core.h": [(r"OB_VINT_ENV\[OB_card\]", "OB_VINT_ENV[OB_card % OB_NV]"),
+                          (r"OB_VINT_TUNE8\[OB_card\]", "OB_VINT_TUNE8[OB_card % OB_NV]"),
+                          (r"OB_VINT_CUT8\[OB_card\]", "OB_VINT_CUT8[OB_card % OB_NV]")],
     "eng_prophet.c": [(r"static uint32_t cents_inc\(int32_t pitch16,int32_t ct,int32_t fine\)\n\{\n.*?\n\}\n",
                        "/* (cents_inc: Vallée's dsp.c, the same) */\n")],
 }

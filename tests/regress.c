@@ -42,7 +42,10 @@
 #define LIM_TAIL 6                /* AC peak of the last 0.25 s, after the voices are free and the FX rang out */
 #define LIM_TAIL_DC 2             /* its constant part: the master DC blocker settles to 0 (error feedback; it
                                    * used to leave up to +-31), what is left is the midpoint of the AC tail */
-#define FREE_CAP_S 12             /* the voices must be free this long after the last note-off */
+#ifndef FREE_CAP_S
+#define FREE_CAP_S 12
+#endif
+//             /* the voices must be free this long after the last note-off */
 #ifndef TAIL_S
 #define TAIL_S 3                  /* FX tail rendered after the voices are free */
 #endif
@@ -117,9 +120,20 @@ static uint32_t at(double s) { return (uint32_t)(s * FS) / CTL * CTL; }
 static void run_to(uint32_t f) { while (fpos < f) blk(); }
 
 /* after the last note-off (rel_at): until the voices are free, then the FX tail */
+/* ((Vallée, the SPAMPY sound) PROPHET's programs are Sequential's, some with a release of 20 s and more: 60 s for a
+ * part on PROPHET (a voice that never ends still fails); every other engine FREE_CAP_S */
+#define FREE_CAP_P5_S 60
+static uint32_t free_cap_s(void)
+{
+    uint32_t k;
+    for (k = 0; k < NPART; k++)
+        if (trk[k].engine == ENGI_PROPHET)
+            return FREE_CAP_P5_S;
+    return FREE_CAP_S;
+}
 static void finish(void)
 {
-    uint32_t cap = rel_at + FREE_CAP_S * FS;
+    uint32_t cap = rel_at + free_cap_s() * FS;
     dc_end = dc_end ? dc_end : fpos;
     while (!parts_free() && fpos < cap)
         blk();
@@ -1185,7 +1199,7 @@ int main(int argc, char **argv)
         if (r->peak < LIM_PEAK_MIN)
             snprintf(why + strlen(why), sizeof why - strlen(why), " peak %d (min %d);", r->peak, LIM_PEAK_MIN);
         if (r->free_s < 0)
-            snprintf(why + strlen(why), sizeof why - strlen(why), " voices not free %d s after the note-offs;", FREE_CAP_S);
+            snprintf(why + strlen(why), sizeof why - strlen(why), " voices not free %d s after the note-offs;", (int)free_cap_s());
         if (abs(r->tail_dc) > LIM_TAIL_DC)
             snprintf(why + strlen(why), sizeof why - strlen(why), " DC %d left at the end (limit %d);", r->tail_dc,
                      LIM_TAIL_DC);

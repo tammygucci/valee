@@ -32,7 +32,7 @@
 #include "fm6_core.c"
 #include "felucca_fm6.h"         /* tools/gen_fm6_patches.py: FM6_INIT, FM6_FACTORY[] */
 
-#define ENGI_FM6 12u             /* engines.c ENGINES[] (append-only) */
+#define ENGI_FM6 9u              /* ((Vallée) SPAMPY's number: engines.c ENGINES[]) */
 #define FM6_POLY 6               /* engine_t.poly */
 #define FM6_OWN FM6_NFACTORY     /* SLOT: the track's own patch (F1..F8 before it) */
 #define FM6_PACKED 128u

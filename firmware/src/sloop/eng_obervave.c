@@ -18,7 +18,7 @@ static obv_part_t *obv_prepare(track_t*t){obv_part_t*s=obv_part((uint32_t)(t-trk
  s->patch.OB_v[OB_P_VINTAGE]=(uint8_t)clamp(t->p[P_E6],0,127);
  s->state.OB_p=&s->patch;return s;}
 static uint32_t obv_cap(const track_t*t){const uint8_t*p=OB_SELECTED[OB_SLOT_MAP[(uint32_t)t->p[P_E7]%OB_FACTORY_N]].OB_v;return t->p[P_VOICE]==V_UNISON?(p[OB_P_MODE]==OB_M_DUAL?2u:p[OB_P_MODE]==OB_M_UNISON?(uint32_t)clamp(p[OB_P_UNI_N],1,NVOICE):NVOICE):NVOICE;}
-static void obv_note_on(track_t*t,voice_t*v){obv_part_t*s=obv_prepare(t);OB_voice_t*q=obv_voice(t,v);const uint8_t*p=s->patch.OB_v;unsigned card=(uint32_t)(v-t->v)%NVOICE,n=obv_cap(t);int det=(p[OB_P_UNI_DET]*p[OB_P_UNI_DET])>>6,pan=(OB_PAN_CARD[card]*p[OB_P_SPREAD])>>7;
+static void obv_note_on(track_t*t,voice_t*v){obv_part_t*s=obv_prepare(t);OB_voice_t*q=obv_voice(t,v);const uint8_t*p=s->patch.OB_v;unsigned card=(uint32_t)(v-t->v)%NVOICE,n=obv_cap(t);int det=(p[OB_P_UNI_DET]*p[OB_P_UNI_DET])>>6,pan=(OB_PAN_CARD[card%OB_NV]*p[OB_P_SPREAD])>>7;
  q->OB_note=v->note;q->OB_vel=v->vel;q->OB_gate=1;q->OB_det8=0;
  if(t->p[P_VOICE]==V_UNISON){q->OB_det8=p[OB_P_MODE]==OB_M_DUAL?(card&1?det/2:-det/2):n>1?(det*(int)(2u*card)/(int)(n-1u))-det:0;pan=n>1?((int)(128u*card)/(int)(n-1u)-64)*p[OB_P_SPREAD]>>7:0;}
  q->OB_target16=(int32_t)v->note<<16;q->OB_pitch16=p[OB_P_GLIDE]?s->state.OB_last_pitch16:q->OB_target16;s->state.OB_last_pitch16=q->OB_target16;q->OB_fe.OB_stage=q->OB_ae.OB_stage=OB_E_ATT;q->OB_lfo_blk=0;q->OB_lfo_fade=p[OB_P_LFO_DELAY]?0:32767;OB_voice_pan(q,pan);
