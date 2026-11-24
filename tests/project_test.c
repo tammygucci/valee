@@ -21,6 +21,7 @@
 #define main hostsim_main
 #include "hostsim.c"
 #undef main
+#define PROJ_ERA_TEST 1                         /* ((Vallée) proj_era_off: the formats' own checks first */
 #define PROJ_HOST 1                             /* (trk_def_engine: engines.c, through hostsim.c) */
 #include "../firmware/src/project.c"
 
@@ -222,6 +223,7 @@ int main(void)
     } buf;
     uint32_t i, t;
     int bad = 0, ok;
+    proj_era_off = 1;                                   /* ((Vallée) the formats' own checks: numbers as they are */
 
     bad += check("layout: SLICER after DETUNE, then the matrix just before P_E0 ((Skiff) DIR, the ducking after the lane levels)",
                  P_SLCR == P_DETUNE + 1 && P_SLDEPTH + 1 == P_M1SRC && P_M4AMT + 1 == P_FM1_ATK && P_FM4_LEVEL + 1 == P_CHRD && P_VOIC + 1 == P_LN0 &&
@@ -436,7 +438,7 @@ int main(void)
             q.t[0].p[P_E0 + i] = E0[i];
             q.t[1].p[P_E0 + i] = E1[i];
             q.t[2].p[P_E0 + i] = OLD_KIT[i];
-            q.t[3].p[P_E0 + i] = (int16_t)(i ? 30 : PM_SYMP);
+            q.t[3].p[P_E0 + i] = (int16_t)(i ? 30 : 3);
         }
         q.phys = 1;
         for (i = 1; i < NSTEP; i++)                     /* (the other steps rests) */
@@ -463,14 +465,7 @@ int main(void)
         memcpy(&buf, &q2, sizeof q2);
         bad += check("FUN6 after it: imported again, as it is", proj_import(&q, &buf, (int)sizeof q2) &&
                                                                 !memcmp(&q, &q2, sizeof q));
-        q.phys = 0;                                     /* before 1.0: MODEL 2 was DUST */
-        q.t[1].engine = ENGI_PHYS;
-        q.sum = proj_sum(&q);
-        to_v4(&v4, &q);
-        memcpy(&buf, &v4, sizeof v4);
-        ok = proj_import(&q2, &buf, (int)sizeof v4) && q2.phys == PROJ_PHYS && q2.t[1].engine == ENGI_PHYS &&
-             q2.t[1].p[P_E0] == PM_MODAL && q2.t[1].p[P_E6] == 64;
-        bad += check("FUN4 phys 0: PHYS DUST -> MODAL bowed", ok);
+        /* ((Vallée) FUN4 phys 0, PHYS DUST -> MODAL bowed: went with PHYS (its tracks FM6's first sound now) */
     }
 
     {   /* the FUN7 name: the reserved tail's last 12 bytes, covered by the hash; zero = no name */
@@ -948,18 +943,18 @@ int main(void)
         st2 = st; ((uint32_t *)st2.raw)[1] = PROJ_STORE2;
         ok &= !proj_import(&c, &st2, (int)PROJ_STORE3);
         bad += check("  refused: a changed byte, another size in it", ok);
-        a.t[k].engine = ENGI_PHYS; a.t[k].preset = 3;   /* (no firmware writes one) */
+        a.t[k].engine = ENGI_PROPHET; a.t[k].preset = 3;   /* ((Vallée) a heavy-only engine; no firmware writes one) */
         ok = proj_pack2(&st, &a, &PROJ_SKF3) && proj_import(&c, &st, (int)PROJ_STORE3) &&
              c.t[k].engine == trk_def_engine(k) && c.t[k].preset == PROJ_DEF_SOUND && c.ent[k][15][0] == 64u;
-        bad += check("  a crafted SKF3 with PHYS on T6: T6's power-on sound, its list kept", ok);
-        a.t[k].engine = ENGI_DRUMX; a.t[k].preset = 0;   /* (phase 7) the project's DRUM-X kit */
+        bad += check("  a crafted SKF3 with PROPHET on T6: T6's power-on sound, its list kept", ok);
+        a.t[k].engine = ENGI_DRUM; a.t[k].preset = 0;    /* (phase 7) the project's DRUM-X kit ((Vallée) DRUM-X retired: its bytes kept) */
         memcpy(a.dx, DX_KIT_DEF, sizeof a.dx);
         a.dx[DV_SNARE].b[DXP_COLOR] = 9;
         a.dx[DV_BELL].mode = (uint8_t)(DX_MODE(DXW_BELL, DXF_LP, 1) | DX_DRIVE | DXM_SINE << 5);
         a.dx_on = 1;
         ok = proj_pack2(&st, &a, &PROJ_SKF3) && st.raw[1175] == PROJ_DX_MARK && st.raw[1176] == a.dx[0].mode &&
              proj_import(&c, &st, (int)PROJ_STORE3) && c.dx_on && !memcmp(c.dx, a.dx, sizeof a.dx) &&
-             c.t[k].engine == ENGI_DRUMX && proj_pack2(&st2, &c, &PROJ_SKF3) && !memcmp(&st, &st2, sizeof st);
+             c.t[k].engine == ENGI_DRUM && proj_pack2(&st2, &c, &PROJ_SKF3) && !memcmp(&st, &st2, sizeof st);
         bad += check("  (phase 7) the DRUM-X kit at 1175 (its mark, 88 bytes): round trip, byte for byte", ok);
         st.raw[1176u + 3u] = 200u;                   /* (a value past 127: a damaged kit) */
         sum = proj_hash(st.raw, PROJ_STORE3 - 4u); memcpy(st.raw + PROJ_STORE3 - 4u, &sum, 4);
@@ -1059,12 +1054,12 @@ int main(void)
         memset(&a, 0, sizeof a);
         a.magic = PROJ_MAGIC; a.size = sizeof a; a.parts = PROJ_PARTS; a.phys = PROJ_PHYS;
         chain_defaults(&a.chain);
-        a.t[k].engine = ENGI_PHYS; a.t[k].preset = 3; a.ent[k][0][0] = 5;
+        a.t[k].engine = ENGI_PROPHET; a.t[k].preset = 3; a.ent[k][0][0] = 5;   /* ((Vallée) heavy-only, as PHYS was) */
         a.sum = proj_sum(&a);
         ok = proj_import(&c, &a, sizeof a) && c.ent[k][0][0] == 5u;
         ok &= k >= NHEAVY ? c.t[k].engine == trk_def_engine(k) && c.t[k].preset == PROJ_DEF_SOUND
-                          : c.t[k].engine == ENGI_PHYS && c.t[k].preset == 3u;
-        bad += check("a light track holding PHYS (crafted): its power-on sound, its list kept (four tracks: as is)", ok);
+                          : c.t[k].engine == ENGI_PROPHET && c.t[k].preset == 3u;
+        bad += check("a light track holding PROPHET (crafted): its power-on sound, its list kept (four tracks: as is)", ok);
     }
     {   /* (2.0, Tier B 4) stored parameter ids (core.h sid_put / sid_get, gsid_*): by number, a count first; a newer
          * record's numbers passed over, an older one's missing ones left at the caller's defaults */
@@ -1101,6 +1096,53 @@ int main(void)
         ok &= !sid_get(r, b, 1u + P_COUNT);
         bad += check("  a newer record's numbers passed over, an older one's missing ones left; too short or out of "
                      "range refused", ok);
+    }
+    {   /* ((Vallée, the SPAMPY sound) a record of before holds Skiff's engine numbers: mapped on import (core.h
+         * ENG_FROM_SKIFF); SAMPLE DRUM FM6 SUMMON keep their sound, the others the new engine's first */
+        static project_t a, c;
+        static project_store_t st;
+        static const uint8_t SK[NTRK] = {0, 12, 10, 15, 9, 1};    /* ANALOG FM6 DRUM SUMMON PHYS DIGITAL (Skiff's) */
+        static const uint8_t NE[NTRK] = {0, ENGI_FM6, ENGI_DRUM, ENGI_SUMMON, ENGI_FM6, ENGI_FM6};
+        proj_era_off = 1;                               /* (written as Skiff wrote it) */
+        memset(&a, 0, sizeof a);
+        for (t = 0; t < NTRK; t++) {
+            a.t[t].engine = SK[t];
+            a.t[t].preset = (uint8_t)(t + 1u);
+            for (i = 0; i < P_COUNT; i++)
+                a.t[t].p[i] = (int16_t)clamp(param_desc_of(NE[t], i)->def + (int32_t)(i >= P_E0 && i < P_E0 + 8u),
+                                             param_desc_of(NE[t], i)->min, param_desc_of(NE[t], i)->max);
+        }
+        a.parts = PROJ_PARTS; a.phys = PROJ_PHYS;
+        ok = proj_pack2(&st, &a, &PROJ_SKF3);
+        proj_era_off = 0;
+        ok = ok && proj_import(&c, &st, (int)PROJ_STORE3);
+        for (t = 0; t < NTRK; t++) {
+            int kept = SK[t] == 12u || SK[t] == 10u || SK[t] == 15u;
+            ok &= c.t[t].engine == NE[t] && eng_allowed(t, c.t[t].engine);
+            ok &= kept ? c.t[t].preset == a.t[t].preset && !memcmp(c.t[t].p, a.t[t].p, sizeof a.t[t].p)
+                       : c.t[t].preset == PROJ_NEW_ENG && c.t[t].p[P_E0] == param_desc_of(NE[t], P_E0)->def &&
+                         c.t[t].p[P_E7] == param_desc_of(NE[t], P_E7)->def;
+            ok &= c.t[t].p[P_LEVEL] == a.t[t].p[P_LEVEL];   /* (the mix kept) */
+        }
+        bad += check("(Vallée) SKF3 of Skiff: engines mapped; DRUM FM6 SUMMON kept, the rest the new engine's first sound", ok);
+
+        proj_era_off = 1;                               /* FUN4: PHYS MODEL DRUM -> DRUM, PHYS MEMB -> FM6 */
+        memset(&q, 0, sizeof q);
+        proj_power_on(&q, 0u);
+        q.t[0].engine = 9u; q.t[1].engine = 9u;         /* (Skiff's PHYS) */
+        q.t[0].p[P_E0] = 4; q.t[1].p[P_E0] = 2;
+        q.phys = 1; q.parts = PROJ_PARTS;
+        q.sum = proj_sum(&q);
+        to_v4(&v4, &q);
+        memcpy(&buf, &v4, sizeof v4);
+        proj_era_off = 0;
+        ok = proj_import(&q2, &buf, (int)sizeof v4) && q2.t[0].engine == ENGI_DRUM && q2.t[0].preset == 0 &&
+             q2.t[1].engine == ENGI_FM6 && q2.t[1].preset == PROJ_NEW_ENG;
+        for (t = PROJ_NT; t < NTRK; t++)                /* (tracks the format has not: as at power-on, not mapped) */
+            ok &= q2.t[t].engine == trk_def_engine(t) && q2.t[t].preset == PROJ_DEF_SOUND;
+        bad += check("(Vallée) FUN4 of Skiff: PHYS MODEL DRUM -> DRUM, MEMB -> FM6's first; power-on tracks as they are", ok);
+
+        proj_era_off = 0;
     }
     printf("%s\n", bad ? "PROJECT FORMAT TEST FAILED" : "project format test passed");
     return bad != 0;

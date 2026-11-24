@@ -385,12 +385,22 @@ static void proj_trk_from(proj_trk_t *d, const int16_t *p, uint32_t np, uint8_t 
     }
 }
 
+/* ((Vallée, the SPAMPY sound) the fix-ups of the formats of before (below) run on Skiff's engine numbers, before
+ * proj_from_skiff maps the record to today's */
+#ifdef PROJ_ERA_TEST                           /* (host tests only: the formats' own checks, numbers as they are) */
+static int proj_era_off;
+#define SK_PHYS (proj_era_off ? ENGI_PHYS : 9u)
+#define SK_DRUM (proj_era_off ? ENGI_DRUM : 10u)
+#else
+#define SK_PHYS 9u
+#define SK_DRUM 10u
+#endif
 /* the DRUM tracks of a project of before the grid: their lanes' notes as hits (see the top) */
 static void proj_grid(project_t *q)
 {
     uint32_t k, i;
     for (k = 0; k < NTRK; k++)
-        if (q->t[k].engine == ENGI_DRUM)
+        if (q->t[k].engine == SK_DRUM)
             for (i = 0; i < NSTEP; i++)
                 step_to_grid(&q->t[k].step[i]);
     q->sum = proj_sum(q);
@@ -407,7 +417,7 @@ static void proj_drums_to_part(project_t *q)
     proj_trk_t *d = &q->t[PROJ_DRUMT];
     if (q->parts)
         return;
-    d->engine = ENGI_DRUM;                      /* DRUM's first kit: independent of today's power-on drum sound */
+    d->engine = SK_DRUM;                        /* DRUM's first kit: independent of today's power-on drum sound */
     d->preset = PROJ_DEF_KEEP;
     d->p[P_LEVEL] = (int16_t)clamp(q->g[G_CMODE], 0, 127);   /* the drum part's level and reverb send (the ids */
     d->p[P_REV] = (int16_t)clamp(q->g[G_CFDBK], 0, 127);     /* G_DRLVL / G_DRREV then: core.h) */
@@ -418,9 +428,11 @@ static void proj_drums_to_part(project_t *q)
 
 /* (Skiff phase 6) tracks from .. NTRK - 1 as at power-on, for a format holding fewer: the engine's defaults, its
  * power-on sound (PROJ_DEF_SOUND: project_restore_runtime loads it), no steps, the init patch, no list */
+static uint8_t proj_pow;                        /* ((Vallée) the tracks this import set as at power-on: today's numbers */
 static void proj_power_on_trk(project_t *q, uint32_t i)
 {
     uint32_t k;
+    proj_pow |= (uint8_t)(1u << i);
     for (k = 0; k < P_COUNT; k++)
         q->t[i].p[k] = param_desc_of(trk_def_engine(i), k)->def;
     q->t[i].engine = (uint8_t)trk_def_engine(i);
@@ -448,12 +460,11 @@ static void proj_phys(project_t *q)
         return;
     for (k = 0; k < NTRK; k++) {
         proj_trk_t *d = &q->t[k];
-        if (d->engine != ENGI_PHYS)
+        if (d->engine != SK_PHYS)
             continue;
-        if (!q->phys)
-            phys_legacy(&d->p[P_E0]);
-        if (drum_from_phys(d->engine, &d->p[P_E0])) {
-            d->engine = ENGI_DRUM;
+        /* ((Vallée) DUST -> MODAL (phys_legacy) went with PHYS: its tracks are FM6's first sound now */
+        if (drum_from_phys(ENGI_PHYS, &d->p[P_E0])) {
+            d->engine = SK_DRUM;
             d->preset = 0;
         }
     }
@@ -694,12 +705,37 @@ static uint32_t proj_old_whole(const void *b, uint32_t n)
     uint32_t m = n >= 12u ? w[1] : 0u;
     return m >= 12u && m <= n && !(m & 3u) && proj_old_magic(w[0]) && w[m / 4u - 1u] == proj_hash(b, m - 4u) ? m : 0u;
 }
+#if FELUCCA_LEGACY
+static int proj_import_legacy(project_t *q, const void *b, int n);
+#endif
+static void proj_from_skiff(project_t *q, uint32_t skip);
+/* ((Vallée, the SPAMPY sound) every format but SKF4 is of before: Skiff's engine numbers, mapped here once (SKF4
+ * maps itself by its mark: proj_unpack4) */
 static int proj_import_any(project_t *q, const void *b, int n)
 {
     const proj_fmt_t *f = proj_fmt_of(b, n);
-    if (f)
-        return proj_unpack2(q, b, f);              /* (Skiff phase 5, 6) */
+    proj_pow = 0;
+    if (f == &PROJ_SKF4)
+        return proj_unpack2(q, b, f);
+    if (f ? !proj_unpack2(q, b, f) :
 #if FELUCCA_LEGACY
+        !proj_import_legacy(q, b, n)
+#else
+        1
+#endif
+        )
+        return 0;
+#ifdef PROJ_ERA_TEST
+    if (proj_era_off)
+        return 1;
+#endif
+    proj_from_skiff(q, proj_pow);
+    q->sum = proj_sum(q);
+    return 1;
+}
+#if FELUCCA_LEGACY
+static int proj_import_legacy(project_t *q, const void *b, int n)
+{
     if (n == PROJ_STORE_SIZE && ((const uint32_t *)b)[0] == PROJ_MAGIC)
         return proj_unpack(q, b, PROJ_STORE_SIZE);
     if (n == PROJ_STORE_SIZE && ((const uint32_t *)b)[1] >= 8u && ((const uint32_t *)b)[1] < PROJ_STORE_SIZE)
@@ -723,10 +759,8 @@ static int proj_import_any(project_t *q, const void *b, int n)
     proj_ent_none(q);
     q->sum = proj_sum(q);
     return 1;
-#else
-    return 0;
-#endif
 }
+#endif
 #if FELUCCA_LEGACY
 static int proj_import_old(project_t *q, const void *b, int n)
 {
@@ -1078,10 +1112,12 @@ static int proj_pack4(project_store_t *out, const project_t *q)
  * (ENG_FROM_SKIFF); a mapped track's sound the new engine's first (its values at the new engine's defaults until
  * then: never another engine's), DRUM's and SUMMON's kept. Idempotent on what it changed only once (the caller reads
  * the mark) */
-static void proj_from_skiff(project_t *q)
+static void proj_from_skiff(project_t *q, uint32_t skip)   /* (skip: tracks already today's, as at power-on) */
 {
     uint32_t t, e, i;
     for (t = 0; t < NTRK; t++) {
+        if ((skip >> t) & 1u)
+            continue;
         uint32_t old = q->t[t].engine % 16u, ne = ENG_FROM_SKIFF[old];
         q->t[t].engine = (uint8_t)ne;
         if (!eng_skiff_kept(old)) {
@@ -1152,7 +1188,10 @@ static int proj_unpack4(project_t *q, const uint8_t *b)
     if (end - pos >= 2u && b[pos] == PROJ_ERA_MARK && b[pos + 1u] == 1u)
         pos += 2u;                                         /* ((Vallée, the SPAMPY sound) SPAMPY's numbers */
     else
-        proj_from_skiff(q);                                /* a record of before: its engines mapped */
+#ifdef PROJ_ERA_TEST
+        if (!proj_era_off)
+#endif
+        proj_from_skiff(q, 0u);                            /* a record of before: its engines mapped */
     if (end - pos > sizeof q->gch && b[pos] == PROJ_GC_MARK)   /* ((Vallée) GEN's own chords; none: none) */
         memcpy(q->gch, b + pos + 1u, sizeof q->gch);
 #if FELUCCA_LEGACY

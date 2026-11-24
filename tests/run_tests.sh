@@ -299,16 +299,8 @@ if [ -f build/gen/felucca_tables.h ]; then
     run "USB/TRS clock, bend, sustain, ownership and panic recovery" "$OUT/midi_control_test"
     $CC -O1 -w -Ibuild/gen -Ifirmware/src -o "$OUT/midi_out_test" tests/midi_out_test.c -lm
     run "2.2 MIDI OUT: what plays goes out, every note-on one note-off (chords, RATCH, ARP, FOLLOW, mutes, channels, a full ring), KEYS / OFF, no MIDI IN echo, timed" "$OUT/midi_out_test"
-    $CC -O1 -w -DFELUCCA_FM4=1 -Ibuild/gen -Ifirmware/src -o "$OUT/digital_test" tests/digital_test.c -lm
-    run "DIGITAL (retired, built here with FELUCCA_FM4=1): operator envelopes/levels" "$OUT/digital_test"
-    $CC -O2 -w -DFELUCCA_FM4=1 -Ibuild/gen -Ifirmware/src -o "$OUT/fm4_test" tests/fm4_test.c -lm
-    mkdir -p build/fm4_demo
-    run "DIGITAL -> FM6: the conversion against DIGITAL (FELUCCA_FM4=1): pitch, centroid, RMS envelope; demos" \
-        "$OUT/fm4_test" build/fm4_demo
-    $CC -O2 -w -fsanitize=integer-divide-by-zero -fno-sanitize-recover=all -Ibuild/gen -Ifirmware/src \
-        -o "$OUT/fm4_div0_test" tests/fm4_div0_test.c -lm
-    run "DIGITAL -> FM6 without a divide by zero (#61): the same values as before, a 0.9 ORGAN project (UBSan)" \
-        "$OUT/fm4_div0_test"
+    # ((Vallée, the SPAMPY sound) DIGITAL (FM4) and its conversion retired: digital_test, fm4_test, fm4_div0_test
+    # are kept in the tree for Vallée Classic (the vallee-skiff-engine branch), not run here
     $CC -O1 -w -Ibuild/gen -Ifirmware/src -o "$OUT/theme_test" tests/theme_test.c -lm
     run "themes: contrast, text blending and font metrics" "$OUT/theme_test"
     $CC -O1 -w -Ibuild/gen -Ifirmware/src -o "$OUT/text_ref_test" tests/text_ref_test.c -lm
@@ -338,12 +330,7 @@ if [ -f build/gen/felucca_tables.h ]; then
     run "UI renders: layout lint (every screen and palette, every page, engine and column value), GREY gray, MONO neutral, alignment by ink (1 px fails), draw cost, every picture as tests/ui_golden.txt has it" \
         env UI_GOLDEN=tests/ui_golden.txt "$OUT/ui_render" build/ui_new build/ui_slot
     if python3 -c "import PIL" 2>/dev/null; then python3 tests/ui_render.py build/ui_new build/ui_slot; fi
-    $CC -w -DFELUCCA_FM4=1 -Ibuild/gen -Ifirmware/src -o "$OUT/ui_test_fm4" tests/ui_test.c -lm
-    run "UI built with FELUCCA_FM4=1 (DIGITAL, kept in the tree): its OP pages, EDIT cycle, algorithm charts" "$OUT/ui_test_fm4"
-    $CC -O1 -w -DFELUCCA_FM4=1 "-DFELUCCA_VERSION=\"$FV\"" -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/ui_render_fm4" tests/ui_render.c -lm
-    mkdir -p build/ui_fm4/ppm build/ui_fm4_slot
-    run "UI renders with FELUCCA_FM4=1: DIGITAL's screens (EDIT, OP ENV, the 8 algorithm charts), lint, GREY gray, MONO neutral" \
-        "$OUT/ui_render_fm4" build/ui_fm4 build/ui_fm4_slot
+    # ((Vallée, the SPAMPY sound) the FELUCCA_FM4=1 UI builds: retired with DIGITAL (FM4)
     $CC -w -Ibuild/gen -Ifirmware/src -o "$OUT/audio_test" tests/audio_test.c -lm
     run "audio: overload protection, bounded fades and DMA diagnostics" "$OUT/audio_test"
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/tail_test" tests/tail_test.c -lm
@@ -368,10 +355,9 @@ if [ -f build/gen/felucca_tables.h ]; then
     run "full backup: CRC before writes, stale runtime, USB reset / timeout, malformed objects; (2.0) OLD FORMAT slots backed up" "$OUT/backup_test"
     $CC -w $LEGACY -Ibuild/gen -Ifirmware/src -o "$OUT/backup_test_legacy" tests/backup_test.c -lm
     run "full backup, the converter's build (FELUCCA_LEGACY): older projects, 1.0's FM6 bank, SKF2" "$OUT/backup_test_legacy"
-    $CC -w -Ibuild/gen -Ifirmware/src -o "$OUT/conv_test" tests/conv_test.c -lm
-    mkdir -p "$OUT/conv"
-    run "(2.0) the converter (web/conv/conv.c): archives of before -> SKF4 and presets v6; a fresh unit plays them" \
-        "$OUT/conv_test" "$OUT/conv"
+    # ((Vallée, the SPAMPY sound) conv_test: the converter's archives of before -> Classic's formats, tested on the
+    # vallee-skiff-engine branch; the installer converts with Classic's converter, this firmware maps the result on load
+    # (project.c proj_from_skiff, upreset.c up_from_skiff: project_test, persistence_test)
     $CC -w -Ibuild/gen -Ifirmware/src -o "$OUT/editor_test" tests/editor_test.c -lm
     run "editor: real C protocol, malformed transfers, queue recovery, MENU settings (writes build/host/menu.json)" \
         env MENU_JSON="$OUT/menu.json" "$OUT/editor_test"
@@ -434,28 +420,11 @@ EOF
     $CC -w -Ibuild/gen -Ifirmware/src -o "$OUT/descdump" tests/descdump.c -lm
     echo "== parameter and engine tables as JSON (for the editor mock test)"
     "$OUT/descdump" > "$OUT/desc.json" || fail=1
-    $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/phys_test" tests/phys_test.c -lm
-    mkdir -p build/phys_demo
-    run "PHYS: stability C-1..G9 over the parameter corners, worst-case cost against PHASE WIRE, demos" "$OUT/phys_test" build/phys_demo
-    D=${DAISYSP:-vendor/DaisySP}/Source
-    if [ -d "$D/PhysicalModeling" ] && command -v c++ >/dev/null 2>&1; then
-        $CC -O2 -w -Ibuild/gen -Ifirmware/src -Itests -c -o "$OUT/phys_fixed.o" tests/phys_fixed.c
-        c++ -O2 -std=c++14 -w -I"$D" -I"$D/Utility" -o "$OUT/phys_ref" tests/phys_ref.cpp \
-            "$D/PhysicalModeling/modalvoice.cpp" "$D/PhysicalModeling/resonator.cpp" "$D/PhysicalModeling/stringvoice.cpp" \
-            "$D/PhysicalModeling/KarplusString.cpp" "$D/Filters/svf.cpp" "$D/Utility/dcblock.cpp" \
-            "$D/Dynamics/crossfade.cpp" "$OUT/phys_fixed.o"
-        run "PHYS: the fixed-point models against DaisySP's float originals (mode frequencies, decays, Svf)" "$OUT/phys_ref"
-    else
-        echo "== skip PHYS reference test (no DaisySP: set DAISYSP to a checkout)"
-    fi
+    # ((Vallée, the SPAMPY sound) PHYS retired (SPAMPY has none): phys_test, phys_ref not run
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/drum_test" tests/drum_test.c -lm
     mkdir -p build/drum_demo
     run "DRUM: voice targets, controls, no clipping, retrigger, hat choke, the kick on a small speaker, keys, 8 lanes, cost, demos" "$OUT/drum_test" build/drum_demo
-    $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/drumx_test" tests/drumx_test.c -lm
-    mkdir -p build/drumx_demo
-    run "DRUM-X: every lane sounds and ends, MORPH, TUNE, the pitch envelope, hat choke, the knobs, FOLD, FM, a drum track, demos" "$OUT/drumx_test" build/drumx_demo
-    $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/noise_test" tests/noise_test.c -lm
-    mkdir -p build/noise_demo
+    # ((Vallée, the SPAMPY sound) DRUM-X and NOISE retired (MORPH plays at NOISE's number): drumx_test, noise_test not run
     run "NOISE: colour slopes, key-tracked filter and clock, META period, DC, clipping, retrigger, cost, demos" "$OUT/noise_test" build/noise_demo
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/fm6_test" tests/fm6_test.c -lm
     mkdir -p build/fm6_demo
@@ -500,7 +469,7 @@ else
     run "ASan/UBSan: update loader (other app -> this build)" "$A/ldr_test" "$OUT/old.fwsc" build/felucca.fwsc
     $SCC -DOWN_PKG=1 -o "$A/ota_test" tests/ota_test.c
     run "ASan/UBSan: M-UPGRADE entry (own loader)" "$A/ota_test" build/felucca.fwsc
-    for t in editor_test project_test backup_test conv_test robust_test bank_test duck_test persistence_test ui_test; do
+    for t in editor_test project_test backup_test robust_test bank_test duck_test persistence_test ui_test; do
         $SCC -o "$A/$t" tests/$t.c -lm
         run "ASan/UBSan: $t" "$A/$t"
     done
@@ -550,8 +519,7 @@ else
     run "browser emulator: boot, keys, MIDI, screen, LEDs, PLAY, a save kept across instances, = native, cost" \
         node web/emu/emu_test.mjs build/emu/felucca.wasm "$OUT/emu_native.f32"
     run "(2.0) the converter to WebAssembly (web/conv/build.sh -> build/conv)" sh web/conv/build.sh
-    run "(2.0) the converter in the page (web/conv/conv.js): conv.wasm = the native build, the write-back set" \
-        node web/conv/conv_test.mjs build/conv/conv.wasm "$OUT/conv"
+    # ((Vallée, the SPAMPY sound) conv_test.mjs compares with conv_test's native output: on the Classic branch
 fi
 
 [ $fail -eq 0 ] && echo "ALL HOST TESTS PASSED" || { echo "HOST TESTS FAILED"; exit 1; }

@@ -569,7 +569,7 @@ static int32_t hit_level(track_t *t, uint32_t lane)    /* a hit on lane's note: 
 static int lane_mutes(void)
 {
     int bad = 0, ok, e;
-    for (e = 0; e < 2; e++) {
+    for (e = 0; e < 1; e++) {                          /* ((Vallée) DRUM alone: DRUM-X retired */
         track_t *t;
         int32_t k0, s0;
         ui_power_on();
@@ -871,9 +871,8 @@ static int lane_pans(void)
     ok &= r > 0 && l < r / 60;
     lp_hit(ENGI_DRUM, 0, 0, 63, -64, &l, &r);           /* (the kick at C, the snare right, the track's PAN hard left) */
     ok &= l > 0 && r == 0 && trk[0].lpan_on;
-    lp_hit(ENGI_DRUMX, 0, -64, 0, 0, &l, &r);           /* (DRUM-X: its voices' lane in s[0] as DRUM's) */
-    ok &= l > 0 && r == 0 && trk[0].lpan_on;
-    bad += check("  a lane at C beside them: both sides the same; the track's PAN over the lanes; DRUM-X the same", ok);
+    /* ((Vallée, the SPAMPY sound) DRUM-X retired: no engine has it) */
+    bad += check("  a lane at C beside them: both sides the same; the track's PAN over the lanes", ok);
     return bad;
 }
 
@@ -1019,17 +1018,17 @@ static int midi_learn_channels(void)
         settings_export(&p);                            /* ((2.0) SKS1: the map by name, ml) */
         p.fav[ENGI_DIGITAL][0] = 1u;
         memset(favorites.factory[ENGI_DIGITAL], 0, 32);
-        favorites.factory[ENGI_FM6][FM4_TO_FM6[0] / 8u] &= (uint8_t)~(1u << (FM4_TO_FM6[0] % 8u));
+        favorites.factory[ENGI_FM6][0u / 8u] &= (uint8_t)~(1u << (0u % 8u));
         settings_import(&p, (int)sizeof p);
 #if FELUCCA_LEGACY
         ok &= !memcmp(favorites.factory[ENGI_DIGITAL] + 1, row + 1, 31) && !favorites.factory[ENGI_DIGITAL][0] &&
-              ((favorites.factory[ENGI_FM6][FM4_TO_FM6[0] / 8u] >> (FM4_TO_FM6[0] % 8u)) & 1u) && ml_count() == ML_N;
+              ((favorites.factory[ENGI_FM6][0u / 8u] >> (0u % 8u)) & 1u) && ml_count() == ML_N;
 #else                                                   /* ((2.0) DIGITAL's stars as they are: no list shows engine 1) */
         ok &= !memcmp(favorites.factory[ENGI_DIGITAL] + 1, row + 1, 31) && favorites.factory[ENGI_DIGITAL][0] == 1u &&
-              !((favorites.factory[ENGI_FM6][FM4_TO_FM6[0] / 8u] >> (FM4_TO_FM6[0] % 8u)) & 1u) && ml_count() == ML_N;
+              !((favorites.factory[ENGI_FM6][0u / 8u] >> (0u % 8u)) & 1u) && ml_count() == ML_N;
         favorites.factory[ENGI_DIGITAL][0] = 0;
 #endif
-        favorites.factory[ENGI_FM6][FM4_TO_FM6[0] / 8u] &= (uint8_t)~(1u << (FM4_TO_FM6[0] % 8u));
+        favorites.factory[ENGI_FM6][0u / 8u] &= (uint8_t)~(1u << (0u % 8u));
     }
     hold(B_HOME);                                       /* LEARN CLEAR */
     ui.menu_sel = MI_LCLEAR;

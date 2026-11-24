@@ -196,6 +196,8 @@ EXPORT void conv_fix(void)
         if (!fel_up_values(r, v, k))
             up_values(r, v);
         n = *r;
+#if !FELUCCA_FM4                                   /* ((Vallée, the SPAMPY sound) the bank's load maps a DIGITAL sound
+                                                     * to FM6 already (upreset.c up_from_skiff): Classic's path alone */
         if (was == ENGI_DIGITAL) {
             fm4_apply(&trk[0], v);                 /* (DIGITAL's values -> FM6's, the patch track 1's) */
             memcpy(v, trk[0].p, sizeof v);
@@ -203,6 +205,7 @@ EXPORT void conv_fix(void)
             own = 1;
             n.engine = ENGI_FM6;
         }
+#endif
         up_set_sound(&n, v);
         if (!up_put(k, &n) && own) {               /* (the patch tied to the record as it is now) */
             upf_set(k, pk);
