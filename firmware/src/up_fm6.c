@@ -200,7 +200,7 @@ static void upf_patch(uint32_t k, int32_t s, uint8_t *v)
 {
     uint8_t pk[FM6_PACKED];
     if (upf_get(k, pk))
-        memcpy(pk, s >= 0 && s < (int32_t)FM6_NFACTORY ? FM6_FACTORY[s] : FM6_INIT, FM6_PACKED);
+        memcpy(pk, fm6_slot_ok(s) ? fm6_slot_pk((uint32_t)s) : FM6_INIT, FM6_PACKED);
     fm6_unpack(pk, v);
 }
 /* up_load: track t (its values just loaded from slot k) gets the record's patch (upf_patch). SLOT then shows F n or

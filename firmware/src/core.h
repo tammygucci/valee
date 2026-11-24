@@ -79,6 +79,7 @@ _Static_assert(NTRK <= 8 && NPART < VOICES_1CORE && VOICES_2CORE <= NVOICE * NPA
 #define ENGI_OBERVAVE 16u
 #define ENGI_WAVETABLE 17u       /* reserved: MORPH plays from 11 (SPAMPY's catalogue) */
 #define ENGI_DRONE 18u
+#define ENGI_FM6 9u              /* FM6 (eng_fm6.c) */
 #define NENG_SHOWN 17u           /* the engines one can pick: PRESETS, the EDIT layer, the editor (engines.c ENGINE_ORDER) */
 #define UP_SLOTS 32u             /* user presets (upreset.c) */
 #define NELEM(a) (sizeof(a) / sizeof((a)[0]))
@@ -305,6 +306,26 @@ static int drum_from_perc(uint32_t engine, int16_t *e)
     return 1;
 }
 
+/* ((Vallée, the SPAMPY sound) a sound stored by Skiff's engine numbers (Vallée 0.9.1 and before): its engine now
+ * (projects: project.c proj_from_skiff; user presets: upreset.c up_from_skiff) */
+static const uint8_t ENG_FROM_SKIFF[16] = {
+    0,              /* ANALOG */
+    ENGI_FM6,       /* DIGITAL (retired: played as FM6) */
+    2, 3, 4,        /* PHASE LOFI SAMPLE */
+    5, 6,           /* VOICE TRIO */
+    ENGI_DRAWBAR,   /* WHEEL */
+    ENGI_NOISE,     /* GRAIN -> MORPH */
+    ENGI_FM6,       /* PHYS -> FM6 */
+    ENGI_DRUM,      /* DRUM (kept) */
+    ENGI_NOISE,     /* NOISE -> MORPH */
+    ENGI_FM6,       /* FM6 */
+    4,              /* SLICE -> SAMPLE */
+    ENGI_DRUM,      /* DRUM-X -> DRUM */
+    ENGI_SUMMON,    /* SUMMON (kept) */
+};
+/* the engines whose sound stays as it was: SAMPLE (its sets by number: SAX 3), DRUM, FM6 (the same core, the patch
+ * stored with the sound), SUMMON */
+static int eng_skiff_kept(uint32_t e) { return e == 4u || e == 10u || e == 12u || e == 15u; }
 /* ------------------------------------------------- voices, engines --- */
 enum { V_POLY, V_MONO, V_LEGATO, V_UNISON };   /* P_VOICE */
 typedef struct {

@@ -85,9 +85,24 @@ Done in 2b so far:
 - ANALOG's FILTER slot holds SPAMPY's TYPE (LP BP HP).
 - GEN's engine constants follow; its sound names are still the old ones (a missing name: the engine's first).
 - regress: PROPHET's long releases (Sequential's programs, up to ~60 s) allowed 60 s; every check else unchanged.
-Next in 2b: SPAMPY's FM6 (fm6_core + its patches), SPAMPY's SAMPLE sets (1b), level trims (preset_trim via the logical
-id) in the mix, the editor's mock tables (web/editor.html) and editor_test's PHYS/GRAIN light-track checks, user
-presets of the old numbers (upreset.c: map as projects), then re-record the goldens after listening/looking.
+Done since:
+- Level matching: sloop/sloop_presets.c (SPAMPY's PRESET_MAP, preset_data, preset_trim verbatim) + preset_logical_of;
+  preset_fill sets P_ED_FX = the trim (0 for sounds SPAMPY does not number: SAX, DRUM's, SUMMON's); fx.c trk_lvl
+  adds it to LEVEL in all four output paths, as SPAMPY's fx.c. (SPAMPY's LOUD, a per-sound boost the user turns on,
+  off by default: not ported.)
+- 1b: tools/gen_samples_vallee.py: SPAMPY's sets byte for byte (tools/spampy/gen_samples.py over
+  assets/samples-spampy) + Vallée's SAX in SPAMPY's empty set 3; SAMPLE's sounds VIBES LOFI FLUTE GM KIT SAX DARK SAX.
+  Block 217,753 B (area 245,760).
+- FM6: SPAMPY's patches (tools/spampy/gen_fm6_patches.py, byte for byte: F1 F5 F7 F8 kept, the others EMPTY as in
+  SPAMPY; 17 voices of the FM-1's own bank, assets/fm1-original: M-VAVE's data, as SPAMPY ships it) and its 22 sounds;
+  PATCH F1..F8, OWN, O1..O17 (SPAMPY's PTCH 35..51 translated); fm6_slot_ok / fm6_slot_pk everywhere a factory slot
+  was assumed. The FM6 core is the same DSP as SPAMPY's (only where the buses live differs).
+- User presets: version 7 = SPAMPY's numbers; an older record is mapped in RAM at load (up_from_skiff), SAMPLE DRUM
+  FM6 SUMMON kept (projects keep those four too now); ENG_FROM_SKIFF in core.h.
+- regress: PROPHET and FM6 O1..O17 (long releases, bells) 90 s to free; health clean; ASan stress clean.
+Next: update the tests written for the old engines (editor_test: PHYS/GRAIN light tracks, F2/F6 patches, version 6,
+INFO's engine names; upreset_test: version 7, DIGITAL back; persistence: preset save/erase compare with v7), the
+editor's mock tables (web/editor.html), then re-record the goldens after listening / looking.
 Then 3 (drums), 4 (mix), 5 (GEN, SUMMON...), 6 (tests), 7 (installer).
 Local host builds: build/gen from a CI-like build + tools/gen_factory_block.py + tools/gen_p5_tables.py.
 Do not install this branch on a unit yet (the installer does not write the sample block).

@@ -2047,7 +2047,8 @@ static void preset_fill(int16_t *p, const engine_t *e, uint32_t pi)
     p[P_SUS] = e->presets[pi].env[2];
     p[P_REL] = e->presets[pi].env[3];
     p[P_ED_FLT] = e->presets[pi].fenv;
-    p[P_VOICE] = e->presets[pi].mono ? V_LEGATO : V_POLY;   /* mono presets keep the legato feel */
+    p[P_ED_FX] = sloop_trim_of(eng_num(e), pi);       /* ((Vallée, the SPAMPY sound) its level trim: SPAMPY's level */
+    p[P_VOICE] = e->presets[pi].mono ? V_LEGATO : V_POLY;   /* matching; mono presets keep the legato feel */
     {   /* the sends */
         static const uint8_t FX_DEF[4] = {0, 24, 28, 36};
         const preset_t *pr = &e->presets[pi];

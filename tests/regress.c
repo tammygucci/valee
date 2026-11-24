@@ -120,15 +120,16 @@ static uint32_t at(double s) { return (uint32_t)(s * FS) / CTL * CTL; }
 static void run_to(uint32_t f) { while (fpos < f) blk(); }
 
 /* after the last note-off (rel_at): until the voices are free, then the FX tail */
-/* ((Vallée, the SPAMPY sound) PROPHET's programs are Sequential's, some with a release of 20 s and more: 60 s for a
- * part on PROPHET (a voice that never ends still fails); every other engine FREE_CAP_S */
-#define FREE_CAP_P5_S 60
+/* ((Vallée, the SPAMPY sound) PROPHET's programs are Sequential's and FM6's O1..O17 the FM-1's own bank, some with
+ * a release or a bell's decay of 20 s and more: 90 s for a part on one of those (a voice that never ends still fails);
+ * every other sound FREE_CAP_S */
+#define FREE_CAP_LONG_S 90
 static uint32_t free_cap_s(void)
 {
     uint32_t k;
     for (k = 0; k < NPART; k++)
-        if (trk[k].engine == ENGI_PROPHET)
-            return FREE_CAP_P5_S;
+        if (trk[k].engine == ENGI_PROPHET || (trk[k].engine == ENGI_FM6 && trk[k].p[P_E7] >= (int16_t)FM6_O1))
+            return FREE_CAP_LONG_S;
     return FREE_CAP_S;
 }
 static void finish(void)

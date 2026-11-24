@@ -108,6 +108,16 @@ static const engine_t *const ENGINES[NENGINES] = {
     &ENG_SUMMON,                 /* 20 (ENGI_SUMMON, Vallée) */
 };
 
+#include "sloop/sloop_presets.c"   /* ((Vallée, the SPAMPY sound) SPAMPY's preset map and level trims */
+/* ((Vallée) engine e's number (ENGINES[]), NENGINES if none */
+static uint32_t eng_num(const engine_t *e)
+{
+    uint32_t i;
+    for (i = 0; i < NENGINES && ENGINES[i] != e; i++)
+        ;
+    return i;
+}
+
 /* a track's engine number as an index (the audio paths: a compare, cheaper than % NENGINES; a bad number: 0) */
 static inline uint32_t eng_idx(uint32_t e) { return e < NENGINES ? e : 0u; }
 

@@ -778,19 +778,19 @@ static int skiff_era_test(void)
     w.raw[at] = w.raw[at + 1u] = 0;                       /* a record of before: no mark */
     sum = proj_hash(w.raw, PROJ_STORE4 - 4u); memcpy(w.raw + PROJ_STORE4 - 4u, &sum, 4);
     ok &= proj_unpack4(&back, w.raw);
-    ok &= back.t[0].engine == ENGI_FM6 && back.t[0].preset == PROJ_NEW_ENG &&
+    ok &= back.t[0].engine == ENGI_FM6 && back.t[0].preset == 3u &&   /* (FM6: kept) */
           back.t[1].engine == ENGI_NOISE && back.t[1].preset == PROJ_NEW_ENG &&
           back.t[2].engine == ENGI_SUMMON && back.t[2].preset == 2u && back.t[2].p[P_E0] == 3 &&
           back.t[3].engine == ENGI_DRUM && back.t[3].preset == 5u && back.t[3].p[P_E0] == 9 &&
           back.t[4].engine == ENGI_DRUM && back.t[4].preset == PROJ_NEW_ENG &&
           back.t[5].engine == 0u && back.t[5].preset == PROJ_NEW_ENG;
-    ok &= back.snd[0][1][0] == ENGI_FM6 + 1u && back.snd[0][1][1] == 0u && back.snd[3][2][0] == ENGI_DRUM + 1u &&
+    ok &= back.snd[0][1][0] == ENGI_FM6 + 1u && back.snd[0][1][1] == 7u && back.snd[3][2][0] == ENGI_DRUM + 1u &&
           back.snd[3][2][1] == 4u;
-    ok &= project_restore_runtime(&back) == 0 && trk[0].eng_req == ENGI_FM6 && trk[0].preset == 0u &&
+    ok &= project_restore_runtime(&back) == 0 && trk[0].eng_req == ENGI_FM6 && trk[0].preset == 3u &&
           trk[3].eng_req == ENGI_DRUM && trk[3].p[P_E0] == 9 && trk[2].eng_req == ENGI_SUMMON;
     for (i = 0; i < NTRK; i++)
         ok &= eng_ok(trk[i].eng_req);
-    return check("(Vallee) a project of the Skiff engines: mapped (DRUM, SUMMON kept, the others the new engine's first); "
+    return check("(Vallee) a project of the Skiff engines: mapped (SAMPLE DRUM FM6 SUMMON kept, the others the new engine's first); "
                  "one of now: as saved", ok);
 }
 

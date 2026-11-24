@@ -199,27 +199,11 @@ static const proj_fmt_t PROJ_SKF3 = {PROJ_MAGIC3, PROJ_STORE3, 6u, PROJ_SCENES, 
  * record as before, byte for byte) */
 #define PROJ_GC_MARK 0x43u                    /* ('C') */
 /* ((Vallée, the SPAMPY sound) 'S' 1 right after the last track (the chords' block after it): the engines by SPAMPY's
- * numbers (core.h). A record without it is of before (Skiff's numbers): eng_from_skiff maps its tracks' and its
- * entries' engines, each sound but DRUM's and SUMMON's to the new engine's first (PROJ_NEW_ENG), the patterns, the
+ * numbers (core.h). A record without it is of before (Skiff's numbers): ENG_FROM_SKIFF (engines.c) maps its tracks' and
+ * entries' engines, each sound but the kept ones' to the new engine's first (PROJ_NEW_ENG), the patterns, the
  * mix and the rest kept. Vallée 0.9.1 and Skiff read the mark as no chords (the block not found there) */
 #define PROJ_ERA_MARK 0x53u                    /* ('S') */
 #define PROJ_NEW_ENG 0xFDu                     /* preset byte: the engine's first sound (an old project's mapped track) */
-static const uint8_t ENG_FROM_SKIFF[16] = {
-    0,              /* ANALOG */
-    ENGI_FM6,       /* DIGITAL (retired: played as FM6) */
-    2, 3, 4,        /* PHASE LOFI SAMPLE */
-    5, 6,           /* VOICE TRIO */
-    ENGI_DRAWBAR,   /* WHEEL */
-    ENGI_NOISE,     /* GRAIN -> MORPH */
-    ENGI_FM6,       /* PHYS -> FM6 */
-    ENGI_DRUM,      /* DRUM (kept) */
-    ENGI_NOISE,     /* NOISE -> MORPH */
-    ENGI_FM6,       /* FM6 */
-    4,              /* SLICE -> SAMPLE */
-    ENGI_DRUM,      /* DRUM-X -> DRUM */
-    ENGI_SUMMON,    /* SUMMON (kept) */
-};
-static int eng_skiff_kept(uint32_t e) { return e == 10u || e == 15u; }   /* DRUM, SUMMON: their sound as it was */
 /* (Skiff 2.0, Tier B: design/TIER_B.md 5) "SKF4": 2560 bytes, the parameters by stored id (core.h sid_put): one added
  * or moved never shifts the others. 8 the layout (PROJ_LAYOUT4; another is not one this firmware reads), 9 flags (0);
  * from 10 (PROJ_ENT4) the lists, 4 bytes an entry (pattern id + 1 or PAT_REST, the REPS byte, the entry's sound: #30's,

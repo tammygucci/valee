@@ -56,6 +56,7 @@
 #define UP_VER 4u                                /* 2 since 1.0; 1 is read too (PHYS MODEL 2 was DUST) */
 #define UP_VER_GRID 5u                           /* 2 with a drum grid as the pattern (see the top) */
 #define UP_VER_SID 6u                            /* ((2.0) by stored id, no pattern: see the top) */
+#define UP_VER_SPAMPY 7u                         /* ((Vallée) as 6, the engine by SPAMPY's numbers (up_from_skiff) */
 #define UP_SIDS (UP_PMAX * 2u + 32u)             /* (.. its room: the parameters' and the pattern's bytes) */
 #define UP_BANK_MAGIC 0x31425055u                /* "UPB1" */
 typedef struct {
@@ -86,7 +87,7 @@ static up_rec_t *up_rec(uint32_t k) { return &up_bank[k / UP_PER_BANK].r[k % UP_
 
 static int up_valid(const up_rec_t *r)
 {
-    if (!(r->used == UP_USED && r->ver >= (FELUCCA_LEGACY ? 1u : 4u) && r->ver <= UP_VER_SID && r->engine < NENGINES &&
+    if (!(r->used == UP_USED && r->ver >= (FELUCCA_LEGACY ? 1u : 4u) && r->ver <= UP_VER_SPAMPY && r->engine < NENGINES &&
           (FELUCCA_LEGACY || FELUCCA_FM4 || r->engine != ENGI_DIGITAL) && r->np >= 8u &&
           r->np <= (r->ver >= UP_VER_SID ? UP_SIDS : r->ver >= 4u ? UP_PMAX * 2u : UP_PMAX) && r->name[0])) return 0;
     if (r->ver >= 4u) for (uint32_t i = 0; i < r->np; i++) if (r->sid[i] > 191u) return 0;
@@ -113,7 +114,7 @@ static void up_set_value(up_rec_t *r, uint32_t k, int16_t v)
 static void up_set_sound(up_rec_t *r, const int16_t *v)
 {
     uint32_t s;
-    r->ver = UP_VER_SID;
+    r->ver = UP_VER_SPAMPY;                       /* ((Vallée) v6's layout, SPAMPY's engine numbers */
     r->np = (uint8_t)SID_COUNT;
     memset(r->sid, 0, sizeof r->sid);
     for (s = 0; s < SID_COUNT; s++)
@@ -134,6 +135,34 @@ static void up_migrate(up_rec_t *r)
 #endif
 
 static void up_pat_norm(uint8_t *note, uint8_t *flags);
+static void up_values(const up_rec_t *r, int16_t *v);
+static const param_desc_t *param_desc_of(uint32_t e, uint32_t id);
+static int32_t param_fit(const param_desc_t *d, int32_t v);
+/* ((Vallée, the SPAMPY sound) a record of Skiff's engine numbers (version < 7): its engine mapped (engines.c
+ * ENG_FROM_SKIFF), the sound kept for SAMPLE DRUM FM6 SUMMON, else the new engine's values at their defaults (never
+ * another engine's), rewritten as a version 7 record (in RAM: flash at the bank's next save; from flash again the
+ * same, so it never maps twice). Older firmware shows a version 7 record as empty and keeps its bytes */
+#if UP_HOST
+static void up_from_skiff(up_rec_t *r) { (void)r; }   /* (the record's host test: no engines here) */
+#else
+static void up_from_skiff(up_rec_t *r)
+{
+    int16_t v[P_COUNT];
+    uint32_t old, ne, i;
+    if (!up_valid(r) || r->ver >= UP_VER_SPAMPY)
+        return;
+    up_values(r, v);                                /* (by the old engine's ranges) */
+    old = r->engine % 16u;
+    ne = ENG_FROM_SKIFF[old];
+    if (!eng_skiff_kept(old))
+        for (i = 0; i < 8u; i++)
+            v[P_E0 + i] = param_desc_of(ne, P_E0 + i)->def;
+    for (i = P_E0; i < P_E0 + 8u; i++)
+        v[i] = (int16_t)param_fit(param_desc_of(ne, i), v[i]);
+    r->engine = (uint8_t)ne;
+    up_set_sound(r, v);
+}
+#endif
 /* after loading bank b (len bytes, -1 = none): wrong shape -> empty; each record's pattern inside its fields, as
  * UP_PUT and SAVE store it (flash or a restored backup may hold anything there) */
 static void up_bank_check(uint32_t b, int len)
@@ -145,6 +174,7 @@ static void up_bank_check(uint32_t b, int len)
         memset(bk, 0, sizeof *bk);
     for (i = 0; i < UP_PER_BANK; i++) {
         up_rec_t *r = &bk->r[i];
+        up_from_skiff(r);                               /* ((Vallée, the SPAMPY sound) */
         if (!up_valid(r) || !up_pat(r))                 /* ((2.0) v6: no pattern, its bytes values) */
             continue;
 #if FELUCCA_LEGACY

@@ -1178,10 +1178,16 @@ static inline int32_t dly_send_r(int32_t *dl, int32_t gl, int32_t gr)
     return (d * gr + 2048) >> 12;
 }
 
+/* ((Vallée, the SPAMPY sound) a track's level index: LEVEL and its sound's trim (P_ED_FX, 1/2 dB steps as LEVEL's:
+ * SPAMPY's level matching, the presets set it), LEVEL 0 still silent (SPAMPY's fx.c) */
+static inline uint32_t trk_lvl(const track_t *t)
+{
+    return t->p[P_LEVEL] ? (uint32_t)clamp(t->p[P_LEVEL] + t->p[P_ED_FX], 1, 127) : 0u;
+}
 static __attribute__((noinline)) AUDIO_RAM void lpan_mix(track_t *t, const int32_t *b, const int32_t *d, const int32_t *e,
                                                uint32_t n SM_DECL)
 {
-    int32_t lvl = LEVEL_Q12[t->p[P_LEVEL] & 127], pan = t->p[P_PAN];
+    int32_t lvl = LEVEL_Q12[trk_lvl(t)], pan = t->p[P_PAN];
     int32_t gl = 4096 - (pan > 0 ? pan * 64 : 0), gr = 4096 + (pan < 0 ? pan * 64 : 0);
     int32_t c = t->p[P_CHOR] * 258, dl = t->p[P_DLY] * 258, r = t->p[P_REV] * 258, pk = t->peak, de;
     int32_t xmax = c > dl ? c : dl;
@@ -1210,7 +1216,7 @@ static __attribute__((noinline)) AUDIO_RAM void mix_spread(track_t *t, int32_t *
 {
     int32_t *d = SPREAD_BUF(t), *e = t->lpan_on ? LPAN_BUF(t) : 0;
     uint32_t i, k = (uint32_t)(t - trk);
-    int32_t lvl = LEVEL_Q12[t->p[P_LEVEL] & 127], pan = t->p[P_PAN], s = (t->p[P_SPRD] + 1) >> 1;
+    int32_t lvl = LEVEL_Q12[trk_lvl(t)], pan = t->p[P_PAN], s = (t->p[P_SPRD] + 1) >> 1;
     int32_t pa = clamp(pan - s, -64, 63), pb = clamp(pan + s, -64, 63);
     int32_t gla = 4096 - (pa > 0 ? pa * 64 : 0), gra = 4096 + (pa < 0 ? pa * 64 : 0);
     int32_t glb = 4096 - (pb > 0 ? pb * 64 : 0), grb = 4096 + (pb < 0 ? pb * 64 : 0);
@@ -1300,7 +1306,7 @@ static __attribute__((noinline)) void smx_render(track_t *t, voice_t *v, uint32_
     n = n > CTL ? CTL : n;                              /* (a block, as SPREAD's buffer) */
     AUDIO_FAR(spread_clear)(vb);
     ENGINES[t->engine]->render(t, v, vb, n, vmod_level(m, &ml, sx[-16]));
-    g = (LEVEL_Q12[t->p[P_LEVEL] & 127] * (32768 - sl[k].gc)) >> 15;   /* Q12 */
+    g = (LEVEL_Q12[trk_lvl(t)] * (32768 - sl[k].gc)) >> 15;   /* Q12 */
     g = (g * (32768 - sl[k].w)) >> 15;
     g = (g * pf.mg[k]) >> 15;
     g = (g * (32768 - duck[k].r1)) >> 15;
@@ -1361,7 +1367,7 @@ static void mix_part(track_t *t, uint32_t n SM_DECL)
         return;
     }
     {
-        int32_t lvl = LEVEL_Q12[t->p[P_LEVEL] & 127], pan = t->p[P_PAN];
+        int32_t lvl = LEVEL_Q12[trk_lvl(t)], pan = t->p[P_PAN];
         int32_t gl = 4096 - (pan > 0 ? pan * 64 : 0), gr = 4096 + (pan < 0 ? pan * 64 : 0);
         int32_t c = t->p[P_CHOR] * 258, d = t->p[P_DLY] * 258, r = t->p[P_REV] * 258, pk = t->peak, de;
         int32_t xmax = c > d ? c : d;

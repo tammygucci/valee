@@ -32,9 +32,18 @@
 #include "fm6_core.c"
 #include "felucca_fm6.h"         /* tools/gen_fm6_patches.py: FM6_INIT, FM6_FACTORY[] */
 
-#define ENGI_FM6 9u              /* ((Vallée) SPAMPY's number: engines.c ENGINES[]) */
+/* (ENGI_FM6: core.h) */
 #define FM6_POLY 6               /* engine_t.poly */
 #define FM6_OWN FM6_NFACTORY     /* SLOT: the track's own patch (F1..F8 before it) */
+/* ((Vallée, the SPAMPY sound) SLOT after OWN: SPAMPY's 17 voices of the FM-1's own bank (O1..O17: its PTCH 35..51;
+ * tools/spampy/gen_fm6_patches.py FM6_EXTRA) */
+#define FM6_O1 (FM6_OWN + 1u)
+#define FM6_SLOTS (FM6_O1 + FM6_NEXTRA)
+static int fm6_slot_ok(int32_t s) { return s >= 0 && s < (int32_t)FM6_SLOTS && s != (int32_t)FM6_OWN; }
+static const uint8_t *fm6_slot_pk(uint32_t s)   /* (fm6_slot_ok(s)) */
+{
+    return s < FM6_NFACTORY ? FM6_FACTORY[s] : FM6_EXTRA[(s - FM6_O1) % FM6_NEXTRA];
+}
 #define FM6_PACKED 128u
 
 static uint8_t fm6_patch[NTRK][FP_SIZE + 1u];   /* the tracks' patches (main loop writes, then fm6_pgen) */
@@ -158,20 +167,24 @@ static void fm6_set_patch(uint32_t tr, const uint8_t *v)
 static void fm6_load_slot(uint32_t tr, uint32_t s)
 {
     uint8_t v[FP_SIZE + 1u];
-    fm6_unpack(FM6_FACTORY[s % FM6_NFACTORY], v);
+    s = fm6_slot_ok((int32_t)s) ? s : 0u;
+    fm6_unpack(fm6_slot_pk(s), v);
     fm6_set_patch(tr, v);
-    fm6_slot[tr % NTRK] = (uint8_t)(s % FM6_NFACTORY);
+    fm6_slot[tr % NTRK] = (uint8_t)s;
 }
 
 /* the SLOT patch p shows: the factory patch it equals (F n; looked for from SLOT s on), else OWN */
 static int32_t fm6_match(const uint8_t *p, int32_t s)
 {
     uint8_t v[FP_SIZE + 1u];
-    uint32_t k, f = s >= 0 && s < (int32_t)FM6_NFACTORY ? (uint32_t)s : 0u;
-    for (k = 0; k < FM6_NFACTORY; k++) {
-        fm6_unpack(FM6_FACTORY[(f + k) % FM6_NFACTORY], v);
+    uint32_t k, f = fm6_slot_ok(s) ? (uint32_t)s : 0u;
+    for (k = 0; k < FM6_SLOTS; k++) {
+        uint32_t c = (f + k) % FM6_SLOTS;
+        if (c == FM6_OWN)
+            continue;
+        fm6_unpack(fm6_slot_pk(c), v);
         if (!memcmp(v, p, FP_SIZE))
-            return (int32_t)((f + k) % FM6_NFACTORY);
+            return (int32_t)c;
     }
     return FM6_OWN;
 }
@@ -195,7 +208,7 @@ static void fm6_track_loaded(const track_t *t)
     uint32_t tr = (uint32_t)(t - trk);
     if (tr < NTRK && t->eng_req == ENGI_FM6) {
         fm6_own_ok &= (uint8_t)~(1u << tr);
-        if (t->p[P_E7] >= 0 && t->p[P_E7] < (int32_t)FM6_NFACTORY)
+        if (fm6_slot_ok(t->p[P_E7]))
             fm6_load_slot(tr, (uint32_t)t->p[P_E7]);
         else
             fm6_adopt(tr);
@@ -224,7 +237,7 @@ static void fm6_poll(void)
         if (trk[tr].eng_req != ENGI_FM6 || s == fm6_slot[tr])
             continue;
         bit = 1u << tr;
-        if (s < 0 || s >= (int32_t)FM6_NFACTORY) {           /* OWN */
+        if (!fm6_slot_ok(s)) {                               /* OWN */
             if (fm6_own_ok & bit) {
                 uint8_t v[FP_SIZE + 1u];
                 fm6_unpack(fm6_own[tr], v);
@@ -381,27 +394,36 @@ static void fm6_render(track_t *t, voice_t *v, int32_t *out, uint32_t len, const
 static const char *const N_FM6_ALG[] = {"PAT", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13",
                                         "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25",
                                         "26", "27", "28", "29", "30", "31", "32", 0};
-static const char *const N_FM6_PATCH[] = {"F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "OWN", 0};
-_Static_assert(NELEM(N_FM6_PATCH) == FM6_OWN + 2u, "a SLOT name per value");
+static const char *const N_FM6_PATCH[] = {"F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "OWN", "O1", "O2", "O3", "O4",
+                                           "O5", "O6", "O7", "O8", "O9", "O10", "O11", "O12", "O13", "O14", "O15", "O16",
+                                           "O17", 0};
+_Static_assert(NELEM(N_FM6_PATCH) == FM6_SLOTS + 1u, "a SLOT name per value");
 
 /* {ALG, FB, MLVL, MRAT, MEG, VMOD, DTUN, SLOT}: the factory patch F1..F8 as it is, DTUN on the pad */
+/* ((Vallée, the SPAMPY sound) SPAMPY's FM6 sounds (its eng_fm6.c), PATCH O1..O17 for its PTCH 35..51 */
 static const preset_t FM6_PRESETS[] = {
-    {"TINE EP", {0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 127, 0}, 0, 0, FX(0, 45, 25, 35), TAG(PT_KEYS)},
-    {"GLASS BELL", {0, 0, 0, 0, 0, 0, 0, 1}, {0, 0, 127, 0}, 0, 0, FX(0, 10, 30, 70), TAG(PT_KEYS)},
-    {"FM BASS", {0, 0, 0, 0, 0, 0, 0, 2}, {0, 0, 127, 0}, 0, 1, FX(0, 0, 10, 10), TAG(PT_BASS)},
-    {"FM BRASS", {0, 0, 0, 0, 0, 0, 0, 3}, {0, 0, 127, 0}, 0, 0, FX(0, 25, 20, 40), TAG(PT_LEAD)},
-    {"PAD", {0, 0, 0, 0, 0, 0, 30, 4}, {0, 0, 127, 0}, 0, 0, FX(0, 60, 30, 70), TAG(PT_PAD)},
-    {"FM MARIMBA", {0, 0, 0, 0, 0, 0, 0, 5}, {0, 0, 127, 0}, 0, 0, FX(0, 0, 25, 40), TAG(PT_KEYS)},
-    {"FM ORGAN", {0, 0, 0, 0, 0, 0, 0, 6}, {0, 0, 127, 0}, 0, 0, FX(10, 40, 0, 30), TAG(PT_KEYS)},
-    {"NYLON PICK", {0, 0, 0, 0, 0, 0, 0, 7}, {0, 0, 127, 0}, 0, 0, FX(0, 20, 35, 30), TAG(PT_PLUCK)},
-    /* (Skiff) for the themes: CRYPT (dungeon synth), NEON (synthwave), QUARK (particles) */
-    {"GRAVE BELL", {0, 0, 6, 0, 20, 0, 30, 1}, {0, 0, 127, 0}, 0, 0, FX(0, 10, 15, 100), TAG(PT_KEYS)},
-    {"GLASS KEYS", {0, 0, 8, 0, 0, 0, 24, 0}, {0, 0, 127, 0}, 0, 0, FX(0, 75, 30, 45), TAG(PT_KEYS)},
-    {"ISOTOPE", {0, 0, 14, 2, -10, 0, 50, 1}, {0, 0, 127, 0}, 0, 0, FX(0, 20, 50, 70), TAG(PT_KEYS)},
-    {"DARK MATTER", {0, 4, 16, 0, 10, 0, 0, 2}, {0, 0, 127, 0}, 0, 1, FX(8, 0, 0, 10), TAG(PT_BASS)},
-    /* (Skiff phase 9) more for every engine: basses, kits */
-    {"PICK BASS", {0, 2, 12, 0, 16, 2, 0, 7}, {0, 0, 127, 0}, 0, 1, FX(0, 0, 5, 10), TAG(PT_BASS)},
-    {"GROWL BASS", {0, 5, 8, 0, 20, 0, 8, 3}, {0, 0, 127, 0}, 20, 1, FX(30, 0, 5, 5), MORE({P_LD_FLT, 36}, {P_LRATE, 80}, {P_DTYPE, 2}), TAG(PT_BASS)},
+    {"TINE EP", {0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 127, 0}, 0, 0, FX(0, 45, 25, 35)},
+    {"SOFT PAD", {0, 0, 0, 0, 0, 0, 30, 4}, {0, 0, 127, 0}, 0, 0, FX(0, 60, 30, 70)},
+    {"DRAWBARS", {0, 0, 0, 0, 0, 0, 0, 6}, {0, 0, 127, 0}, 0, 0, FX(10, 40, 0, 30)},
+    {"NYLON PICK", {0, 0, 0, 0, 0, 0, 0, 7}, {0, 0, 127, 0}, 0, 0, FX(0, 20, 35, 30)},
+    {"PAD",{0, 0, 0, 0, 0, 0, 30, 4},{0,0,127,0},0,0,FX(0,0,0,0)},
+    {"SYN PAD", {0, 0, 0, 0, 0, 0, 0, 9}, {0,0,127,0},0,0,FX(0,55,28,55)},
+    {"DX BASS 2", {0, 0, 0, 0, 0, 0, 0, 10}, {0,0,127,0},0,0,FX(0,18,20,25)},
+    {"TUB BELLS", {0, 0, 0, 0, 0, 0, 0, 11}, {0,0,127,0},0,0,FX(0,30,36,40)},
+    {"SYN PAD 2", {0, 0, 0, 0, 0, 0, 0, 12}, {0,0,127,0},0,0,FX(0,55,30,58)},
+    {"DX BASS 4", {0, 0, 0, 0, 0, 0, 0, 13}, {0,0,127,0},0,0,FX(0,16,18,24)},
+    {"DX BASS 5", {0, 0, 0, 0, 0, 0, 0, 14}, {0,0,127,0},0,0,FX(0,16,18,24)},
+    {"DX BASS 6", {0, 0, 0, 0, 0, 0, 0, 15}, {0,0,127,0},0,0,FX(0,16,18,24)},
+    {"DX BASS 8", {0, 0, 0, 0, 0, 0, 0, 16}, {0,0,127,0},0,0,FX(0,16,18,24)},
+    {"STRING 1", {0, 0, 0, 0, 0, 0, 0, 17}, {0,0,127,0},0,0,FX(0,48,25,52)},
+    {"STRING 5", {0, 0, 0, 0, 0, 0, 0, 18}, {0,0,127,0},0,0,FX(0,48,25,52)},
+    {"BRASS 6", {0, 0, 0, 0, 0, 0, 0, 19}, {0,0,127,0},0,0,FX(0,32,20,34)},
+    {"STRING 6", {0, 0, 0, 0, 0, 0, 0, 20}, {0,0,127,0},0,0,FX(0,48,25,52)},
+    {"STRING 7", {0, 0, 0, 0, 0, 0, 0, 21}, {0,0,127,0},0,0,FX(0,48,25,52)},
+    {"TORIM TORA", {0, 0, 0, 0, 0, 0, 0, 22}, {0,0,127,0},0,0,FX(0,35,25,38)},
+    {"BRASS 8", {0, 0, 0, 0, 0, 0, 0, 23}, {0,0,127,0},0,0,FX(0,32,20,34)},
+    {"FINGERCIM", {0, 0, 0, 0, 0, 0, 0, 24}, {0,0,127,0},0,0,FX(0,32,38,44)},
+    {"TIBET", {0, 0, 0, 0, 0, 0, 0, 25}, {0,0,127,0},0,0,FX(0,35,32,45)},
 };
 
 static const engine_t ENG_FM6 = {
@@ -415,7 +437,7 @@ static const engine_t ENG_FM6 = {
         {"MOD ENV", 0, -64, 63, 0, F_BIPCT, 0},
         {"VEL MOD", 0, -7, 7, 0, F_INT, 0},
         {"DETUNE", 0, 0, 127, 0, F_PCT, 0},
-        {"PATCH", N_FM6_PATCH, 0, FM6_OWN, 0, F_INT, 0},
+        {"PATCH", N_FM6_PATCH, 0, FM6_SLOTS - 1u, 0, F_INT, 0},
     },
     .presets = FM6_PRESETS,
     .npresets = NELEM(FM6_PRESETS),

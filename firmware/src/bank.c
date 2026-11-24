@@ -922,8 +922,8 @@ static int esnd_make(uint32_t k, const uint8_t *b, esnd_t *s)
     s->user = 0;
     if (eng == ENGI_DRUMX)
         s->kit = DRUMX_PKIT[pi % NELEM(DRUMX_PKIT)];
-    if (eng == ENGI_FM6 && s->p[P_E7] >= 0 && s->p[P_E7] < (int32_t)FM6_NFACTORY) {
-        fm6_unpack(FM6_FACTORY[s->p[P_E7]], s->f6);
+    if (eng == ENGI_FM6 && fm6_slot_ok(s->p[P_E7])) {
+        fm6_unpack(fm6_slot_pk((uint32_t)s->p[P_E7]), s->f6);
         s->fm6 = 1;
     }
     return 1;
