@@ -5,7 +5,7 @@ on:
   push:
     branches: [measure-sizes]
 permissions:
-  contents: read
+  contents: write
 jobs:
   measure:
     runs-on: ubuntu-latest
@@ -41,7 +41,7 @@ jobs:
           git checkout v1.1-r058 || true
           git lfs pull || true
           [ -d assets/samples-cc0 ] || python3 tools/fetch_cc0.py || true
-          ./build.sh
+          sh build.sh
       - name: Symbol tables
         run: |
           mkdir -p out
@@ -55,7 +55,8 @@ jobs:
             ls -l $(dirname "$e")/felucca.bin >> "out/$n.sections.txt"
           done
           ls -l out
-      - uses: actions/upload-artifact@v4
-        with:
-          name: sizes
-          path: out/
+      - name: Keep the results on this branch
+        run: |
+          git config user.name "measure-bot"; git config user.email "measure-bot@users.noreply.github.com"
+          mkdir -p measure && cp out/* measure/ && git add measure
+          git commit -qm "measure: results" && git push origin HEAD:measure-sizes
