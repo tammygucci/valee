@@ -93,9 +93,9 @@ static int ed_smp_erase(uint32_t k, uint32_t all)  /* header sector, or the whol
 {
     uint32_t i, took;
     int rc = 0;
-#if BOARD_SMK37
     if (!SMP_USER_HAS(k))
-        return -8;                                 /* SMK: USR2 / USR3 have no flash */
+        return -8;                                 /* SMK: USR2 / USR3 have no flash; (Vallée) the FM-1: none (the factory block) */
+#if BOARD_SMK37
     st_stock_release();                            /* before the first erase in USRFLASH: storage.c */
 #endif
     usr_nz[k] = 0;
@@ -113,10 +113,8 @@ static int ed_flash_stop(void);
 static int ed_smp_end(uint32_t k, const uint8_t *a, uint32_t na)
 {
     const smp_user_hdr_t *h = (const smp_user_hdr_t *)ed_smp_buf;
-#if BOARD_SMK37
     if (!SMP_USER_HAS(k))
-        return 4;                                  /* SMK: USR2 / USR3 have no flash */
-#endif
+        return 4;                                  /* SMK: USR2 / USR3 have no flash; (Vallée) the FM-1: none */
     if (ed_unpack7(a, na, ed_smp_buf, sizeof(smp_user_hdr_t)) != sizeof(smp_user_hdr_t))
         return 1;
     if (h->magic != SMP_USER_MAGIC || h->version != 1 || !h->nz || h->nz > 16u ||
@@ -134,6 +132,76 @@ static int ed_smp_end(uint32_t k, const uint8_t *a, uint32_t na)
     ed_smp_inval(k);
     smp_user_scan(k);
     return usr_nz[k] ? 0 : 5;
+}
+
+/* ((Vallée) the factory sample block (eng_sample.c), slot ED_FACT of SMP_BEGIN / SMP_WRITE / SMP_END: the installer
+ * writes it after the firmware. BEGIN: the sets go missing (no voice reads the area again), the header's sector is
+ * erased: from here a power cut leaves no valid block (the sine, never noise). WRITE: data in increasing order, each
+ * 4 KiB sector erased by its first piece. END: the 16-byte header, taken only when it is this build's (length, CRC)
+ * and the written data's CRC matches; then it is written, last, and the block scanned. */
+#define ED_FACT 0x7Fu
+#define ED_FACT_SIZE 0x3C000u                      /* 0xA0000..0xDBFFF */
+static uint8_t ed_fact_open;                       /* SMP_BEGIN taken: WRITE / END allowed */
+static int ed_fact_begin(void)
+{
+    uint32_t took;
+    int rc;
+    smp_fact_ok = 0;                               /* SAMPLE, GRAIN: the sine from the next note on */
+    audio_silence();                               /* (every sounding voice ends: none reads the area) */
+    rc = fl_erase4k(SMP_FACT_BASE, &took);
+    fm1_irq_off();
+    fl_inval(SMP_FACT_BASE, 0x1000u);
+    fm1_irq_on();
+    ed_fact_open = !rc;
+    return rc;
+}
+static int ed_fact_write(uint32_t off, const uint8_t *d, uint32_t len)
+{
+    uint32_t took;
+    if (!ed_fact_open)
+        return 4;
+    if (off < SMP_FACT_HDR || (off & 0xFFu) || !len || off + len > ED_FACT_SIZE)
+        return 1;
+    if (!(off & 0xFFFu)) {
+        audio_silence();
+        if (fl_erase4k(SMP_FACT_BASE + off, &took))
+            return 2;
+    }
+    if (fl_write(SMP_FACT_BASE + off, d, len))
+        return 3;
+    fm1_irq_off();
+    fl_inval(SMP_FACT_BASE + (off & ~0xFFFu), 0x1000u);
+    fm1_irq_on();
+    return 0;
+}
+static int ed_fact_end(const uint8_t *a, uint32_t na)
+{
+    const uint8_t *h = ed_smp_buf;
+    uint32_t len, crc;
+    if (!ed_fact_open)
+        return 4;
+    if (ed_unpack7(a, na, ed_smp_buf, 16u) != 16u)
+        return 1;
+    len = (uint32_t)h[8] | (uint32_t)h[9] << 8 | (uint32_t)h[10] << 16 | (uint32_t)h[11] << 24;
+    crc = (uint32_t)h[12] | (uint32_t)h[13] << 8 | (uint32_t)h[14] << 16 | (uint32_t)h[15] << 24;
+    if (h[0] != 'V' || h[1] != 'S' || h[2] != 'M' || h[3] != 'P' || h[4] != 1u || h[5] || len != SMP_FACT_LEN ||
+        crc != SMP_FACT_CRC)
+        return 2;                                  /* another build's samples */
+    fm1_irq_off();
+    fl_inval(SMP_FACT_BASE, SMP_FACT_HDR + len);
+    fm1_irq_on();
+    if (smp_crc32(SMP_FACT_IMG() + SMP_FACT_HDR, len) != crc) {
+        ed_fact_open = 0;                          /* the data written is not it: again from BEGIN (flash is only */
+        return 3;                                  /* erased by sectors: a piece is never written twice) */
+    }
+    if (fl_write(SMP_FACT_BASE, ed_smp_buf, 16u))
+        return 4;
+    fm1_irq_off();
+    fl_inval(SMP_FACT_BASE, 0x1000u);
+    fm1_irq_on();
+    ed_fact_open = 0;
+    smp_fact_scan();
+    return smp_fact_ok ? 0 : 5;
 }
 
 /* the engine byte of DUMP / RELOAD / TRACK */
@@ -592,6 +660,12 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
             ed_b(0x54); ed_b(1); ed_b(tm); ed_b(em & 127u); ed_b(em >> 7 & 127u); ed_b(em >> 14 & 127u);
         }
         ed_bs(TAGS2, sizeof TAGS2);
+        /* ((Vallée) last, after the cast: 56 01, the factory sample block: 1 in place and checked, 0 not, then this
+         * build's CRC as 5 x 7 bits. The installer writes the block (SMP_* slot 127) when it is 0; editors before
+         * read up to 59 01 and stop) */
+        ed_b(0x56); ed_b(1); ed_b(smp_fact_ok);
+        for (i = 0; i < 5u; i++)
+            ed_b(SMP_FACT_CRC >> (7u * i) & 127u);
         break;
     }
     case ED_GET:
@@ -703,6 +777,11 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         break;
     case ED_SMP_BEGIN:                                     /* slot -> slot, rc */
     case ED_SMP_ERASE:
+        if (na >= 1u && a[0] == ED_FACT && cmd == ED_SMP_BEGIN && flash_ok) {   /* ((Vallée) the factory block) */
+            ed_b(ED_FACT);
+            ed_b(ed_flash_stop() || ed_fact_begin() ? 1u : 0u);
+            break;
+        }
         if (na < 1u || a[0] >= SMP_USER_SLOTS || !flash_ok)
             return;
         ed_b(a[0]);
@@ -710,11 +789,13 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         break;
     case ED_SMP_WRITE: {                                   /* slot, off (3 x 7 bit), pack7 data -> slot, off, rc */
         uint32_t off, len, rc = 0, took;
-        if (na < 5u || a[0] >= SMP_USER_SLOTS || !flash_ok)
+        if (na < 5u || (a[0] >= SMP_USER_SLOTS && a[0] != ED_FACT) || !flash_ok)
             return;
         off = (uint32_t)a[1] | (uint32_t)a[2] << 7 | (uint32_t)a[3] << 14;
         len = ed_unpack7(a + 4, na - 4u, ed_smp_buf, 256u);
-        if (off < SMP_USER_DATA || (off & 0xFFu) || !len || off + len > SMP_USER_SIZE)
+        if (a[0] == ED_FACT)                               /* ((Vallée) the factory block) */
+            rc = (uint32_t)ed_fact_write(off, ed_smp_buf, len);
+        else if (off < SMP_USER_DATA || (off & 0xFFu) || !len || off + len > SMP_USER_SIZE)
             rc = 1;
         else if (usr_nz[a[0]] || !SMP_USER_HAS(a[0]))
             rc = 4;                                        /* slot in use: SMP_BEGIN first (voices read it) */
@@ -739,6 +820,11 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         break;
     }
     case ED_SMP_END:                                       /* slot, pack7 header -> slot, rc */
+        if (na >= 2u && a[0] == ED_FACT && flash_ok) {     /* ((Vallée) the factory block) */
+            ed_b(ED_FACT);
+            ed_b((uint32_t)ed_fact_end(a + 1, na - 1u));
+            break;
+        }
         if (na < 2u || a[0] >= SMP_USER_SLOTS || !flash_ok)
             return;
         ed_b(a[0]);

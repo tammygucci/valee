@@ -1199,6 +1199,8 @@ static uint32_t sample_wave_zone(const track_t *t)
         return 0x8000u | k << 5 | i;
     if (si < SMP_NSETS) {
         const smp_set_t *set = &SMP_SETS[si];
+        if (smp_set_missing(si))                   /* ((Vallée) no factory block: no picture of it) */
+            return 0xFFFFu;
         for (i = 0; i < set->nz; i++)
             if (last_note >= SMP_ZONES[set->z0 + i].lo && last_note <= SMP_ZONES[set->z0 + i].hi) zi = set->z0 + i;
         if (zi == 0xFFFFu && set->nz) zi = set->z0;

@@ -33,7 +33,9 @@
 #endif
 
 static uint8_t nor[0x100000];            /* the SPI NOR (erased: 0xFF) */
-#define SMP_USER_XIP(k) ((const uint8_t *)nor + SMP_USER_BASE + (k) * SMP_USER_SIZE)   /* eng_sample.c */
+/* ((Vallée) the sample area holds the factory sample block, as on the unit: eng_sample.c reads it from the NOR image;
+ * web_power_on puts this build's there when the area holds none (as the installer does). No user slots) */
+#define SMP_FACT_IMG() ((const uint8_t *)nor + 0xA0000u)
 #define main hostsim_main
 #include "../../tests/hostsim.c"
 #undef main
@@ -313,6 +315,8 @@ static void follow_demo(void)
 /* main.c fm1_main's boot, up to the main loop (no USB, no UART, no panel setup) */
 static void web_power_on(void)
 {
+    if (memcmp(nor + 0xA0000u, SMP_FACT_BLOB, 16))  /* ((Vallée) no block, or another build's: this build's, installed) */
+        memcpy(nor + 0xA0000u, SMP_FACT_BLOB, sizeof SMP_FACT_BLOB);
     persist_boot();
     bank_boot();                          /* main.c: the patterns (bank.c; phase 5: every project's steps) */
     if (settings_init())                  /* main.c: a new unit, BPM LOCK on ((Vallée) SELECT on HOME: GEN) */
@@ -483,7 +487,7 @@ EXPORT int32_t web_restore_object(uint32_t id, uint32_t n)
     }
     if (id >= 16u && id < 32u)
         return bank_restore(id - 16u, web_obj, n);
-    if (id >= 32u && id < 32u + SMP_USER_SLOTS && n <= SMP_USER_SIZE) {   /* (a slot's flash as the unit has it) */
+    if (id >= 32u && id < 32u + SMP_USER_SLOTS && SMP_USER_HAS(id - 32u) && n <= SMP_USER_SIZE) {   /* (a slot's flash) */
         memcpy(nor + SMP_USER_BASE + (id - 32u) * SMP_USER_SIZE, web_obj, n);
         return 0;
     }

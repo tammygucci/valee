@@ -1663,6 +1663,9 @@ static uint32_t persist_retry_ms;
 
 static void persist_boot(void)                    /* before settings_init / panel_init */
 {
+#if !SMP_FACT_FLASH
+    smp_fact_scan();                               /* ((Vallée) the factory samples built in: emulator, host tests) */
+#endif
 #if FELUCCA_FLASH
     union { persist_t per; sks_t sks; } p;         /* ((2.0) SKS1, or a PER4 of before) */
     uint32_t f = irq_save();
@@ -1680,6 +1683,9 @@ static void persist_boot(void)                    /* before settings_init / pane
         return;
     fl_plain_window_init();                        /* flash above 0x93000 (SMK 0x9D000) reads as plaintext through XIP
                                                     * (user sample sets are played from there) */
+#if SMP_FACT_FLASH
+    smp_fact_scan();                               /* ((Vallée) the factory sample block, eng_sample.c) */
+#endif
 #if BOARD_SMK37
     st_owner_check();                              /* never parse another firmware's store (storage.c) */
 #endif

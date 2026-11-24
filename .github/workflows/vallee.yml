@@ -84,6 +84,7 @@ jobs:
           name: vallee-${{ env.REL }}
           path: |
             build/release-${{ env.REL }}/
+            build/vallee-samples.bin
             build/vallee-web.html
 
       - name: Pages artifact

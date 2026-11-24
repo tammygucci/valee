@@ -3,7 +3,9 @@
 /* The firmware editor handler, USB framing and UART recovery against RAM flash.
  * Build with the generated tables and the same flags as hostsim.c. */
 static unsigned char host_samples[3][0x14000];
+#ifndef EDITOR_TEST_FACTORY                    /* ((Vallée) factory_smp_test.c: the FM-1's way, no user slots) */
 #define SMP_USER_XIP(k) host_samples[k]
+#endif
 #define FELUCCA_OTA 1
 #define FELUCCA_FLASH 0
 #define FELUCCA_VERSION "TEST"
@@ -190,7 +192,12 @@ static int preferences(void)
     uint8_t a[4] = {0, 0, 0, 0};                          /* ((Vallée) THEME: 0, XENO, the only one) */
     reset();
     uint32_t n = request(ED_INFO, a, 0);
-    bad += check("INFO (2.0) the song's tag last: 58 01 01 (LIST2, NEW, COPY+, CHAIN, ONCE, EMPTY, CLEAR UNUSED)",
+    bad += check("INFO (Vallée) the factory samples last: 56 01, in place (the built-in block), this build's CRC",
+        host_wire[n - 9] == 0x56 && host_wire[n - 8] == 1 && host_wire[n - 7] == 1 &&
+        (host_wire[n - 6] | host_wire[n - 5] << 7 | host_wire[n - 4] << 14 | host_wire[n - 3] << 21 |
+         (uint32_t)host_wire[n - 2] << 28) == SMP_FACT_CRC);
+    n -= 8u;                                              /* (the tags before it, as they were) */
+    bad += check("INFO (2.0) the song's tag then: 58 01 01 (LIST2, NEW, COPY+, CHAIN, ONCE, EMPTY, CLEAR UNUSED)",
         host_wire[n - 4] == 0x58 && host_wire[n - 3] == 1 && host_wire[n - 2] == ED_SONG2);
     n -= 3u;                                              /* (the tags before it, as they were) */
     bad += check("INFO (1.3) wide ids next: 49 01, P_COUNT and P_E0 in two 7-bit bytes each; the plain bytes at most 127",

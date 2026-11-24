@@ -139,6 +139,9 @@ def generate():
             failed.append(c[0].name)
     if failed:
         raise SystemExit(f"build: {', '.join(failed)} failed")
+    # (Vallée) the factory samples leave the firmware: the sample area at 0xA0000 (tools/gen_factory_block.py)
+    subprocess.run([sys.executable, str(tools / "gen_factory_block.py"), str(GEN / "felucca_samples.h"),
+                    str(GEN / "felucca_samples_blob.h"), str(SRC / "build" / "vallee-samples.bin")], check=True)
 
 
 # ---- update loader
@@ -218,7 +221,8 @@ def write_smk_ldr(ota):
 # ---- app
 
 def build_app():
-    flags = [*CFLAGS, *BOARD_DEFS[BOARD], "-Ifirmware/hal", "-Ifirmware/src", "-Ibuild/gen"]
+    flags = [*CFLAGS, *BOARD_DEFS[BOARD], "-Ifirmware/hal", "-Ifirmware/src", "-Ibuild/gen",
+             "-DSMP_FACT_FLASH=1"]   # (Vallée) the factory samples read from the sample area (eng_sample.c)
     for flag in ("FELUCCA_FLASH", "FELUCCA_OTA", "FELUCCA_OTA_DRYRUN", "FELUCCA_OTA_RAMONLY", "FELUCCA_CDC",
                  "FELUCCA_UART", "FELUCCA_UAC", "FELUCCA_UAC_TONE", "FELUCCA_UAC_48K", "FELUCCA_ICONS", "FELUCCA_SLICE", "FELUCCA_FM4",
                  "FELUCCA_CDC_DEFAULT", "FELUCCA_CPU2"):

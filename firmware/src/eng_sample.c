@@ -55,12 +55,66 @@ static uint32_t pow2_q16(int32_t d16)
 #define SMP_SHOWN SMP_USER_FLASH_SLOTS               /* (SMK37_UX.md question 11: USR2, USR3 not offered) */
 #define SMP_PICK_MAX (SMP_NSETS + SMP_USER_FLASH_SLOTS - 1)   /* SAMPLE's SET, GRAIN's SOURCE: up to USR1 */
 _Static_assert(SMP_USER_BASE + SMP_USER_FLASH_SLOTS * SMP_USER_SIZE <= FL_SLOT_HI, "SMK: the user slot past FL_SLOT");
-#else
+#elif defined(SMP_USER_XIP)                         /* host tests of the user slots: RAM images, as before */
 #define SMP_USER_BASE 0xA0000u
 #define SMP_USER_HAS(k) 1
 #define SMP_SHOWN SMP_USER_SLOTS                     /* the slots offered (the editor's SMP_INFO) */
 #define SMP_PICK_MAX SMP_NALL - 1                    /* SAMPLE's SET, GRAIN's SOURCE: the last value */
+#else
+/* (Vallée, the SPAMPY sound) the sample area 0xA0000..0xDBFFF holds the factory sample block (below): no user slot
+ * has flash. USR1..USR3 stay empty, never scanned, their uploads refused (SMP_USER_HAS), as the SMK-37's USR2, USR3 */
+#define SMP_USER_FLASH_SLOTS 0u
+#define SMP_USER_BASE 0xA0000u
+#define SMP_USER_HAS(k) ((uint32_t)(k) < SMP_USER_FLASH_SLOTS)
+#define SMP_SHOWN SMP_USER_FLASH_SLOTS
+#define SMP_PICK_MAX (SMP_NSETS - 1)                 /* SAMPLE's SET, GRAIN's SOURCE: the factory sets only */
 #endif
+
+/* (Vallée) the factory sample sets' data: not in the firmware, a block in the sample area (tools/gen_factory_block.py,
+ * written by the installer): 512 bytes of header (magic "VSMP", version 1, data length, CRC-32 of the data) and the
+ * data, which the zones' offsets count from. Checked once at boot (smp_fact_scan) against this build's length and
+ * CRC: a block that is missing, partly written or another build's leaves every factory set missing (the sine,
+ * smp_sine; the notice once), so a sound never plays what is not its sample. The emulator and the host tests have
+ * the same bytes built in (SMP_FACT_BLOB). */
+#define SMP_FACT_BASE 0xA0000u
+#define SMP_FACT_MAGIC 0x504D5356u                  /* "VSMP" */
+#if SMP_FACT_FLASH
+#define SMP_FACT_IMG() ((const uint8_t *)FM1_XIP(SMP_FACT_BASE))   /* (read after fl_plain_window_init: persist_boot) */
+#else
+#include "felucca_samples_blob.h"
+#ifndef SMP_FACT_IMG
+#define SMP_FACT_IMG() SMP_FACT_BLOB
+#define SMP_FACT_BUILTIN 1                          /* (host tests: the block is this program's own data) */
+#endif
+#endif
+#ifndef SMP_FACT_BUILTIN
+#define SMP_FACT_BUILTIN 0
+#endif
+_Static_assert(SMP_FACT_BASE + SMP_FACT_HDR + SMP_FACT_LEN <= 0xDC000u, "the factory samples past the sample area");
+static const uint8_t *smp_fact_data = SMP_FACT_IMG() + SMP_FACT_HDR;   /* the block's data (the zones' offsets count from
+                                                                       * it); never read before smp_fact_ok */
+static uint8_t smp_fact_ok = SMP_FACT_BUILTIN;      /* 1: the block checked out (smp_fact_scan), else every set missing */
+#define SMP_DATA smp_fact_data
+static uint32_t smp_crc32(const uint8_t *p, uint32_t n)   /* zlib's CRC-32 (bitwise: once at boot, no table) */
+{
+    uint32_t c = 0xFFFFFFFFu, k;
+    while (n--) {
+        c ^= *p++;
+        for (k = 0; k < 8u; k++)
+            c = c >> 1 ^ (0xEDB88320u & (0u - (c & 1u)));
+    }
+    return ~c;
+}
+static void smp_fact_scan(void)
+{
+    const uint8_t *b = SMP_FACT_IMG();
+    uint32_t magic = (uint32_t)b[0] | (uint32_t)b[1] << 8 | (uint32_t)b[2] << 16 | (uint32_t)b[3] << 24;
+    uint32_t len = (uint32_t)b[8] | (uint32_t)b[9] << 8 | (uint32_t)b[10] << 16 | (uint32_t)b[11] << 24;
+    uint32_t crc = (uint32_t)b[12] | (uint32_t)b[13] << 8 | (uint32_t)b[14] << 16 | (uint32_t)b[15] << 24;
+    smp_fact_data = b + SMP_FACT_HDR;
+    smp_fact_ok = magic == SMP_FACT_MAGIC && b[4] == 1u && !b[5] && len == SMP_FACT_LEN && crc == SMP_FACT_CRC &&
+                  smp_crc32(b + SMP_FACT_HDR, len) == crc;
+}
 #define SMP_USER_DATA 512u
 #define SMP_USER_MAGIC 0x504D5346u                  /* "FSMP" */
 #define SMP_NALL (SMP_NSETS + SMP_USER_SLOTS)
@@ -164,7 +218,7 @@ static void smp_user_name(uint32_t k, char *nm)
 static int smp_set_missing(uint32_t si)
 {
     if (si < SMP_NSETS)
-        return !SMP_ZONES[SMP_SETS[si].z0].n;
+        return !smp_fact_ok || !SMP_ZONES[SMP_SETS[si].z0].n;
     return !usr_nz[(si - SMP_NSETS) % SMP_USER_SLOTS];
 }
 

@@ -213,6 +213,18 @@ at 1..3 and hides 6 5 8: what it sets still plays the right kit, and the device 
 | 13 SMP_END | slot, pack7 header (480 bytes) | slot, rc: 0 ok, 1 size, 2 header, 3 data CRC, 4 flash, 5 zones |
 | 14 SMP_ERASE | slot | slot, rc (erases the whole slot, ~1 s) |
 | 15 SMP_INFO | — | slots, slot KiB, then per slot: zone count (0 = empty), name string, data KiB |
+| 11, 12, 13 with slot 127 | (Vallée) the factory sample block (below) | as for a slot |
+
+**(Vallée) The factory sample block.** The FM-1 build has no user sample slots: the sample area 0xA0000..0xDBFFF holds
+the factory sample sets (`build/vallee-samples.bin`, tools/gen_factory_block.py: a 512-byte header, `"VSMP"`, version 1,
+the data length and its CRC-32, then the data). SMP_BEGIN / SMP_WRITE / SMP_END / SMP_ERASE of slots 0..2 are refused.
+The installer writes the block after the firmware, with slot 127: `SMP_BEGIN 127` (the sets go missing, the header's
+sector is erased; rc 0), `SMP_WRITE 127, offset, data` for every 256 bytes of the data from offset 512 in increasing
+order (each 4 KiB sector is erased by its first piece; rc 1 arguments, 2 erase, 3 write, 4 no BEGIN), then
+`SMP_END 127, header` with the file's first 16 bytes: rc 0 in place, 2 not this firmware's block, 3 the data written
+does not match (start again from SMP_BEGIN), 4 no BEGIN / flash, 5 the scan refused it. INFO ends with `56 01 ok crc`:
+ok 1 when the block is in place and checked, then this firmware's block CRC as 5 x 7 bits (LSB first). A missing or
+wrong block never plays: SAMPLE and GRAIN play a sine (the notice once).
 | 16 UP_LIST | start, count (1..16) | start, count, total slots, then per slot: used (0/1), engine, name string ("" if unused) |
 | 17 UP_GET | slot | slot, used, engine, name, P_COUNT × v14, 16 × (note, flags), then (v5) kind (0 a note pattern, 1 a drum grid) and for kind 1 16 × hi ((Skiff 2.0) a version 6 record: 16 rests, kind 0) |
 | 18 UP_PUT | slot, engine, name, P_COUNT × v14, 16 × (note, flags) [, kind 0 or 1, 16 × hi (v5)] | slot, rc (0 ok, 1 args, 2 flash). Writes flash: allow 1 s. (Skiff 2.0) Stored as version 6: the sound, its pattern not kept |
