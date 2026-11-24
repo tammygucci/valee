@@ -76,7 +76,7 @@ fb99dbfa287cf61e CUSTOM_TEEN_drum_cym
 105c3175063222da CUSTOM_TEEN_drum_lock_held
 840cccf59f333182 CUSTOM_TEEN_drum_locks
 1b62c005ef9c9de1 CUSTOM_TEEN_edit_analog
-48ff2a1ae77fcfe7 CUSTOM_TEEN_edit_cz
+97b9601ebc9ab70e CUSTOM_TEEN_edit_cz
 13312a8a6e879f06 CUSTOM_TEEN_edit_digital
 e2a4e35d37c7b6c2 CUSTOM_TEEN_edit_flt
 308dadfd8773b604 CUSTOM_TEEN_edit_morph
@@ -371,7 +371,7 @@ fb99dbfa287cf61e CUSTOM_XENO_drum_cym
 105c3175063222da CUSTOM_XENO_drum_lock_held
 840cccf59f333182 CUSTOM_XENO_drum_locks
 1b62c005ef9c9de1 CUSTOM_XENO_edit_analog
-48ff2a1ae77fcfe7 CUSTOM_XENO_edit_cz
+97b9601ebc9ab70e CUSTOM_XENO_edit_cz
 13312a8a6e879f06 CUSTOM_XENO_edit_digital
 e2a4e35d37c7b6c2 CUSTOM_XENO_edit_flt
 308dadfd8773b604 CUSTOM_XENO_edit_morph
@@ -666,7 +666,7 @@ c161c775f43ff9e7 LARGE_TEEN_drum_cym
 385f07b542d16362 LARGE_TEEN_drum_lock_held
 48b477e802b34622 LARGE_TEEN_drum_locks
 7ebc5d93d7f6812a LARGE_TEEN_edit_analog
-edf786bec1912fcb LARGE_TEEN_edit_cz
+a9e57ad96857b1c4 LARGE_TEEN_edit_cz
 3212a4d6aad205c4 LARGE_TEEN_edit_digital
 c7b5b261cf333d08 LARGE_TEEN_edit_flt
 e100a10d62deacec LARGE_TEEN_edit_morph
@@ -961,7 +961,7 @@ fe080b6e746e43af LARGE_XENO_drum_kit_usr
 192c84ca009ee3d0 LARGE_XENO_drum_lock_held
 df237fe4e1f6e1aa LARGE_XENO_drum_locks
 860fa5548bd6abd5 LARGE_XENO_edit_analog
-dfc5538c495eae76 LARGE_XENO_edit_cz
+29209ecfcbccb4c1 LARGE_XENO_edit_cz
 888c3452362b1244 LARGE_XENO_edit_digital
 a2c499d97b3df5ad LARGE_XENO_edit_flt
 77665defde56792f LARGE_XENO_edit_morph
@@ -1260,7 +1260,7 @@ d617f4e188c539fa TEEN_drum_hand
 1e0163c65b48b307 TEEN_drum_lock_held
 874d79a9cd26a651 TEEN_drum_locks
 cefe8fac1ceefabb TEEN_edit_analog
-ac6a2215c7ee02dc TEEN_edit_cz
+245d7f4e11732282 TEEN_edit_cz
 1f9448fc858c3fae TEEN_edit_digital
 25434e906ec5e1d5 TEEN_edit_flt
 2676bffea64d6787 TEEN_edit_morph
@@ -1557,7 +1557,7 @@ db484eab797cd87c XENO_drive_fuzz
 cd202bcfa129b64e XENO_drum_lock_held
 3fb459b9ebe469b2 XENO_drum_locks
 368008d55331f433 XENO_edit_analog
-1c79cb8e9a81ff7b XENO_edit_cz
+c785d7257d0ed4ae XENO_edit_cz
 748e1630934d91e2 XENO_edit_digital
 64e43bc4aa6863de XENO_edit_flt
 ef75ec45c1d27fee XENO_edit_morph

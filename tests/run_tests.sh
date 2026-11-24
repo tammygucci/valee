@@ -143,7 +143,10 @@ export AC79_SDK="${AC79_SDK:-$HOME/fw-AC79_AIoT_SDK}"
 cd "$(dirname "$0")/.."
 OUT=build/host
 mkdir -p "$OUT"
-CC="${CC:-cc} -O1 -Wall -Wno-unused-function"
+# ((Vallée, the SPAMPY sound) -ffp-contract=off: no fused multiply-add on a host whose compiler may use one (a newer
+# runner's x86-64-v3 default): PROPHET's and CZ-1's float code then renders as the FM-1 builds it (tools/build.py:
+# the same flag), the same bit for bit on every host
+CC="${CC:-cc} -O1 -Wall -Wno-unused-function -ffp-contract=off"
 fail=0
 run() { echo "== $1"; shift; "$@" || fail=1; }
 
