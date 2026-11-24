@@ -139,6 +139,12 @@ QUESTION for the user: SPAMPY's PHASE steps its DCW once a block (measured in SP
 in its PHASE, #41, by fading the step). Keep it as SPAMPY's, or apply the fade (a faint buzz gone; not bit-identical to
 SPAMPY then)? Kept as SPAMPY's for now (tests/hostsim.c reports, does not fail).
 Then re-record the goldens after listening / looking.
+STATE 2026-11-24 (CI run 45388473412, branch spampy-engine at 3dc7a86): the FM-1 firmware builds and fits (image
+528,000 B of 581,564; RAM 97,704 of 98,304; pool 313,144 of 344,064; RAM code 29,756 of 32,512). Every host, UI
+(ASan too), web, backup, installer and emulator test passes but the two goldens, which wait for a deliberate review:
+tests/golden.txt (the audio renders: the sounds changed by design) and tests/ui_golden.txt (834 pictures changed,
+6 gone (FM6's old EDIT picture), 66 new). Phase 5 begun: GEN's twelve styles on SPAMPY's sounds (summon_fit clean).
+Open questions for the user: PHASE's DCW steps (above); the 7 arp sounds switching the arp on (default: no).
 Then 3 (drums), 4 (mix), 5 (GEN, SUMMON...), 6 (tests), 7 (installer).
 Local host builds: build/gen from a CI-like build + tools/gen_factory_block.py + tools/gen_p5_tables.py.
 Do not install this branch on a unit yet (the installer does not write the sample block).
