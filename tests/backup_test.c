@@ -618,14 +618,16 @@ int main(void)
         int ok;
         project_capture(&pj);
         ok = proj_pack2(&w3, &pj, &PROJ_SKF3) && put_all(5, &w3, PROJ_STORE3, st_crc32(&w3, PROJ_STORE3)) == 0 &&
-             st_load(OBJ_PROJECT0 + 3u, &st, sizeof st) == (int)PROJ_STORE3 && *(const uint32_t *)st.raw == PROJ_MAGIC3;
+             st_load(OBJ_PROJECT0 + 3u, &st, sizeof st) == (int)PROJ_STORE4 && *(const uint32_t *)st.raw == PROJ_MAGIC4;
         memset(w3x, 0, sizeof w3x);
         memcpy(w3x, &w3, PROJ_STORE3);
         ok &= put_all(5, w3x, sizeof w3x, st_crc32(w3x, sizeof w3x)) == 0 &&
-              st_load(OBJ_PROJECT0 + 3u, &st, sizeof st) == (int)PROJ_STORE3 &&
-              list(5, &len, &crc) == 0 && len == PROJ_STORE3 && crc == st_crc32(&w3, PROJ_STORE3) &&
+              st_load(OBJ_PROJECT0 + 3u, &st, sizeof st) == (int)PROJ_STORE4 &&
+              list(5, &len, &crc) == 0 && len == PROJ_STORE4 && crc == st_crc32(&st, PROJ_STORE4) &&
               put_all(0, &w3, PROJ_STORE3, st_crc32(&w3, PROJ_STORE3)) == 0;
-        bad += check("(2.0) project objects of 2048 and 3840 bytes (SKF3): kept as they are, listed at 2048", ok);
+        /* ((Vallée, the SPAMPY sound) an SKF3 holds Skiff's engine numbers: read, it is mapped, so it is kept as SKF4
+         * (today's, marked); kept as SKF3 it would be mapped again at the next read */
+        bad += check("(2.0) project objects of 2048 and 3840 bytes (SKF3): taken, kept as SKF4 (mapped once)", ok);
     }
 #endif
     printf("backup test %s\n", bad ? "FAILED" : "passed");

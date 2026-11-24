@@ -353,8 +353,8 @@ if [ -f build/gen/felucca_tables.h ]; then
     run "SMK-37 Pro controls (SMK37_UX.md): pads, colours, faders, entries, outer keys, KEY VELOCITY, wheels, the pedal holding the keys, SHIFT, MASTER, TRS clock" "$OUT/smk_ui_test"
     $CC -w -Ibuild/gen -Ifirmware/src -o "$OUT/backup_test" tests/backup_test.c -lm
     run "full backup: CRC before writes, stale runtime, USB reset / timeout, malformed objects; (2.0) OLD FORMAT slots backed up" "$OUT/backup_test"
-    $CC -w $LEGACY -Ibuild/gen -Ifirmware/src -o "$OUT/backup_test_legacy" tests/backup_test.c -lm
-    run "full backup, the converter's build (FELUCCA_LEGACY): older projects, 1.0's FM6 bank, SKF2" "$OUT/backup_test_legacy"
+    # ((Vallée, the SPAMPY sound) backup_test's converter build (FELUCCA_LEGACY): Classic's converter does that work
+    # (PORT-SPAMPY.md), tested on the vallee-skiff-engine branch
     # ((Vallée, the SPAMPY sound) conv_test: the converter's archives of before -> Classic's formats, tested on the
     # vallee-skiff-engine branch; the installer converts with Classic's converter, this firmware maps the result on load
     # (project.c proj_from_skiff, upreset.c up_from_skiff: project_test, persistence_test)

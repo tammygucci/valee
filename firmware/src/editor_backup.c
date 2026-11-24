@@ -125,6 +125,8 @@ static uint32_t ed_bk_commit(void)
         }
         if (ed_bk_len && !old) {                    /* SKF2 .. SKF4 as they are; an older format becomes SKF1 inside its */
             const proj_fmt_t *f = proj_fmt_of(raw, (int)ed_bk_len);   /* ranges */
+            if (f || !PROJ_ERA_OFF)                 /* ((Vallée) back in today's format: read, it was mapped */
+                f = PROJ_FMT_BACK(f);               /* (project.c PROJ_FMT_BACK) */
             proj_bound(&proj_scratch);
 #if FELUCCA_LEGACY
             if (!(f ? proj_pack2((project_store_t *)raw, &proj_scratch, f)

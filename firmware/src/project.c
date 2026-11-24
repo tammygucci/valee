@@ -221,6 +221,17 @@ _Static_assert(PROJ_ENT4 + NTRK * (NENT * 4u + 1u) + PROJ_SCENES + 2u + 1u + DV_
                1u + 2u * GSID_COUNT + NTRK * (4u + SID_COUNT) + 2u + 1u + sizeof gch + PROJ_NAME_LEN + 4u <= PROJ_STORE4,
                "SKF4 holds it all ((Vallée) GEN's own chords too)");
 #define PROJ_SKF (&PROJ_SKF4)                  /* the format a save writes */
+/* ((Vallée, the SPAMPY sound) the format to write a record back in after it was read: today's whatever it was. A read
+ * maps every format but SKF4 from Skiff's engine numbers (proj_import_any), so one written back in its own format would
+ * be mapped a second time at the next read. (The formats' own host checks keep theirs: PROJ_ERA_TEST) */
+#ifdef PROJ_ERA_TEST
+static int proj_era_off;
+#define PROJ_FMT_BACK(f) (proj_era_off ? (f) : PROJ_SKF)
+#define PROJ_ERA_OFF proj_era_off
+#else
+#define PROJ_ERA_OFF 0
+#define PROJ_FMT_BACK(f) ((void)(f), PROJ_SKF)
+#endif
 #define PROJ_NAME_AT(f) ((f)->size - 4u - PROJ_NAME_LEN)
 #define PROJ_FM6_AT(f) (PROJ_NAME_AT(f) - (f)->nt * FM6_PACKED)
 #define PROJ_DX_MARK 0x58u                    /* ('X') the kit follows */
@@ -388,7 +399,6 @@ static void proj_trk_from(proj_trk_t *d, const int16_t *p, uint32_t np, uint8_t 
 /* ((Vallée, the SPAMPY sound) the fix-ups of the formats of before (below) run on Skiff's engine numbers, before
  * proj_from_skiff maps the record to today's */
 #ifdef PROJ_ERA_TEST                           /* (host tests only: the formats' own checks, numbers as they are) */
-static int proj_era_off;
 #define SK_PHYS (proj_era_off ? ENGI_PHYS : 9u)
 #define SK_DRUM (proj_era_off ? ENGI_DRUM : 10u)
 #else
@@ -1438,9 +1448,9 @@ static void proj_fetch(uint32_t slot)
     else {
         proj_bound(&proj_scratch);
 #if FELUCCA_LEGACY
-        if (!(f ? proj_pack2(q, &proj_scratch, f) : proj_pack(q, &proj_scratch)))
+        if (!(f || !PROJ_ERA_OFF ? proj_pack2(q, &proj_scratch, PROJ_FMT_BACK(f)) : proj_pack(q, &proj_scratch)))
 #else
-        if (!proj_pack2(q, &proj_scratch, f))
+        if (!proj_pack2(q, &proj_scratch, PROJ_FMT_BACK(f)))
 #endif
             memset(q->raw, 0, 4);
     }
@@ -1574,6 +1584,8 @@ static int project_rename(uint32_t slot, const char *name)
     memset(p->name, 0, sizeof p->name);
     memcpy(p->name, name, str_len(name) < PROJ_NAME_LEN ? str_len(name) : PROJ_NAME_LEN);
     proj_wire_gen++;
+    if (f || !PROJ_ERA_OFF)                             /* ((Vallée) written back in today's format: PROJ_FMT_BACK */
+        f = PROJ_FMT_BACK(f);
 #if FELUCCA_LEGACY
     if (!(f ? proj_pack2(&proj_wire, p, f) : proj_pack(&proj_wire, p))) { ui_message("SAVE FORMAT ERROR"); return 2; }
 #else
