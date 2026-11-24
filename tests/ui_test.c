@@ -392,6 +392,13 @@ static int gm_hits_play(track_t *t)
 }
 
 /* sounds never touch the steps; the arp, the scale, the SLICER and the pattern parameters are the track's */
+/* ((Vallée, the SPAMPY sound) a factory sound's TRANS (its "more" values: SPAMPY's sounds carry it) */
+static int32_t sound_trans(uint32_t e, uint32_t pi)
+{
+    static track_t x;
+    host_preset(&x, e, pi);
+    return x.p[P_TRANS];
+}
 static int test_sound_loads(void)
 {
     int bad = 0;
@@ -416,19 +423,22 @@ static int test_sound_loads(void)
     turn(EN_PRESET, 1);                           /* HOME: the next preset */
     bad += check("PRESETS on HOME loads the sound: steps, LEN, DIV untouched", t->preset == (uint8_t)((before.preset + 1u) % ENGINES[0]->npresets) &&
                  !memcmp(t->step, before.step, sizeof t->step) && t->p[P_SLEN] == 32 && t->p[P_SDIV] == 1);
-    bad += check("..ARP, SCL, the SLICER and the mix stay the track's", t->p[P_AMODE] == 2 && t->p[P_AOCT] == 3 && t->p[P_SCALE] == 2 &&
-                 t->p[P_TRANS] == 5 && t->p[P_SLCR] == SL_GATE && t->p[P_SLPAT] == 4 && t->p[P_LEVEL] == 90);
+    bad += check("..ARP, SCL, the SLICER and the mix stay the track's ((Vallée) TRANS the sound's, as SPAMPY)",
+                 t->p[P_AMODE] == 2 && t->p[P_AOCT] == 3 && t->p[P_SCALE] == 2 &&
+                 t->p[P_TRANS] == sound_trans(0, t->preset) && t->p[P_SLCR] == SL_GATE && t->p[P_SLPAT] == 4 &&
+                 t->p[P_LEVEL] == 90);
     bad += check("..and no warning about the sequence", !msg_is("T1 SEQ REPLACED"));
-    for (i = 0; i < ENGINES[0]->npresets; i++)
-        if (str_eq(ENGINES[0]->presets[i].name, "RAVE"))
+    for (i = 0; i < ENGINES[3u]->npresets; i++)   /* ((Vallée) SPAMPY's 8BIT ARP: one of its arp sounds */
+        if (str_eq(ENGINES[3u]->presets[i].name, "8BIT ARP"))
             break;
     t->p[P_AMODE] = 0;
-    t->preset = (uint8_t)(i - 1u);
+    host_preset(t, 3u, i - 1u);
     turn(EN_PRESET, 1);
-    bad += check("RAVE (an ARP preset) leaves the arp off", t->preset == i && t->p[P_AMODE] == 0);
+    bad += check("8BIT ARP (an arp sound) leaves the arp off: the arp is the track's", t->eng_req == 3u &&
+                 t->preset == i && t->p[P_AMODE] == 0);
     t->p[P_AMODE] = 2;
     before = *t;
-    for (i = t->preset; i < ENGINES[0]->npresets; i++)   /* several loads, into the next engine */
+    for (i = t->preset; i < ENGINES[t->eng_req]->npresets; i++)   /* several loads, into the next engine */
         turn(EN_PRESET, 1);
     bad += check("browsing on, into another engine: the steps still untouched", t->eng_req != before.eng_req &&
                  !memcmp(t->step, before.step, sizeof t->step) && t->p[P_AMODE] == 2);
@@ -463,7 +473,7 @@ static int test_sound_loads(void)
     trk[0].p[P_SDIV] = 2;
     up_store(3, "MINE");
     bad += check("(Skiff) a user preset is the sound: no pattern in the record ((2.0) version 6: by stored id)",
-                 up_used(3) && !up_pat(up_rec(3)) && up_rec(3)->ver == UP_VER_SID && up_rec(3)->np == SID_COUNT);
+                 up_used(3) && !up_pat(up_rec(3)) && up_rec(3)->ver == UP_VER_SPAMPY && up_rec(3)->np == SID_COUNT);
     trk[0].p[P_SDIV] = 0;
     trk[0].user = 0;                              /* ((2.0) a store puts the track on the slot: off it again, so the */
     track_defaults_steps(&trk[0]);                /* load's undo has a slot to take back) */
@@ -499,35 +509,20 @@ static int test_sound_loads(void)
         bad += check("(2.0, #20) a user sound's name over a save and a load; its slot erased since: none", ok20);
     }
     ui_power_on();
-    bad += check("SAMPLE factory browsing: PIANO .. SAX, (phase 9) PERC's slot a hidden PIANO, the variations after",
-                 ENGINES[4]->npresets == 10u && str_eq(ENGINES[4]->presets[0].name, "PIANO") &&
-                 str_eq(ENGINES[4]->presets[3].name, "SAX") && str_eq(ENGINES[4]->presets[4].name, "PIANO") &&
-                 str_eq(ENGINES[4]->presets[5].name, "LOFI PIANO") && preset_shown(4) == 8u &&
-                 preset_orig(ENGINES[4], SMP_SET_PERC) == 0u && preset_orig(ENGINES[4], 5u) == 5u);
-    {   /* TRANH (SET 1, preset 1) is gone: both are PIANO aliases, kept for old data, never offered */
-        const param_desc_t *sd = &ENGINES[4]->edit[0];
-        uint32_t all, pos, k, e, pos0, shown = 0;
-        set_engine_of(TSEL, 4);
-        pos0 = preset_all_pos(&all);
-        TSEL->preset = 1;
-        TSEL->p[P_E0] = 1;
-        pos = preset_all_pos(&all);
-        for (k = 0; k < all; k++)
-            if (preset_all_at(k, &e) == 4u)
-                shown++;
-        e = preset_all_at(pos0 + 1u, &k);
-        apply_preset_to(TSEL, 1);
-        bad += check("SAMPLE: old SET 1 / preset 1 (TRANH) play PIANO; browsing and knobs skip them",
-                     SMP_SETS[1].z0 == SMP_SETS[0].z0 && SMP_SETS[1].nz == SMP_SETS[0].nz && pos == pos0 &&
-                     shown == 8u && e == 4u && k == 2u && TSEL->preset == 0u && TSEL->p[P_E0] == 0 &&
-                     str_eq(sd->names[1], "PIANO") && enum_step(sd, 0, 1) == 2 && enum_step(sd, 2, 1) == 0 &&
-                     enum_step(sd, 1, 2) == 2 && enum_orig(sd, 1) == 0 && enum_orig(sd, 5) == 5 &&
-                     enum_orig(&ENGINES[8]->edit[0], 1) == 0);
-        bad += check("SAMPLE / GRAIN SET 4 (PERC, retired): a PIANO alias, knobs skip it, USR1..3 stay 5..7",
-                     str_eq(sd->names[SMP_SET_PERC], "PIANO") && enum_orig(sd, SMP_SET_PERC) == 0 &&
-                     enum_step(sd, 3, 4) == 5 && enum_step(sd, 5, 4) == 3 && str_eq(sd->names[5], "USR1") &&
-                     str_eq(sd->names[7], "USR3") && sd->max == 7 &&
-                     enum_orig(&ENGINES[8]->edit[0], SMP_SET_PERC) == 0 && SMP_SETS[SMP_SET_PERC].z0 == SMP_SETS[0].z0);
+    {   /* ((Vallée, the SPAMPY sound) SAMPLE: SPAMPY's sets (Vallée's SAX in its empty set 3) and five sounds; every
+         * set plays itself, no alias (the knob shows SPAMPY's EMPTY slots as SPAMPY does) */
+        static const char *const SND[5] = {"VIBES", "LOFI FLUTE", "GM KIT", "SAX", "DARK SAX"};
+        const param_desc_t *sd = &ENGINES[ENGI_SAMPLE]->edit[0];
+        uint32_t k;
+        int ok = ENGINES[ENGI_SAMPLE]->npresets == 5u && preset_shown(ENGI_SAMPLE) == 5u && SMP_NALIAS == 0u;
+        for (k = 0; k < 5u; k++)
+            ok &= str_eq(ENGINES[ENGI_SAMPLE]->presets[k].name, SND[k]) && preset_orig(ENGINES[ENGI_SAMPLE], k) == k;
+        bad += check("SAMPLE: VIBES, LOFI FLUTE, GM KIT, SAX, DARK SAX, each shown", ok);
+        ok = SMP_NSETS == 8u && sd->max == SMP_PICK_MAX && str_eq(sd->names[0], "PIANO") && str_eq(sd->names[3], "SAX") &&
+             str_eq(sd->names[7], "PERC") && enum_step(sd, 0, 1) == 1 && enum_step(sd, 7, 6) == 6;
+        for (k = 0; k < SMP_NSETS; k++)
+            ok &= enum_orig(sd, (int32_t)k) == (int32_t)k;
+        bad += check("SAMPLE SET: SPAMPY's eight, SAX at 3, PERC at 7; each plays itself, the knob steps one by one", ok);
     }
 #if FELUCCA_LEGACY                             /* ((2.0) the converter's: 2.0 reads no record of before) */
     host_legacy_sample_perc(t);                /* SAMPLE PERC (SET 4, retired after 1.0.2): every load gives DRUM */
@@ -573,7 +568,7 @@ static int test_sound_loads(void)
     set_engine_of(t, ENGI_SAMPLE);
     apply_preset_to(t, SMP_SET_PERC);             /* SAMPLE preset 4 (once PERC): the editor's PRESET, a favourite */
 #if !FELUCCA_LEGACY
-    bad += check("(2.0) SAMPLE preset 4 (once PERC): PIANO, its alias", t->eng_req == ENGI_SAMPLE && t->preset == 0u);
+    bad += check("(2.0) SAMPLE preset 4: DARK SAX ((Vallée) SPAMPY's fifth sound)", t->eng_req == ENGI_SAMPLE && t->preset == 4u);
 #else
     bad += check("SAMPLE preset 4 (once PERC): DRUM's kit", t->eng_req == ENGI_DRUM && t->preset == 0u && perc_kit(t) &&
                  gm_hits_play(t));
