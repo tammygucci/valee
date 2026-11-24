@@ -58,7 +58,17 @@ The old version stays installable: branch `vallee-skiff-engine` = release v0.9.1
 - [ ] 2c. Old projects: old engine id -> new (ANALOG 0, DIGITAL/FM6 -> 9, PHASE 2, LOFI 3, SAMPLE 4, VOICE 5, TRIO 6,
       WHEEL 7, GRAIN/PHYS/NOISE -> nearest + its default sound, DRUM/DRUM-X -> 19, SUMMON -> 20), the sound reset to
       the new engine's default, patterns and mix kept; a marker so new projects are not mapped twice.
-- [ ] 3. SPAMPY drums as the DRUM engine.
+- [ ] 3. SPAMPY drums as the DRUM engine. DECIDED (user, 2026-11-24): 16 lanes, as SPAMPY's (old projects may change;
+      they still open safely: an old 8-lane hit maps by its GM note to SPAMPY's lane, LANE_OF_GM: kick 36 -> KICK,
+      38 SNARE, 39 CLAP, 42 HAT, 46 OPEN HAT, 45 LOW TOM, 37 RIM, 56 COWBELL).
+      3a data model: NLANE 16; step_t's hit / acc 16 bits (packed: 15 bytes, no padding); the ~126 hit / acc sites
+         audited; RAM (.bss +~1.7 KB) moved to the pool (31 KB free); every stored format (patterns, projects, user
+         patterns, editor protocol, backups) a new version, old 8-lane bytes mapped on read.
+      3b engine: drums.c, drum_synth.c, punch.c (GM sample kit + 4 treatments, 30 synth kits, punch, per-lane TUNE /
+         DECAY / BODY) as Vallée's DRUM engine on any track; voices in Vallée's model.
+      3c screens and features: the grid and LANES / LANE MIX on 16 lanes; keys F3..G5 the 16 lanes (SPAMPY's
+         lane_of_key); GEN's drum writer, THE SPELL, SUMMON; the web editor and emulator; both themes reviewed.
+      3d verify: tests, CI, renders, old projects, RAM / CPU budgets.
 - [ ] 4. SPAMPY's mix stage (levels, glide, master) in fx.c.
 - [ ] 5. Rewire GEN, PART SONG, THE SPELL, creatures, EDIT/SAVE/PRESETS; rebuild SUMMON.
 - [ ] 6. Tests: size, every page in both themes, every sound and kit, old projects, goldens on purpose.
