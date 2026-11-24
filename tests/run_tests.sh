@@ -338,12 +338,10 @@ if [ -f build/gen/felucca_tables.h ]; then
     run "metronome and count-in: beats sample for sample (internal and external clock), accent, level, MASTER, not in USB, count-in timing, notes onto step 1" "$OUT/click_test"
     $CC -w -Ibuild/gen -Ifirmware/src -o "$OUT/persistence_test" tests/persistence_test.c -lm
     run "persistence: deferred settings, retry and failed-save rollback; (2.0) a FUN5 slot OLD FORMAT" "$OUT/persistence_test"
-    $CC -w $LEGACY -Ibuild/gen -Ifirmware/src -o "$OUT/persistence_test_legacy" tests/persistence_test.c -lm
-    run "persistence, the converter's build (FELUCCA_LEGACY): an SKF2 autosave, FUN5 and FUN7 slots" "$OUT/persistence_test_legacy"
+    # ((Vallée, the SPAMPY sound) a converter build (FELUCCA_LEGACY) retired here: Classic's converter's work
     $CC -w -Ibuild/gen -Ifirmware/src -o "$OUT/bank_test" tests/bank_test.c -lm
     run "pattern bank (Skiff): patterns kept exactly, torn saves, fallback, wear, the sequence wrap" "$OUT/bank_test"
-    $CC -w $LEGACY -Ibuild/gen -Ifirmware/src -o "$OUT/bank_test_legacy" tests/bank_test.c -lm
-    run "pattern bank, the converter's build (FELUCCA_LEGACY): projects of before become patterns (proj_migrate)" "$OUT/bank_test_legacy"
+    # ((Vallée, the SPAMPY sound) a converter build (FELUCCA_LEGACY) retired here: Classic's converter's work
     $CC -w -DBOARD_SMK37=1 -Ifirmware/hal -Ibuild/gen -Ifirmware/src -o "$OUT/bank_test_smk" tests/bank_test.c -lm
     run "pattern bank on the SMK-37 Pro layout (USRFLASH 0xD6000..)" "$OUT/bank_test_smk"
     $CC -w -DBOARD_SMK37=1 -Ifirmware/hal -Ibuild/gen -Ifirmware/src -o "$OUT/persistence_test_smk"         tests/persistence_test.c -lm

@@ -436,8 +436,10 @@ static void macros(void)
         trk[0].p[P_E7] = FM6_OWN;
         fm6_poll();
         check("SLOT back to OWN: the own patch again", fm6_slot[0] == FM6_OWN && !memcmp(fm6_patch[0], own, FP_SIZE));
-        check("SLOT: F1..F8 and OWN, nothing past it", ENG_FM6.edit[7].max == FM6_OWN && FM6_OWN == FM6_NFACTORY &&
-              !strcmp(ENG_FM6.edit[7].names[FM6_OWN], "OWN") && !ENG_FM6.edit[7].names[FM6_OWN + 1]);
+        check("SLOT: F1..F8, OWN, then (Vallée, SPAMPY's) the FM-1's own O1..O17, nothing past it",
+              ENG_FM6.edit[7].max == (int32_t)FM6_SLOTS - 1 && FM6_OWN == FM6_NFACTORY &&
+              !strcmp(ENG_FM6.edit[7].names[FM6_OWN], "OWN") && !strcmp(ENG_FM6.edit[7].names[FM6_O1], "O1") &&
+              !strcmp(ENG_FM6.edit[7].names[FM6_SLOTS - 1u], "O17") && !ENG_FM6.edit[7].names[FM6_SLOTS]);
         trk[0].p[P_E7] = FM6_OWN;
         fm6_set_patch(0, own);
         trk[0].p[P_E7] = 2;                          /* a load that says F3 with F3 unchanged: F3; edited: OWN */
@@ -469,20 +471,42 @@ static uint32_t chk(const uint8_t *p, uint32_t n)
     return (0x80u - (s & 0x7Fu)) & 0x7Fu;
 }
 
+/* ((Vallée, the SPAMPY sound) SPAMPY's F2 F3 F4 F6 are EMPTY (zeros: no record): the format checks' sample voices are
+ * its real factory patches (F1 F5 F7 F8) in turn */
+static const uint8_t *fm6_sample(uint32_t k)
+{
+    static const uint8_t *real[FM6_NFACTORY];
+    static uint32_t n;
+    uint32_t i, j, z;
+    if (!n)
+        for (i = 0; i < FM6_NFACTORY; i++) {
+            for (j = z = 0; j < FM6_PACKED; j++)
+                z |= FM6_FACTORY[i][j];
+            if (z)
+                real[n++] = FM6_FACTORY[i];
+        }
+    return real[k % n];
+}
 static void formats(void)
 {
     uint8_t v[FP_SIZE + 1u], pk[FM6_PACKED];
     static uint8_t bank[4104], single[163];
     uint32_t i, k, ok = 1, inrange = 1, seed = 12345;
-    for (k = 0; k < FM6_NFACTORY; k++) {
-        fm6_unpack(FM6_FACTORY[k], v);
+    for (k = 0; k < FM6_NFACTORY; k++) {             /* (the real factory patches) */
+        fm6_unpack(fm6_sample(k), v);
         fm6_pack(v, pk);
-        ok &= !memcmp(pk, FM6_FACTORY[k], FM6_PACKED);
+        ok &= !memcmp(pk, fm6_sample(k), FM6_PACKED);
+    }
+    for (k = 0; k < FM6_NEXTRA; k++) {               /* (the FM-1's own O1..O17, its bytes as M-VAVE wrote them: they
+                                                       * unpack into range, which is all the firmware does with them) */
+        fm6_unpack(FM6_EXTRA[k], v);
+        for (i = 0; i < FP_SIZE; i++)
+            ok &= i >= FP_NAME ? (v[i] >= 32u && v[i] <= 126u) : v[i] <= fm6_max(i);
     }
     fm6_unpack(FM6_INIT, v);
     fm6_pack(v, pk);
     ok &= !memcmp(pk, FM6_INIT, FM6_PACKED);
-    check("pack(unpack(x)) == x: the factory patches and the init voice (generator and C agree)", ok);
+    check("pack(unpack(x)) == x: the factory patches and the init voice (generator and C agree); O1..O17 into range", ok);
     for (k = 0; k < 2000u; k++) {
         for (i = 0; i < FM6_PACKED; i++) {
             seed = seed * 1103515245u + 12345u;
@@ -496,18 +520,18 @@ static void formats(void)
     /* a 32-voice bank SysEx (the generic 6-operator layout): F0 43 00 09 20 00, 4096 bytes, checksum, F7 */
     bank[0] = 0xF0; bank[1] = 0x43; bank[2] = 0x00; bank[3] = 0x09; bank[4] = 0x20; bank[5] = 0x00;
     for (k = 0; k < 32u; k++)
-        memcpy(bank + 6 + k * 128u, k < FM6_NFACTORY ? FM6_FACTORY[k] : FM6_INIT, 128);
+        memcpy(bank + 6 + k * 128u, k < FM6_NFACTORY ? fm6_sample(k) : FM6_INIT, 128);
     bank[4102] = (uint8_t)chk(bank + 6, 4096);
     bank[4103] = 0xF7;
     ok = (uint32_t)chk(bank + 6, 4096) == bank[4102];
     for (k = 0; k < 32u; k++) {
         fm6_unpack(bank + 6 + k * 128u, v);
         fm6_pack(v, pk);
-        ok &= !memcmp(pk, k < FM6_NFACTORY ? FM6_FACTORY[k] : FM6_INIT, 128);
+        ok &= !memcmp(pk, k < FM6_NFACTORY ? fm6_sample(k) : FM6_INIT, 128);
     }
     check("a 32-voice bank SysEx: checksum, its 32 records back as they were", ok);
     /* a single voice: F0 43 00 00 01 1B, the 155 bytes, checksum, F7 */
-    fm6_unpack(FM6_FACTORY[3], v);
+    fm6_unpack(fm6_sample(3), v);
     single[0] = 0xF0; single[1] = 0x43; single[2] = 0x00; single[3] = 0x00; single[4] = 0x01; single[5] = 0x1B;
     memcpy(single + 6, v, FP_SIZE);
     single[161] = (uint8_t)chk(single + 6, FP_SIZE);
@@ -515,7 +539,7 @@ static void formats(void)
     memcpy(v, single + 6, FP_SIZE);
     fm6_sanitize(v);
     fm6_pack(v, pk);
-    check("a single-voice SysEx (155 bytes): back to the same packed record", !memcmp(pk, FM6_FACTORY[3], 128) &&
+    check("a single-voice SysEx (155 bytes): back to the same packed record", !memcmp(pk, fm6_sample(3), 128) &&
           single[161] == chk(single + 6, FP_SIZE));
 }
 
