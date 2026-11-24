@@ -116,7 +116,11 @@ PATCHES = {
                   'static uint8_t cz_patch[NPART][144] __attribute__((section(".pool")));')],
     # OBERVAVE's per-card tables have 8 entries (the original's 8 voice cards); SPAMPY reads them by its voice number
     # (up to 9 there, 15 in Vallée): past the tables. The 8 cards again for voices 9..16 (as many as the original had)
-    "eng_obervave.c": [(r"pan=\(OB_PAN_CARD\[card\]", "pan=(OB_PAN_CARD[card%OB_NV]")],
+    # (and OBERVAVE's WARM PAD and PWM LEAD share their names with ANALOG's: Vallée finds a sound by its name (GEN,
+    # the converter, a user sound's name), so OBERVAVE's two are OB WARM PAD, OB PWM LEAD, as its OB ENSEMBLE)
+    "eng_obervave.c": [(r"pan=\(OB_PAN_CARD\[card\]", "pan=(OB_PAN_CARD[card%OB_NV]"),
+                       (r'\{"WARM PAD",\{0,0,0,0,0,0,0,14\}', '{"OB WARM PAD",{0,0,0,0,0,0,0,14}'),
+                       (r'\{"PWM LEAD",\{0,0,0,0,0,0,0,21\}', '{"OB PWM LEAD",{0,0,0,0,0,0,0,21}')],
     "obv_native_core.h": [(r"OB_VINT_ENV\[OB_card\]", "OB_VINT_ENV[OB_card % OB_NV]"),
                           (r"OB_VINT_TUNE8\[OB_card\]", "OB_VINT_TUNE8[OB_card % OB_NV]"),
                           (r"OB_VINT_CUT8\[OB_card\]", "OB_VINT_CUT8[OB_card % OB_NV]")],

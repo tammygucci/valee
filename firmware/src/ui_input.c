@@ -2827,8 +2827,8 @@ static const sheet_t SHEETS[] = {
      "OPERATOR"},
     {GR_FMALL, ENGI_FM6, FM_NWIN, &fm_ui[2], fm_all_knob, fm_all_cards, fm_sig, graph_fm_all, fm_all_title, fm_op_turn,
      "OPERATOR"},
-    {GR_GEN, 0xFF, GEN_NWIN, &gen.win, gen_knob, gen_cards, gen_sig, graph_gen, gen_title, gen_pick, "STYLE"},   /* (any
-                                                                     * engine: 0xFF, ui.c page_visible) */
+    {GR_GEN, SHEET_ANY, GEN_NWIN, &gen.win, gen_knob, gen_cards, gen_sig, graph_gen, gen_title, gen_pick, "STYLE"},   /* (any
+                                                                     * engine: SHEET_ANY, ui.c page_visible) */
 };
 static const sheet_t *sheet_of(uint32_t g)
 {

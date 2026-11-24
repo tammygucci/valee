@@ -550,8 +550,12 @@ static const page_t *cur_page(void) { return page_over ? page_over : &PAGES[ui.p
 
 /* (FM6 LAB) a sheet: a page whose four knobs are a window over a table, SELECT moving it before the pages beside it
  * (DRUM-X's SOUND, FM6's OPERATOR and ALL OPS: ui_input.c SHEETS). sheet_of: the page's, or 0 */
+#define SHEET_ANY 0xFEu                         /* ((Vallée, the SPAMPY sound) a sheet for every engine; not 0xFF: the
+                                                 * retired DRUM-X's ENGI_DRUMX, whose sheet must match no engine */
+_Static_assert(SHEET_ANY != ENGI_DRUMX && SHEET_ANY >= NENGINES, "SHEET_ANY: no engine's number");
 typedef struct {
-    uint8_t graph, eng, nwin, *win;              /* the page (GR_*), the engine it is for, its windows, the one shown */
+    uint8_t graph, eng, nwin, *win;              /* the page (GR_*), the engine it is for (SHEET_ANY: every one), its
+                                                  * windows, the one shown */
     void (*knob)(uint32_t k, int32_t s);
     void (*cards)(void);
     uint32_t (*sig)(void);                       /* what the cards and the panel show (ui_graph.c graph_signature) */
@@ -682,7 +686,7 @@ static int page_visible(uint32_t i)
     const sheet_t *sh = sheet_of(PAGES[i].graph);
     uint32_t id = PAGES[i].id[0];
     if (sh)
-        return sh->eng == 0xFFu || TSEL->eng_req % NENGINES == sh->eng;   /* ((Vallée) GEN: 0xFF, every one) */
+        return sh->eng == SHEET_ANY || TSEL->eng_req % NENGINES == sh->eng;   /* ((Vallée) GEN: every one) */
     if (PAGES[i].graph == GR_LANES)
         return TSEL->eng_req % NENGINES == ENGI_DRUM;
     if (id == P_AFLT)                                   /* ((Vallée) EDIT > FILTER: ANALOG's) */
@@ -2222,10 +2226,20 @@ static uint32_t preset_all_at(uint32_t n, uint32_t *k)
 /* (Skiff phase 9) the LIST (PRESETS KNOB 4): 0 ALL, 1 FAV (favorites.filter), 2.. a type (ui_ptag + 1) */
 static uint32_t list_mode(void) { return ui_ptag ? ui_ptag + 1u : favorites.filter; }
 static const char *const LIST_NAME[PT_N + 1] = {"ALL", "FAV", "BASS", "LEAD", "PAD", "KEYS", "PLUCK", "DRUM", "FX"};
+#include "sloop/sloop_tags.h"
+/* ((Vallée, the SPAMPY sound) factory sound k of engine e's type: its table's, else SPAMPY's sounds' (sloop_tags.h) */
+static uint32_t preset_tag(uint32_t e, uint32_t k)
+{
+    if (e >= NENGINES || k >= ENGINES[e]->npresets)
+        return PT_NONE;
+    if (ENGINES[e]->presets[k].tag)
+        return ENGINES[e]->presets[k].tag;
+    return k < SLOOP_TAG_MAX ? SLOOP_TAG[e][k] : PT_NONE;
+}
 static int preset_in_list(uint32_t e, uint32_t k)     /* a LIST but ALL: the sound is in it (user presets: FAV only) */
 {
     if (ui_ptag)
-        return e < NENGINES && ENGINES[e]->presets[k].tag == ui_ptag;
+        return e < NENGINES && preset_tag(e, k) == ui_ptag;
     return favorite_has(e, k);
 }
 

@@ -769,7 +769,8 @@ static int test_midi(void)
                      !midi_sel_on[1][64] && !midi_in_overflow && mi_r == mi_w && song.playing);
         midi_in_event(0x643D9009u);
         events_block(CTL);
-        bad += check("MIDI accepts a fresh note after overflow recovery", midi_sel_on[0][61] == 1u && trk[0].v[0].gate);
+        for (i = held = 0; i < NVOICE; i++) held += trk[0].v[i].gate;   /* ((Vallée) whichever voice the engine takes */
+        bad += check("MIDI accepts a fresh note after overflow recovery", midi_sel_on[0][61] == 1u && held == 1u);
     }
     menu_put(MI_ROUTE, 1);                               /* ((Skiff U3, R8) the unit's, MENU > CONTROL; GLO > SYSTEM's before) */
     bad += check("MENU > MIDI IN: CH1-6 / SEL (song.g[G_ROUTE])", song.g[G_ROUTE] == 1 && str_eq(menu_vname(MI_ROUTE, 1), "SEL") &&
@@ -1440,7 +1441,7 @@ static int test_preset_tags(void)
     for (r = 0; r < NENG_SHOWN; r++)
         for (e = eng_vis(r), k = 0; k < ENGINES[e]->npresets; k++)
             ok &= preset_orig(ENGINES[e], k) != k ||
-                  (ENGINES[e]->presets[k].tag > PT_NONE && ENGINES[e]->presets[k].tag < PT_N);
+                  (preset_tag(e, k) > PT_NONE && preset_tag(e, k) < PT_N);   /* ((Vallée) SPAMPY's: sloop_tags.h */
     bad += check("every factory sound the browser shows has a type", ok);
     {   /* (phase 9) and a name of its own: a type's list mixes the engines (two WINDs read as one sound twice); the
          * retired DIGITAL of a FELUCCA_FM4 build keeps its names (PAD, MARIMBA: FM6's, PHYS's) */
@@ -1466,13 +1467,13 @@ static int test_preset_tags(void)
     ok = list_mode() == 2u && ui_ptag == PT_BASS && !favorites.filter && total > 4u && total < all;
     for (i = 0; i < total; i++) {
         e = preset_at(i, &k);
-        ok &= e < NENGINES && ENGINES[e]->presets[k].tag == PT_BASS;
+        ok &= e < NENGINES && preset_tag(e, k) == PT_BASS;
         engs |= e < NENGINES ? 1u << e : 0u;
     }
     bad += check("LIST BASS: the factory basses only (several engines, no user preset)", ok && (engs & (engs - 1u)));
     for (i = 0, ok = 1; i < total; i++) {
         turn(EN_PRESET, 1);
-        ok &= !TSEL->user && ENGINES[TSEL->eng_req]->presets[TSEL->preset].tag == PT_BASS;
+        ok &= !TSEL->user && preset_tag(TSEL->eng_req, TSEL->preset) == PT_BASS;
     }
     bad += check("the PRESETS knob browses the basses, every one in turn", ok);
     for (i = 0; i < 10u; i++)
@@ -10022,18 +10023,18 @@ static int test_six_tracks(void)
     ui_power_on();
     sel_set(4);
     e0 = TSEL->eng_req;
-    for (p = 0; p < NENG_SHOWN && eng_vis(p) != ENGI_PHYS; p++)
+    for (p = 0; p < NENG_SHOWN && eng_vis(p) != ENGI_PROPHET; p++)   /* ((Vallée) PROPHET: heavy only, as PHYS was */
         ;
     btn_down(B_EDIT); frame();
-    ly_tap(white(p));                                 /* PHYS's key */
-    ok = p < NENG_SHOWN && TSEL->eng_req == e0 && msg_is("PHYS: T1-T4 ONLY");
+    ly_tap(white(p));                                 /* PROPHET's key */
+    ok = p < NENG_SHOWN && TSEL->eng_req == e0 && msg_is("PROPHET: T1-T4 ONLY");
     for (i = 0; i < 2u * NENG_SHOWN; i++) {           /* KNOB 1 up through every engine, then down */
         turn(EN_K1, i < NENG_SHOWN ? 1 : -1);
         ok &= eng_allowed(4, TSEL->eng_req);
         n += TSEL->eng_req != e0;
     }
     btn_up(B_EDIT); frame();
-    bad += check("  EDIT on T5: PHYS's key says why (the engine stays); KNOB 1 never lands on PHYS or GRAIN", ok && n);
+    bad += check("  EDIT on T5: PROPHET's key says why (the engine stays); KNOB 1 never lands on PROPHET CZ SID OBERVAVE", ok && n);
     return bad;
 }
 

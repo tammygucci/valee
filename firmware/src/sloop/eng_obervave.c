@@ -36,14 +36,14 @@ static const preset_t OB_PRESETS[]={
 {"DREAM ARP",{0,0,0,0,0,0,0,11},{0,0,127,0},0,0,FX(0,55,50,60),.more = {{P_ALLOC, 1}, {P_VOICE, 0}, {P_DETUNE, 0}}},
 {"BIG BRASS",{0,0,0,0,0,0,0,12},{0,0,127,0},0,0,FX(0,40,0,35),.more = {{P_ALLOC, 1}, {P_VOICE, 0}, {P_DETUNE, 0}}},
 {"HORN SECT",{0,0,0,0,0,0,0,13},{0,0,127,0},0,0,FX(0,0,0,25),.more = {{P_ALLOC, 1}, {P_VOICE, 0}, {P_DETUNE, 0}}},
-{"WARM PAD",{0,0,0,0,0,0,0,14},{0,0,127,0},0,0,FX(0,60,0,50),.more = {{P_ALLOC, 1}, {P_VOICE, 0}, {P_DETUNE, 0}}},
+{"OB WARM PAD",{0,0,0,0,0,0,0,14},{0,0,127,0},0,0,FX(0,60,0,50),.more = {{P_ALLOC, 1}, {P_VOICE, 0}, {P_DETUNE, 0}}},
 {"DARK PAD",{0,0,0,0,0,0,0,15},{0,0,127,0},0,0,FX(0,0,25,60),.more = {{P_ALLOC, 1}, {P_VOICE, 0}, {P_DETUNE, 0}}},
 {"AIR CHOIR",{0,0,0,0,0,0,0,16},{0,0,127,0},0,0,FX(0,75,0,55),.more = {{P_ALLOC, 1}, {P_VOICE, 0}, {P_DETUNE, 0}}},
 {"SLOW SWEEP",{0,0,0,0,0,0,0,17},{0,0,127,0},0,0,FX(0,35,0,50),.more = {{P_ALLOC, 1}, {P_VOICE, 0}, {P_DETUNE, 0}}},
 {"GHOST PAD",{0,0,0,0,0,0,0,18},{0,0,127,0},0,0,FX(0,0,30,70),.more = {{P_ALLOC, 1}, {P_VOICE, 0}, {P_DETUNE, 0}}},
 {"OB ENSEMBLE",{0,0,0,0,0,0,0,19},{0,0,127,0},0,0,FX(0,80,0,40),.more = {{P_ALLOC, 1}, {P_VOICE, 0}, {P_DETUNE, 0}}},
 {"TAPE KEYS",{0,0,0,0,0,0,0,20},{0,0,127,0},0,0,FX(0,40,35,30),.more = {{P_ALLOC, 1}, {P_VOICE, 0}, {P_DETUNE, 0}}},
-{"PWM LEAD",{0,0,0,0,0,0,0,21},{0,0,127,0},0,0,FX(0,0,30,20),.more = {{P_ALLOC, 1}, {P_VOICE, 2}, {P_DETUNE, 0}}},
+{"OB PWM LEAD",{0,0,0,0,0,0,0,21},{0,0,127,0},0,0,FX(0,0,30,20),.more = {{P_ALLOC, 1}, {P_VOICE, 2}, {P_DETUNE, 0}}},
 };
 static const engine_t ENG_OBERVAVE={
     .name="OBERVAVE",

@@ -1,0 +1,229 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+/* (Vallée, the SPAMPY sound) the PRESETS LIST type (core.h PT_*) of each of SPAMPY's sounds, by engine and sound:
+ * SPAMPY's sounds have none (its presets are imported as they are, sloop_presets.c). Chosen by hand from each sound's
+ * name and use; FM6's and SAMPLE's are SPAMPY's
+ * sounds too; a type in an engine's own table wins (DRUM, SUMMON, SAMPLE's SAX). ui.c preset_tag */
+#define SLOOP_TAG_MAX 48
+static const uint8_t SLOOP_TAG[NENGINES][SLOOP_TAG_MAX] = {
+    [4] = {   /* SAMPLE (SAX, DARK SAX: their own table's) */
+        [0] = PT_PLUCK,   /* VIBES */
+        [1] = PT_LEAD,   /* LOFI FLUTE */
+        [2] = PT_DRUM,   /* GM KIT */
+    },
+    [9] = {   /* FM6 (SPAMPY's sounds) */
+        [0] = PT_KEYS,   /* TINE EP */
+        [1] = PT_PAD,   /* SOFT PAD */
+        [2] = PT_KEYS,   /* DRAWBARS */
+        [3] = PT_PLUCK,   /* NYLON PICK */
+        [4] = PT_PAD,   /* PAD */
+        [5] = PT_PAD,   /* SYN PAD */
+        [6] = PT_BASS,   /* DX BASS 2 */
+        [7] = PT_PLUCK,   /* TUB BELLS */
+        [8] = PT_PAD,   /* SYN PAD 2 */
+        [9] = PT_BASS,   /* DX BASS 4 */
+        [10] = PT_BASS,   /* DX BASS 5 */
+        [11] = PT_BASS,   /* DX BASS 6 */
+        [12] = PT_BASS,   /* DX BASS 8 */
+        [13] = PT_PAD,   /* STRING 1 */
+        [14] = PT_PAD,   /* STRING 5 */
+        [15] = PT_KEYS,   /* BRASS 6 */
+        [16] = PT_PAD,   /* STRING 6 */
+        [17] = PT_PAD,   /* STRING 7 */
+        [18] = PT_PLUCK,   /* TORIM TORA */
+        [19] = PT_KEYS,   /* BRASS 8 */
+        [20] = PT_PLUCK,   /* FINGERCIM */
+        [21] = PT_PLUCK,   /* TIBET */
+    },
+    [0] = {   /* ANALOG */
+        [0] = PT_BASS,   /* ACID 303 */
+        [1] = PT_BASS,   /* REESE */
+        [2] = PT_PLUCK,   /* TRAP PLUCK */
+        [3] = PT_KEYS,   /* SYN BRASS */
+        [4] = PT_LEAD,   /* SUPERSAW */
+        [5] = PT_PAD,   /* DARK STR */
+        [6] = PT_PAD,   /* ATMOS PAD */
+        [7] = PT_LEAD,   /* PAN FLUTE */
+        [8] = PT_BASS,   /* MONO BASS */
+        [9] = PT_PAD,   /* SINE PAD */
+        [10] = PT_KEYS,   /* JP8 BRASS */
+        [11] = PT_PAD,   /* JP8 PAD */
+        [12] = PT_LEAD,   /* JUNO LEAD */
+        [13] = PT_PAD,   /* JUNO STRINGS */
+        [14] = PT_BASS,   /* SUB BASS */
+        [15] = PT_BASS,   /* PLUGG BASS */
+        [16] = PT_BASS,   /* FUNK BASS */
+        [17] = PT_LEAD,   /* G-FUNK LD */
+        [18] = PT_PAD,   /* WARM PAD */
+        [19] = PT_LEAD,   /* FAT LEAD */
+        [20] = PT_LEAD,   /* PWM LEAD */
+        [21] = PT_BASS,   /* SAW BASS */
+        [22] = PT_LEAD,   /* NIGHT DRIVER */
+        [23] = PT_PAD,   /* VHS PAD */
+        [24] = PT_PAD,   /* JUNO CHORUS */
+        [25] = PT_KEYS,   /* POLY COMP */
+    },
+    [1] = {   /* DIGITAL */
+        [0] = PT_KEYS,   /* RHODES */
+        [1] = PT_KEYS,   /* AFRO KEYS */
+        [2] = PT_PLUCK,   /* MARIMBA */
+        [3] = PT_PLUCK,   /* KALIMBA */
+        [4] = PT_PAD,   /* GLASS PAD */
+        [5] = PT_PLUCK,   /* TUBE BELL */
+        [6] = PT_KEYS,   /* DX7 EP */
+        [7] = PT_PLUCK,   /* DX7 BELL */
+        [8] = PT_PAD,   /* JP8 STRINGS */
+        [9] = PT_PAD,   /* DX7 STRINGS */
+        [10] = PT_PAD,   /* JUNO CLOUD */
+        [11] = PT_PAD,   /* JP8 SLOW */
+        [12] = PT_KEYS,   /* DX RHODES */
+        [13] = PT_KEYS,   /* WURLI */
+        [14] = PT_KEYS,   /* M1 PIANO */
+        [15] = PT_PLUCK,   /* TRAP BELL */
+        [16] = PT_PLUCK,   /* MUSIC BOX */
+        [17] = PT_PLUCK,   /* PLUGG BELL */
+        [18] = PT_BASS,   /* FM BASS */
+        [19] = PT_PLUCK,   /* GLOCKEN */
+        [20] = PT_PLUCK,   /* CELESTA */
+        [21] = PT_PLUCK,   /* HARP */
+        [22] = PT_KEYS,   /* FM GRAND */
+        [23] = PT_PLUCK,   /* DX MARIMBA */
+    },
+    [2] = {   /* PHASE */
+        [0] = PT_PAD,   /* CZ STRING */
+        [1] = PT_LEAD,   /* CZ LEAD */
+        [2] = PT_PAD,   /* CZ PAD */
+        [3] = PT_BASS,   /* CZ BASS */
+        [4] = PT_KEYS,   /* SOFT KEYS */
+        [5] = PT_KEYS,   /* CZ BRASS */
+    },
+    [3] = {   /* LOFI */
+        [0] = PT_LEAD,   /* 1BIT BEEP */
+        [1] = PT_LEAD,   /* WAVE LEAD */
+        [2] = PT_LEAD,   /* GAME LEAD */
+        [3] = PT_PLUCK,   /* 8BIT ARP */
+        [4] = PT_KEYS,   /* CHIP CHORD */
+    },
+    [5] = {   /* VOICE */
+        [0] = PT_PAD,   /* CHOIR AAH */
+        [1] = PT_PAD,   /* M1 STRINGS */
+        [2] = PT_PAD,   /* SOUL OOH */
+        [3] = PT_LEAD,   /* TALKBOX */
+        [4] = PT_PAD,   /* VOX PAD */
+    },
+    [6] = {   /* TRIO */
+        [0] = PT_LEAD,   /* SYNC LEAD */
+        [1] = PT_KEYS,   /* ACCORDION */
+        [2] = PT_PAD,   /* ENSEMBLE */
+        [3] = PT_KEYS,   /* 80S POLY */
+        [4] = PT_KEYS,   /* POWER STAB */
+        [5] = PT_KEYS,   /* MIN STAB */
+        [6] = PT_KEYS,   /* RAVE STAB */
+        [7] = PT_PAD,   /* SAW PAD */
+        [8] = PT_LEAD,   /* SQR LEAD */
+        [9] = PT_PAD,   /* PULSE PAD */
+        [10] = PT_BASS,   /* TURBO BASS */
+        [11] = PT_PLUCK,   /* MIDNIGHT ARP */
+        [12] = PT_LEAD,   /* SEQ PULSE */
+        [13] = PT_KEYS,   /* GATE STAB */
+    },
+    [7] = {   /* WHEEL */
+        [0] = PT_KEYS,   /* JAZZ ORGAN */
+        [1] = PT_KEYS,   /* CHAPEL */
+        [2] = PT_KEYS,   /* STREET ORGAN */
+    },
+    [11] = {   /* MORPH */
+        [0] = PT_LEAD,   /* WAVE RUNNER */
+        [1] = PT_BASS,   /* CYBER BASS */
+        [2] = PT_PLUCK,   /* GLASS MOTION */
+        [3] = PT_PAD,   /* VECTOR PAD */
+        [4] = PT_PLUCK,   /* ICE PLUCK */
+        [5] = PT_PAD,   /* NEON SWEEP */
+        [6] = PT_KEYS,   /* POLY PIXEL */
+        [7] = PT_PLUCK,   /* ORBIT ARP */
+        [8] = PT_PAD,   /* DEEP VECTOR */
+        [9] = PT_PAD,   /* CITY LIGHTS */
+        [10] = PT_PLUCK,   /* RETRO GLASS */
+        [11] = PT_PLUCK,   /* PPG BELL */
+        [12] = PT_PAD,   /* WAVE STRINGS */
+    },
+    [13] = {   /* PROPHET */
+        [0] = PT_KEYS,   /* STABBY BRASS */
+        [1] = PT_KEYS,   /* FANTASTIC FIVE */
+        [2] = PT_PAD,   /* TAARI CHOIR */
+        [3] = PT_PAD,   /* REEDY STRING PA */
+        [4] = PT_LEAD,   /* BORN IN THE 80' */
+        [5] = PT_BASS,   /* TUMESCENT BASS */
+        [6] = PT_LEAD,   /* INTERNALIZED */
+        [7] = PT_PAD,   /* TANGERINE CHRCH THM */
+        [8] = PT_BASS,   /* FAT POLY BASS */
+        [9] = PT_PAD,   /* CHORAL VOICES */
+        [10] = PT_LEAD,   /* MIDNIGHT PWM */
+        [11] = PT_PLUCK,   /* RIPPLES */
+        [12] = PT_LEAD,   /* AGGRO SYNTH */
+        [13] = PT_PAD,   /* 80S HORROR STRINGS */
+        [14] = PT_PLUCK,   /* PULSE PLUCK */
+        [15] = PT_LEAD,   /* UNISAWYER */
+        [16] = PT_PAD,   /* GHOSTLY GLOW */
+        [17] = PT_PAD,   /* HOLLOW DREAMS */
+        [18] = PT_KEYS,   /* PINK NEON BRASS */
+        [19] = PT_PLUCK,   /* PLUCK HOLLOW */
+        [20] = PT_KEYS,   /* SOFT BRASS */
+        [21] = PT_KEYS,   /* REGAL MOVEMENT */
+        [22] = PT_PLUCK,   /* RUBBER BUMPER */
+        [23] = PT_PAD,   /* SOFT SWELL */
+        [24] = PT_PAD,   /* REVERBERANT STRINGS */
+        [25] = PT_KEYS,   /* FULL HEXAGON */
+        [26] = PT_PAD,   /* OLD STRING MACHINE */
+        [27] = PT_KEYS,   /* ICONIC BRASS */
+        [28] = PT_PAD,   /* SYNC SWELLPAD */
+        [29] = PT_BASS,   /* FEATURE MY BASS */
+        [30] = PT_LEAD,   /* NAIVE MELODY */
+        [31] = PT_LEAD,   /* SWITCHBACK */
+        [32] = PT_BASS,   /* TIGHT BASS (556?) */
+        [33] = PT_KEYS,   /* BRASS */
+        [34] = PT_PAD,   /* LOW STRINGS */
+        [35] = PT_LEAD,   /* PULSE WIDTH MOD */
+        [36] = PT_LEAD,   /* UNISON GLIDE W RES */
+        [37] = PT_KEYS,   /* TOY PIANO */
+        [38] = PT_LEAD,   /* INIT PROPHET */
+        [39] = PT_KEYS,   /* IT'S A PROPHET 5 */
+        [40] = PT_KEYS,   /* FOREVER KEYS */
+    },
+    [14] = {   /* CZ-1 */
+        [0] = PT_KEYS,   /* BRASS 3 */
+        [1] = PT_PAD,   /* STRINGS 2 */
+        [2] = PT_PAD,   /* SYN STRINGS */
+        [3] = PT_PAD,   /* FAT ENSEMBLE */
+    },
+    [15] = {   /* SID */
+        [0] = PT_PAD,   /* PWM PAD */
+        [1] = PT_PAD,   /* SID STRINGS */
+    },
+    [16] = {   /* OBERVAVE */
+        [0] = PT_LEAD,   /* UNISON LD */
+        [1] = PT_PAD,   /* PWM STRING */
+        [2] = PT_PAD,   /* SWEEP PAD */
+        [3] = PT_PAD,   /* NEON PAD */
+        [4] = PT_PLUCK,   /* DREAM ARP */
+        [5] = PT_KEYS,   /* BIG BRASS */
+        [6] = PT_KEYS,   /* HORN SECT */
+        [7] = PT_PAD,   /* WARM PAD */
+        [8] = PT_PAD,   /* DARK PAD */
+        [9] = PT_PAD,   /* AIR CHOIR */
+        [10] = PT_PAD,   /* SLOW SWEEP */
+        [11] = PT_PAD,   /* GHOST PAD */
+        [12] = PT_PAD,   /* OB ENSEMBLE */
+        [13] = PT_KEYS,   /* TAPE KEYS */
+        [14] = PT_LEAD,   /* PWM LEAD */
+    },
+    [18] = {   /* DRONE */
+        [0] = PT_PAD,   /* NIGHT FOG */
+        [1] = PT_PAD,   /* DEEP SPACE */
+        [2] = PT_PAD,   /* AURORA AIR */
+        [3] = PT_PAD,   /* CATHEDRAL HUM */
+        [4] = PT_PAD,   /* DARK TIDE */
+        [5] = PT_PAD,   /* ABYSS CHOIR */
+        [6] = PT_PAD,   /* VIOLET CLOUD */
+        [7] = PT_PAD,   /* ECLIPSE */
+    },
+};
