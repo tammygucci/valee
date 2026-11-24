@@ -6,7 +6,7 @@
 analog_render 648
 phase_render 79
 lofi_render 123
-sample_render 126
+sample_render 164
 formant_render 314
 trio_render 341
 trio_pass 175
@@ -66,7 +66,10 @@ ins_swept 228
 ins_filter 74
 # (Vallée) strum_tick: voice.c unchanged; one more instruction in its inner loop on pi32v2 (16): the data layout
 # (Vallée, the SPAMPY sound) digital_render: SPAMPY's DIGITAL (333, Classic's a 12 stub); keyboard_block 1424 (+14 %):
-# eng_eff inlined, a heavy engine never started on a light track; the retired engines' lines gone
+# eng_eff inlined, a heavy engine never started on a light track; the retired engines' lines gone. sample_render 164
+# (+30 %): its source as Classic's, its loop 125 instructions as before; about 13 more inside the inner loop's span
+# (the bigger image's code layout); SAMPLE stays among the cheapest engines on the host (regress, hostsim). SLOOP's
+# engines: their first measurement (CI run 45453365443)
 strum_tick 155
 strum_flush 531
 mix_spread 143
@@ -82,3 +85,13 @@ lpan_render 11
 lpan_mix 91
 drum_smp 139
 digital_render 333
+drawbar_render 263
+wt_render 110
+p5_render 50
+p5_block 281
+p5_samples 7446
+cz_native_render 1403
+cz_native_block 657
+sid_render 1148
+obv_render 2664
+drone_render 145
