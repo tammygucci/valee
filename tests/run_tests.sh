@@ -315,8 +315,7 @@ if [ -f build/gen/felucca_tables.h ]; then
     run "settings, the converter's build (FELUCCA_LEGACY): PER1..PER3 migration" "$OUT/settings_test_legacy"
     $CC -w -Ibuild/gen -Ifirmware/src -o "$OUT/ui_test" tests/ui_test.c -lm
     run "UI: sounds keep steps, undo, recording, MIDI overflow, pending saves, panel recovery, drum grid, song chain, GREY gray, MONO neutral" "$OUT/ui_test"
-    $CC -w $LEGACY -Ibuild/gen -Ifirmware/src -o "$OUT/ui_test_legacy" tests/ui_test.c -lm
-    run "UI, the converter's build (FELUCCA_LEGACY): DIGITAL sounds, SAMPLE PERC and old GM projects converted as 1.x did" "$OUT/ui_test_legacy"
+    # ((Vallée, the SPAMPY sound) ui_test's converter build (FELUCCA_LEGACY): Classic's converter's work (PORT-SPAMPY.md)
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/summon_fit" tests/summon_fit.c -lm
     run "(Vallée) SUMMON fits the song: GEN's songs, every style, its notes against the other tracks' (no clash it adds)" \
         "$OUT/summon_fit"
