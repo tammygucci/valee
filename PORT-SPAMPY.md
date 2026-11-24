@@ -41,7 +41,23 @@ The old version stays installable: branch `vallee-skiff-engine` = release v0.9.1
       tests/factory_smp_test.c); Vallée's own PIANO FLUTE SAX moved there. Image 576,820 -> 490,632 B. CI green.
 - [ ] 1b. The block's contents: SPAMPY's PIANO VIBES FLUTE PERC (its gen_samples.py, byte-identical) + SAX
       (with phase 2). The installer writes the block after the firmware (web/fm1ota.js or the installer page).
-- [ ] 2. SLOOP engines + SPAMPY presets + level trims replace Skiff's; old-id mapping.
+- [x] 2a. SPAMPY's new engines (PROPHET CZ SID OBERVAVE MORPH DRONE; DRAWBAR waiting) compile in Vallée
+      (tools/sloop_import.py -> firmware/src/sloop/), state in Vallée's shared engine areas. Not in the table yet.
+- [ ] 2b. The table: SPAMPY's numbering 0..18 kept (its presets, PRESET_MAP, preset_trim, catalogue carry over),
+      19 DRUM (SPAMPY's kits), 20 SUMMON: NENGINES 21 (the light-track mask holds 21). Findings from a trial compile
+      of SPAMPY's shared engines in Vallée (scratch, not committed):
+      - ANALOG PHASE LOFI FORMANT TRIO: drop in; ANALOG needs P_FTYPE (LP BP HP): reuse Vallée's P_AFLT slot
+        (MOOG OBERHEIM JUNO go, as expected).
+      - FM6: SPAMPY's fm6_core.c (79 lines differ) and its patch set (gen_fm6_patches.py: FM6_EXTRA, the 17 original
+        FM-1 voices) inside Vallée's FM6 frame (user patches fm6_own / up_fm6.c), track field pold.
+      - DIGITAL: SPAMPY's (24 presets; its catalogue uses TUBE BELL, DX7 BELL) replaces Vallée's FM4->FM6 alias.
+      - SPAMPY's catalogue (ui.c BANK[], ~170 sounds by kind BASS KEYS ORGN PAD LEAD PLCK STAB FX) = the factory
+        sound list; engines.c PRESET_MAP / preset_data / preset_trim.h carry over with it.
+      - Presets with an arp in SPAMPY (left to the track in Vallée): RETRO ARP, NIGHT SEQUENCE, 8BIT ARP,
+        MIDNIGHT ARP, SEQ PULSE, DREAM ARP, ORBIT ARP.
+- [ ] 2c. Old projects: old engine id -> new (ANALOG 0, DIGITAL/FM6 -> 9, PHASE 2, LOFI 3, SAMPLE 4, VOICE 5, TRIO 6,
+      WHEEL 7, GRAIN/PHYS/NOISE -> nearest + its default sound, DRUM/DRUM-X -> 19, SUMMON -> 20), the sound reset to
+      the new engine's default, patterns and mix kept; a marker so new projects are not mapped twice.
 - [ ] 3. SPAMPY drums as the DRUM engine.
 - [ ] 4. SPAMPY's mix stage (levels, glide, master) in fx.c.
 - [ ] 5. Rewire GEN, PART SONG, THE SPELL, creatures, EDIT/SAVE/PRESETS; rebuild SUMMON.
@@ -50,7 +66,7 @@ The old version stays installable: branch `vallee-skiff-engine` = release v0.9.1
 
 ## Status
 
-Phases 0 and 1a done (commits on `spampy-engine`, CI run 45310256392 green). Next: phase 2 (the engines),
+Phases 0, 1a and 2a done (commits on `spampy-engine`, CI run 45310256392 green). Next: phase 2 (the engines),
 together with 1b. Notes for whoever resumes:
 - Local host builds need build/gen: copy the generated headers from a CI-like build, then run
   tools/gen_factory_block.py on felucca_samples.h (tools/build.py does this in CI).
