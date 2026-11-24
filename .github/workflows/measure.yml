@@ -1,0 +1,61 @@
+# TEMPORARY (measure-sizes branch only): build Vallée and SPAMPY with the real FM-1 toolchain and keep
+# every symbol's flash size, for planning the engine swap. Delete this branch afterwards.
+name: Measure sizes
+on:
+  push:
+    branches: [measure-sizes]
+permissions:
+  contents: read
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    env:
+      JIELI_TOOLCHAIN: ${{ github.workspace }}/../jieli/toolchain
+      AC79_SDK: ${{ github.workspace }}/../fw-AC79_AIoT_SDK
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld xz-utils
+          pip3 install --break-system-packages Pillow fonttools || pip3 install Pillow fonttools
+      - name: JieLi toolchain and AC79 SDK
+        run: |
+          tools/get_toolchain.sh "$(dirname "$JIELI_TOOLCHAIN")"
+          for try in 1 2 3 4; do
+            git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 \
+              https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$AC79_SDK" && break
+            rm -rf "$AC79_SDK"; [ "$try" = 4 ] && exit 1; sleep $((try * 20))
+          done
+      - name: Samples (CC0)
+        run: '[ -d assets/samples-cc0 ] || python3 tools/fetch_cc0.py'
+      - name: Vallée release build
+        run: ./build.sh --release 0.9.1-alpha
+      - name: SPAMPY build
+        continue-on-error: true
+        run: |
+          git clone https://github.com/Spampy-Droid/SPAMPY-0.0-r949.git ../spampy
+          cd ../spampy
+          git checkout v1.1-r058 || true
+          git lfs pull || true
+          [ -d assets/samples-cc0 ] || python3 tools/fetch_cc0.py || true
+          ./build.sh
+      - name: Symbol tables
+        run: |
+          mkdir -p out
+          OD="$JIELI_TOOLCHAIN/common/bin/objdump"
+          for d in . ../spampy; do
+            n=$( [ "$d" = . ] && echo vallee || echo spampy )
+            e=$(find "$d/build" -name felucca.elf | head -1)
+            [ -n "$e" ] || { echo "no elf for $n"; continue; }
+            "$OD" -t "$e" > "out/$n.syms.txt"
+            "$OD" -h "$e" > "out/$n.sections.txt"
+            ls -l $(dirname "$e")/felucca.bin >> "out/$n.sections.txt"
+          done
+          ls -l out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sizes
+          path: out/
