@@ -128,6 +128,12 @@ after the second core's tests, so the web pages and later were not reached):
   SLOOP's and FM6's (FM6 measures the same on Classic): needs a precise test-only source),
   persistence (FM6 bank -> user presets migration), bank (a DRUM-X favourite row), backup (SKF3 objects: now
   mapped, not kept as they are), robustness, regress goldens (expected: re-record after listening).
+Since then fixed: midi_control, follow (TRANS: ACID 303 is an octave down), motion and ratchet (old formats with
+the mapping off, PROJ_ERA_TEST), insert (JP8 PAD for Classic's SOFT PAD), robust (a reserved engine refused in a
+project; DIGITAL is an engine again; old v4/v5 records mapped to v7 sounds as the bank loads), backup, UI (all but
+GEN's style sounds: phase 5).
+Found on the way (pre-existing, Classic too, not from the swap): with an INSERT TYPE set the track runs 64 blocks of
+tail instead of 16, so a short sound's last few ms differ by rounding at MIX 0 (inaudible; the test's pad hides it).
 Then re-record the goldens after listening / looking.
 Then 3 (drums), 4 (mix), 5 (GEN, SUMMON...), 6 (tests), 7 (installer).
 Local host builds: build/gen from a CI-like build + tools/gen_factory_block.py + tools/gen_p5_tables.py.

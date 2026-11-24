@@ -59,6 +59,7 @@ static void setup(void)
             t->step[i] = (step_t){{0}, 0, ST_REST, 0, 0};
         t->p[P_SLEN] = 4; t->p[P_SGATE] = 64; t->p[P_SSWING] = 0; t->p[P_AMODE] = 0; t->p[P_CHRD] = 0;
         t->p[P_VOICE] = V_POLY; t->p[P_SCALE] = 1; t->p[P_ROOT] = 0; t->p[P_QUANT] = 0; t->p[P_MUTE] = 0;
+        t->p[P_TRANS] = 0;                             /* ((Vallée) ANALOG's first sound, ACID 303, is an octave down */
     }
     F = &trk[0];
     Ld = &trk[1];

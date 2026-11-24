@@ -651,8 +651,9 @@ static int proj_engines_ok(const project_t *q)
 {
     uint32_t t;
     for (t = 0; t < NTRK; t++)
-        if (q->t[t].engine >= NENGINES || (!FELUCCA_LEGACY && !FELUCCA_FM4 && q->t[t].engine == ENGI_DIGITAL))
-            return 0;
+        if (q->t[t].engine >= NENGINES || (!FELUCCA_LEGACY && !eng_ok(q->t[t].engine)))
+            return 0;                              /* ((Vallée, the SPAMPY sound) a reserved number (8 10 12 17): no
+                                                    * firmware writes one, a mapped record never holds one */
     return 1;
 }
 /* n bytes of a stored project (any format) -> q as today's, DIGITAL and SAMPLE PERC tracks converted; 0 = not a

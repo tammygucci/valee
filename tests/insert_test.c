@@ -77,7 +77,7 @@ static uint64_t phrase(void)
     fflush(stdout);
     if (!(pid = fork())) {
         track_t *t = &trk[0];
-        fresh(preset_by_name(0, "SOFT PAD"));
+        fresh(preset_by_name(0, "JP8 PAD"));            /* ((Vallée) SPAMPY's ANALOG pad (Classic: SOFT PAD) */
         t->p[P_VOICE] = V_POLY;
         if (ph_ty >= 0)
             set_ins(t, ph_ty, ph_a, ph_b, ph_c, ph_mix);
@@ -127,7 +127,7 @@ static void test_identity(void)
     {   /* TYPE OFF while the part is silent (its tail run out) leaves no INSERT state for the next note */
         track_t *t = &trk[0];
         int stale;
-        fresh(preset_by_name(0, "SOFT PAD"));
+        fresh(preset_by_name(0, "JP8 PAD"));            /* ((Vallée) SPAMPY's ANALOG pad (Classic: SOFT PAD) */
         set_ins(t, IT_FLANGER, 64, 64, 64, 127);
         trk_note_on(t, 60, 100);
         mixb(FS / 4u / CTL);
@@ -298,7 +298,7 @@ static void test_motion(void)
     uint32_t i, k, step_s = 0;
     int ok_a = 1, ok_l = 1, seen_c = 0, seen_back = 0, seen_w = 0;
     static const uint8_t NOTE[1] = {48};
-    fresh(preset_by_name(0, "SAW LEAD"));
+    fresh(preset_by_name(0, "JUNO LEAD"));          /* ((Vallée) SPAMPY's (Classic: SAW LEAD) */
     song.g[G_BPM] = 120;
     set_ins(t, IT_FOLD, 90, 96, 96, 0);
     for (i = 0; i < 16u; i++)

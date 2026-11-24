@@ -61,9 +61,12 @@ static int projects(void)
     q = p; q.t[2].engine = (uint8_t)NENGINES;
     bad += check("(2.0) SKF4 with an engine past the last is not a project", proj_pack2(&st, &q, PROJ_SKF) &&
                  !proj_import(&q, &st, PROJ_STORE4));
-    q = p; q.t[2].engine = ENGI_DIGITAL;
-    bad += check("(2.0) .. nor one with a DIGITAL track (engine 1: the converter's)", proj_pack2(&st, &q, PROJ_SKF) &&
+    q = p; q.t[2].engine = ENGI_GRAIN;                 /* ((Vallée, the SPAMPY sound) 8: a reserved number */
+    bad += check("(Vallée) .. nor one with a reserved engine (8 10 12 17: none is written)", proj_pack2(&st, &q, PROJ_SKF) &&
                  !proj_import(&q, &st, PROJ_STORE4));
+    q = p; q.t[2].engine = ENGI_DIGITAL;               /* (SPAMPY's DIGITAL: an engine again) */
+    bad += check("(Vallée) .. a DIGITAL track is one (SPAMPY's DIGITAL)", proj_pack2(&st, &q, PROJ_SKF) &&
+                 proj_import(&q, &st, PROJ_STORE4) && q.t[2].engine == ENGI_DIGITAL);
 #else
     static project_v5_t v5;
     uint32_t i, pos, sum;
@@ -127,13 +130,27 @@ static int user_presets(void)
     r->note[3] = 200; r->flags[3] = 0x43;
     r->note[4] = 0; r->flags[4] = 0x03;                     /* a rest with flags */
     r = &bk->r[1];                                          /* a drum grid: accents where there is no hit */
-    r->used = UP_USED; r->ver = UP_VER_GRID; r->engine = ENGI_DRUM; r->np = 8; r->name[0] = 'G';
+    r->used = UP_USED; r->ver = UP_VER_GRID; r->engine = 10u; r->np = 8; r->name[0] = 'G';   /* (Skiff's DRUM: 10) */
     r->note[0] = 0x05; r->flags[0] = 0xFF;
     up_bank_check(0, sizeof *bk);
-    bad += check("a bank from flash: a note pattern's note inside 0..127, its flags inside their fields",
-                 up_used(0) && bk->r[0].note[3] == (200u & 127u) && bk->r[0].flags[3] == 3u && !bk->r[0].flags[4]);
-    bad += check("a bank from flash: a drum grid's accents only on its hits", up_used(1) && bk->r[1].note[0] == 5u &&
-                 bk->r[1].flags[0] == 5u);
+    /* ((Vallée, the SPAMPY sound) a record of before (v4, v5: Skiff's engine numbers) is mapped as the bank loads
+     * (upreset.c up_from_skiff): a version 7 sound, no pattern (as v6), every value inside its range */
+    {
+        int ok = 1;
+        uint32_t k, i;
+        for (k = 0; k < 2u; k++) {
+            int16_t v[P_COUNT];
+            ok &= up_used(k) && bk->r[k].ver == UP_VER_SPAMPY && !up_pat(&bk->r[k]);
+            up_values(&bk->r[k], v);
+            for (i = 0; i < P_COUNT; i++) {
+                const param_desc_t *d = param_desc_of(bk->r[k].engine, i);
+                ok &= v[i] >= d->min && v[i] <= d->max;
+            }
+        }
+        bad += check("a bank from flash: a v4 note pattern and a v5 drum grid with stray bytes: version 7 sounds, no "
+                     "pattern, every value in range", ok && bk->r[0].engine == 0u && bk->r[1].engine == ENGI_DRUM &&
+                     bk->r[0].name[0] == 'A' && bk->r[1].name[0] == 'G');
+    }
     return bad;
 }
 

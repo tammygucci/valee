@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
  * Real sequencer/project/UI sources: motion lifecycle and compact migration. */
+#define PROJ_ERA_TEST 1                         /* ((Vallée) the formats' own round trips: numbers as they are */
 #define FELUCCA_LEGACY 1                        /* ((2.0) its projects are SKF1 and older: the converter's build) */
 #define UI_TEST_NO_MAIN 1
 #include "ui_test.c"
@@ -901,6 +902,7 @@ static track_t *tk_track(void)                        /* track 1: 8 empty steps,
     t->p[P_SLEN] = 8;
     t->p[P_AMODE] = 0;
     t->p[P_REV] = 20;
+    t->p[P_VOICE] = V_MONO;                           /* ((Vallée) MONO, as Classic's power-on ACID: T1 is a POLY pad now */
     for (i = 0; i < NSTEP; i++)
         t->step[i] = (step_t){{0}, 0, ST_REST};
     motion_clear(t);
@@ -1254,6 +1256,7 @@ static int feel(void)
 
 int main(void)
 {
+    proj_era_off = 1;                                   /* ((Vallée) PROJ_ERA_TEST */
     int bad = motion_recording() + motion_capacity() + probability_playback() + compact_project() + fun7_89() + loads_and_song() + repeat_mode();
     bad += arp_new_modes();
     bad += lock_playback() + lock_edit() + lock_project() + lock_ui() + lock_undo() + auto_list();

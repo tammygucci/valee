@@ -16,6 +16,7 @@
  *              preset's pattern keep it.
  * The editor protocol (STEP_SET / TRACK_STEP, INFO 52 01 04) is in tests/editor_test.c. Built and run by
  * tests/run_tests.sh. */
+#define PROJ_ERA_TEST 1                         /* ((Vallée) the formats' own round trips: numbers as they are */
 #define FELUCCA_LEGACY 1                        /* ((2.0) its projects are SKF1 and older: the converter's build) */
 #define UI_TEST_NO_MAIN 1
 #include "ui_test.c"
@@ -263,7 +264,7 @@ static int presets(void)
     n = k;
     memset(&r, 0, sizeof r);
     bad += check("UP_PUT takes a pattern's ratchets (the editor's format; (2.1) the pattern passed over)",
-                 !up_parse(a, n, &r, &slot) && r.ver == UP_VER_SID && !up_pat(&r));
+                 !up_parse(a, n, &r, &slot) && r.ver == UP_VER_SPAMPY && !up_pat(&r));
     up_store(4, "SOUND");
     bad += check("  (Skiff) SAVE > USER stores the sound only: no pattern, no grid", up_used(4) && !up_grid(up_rec(4)) &&
                  !up_pat(up_rec(4)));          /* ((2.5) v6, by stored id: since P_COUNT 148 its ids reach the old
@@ -555,6 +556,7 @@ static int nudge(void)
 
 int main(void)
 {
+    proj_era_off = 1;                                   /* ((Vallée) PROJ_ERA_TEST */
     int bad = play() + projects() + presets() + screens() + flam() + nudge();
     printf("%s\n", bad ? "RATCHET TEST FAILED" : "ratchet tests passed");
     return bad != 0;
