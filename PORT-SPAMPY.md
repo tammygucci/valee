@@ -138,12 +138,16 @@ DECIDED (user, 2026-11-24): PHASE gets Skiff's #41 fade (tools/sloop_import.py p
 ~115 x to under 3 x (SOFT KEYS 2.9, CZ BRASS 1.5, CZ STRING knob turned 1.9: the TRACKS check fails over 2 again).
 Not bit-identical to SPAMPY's PHASE only while DCW moves. The 7 arp sounds leave the arp as the track's (decided).
 Then re-record the goldens after listening / looking.
-STATE 2026-11-24 (CI run 45388473412, branch spampy-engine at 3dc7a86): the FM-1 firmware builds and fits (image
-528,000 B of 581,564; RAM 97,704 of 98,304; pool 313,144 of 344,064; RAM code 29,756 of 32,512). Every host, UI
-(ASan too), web, backup, installer and emulator test passes but the two goldens, which wait for a deliberate review:
-tests/golden.txt (the audio renders: the sounds changed by design) and tests/ui_golden.txt (834 pictures changed,
-6 gone (FM6's old EDIT picture), 66 new). Phase 5 begun: GEN's twelve styles on SPAMPY's sounds (summon_fit clean).
-Decided since: PHASE fade on; arp sounds leave the arp off.
+STATE 2026-11-24, later (CI run 45459611864: ALL GREEN, the first on the new engine; deploy skipped, nothing
+published): image 528,224 B of 581,564; RAM 97,704 of 98,304. Goldens re-recorded after review (UI: every changed
+screen compared with Classic's in both themes; audio: 19 changed, all on swapped engines, the rest bit for bit as
+Classic's, 205 new, health clean, one / two cores the same). Found in the review and fixed: DIGITAL's dead FM4 OP
+pages, CZ-1's empty EDIT 1, the PROPHET / OBERVAVE key labels, the new engines' icons. Host tests built with
+-ffp-contract=off (CI's newer compiler fused PROPHET's float math). target_budget: SPAMPY's engines measured
+(p5_samples 7446, obv_render 2664, cz_native_render 1403, sid_render 1148, the rest under 300).
+Decided: PHASE's #41 fade on; arp sounds leave the arp to the track.
+NEXT: phase 3 (SPAMPY's sampled drums as DRUM), 4 (its mix stage), the rest of 5 (PART SONG, THE SPELL's takes,
+creatures by sound, SUMMON rebuilt, DRUM-X code removed), 6 (emulator walk, old projects on a unit), 7 (installer).
 Then 3 (drums), 4 (mix), 5 (GEN, SUMMON...), 6 (tests), 7 (installer).
 Local host builds: build/gen from a CI-like build + tools/gen_factory_block.py + tools/gen_p5_tables.py.
 Do not install this branch on a unit yet (the installer does not write the sample block).
