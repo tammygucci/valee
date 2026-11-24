@@ -46,8 +46,12 @@ enum { DK_STD, DK_HAND, DK_CYM, DK_HCYM, DK_80, DK_10, DK_66, DK_55, DK_77, DK_D
                                                          * the user kits) */
 /* the kit a stored KIT value plays: HAND CYM H+CYM (retired after 1.0.4) -> 66 (a conga on TOM), 10 (a cymbal on
  * BELL), 77 (claves on RIM, a cymbal on BELL) */
+/* ((Vallée) USR1..USR3 without flash (the FM-1: the sample area holds the factory samples, eng_sample.c): retired as
+ * HAND CYM H+CYM were, aliases of STD: the knob steps over them, a stored one (an old project) plays STD) */
+#define DK_UPLAY(k) (SMP_USER_HAS((k) - DK_USR1) ? (k) : DK_STD)
 static const uint8_t DK_PLAYS[DK_COUNT] = {DK_STD, DK_66, DK_10, DK_77, DK_80, DK_10, DK_66, DK_55, DK_77, DK_DEEP,
-                                           DK_TIGHT, DK_PERC, DK_USR1, DK_USR2, DK_USR3, DK_DEAD, DK_TAPE, DK_CRUSH};
+                                           DK_TIGHT, DK_PERC, DK_UPLAY(DK_USR1), DK_UPLAY(DK_USR2), DK_UPLAY(DK_USR3),
+                                           DK_DEAD, DK_TAPE, DK_CRUSH};
 static uint32_t drum_kit_plays(int32_t v) { return DK_PLAYS[clamp(v, 0, DK_COUNT - 1)]; }
 /* a kit's model (DV_KIT's row), DV_NKIT none (STD, a user kit) */
 static uint32_t drum_model(uint32_t kit)
@@ -82,8 +86,10 @@ typedef struct {
 
 
 /* 1..3 named as the kit they play: aliases, never shown or offered (EDITOR_PROTOCOL.md: retired values) */
+/* ((Vallée) USR1..3 without flash (the FM-1): named STD, the kit they play (DK_UPLAY): hidden as 1..3 are) */
 static const char *const N_DRUM_KIT[] = {"STD", "66", "10", "77", "80", "10", "66", "55", "77", "DEEP", "TIGHT", "PERC",
-                                         "USR1", "USR2", "USR3", "DEAD", "TAPE", "CRUSH"};
+                                         SMP_USER_HAS(0) ? "USR1" : "STD", SMP_USER_HAS(1) ? "USR2" : "STD",
+                                         SMP_USER_HAS(2) ? "USR3" : "STD", "DEAD", "TAPE", "CRUSH"};
 static const char *const N_DRUM_KICK[] = {"PUNCH", "ROUND"};
 
 /* General MIDI notes 35..81 -> the drum (DVT_*; DVT_PUNCH: the kick KICK picks) and semitones from its
@@ -497,7 +503,7 @@ static const engine_t ENG_DRUM = {
     .name = "DRUM",
     .page_title = {"KIT", "HIT"},
     .edit = {
-        {"KIT", N_DRUM_KIT, 0, SMP_SHOWN == 3 ? DK_CRUSH : DK_PERC + SMP_SHOWN, DK_STD, F_ENUM, 0},   /* ((Vallée) DEAD TAPE CRUSH last) */   /* ((2.0, #35) .. USR1..3; SMK: USR1) */
+        {"KIT", N_DRUM_KIT, 0, SMP_SHOWN == 3 || !SMP_SHOWN ? DK_CRUSH : DK_PERC + SMP_SHOWN, DK_STD, F_ENUM, 0},   /* ((Vallée) DEAD TAPE CRUSH last) */   /* ((2.0, #35) .. USR1..3; SMK: USR1) */
         {"PITCH", 0, 0, 127, 64, F_ST16, 0},
         {"TONE", 0, 0, 127, 64, F_PCT, 0},
         {"DECAY", 0, 0, 127, 64, F_PCT, 0},

@@ -410,9 +410,9 @@ async function editorSamplePresets() {
   const set = E.parse[C.DESC](await rq(E.req.desc(0, info.pe0)));
   ok(eq(names.names.slice(0, 6), ["PIANO", "PIANO", "FLUTE", "SAX", "PIANO", "LOFI PIANO"]) && names.names.length === 10 &&
     eq(set.names.slice(0, 4), ["PIANO", "PIANO", "FLUTE", "SAX"]) && set.names[4] === "PIANO" &&
-    eq(set.names.slice(5), ["USR1", "USR2", "USR3"]),
+    set.names.length === 5,                        /* ((Vallée) the FM-1: no user slots, the factory sample block) */
     "SAMPLE: TRANH and PERC removed, SET 1 and 4 kept as PIANO aliases, indices unchanged; (phase 9) the variations after");
-  ok(E.aliasOf(names.names, 1) === 0 && E.aliasOf(names.names, 2) === 2 && E.aliasOf(set.names, 5) === 5 &&
+  ok(E.aliasOf(names.names, 1) === 0 && E.aliasOf(names.names, 2) === 2 && E.aliasOf(set.names, 3) === 3 &&
      E.aliasOf(set.names, 4) === 0, "SAMPLE: an entry named like an earlier one is an alias of it");
   const alias = E.parse[C.PRESET](await rq(E.req.preset(4, 1)));
   const setAlias = E.parse[C.SET](await rq(E.req.set(0, info.pe0, 1)));
@@ -423,10 +423,10 @@ async function editorSamplePresets() {
   const kitD = E.parse[C.DESC](await rq(E.req.desc(0, info.pe0)));
   const kitSet = [];
   for (const v of [1, 2, 3]) kitSet.push(E.parse[C.SET](await rq(E.req.set(0, info.pe0, v))).value);
-  ok(eq(kitD.names, ["STD", "66", "10", "77", "80", "10", "66", "55", "77", "DEEP", "TIGHT", "PERC", "USR1", "USR2", "USR3", "DEAD", "TAPE", "CRUSH"]) &&
+  ok(eq(kitD.names, ["STD", "66", "10", "77", "80", "10", "66", "55", "77", "DEEP", "TIGHT", "PERC", "STD", "STD", "STD", "DEAD", "TAPE", "CRUSH"]) &&
      eq([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((v) => E.aliasOf(kitD.names, v)), [0, 6, 5, 8, 4, 5, 6, 7, 8, 9, 10, 11]) &&
      eq(E.enumShown(kitD).filter((v) => E.aliasOf(kitD.names, v) === v).map((v) => kitD.names[v]),
-        ["STD", "80", "10", "66", "55", "77", "DEEP", "TIGHT", "PERC", "USR1", "USR2", "USR3", "DEAD", "TAPE", "CRUSH"]) &&
+        ["STD", "80", "10", "66", "55", "77", "DEEP", "TIGHT", "PERC", "DEAD", "TAPE", "CRUSH"]) &&
      eq(kitSet, [6, 5, 8]),
     "DRUM: KIT 1..3 (once HAND CYM H+CYM) named 66 10 77, aliases of 6 5 8: hidden, a SET lands there; ((2.0, #35) USR1..3 after)");
   const removed = E.parse[C.PRESET](await rq(E.req.preset(4, 4)));
