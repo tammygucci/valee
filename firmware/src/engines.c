@@ -12,7 +12,7 @@ static void *eng_part(const track_t *t);
 #include "eng_summon.c"          /* (Vallée) SUMMON: SUMMONER (XENO), AURA (TEEN) */
 #include "sloop/sloop_engines.c"    /* ((Vallée) the SPAMPY sound: SLOOP's engines, as SPAMPY uses them) */
 #include "eng_fm6.c"            /* FM6: 6-operator FM, msfa ported (fm6_core.c, Apache-2.0) */
-/* (fm4_convert.c: DIGITAL -> FM6 conversion retired: SPAMPY plays DIGITAL itself) */
+/* (fm4_convert.c: DIGITAL -> FM6 conversion retired: SPAMPY plays DIGITAL itself; old DIGITAL tracks map to FM6, core.h) */
 /* (DIGITAL: sloop/eng_digital.c) */
 #if FELUCCA_SLICE
 #include "eng_slice.c"
@@ -199,5 +199,8 @@ static uint32_t eng_step_for(uint32_t k, uint32_t e, int32_t dir)   /* eng_step 
 
 /* the parts at power-on (engine, preset; the sequencers empty): bass, pad, lead, drums, (phase 6) a sample sound
  * and a second kit: ANALOG ACID, FM6 PAD (was DIGITAL PAD), LOFI PULSE LD, DRUM KIT, PIANO, DRUM KIT */
-static const uint8_t TRK_DEF[NPART][2] = {{0, 0}, {ENGI_PROPHET, 0}, {3, 0}, {ENGI_DRUM, 0}, {ENGI_SAMPLE, 0}, {ENGI_DRUM, 0}};
+/* ((Vallée, the SPAMPY sound) as SPAMPY powers on (its ui.c TRK_DEF: ANALOG, DIGITAL RHODES, LOFI; its ANALOG and LOFI
+ * picks were trimmed from its list, so it plays those engines' plain settings): ANALOG JP8 PAD, RHODES, LOFI CHIP CHORD,
+ * then Vallée's DRUM, SAMPLE VIBES, DRUM */
+static const uint8_t TRK_DEF[NPART][2] = {{0, 11}, {1, 0}, {3, 4}, {ENGI_DRUM, 0}, {ENGI_SAMPLE, 0}, {ENGI_DRUM, 0}};
 static uint32_t trk_def_engine(uint32_t i) { return TRK_DEF[i % NPART][0]; }

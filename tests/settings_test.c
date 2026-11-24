@@ -4,11 +4,11 @@
 #include <string.h>
 #include <assert.h>
 #define __attribute__(x)
-#define NENGINES 9u
+#define NENGINES 21u                             /* ((Vallée, the SPAMPY sound) SPAMPY's numbers, DRUM 19, SUMMON 20 */
 #define UP_SLOTS 32u
 #define ENGI_DIGITAL 1u                          /* (core.h: DIGITAL, retired: its row MIDI LEARN's; SAMPLE, DRUM, the retired PERC set) */
 #define ENGI_SAMPLE 4u
-#define ENGI_DRUM 10u
+#define ENGI_DRUM 19u
 #define SMP_SET_PERC 4u
 static uint8_t fx_lowcut;
 static void fm1_led_key(unsigned k, int on) { (void)k; (void)on; }
@@ -35,7 +35,7 @@ int main(void)
     original.magic = PERSIST_MAGIC;
     original.palette = 4; original.bold = original.lowcut = original.zoom = 1;   /* old id 4: MONO, gone: SKIFF */
     original.panel = PANEL_DEFAULT; original.panel.enc[0] = 3;
-    original.favorites.factory[8][0] = 1;
+    original.favorites.factory[0][0] = 1;              /* ((Vallée) ANALOG's first sound (favorites.c FAV_SLOT) */
     original.favorites.user = 1u << 31; original.favorites.filter = 1;
     p = original;
     assert(settings_import(&p, sizeof p) == 1); settings_init();
@@ -59,21 +59,12 @@ int main(void)
         p = original; assert(settings_import(&p, sizeof p) == 1); settings_init();
     }
 #ifdef FELUCCA_FAVORITES
-    assert(favorite_has(8, 0) && favorite_has(NENGINES, 31) && favorites.filter);
-    {   /* SAMPLE's PERC starred (preset 4, retired): DRUM's kit (preset 0) instead; SAMPLE's others kept; twice the same.
-         * ((2.0) The converter's build alone: 2.0 keeps the stars as they are, preset 4 a hidden PIANO) */
+    assert(favorite_has(0, 0) && favorite_has(NENGINES, 31) && favorites.filter);
+    {   /* ((Vallée, the SPAMPY sound) the stars are kept as stored (no PERC -> DRUM move: favorites_era clears the old ones);
+         * nothing written past the 16 rows */
         persist_t q = original;
         q.favorites.factory[ENGI_SAMPLE][0] = 1u << SMP_SET_PERC | 1u << 2;
-#if FELUCCA_LEGACY
-        assert(settings_import(&q, sizeof q) == 1 && favorites.factory[ENGI_SAMPLE][0] == 1u << 2 &&
-               favorites.factory[ENGI_DRUM][0] == 1u);
-        memset(&s, 0, sizeof s); settings_export(&s);
-        assert(settings_import(&s, sizeof s) == 1 && favorites.factory[ENGI_SAMPLE][0] == 1u << 2 &&
-               favorites.factory[ENGI_DRUM][0] == 1u);
-#else
-        assert(settings_import(&q, sizeof q) == 1 && favorites.factory[ENGI_SAMPLE][0] == (1u << SMP_SET_PERC | 1u << 2) &&
-               !favorites.factory[ENGI_DRUM][0]);
-#endif
+        assert(settings_import(&q, sizeof q) == 1 && favorites.factory[ENGI_SAMPLE][0] == (1u << SMP_SET_PERC | 1u << 2));
         p = original; assert(settings_import(&p, sizeof p) == 1);
     }
 #endif
@@ -81,7 +72,7 @@ int main(void)
     memset(&s, 0, sizeof s); s.bold = p.bold;          /* ((2.0) an SKS1 over a record holding PER4's bold) */
     settings_export(&s);
     assert(s.magic == SKS_MAGIC && !s.lowcut && s.bold == 1 && s.fav_user == (1u << 31));   /* bold: kept as saved */
-    assert(s.fav[8][0] == 1 && s.fav_filter == 1);
+    assert(s.fav[0][0] == 1 && s.fav_filter == 1);
     assert(s.panel.enc[0] == 3); /* saving one feature preserves the other */
 #if FELUCCA_LEGACY                                      /* ((2.0) PER1..PER3, Felucca's before 1.0: the converter's) */
     p = original; p.magic = 0x50455233u;
@@ -229,20 +220,20 @@ int main(void)
                s.s.rec == 0xD5u && s.s.prefs == 31u && s.s.layers == 32u);
         assert(s.cpal_cols[0] == 0x40u && s.cpal_cols[21] == 0x40u + 21u && s.ml[0] == 0x80u && s.ml[29] == 0x80u + 29u &&
                s.fav[14][0] == 0x0Fu && !s.fav[14][8] && !s.fav[14][29] && !s.fav[ENGI_DIGITAL][2] &&
-               !s.fav[ENGI_DIGITAL][31] && s.fav[8][0] == 1u && s.room[0] == 0x33u && s.room[23] == 0x33u &&
+               !s.fav[ENGI_DIGITAL][31] && s.fav[0][0] == 1u && s.room[0] == 0x33u && s.room[23] == 0x33u &&
                !memcmp(s.room + 24, fxk_set, 8));   /* ((Vallée) [24..31]: MENU > FX's keys) */
         memset(favorites.factory, 0, sizeof favorites.factory);
         t = s;
         assert(settings_import(&t, sizeof t) == 1 && !memcmp(&t, &s, sizeof t) &&
                !memcmp(favorites.factory[15], p.favorites.factory[15], 32) && favorites.factory[14][8] == 0x40u &&
                favorites.factory[14][29] == 0x40u + 21u && favorites.factory[ENGI_DIGITAL][31] == 0x80u + 29u &&
-               favorites.factory[14][0] == 0x0Fu && favorites.factory[8][0] == 1u);
+               favorites.factory[14][0] == 0x0Fu && favorites.factory[0][0] == 1u);
         p.favorites.factory[15][24] = 0;                /* another firmware's PER4 */
         assert(settings_import(&p, sizeof p) == 1);
         for (i = 0; i < 27u; i++)
             assert(favorites.factory[15][i] == (i == 24u ? 0xA5u : 0u));
         assert(favorites.factory[15][27] == 7u && favorites.factory[15][28] == 0x55u && favorites.factory[15][29] == 30u &&
-               favorites.factory[15][30] == 31u && favorites.factory[15][31] == 32u && favorites.factory[8][0] == 1u);
+               favorites.factory[15][30] == 31u && favorites.factory[15][31] == 32u && favorites.factory[0][0] == 1u);
         for (i = 0; i < 32u; i++)
             assert(!favorites.factory[14][i] && (!i || !favorites.factory[ENGI_DIGITAL][i]));
         t = s; t.magic = PERSIST_MAGIC;

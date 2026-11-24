@@ -88,16 +88,11 @@ static const char *const N_MSRC[] = {"OFF", "LFO", "ENV", "VEL", "KEY", "RAND", 
 static const char *const N_MDST[] = {"OFF", "PITCH", "CUT", "SHP", "AMP", "PAN", "DIST", "CHO", "DLY", "REV", "RATE",
                                      "VIB", "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8",
                                      "DEPTH", "VEL", "TIME"};   /* ((1.3) the LFO's depth; at a note: VEL, TIME) */
-static const char *const N_ENGNAME[] = {"ANALOG", FELUCCA_FM4 ? "DIGITAL" : "-", "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL", "GRAIN", "PHYS",
-                                             "DRUM", "NOISE", "FM6",
-#if FELUCCA_SLICE
-                                             "SLICE",
-#else
-                                             "-",
-#endif
-                                             "DRUM-X",
-                                             "SUMMON",               /* ((Vallée) 15) */
-};
+/* ((Vallée, the SPAMPY sound) the engines' names by SPAMPY's numbers (engines.c ENGINES[]; "-" the reserved ones) */
+static const char *const N_ENGNAME[] = {"ANALOG", "DIGITAL", "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL", "-", "FM6",
+                                        "-", "MORPH", "-", "PROPHET", "CZ-1", "SID", "OBERVAVE", "-", "DRONE", "DRUM",
+                                        "SUMMON"};
+_Static_assert(NELEM(N_ENGNAME) == NENGINES, "an ENGINE name per engine");
 
 #define PD(l, f, mn, mx, df) {l, 0, mn, mx, df, f, 0}
 #define PE(l, n, df) {l, n, 0, (int16_t)(sizeof(n) / sizeof(n[0]) - 1), df, F_ENUM, 0}

@@ -80,8 +80,8 @@ static uint64_t render(const scen_t *sc, int dual, const char *mask)
                 for (i = 0; i < 3u; i++)
                     trk_note_off(&trk[k], base + CH[i]);
         }
-        if (sc->morph && ms == 600u)                /* PHYS: MODEL changed under a sounding note (phys_render) */
-            trk[0].p[P_E0] = (int16_t)((trk[0].p[P_E0] + 1) % PM_COUNT);
+        if (sc->morph && ms == 600u)                /* ((Vallée) the first knob changed under a sounding note */
+            trk[0].p[P_E0] = (int16_t)param_fit(param_desc_of(trk[0].engine, P_E0), trk[0].p[P_E0] + 7);
         mix_block(o, CTL);
         for (k = 0; k < NPART; k++)
             if (trk[k].peak > peak[k])
@@ -122,7 +122,7 @@ static uint64_t render_fork(const scen_t *sc, int dual, const char *mask, uint32
     return h;
 }
 
-static int heavy_only(uint32_t e) { return e == ENGI_PHYS || e == ENGI_GRAIN; }   /* (not on T5, T6: NHEAVY) */
+static int heavy_only(uint32_t e) { return !eng_allowed(NHEAVY, e); }   /* ((Vallée) SLOOP's big ones: not on T5, T6 */
 
 /* (Skiff 1.3) the voice budget (core.h VOICE_BUDGET): VOICES_1CORE (8) across the tracks on one core, VOICES_2CORE
  * ((2.5) 16) while the second core runs; six POLY tracks of three notes each (18). Run with BUDGET=1, built without
@@ -135,7 +135,7 @@ static int voice_budget(void)
         host_tracks_init();
         c1h_off = !pass;
         for (k = 0; k < NPART; k++) {
-            host_preset(&trk[k], 0u, 1u);           /* (ANALOG SOFT PAD: POLY) */
+            host_preset(&trk[k], 0u, 11u);          /* ((Vallée) ANALOG JP8 PAD: POLY) */
             for (i = 0; i < 3u; i++)
                 trk_note_on(&trk[k], 48u + 12u * k + 4u * i, 100);
         }
@@ -169,13 +169,12 @@ int main(void)
             sc[n++].morph = 0;
         }
     }
-    sc[n++] = (scen_t){"mix: PHYS FM6 ANALOG DRUM VOICE FM6", {ENGI_PHYS, ENGI_FM6, 0, ENGI_DRUM, 5, ENGI_FM6}, {1, 4, 7, 0, 2, 6}, 0};
-    sc[n++] = (scen_t){"mix: GRAIN NOISE VOICE LOFI VOICE DRUMX", {ENGI_GRAIN, 11, 5, 3, 5, ENGI_DRUMX}, {1, 4, 7, 2, 3, 0}, 0};
-    sc[n++] = (scen_t){"mix: TRIO WHEEL PHASE FM6 WHEEL SAMPLE", {6, 7, 2, ENGI_FM6, 7, ENGI_SAMPLE}, {1, 4, 5, 3, 2, 1}, 0};
-    sc[n++] = (scen_t){"mix: PHYS morph + DRUM GRAIN ..", {ENGI_PHYS, ENGI_DRUM, ENGI_GRAIN, 0, ENGI_DRUMX, 3}, {2, 1, 3, 5, 0, 1}, 1};
-#if FELUCCA_SLICE
-    sc[n++] = (scen_t){"mix: SAMPLE SLICE GRAIN PHASE SLICE", {ENGI_SAMPLE, ENGI_SLICE, ENGI_GRAIN, 2, ENGI_SLICE, ENGI_DRUM}, {2, 1, 3, 5, 0, 1}, 0};
-#endif
+    /* ((Vallée, the SPAMPY sound) mixes of SPAMPY's engines, the big ones (PROPHET CZ SID OBERVAVE) on T1..T4 */
+    sc[n++] = (scen_t){"mix: PROPHET FM6 ANALOG DRUM VOICE FM6", {ENGI_PROPHET, ENGI_FM6, 0, ENGI_DRUM, 5, ENGI_FM6}, {1, 4, 7, 0, 2, 6}, 0};
+    sc[n++] = (scen_t){"mix: OBERVAVE MORPH CZ SID VOICE DRONE", {ENGI_OBERVAVE, ENGI_NOISE, ENGI_CZ, ENGI_SID, 5, ENGI_DRONE}, {1, 4, 2, 1, 3, 0}, 0};
+    sc[n++] = (scen_t){"mix: TRIO WHEEL PHASE FM6 WHEEL SAMPLE", {6, 7, 2, ENGI_FM6, 7, ENGI_SAMPLE}, {1, 2, 5, 3, 2, 1}, 0};
+    sc[n++] = (scen_t){"mix: PROPHET morph + DRUM DIGITAL ..", {ENGI_PROPHET, ENGI_DRUM, 1, ENGI_OBERVAVE, ENGI_DRUM, 3}, {2, 1, 3, 5, 0, 1}, 1};
+    sc[n++] = (scen_t){"mix: SAMPLE CZ OBERVAVE PHASE MORPH DRUM", {ENGI_SAMPLE, ENGI_CZ, ENGI_OBERVAVE, 2, ENGI_NOISE, ENGI_DRUM}, {2, 1, 3, 4, 0, 1}, 0};
     for (i = 0; i < n; i++) {
         uint64_t ref;
         uint32_t m, bad = 0, quiet = 0, taken = 0, took = 0;

@@ -103,6 +103,14 @@ def presets(t, f):
 
 # small fixes where Vallée already has the same thing (asserted to match exactly once)
 PATCHES = {
+    # VOICE's breath noise: one xorshift shared by every track in SPAMPY (one core); the second core renders tracks at
+    # once, so one per track (as Skiff's fix): the same sound, bit for bit on one core or two
+    "eng_formant.c": [(r"\bformant_nz\b(?! = 0x2545F491)", "FORMANT_NZ(t)", 9),
+                      (r"static int32_t formant_nz = 0x2545F491;[^\n]*\n",
+                       "#if FELUCCA_CPU2\n/* (Vallée) one per track: the second core renders tracks at once (Skiff's fix) */\n"
+                       "static int32_t formant_nz[NTRK] = {[0 ... NTRK - 1] = 0x2545F491};\n#define FORMANT_NZ(t) formant_nz[C1_PI(t)]\n"
+                       "#else\nstatic int32_t formant_nz = 0x2545F491;                 /* breath noise, one xorshift for all voices */\n"
+                       "#define FORMANT_NZ(t) formant_nz\n#endif\n")],
     # (RAM: Vallée's .data/.bss is fuller than SPAMPY's) CZ's per-part patch copy in the POOL (zeroed at boot as .bss)
     "eng_cz.c": [(r"static uint8_t cz_patch\[NPART\]\[144\];",
                   'static uint8_t cz_patch[NPART][144] __attribute__((section(".pool")));')],
@@ -124,10 +132,11 @@ def main(src):
         t = (src / f).read_text()
         t = PD.sub(pdesc, t)
         t = presets(t, f)
-        for pat, rep in PATCHES.get(f, []):
+        for pt in PATCHES.get(f, []):
+            pat, rep, want = (pt + (1,))[:3]       # (a third value: how many matches; else exactly one)
             t, n = re.subn(pat, rep, t, flags=re.S)
-            if n != 1:
-                raise SystemExit(f"sloop_import: {f}: patch {pat[:40]} matched {n} times")
+            if n != want:
+                raise SystemExit(f"sloop_import: {f}: patch {pat[:40]} matched {n} times, not {want}")
         t = re.sub(r"(static const engine_t ENG_\w+\s*=\s*)\{(.*?)\n?\};", engine, t, flags=re.S)
         out = dst / f
         out.parent.mkdir(parents=True, exist_ok=True)

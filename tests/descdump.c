@@ -160,6 +160,7 @@ int main(void)
     printf("],\n\"DRUMX_PKIT\":[");
     for (k = 0; k < NELEM(DRUMX_PKIT); k++)
         printf("%s%d", k ? "," : "", DRUMX_PKIT[k]);
+#if !FELUCCA_FM4
     printf("],\n\"FM4\":{\"presets\":[");             /* DIGITAL (retired): its presets and conversions (fm4_convert.c) */
     for (k = 0; k < FM4_NPRESETS; k++) {
         const preset_t *p = &DIGITAL_PRESETS[k];
@@ -226,6 +227,9 @@ int main(void)
         }
     }
     printf("]}");
+#else
+    printf("],\n\"FM4\":null");   /* ((Vallée, the SPAMPY sound) DIGITAL is SPAMPY's engine: no conversion */
+#endif
     printf(",\n\"LANE_OF\":\"");
     for (k = 35; k <= 81; k++)
         printf("%u", (unsigned)drum_lane(k));

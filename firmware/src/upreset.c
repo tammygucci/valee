@@ -151,15 +151,16 @@ static void up_from_skiff(up_rec_t *r)
     uint32_t old, ne, i;
     if (!up_valid(r) || r->ver >= UP_VER_SPAMPY)
         return;
-    up_values(r, v);                                /* (by the old engine's ranges) */
     old = r->engine % 16u;
     ne = ENG_FROM_SKIFF[old];
+    r->engine = (uint8_t)ne;                        /* first: up_values reads by the engine's ranges (an old FM6's,
+                                                     * number 12, by reserved 12's would all be 0) */
+    up_values(r, v);
     if (!eng_skiff_kept(old))
         for (i = 0; i < 8u; i++)
             v[P_E0 + i] = param_desc_of(ne, P_E0 + i)->def;
     for (i = P_E0; i < P_E0 + 8u; i++)
         v[i] = (int16_t)param_fit(param_desc_of(ne, i), v[i]);
-    r->engine = (uint8_t)ne;
     up_set_sound(r, v);
 }
 #endif
@@ -284,10 +285,7 @@ static void up_values(const up_rec_t *r, int16_t *v)   /* mapped and clamped for
     for (i = 0; i < P_COUNT; i++)
         def[i] = param_desc_of(r->engine, i)->def;
     up_params(r, v, def);
-#if FELUCCA_LEGACY
-    if (r->ver == 1u && ENGINES[r->engine] == &ENG_PHYS)   /* (before 1.0: MODEL 2 was DUST) */
-        phys_legacy(&v[P_E0]);
-#endif
+    /* ((Vallée, the SPAMPY sound) PHYS's version 1 MODEL fix-up gone with PHYS: such a record maps to FM6, up_from_skiff) */
     for (i = 0; i < P_COUNT; i++)
         v[i] = (int16_t)param_fit(param_desc_of(r->engine, i), v[i]);   /* (a retired KIT: the kit it plays) */
 }
