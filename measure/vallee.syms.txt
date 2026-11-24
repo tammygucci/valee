@@ -1,0 +1,2857 @@
+
+./build/felucca.elf:	file format ELF32-pi32v2
+
+SYMBOL TABLE:
+00000000         *UND*		 00000000 
+02000120 l    d  .text		 00000000 .text
+01c00000 l    d  .ram_text		 00000000 .ram_text
+01c042e8 l    d  .ramx		 00000000 .ramx
+01c08000 l    d  .data		 00000000 .data
+01c09000 l    d  .bss		 00000000 .bss
+01c1f000 l    d  .pool		 00000000 .pool
+01c7c000 l    d  .noinit		 00000000 .noinit
+00000000 l    df *ABS*		 00000000 build/fm1_cpu1.o
+01c0a000         .bss		 00000000 _c1_sstack
+01c0a000         .bss		 00000000 _c1_ustack_top
+00000000 l    df *ABS*		 00000000 build/felucca_size.ll
+02030b6e         .text		 00000000 .GJTIE1053_0_0_
+02033248         .text		 00000000 .GJTIE1079_0_0_
+02033480         .text		 00000000 .GJTIE1079_1_1_
+02033558         .text		 00000000 .GJTIE1079_2_2_
+02037ad4         .text		 00000000 .GJTIE1125_0_0_
+02037d2a         .text		 00000000 .GJTIE1125_1_1_
+02003b94         .text		 00000000 .GJTIE113_0_0_
+0203b51a         .text		 00000000 .GJTIE1165_0_0_
+0203d39e         .text		 00000000 .GJTIE1189_0_0_
+0203edf2         .text		 00000000 .GJTIE1209_0_0_
+0203f708         .text		 00000000 .GJTIE1215_0_0_
+0203f76e         .text		 00000000 .GJTIE1215_1_1_
+0203fcda         .text		 00000000 .GJTIE1216_0_0_
+0203fd3a         .text		 00000000 .GJTIE1217_0_0_
+02040d8a         .text		 00000000 .GJTIE1226_0_0_
+02041e56         .text		 00000000 .GJTIE1236_0_0_
+0204249a         .text		 00000000 .GJTIE1236_1_1_
+0204283c         .text		 00000000 .GJTIE1236_2_2_
+02045c62         .text		 00000000 .GJTIE1238_0_0_
+02046f0e         .text		 00000000 .GJTIE1241_0_0_
+02047d48         .text		 00000000 .GJTIE1243_0_0_
+02048330         .text		 00000000 .GJTIE1248_0_0_
+020484ea         .text		 00000000 .GJTIE1250_0_0_
+0204922c         .text		 00000000 .GJTIE1255_0_0_
+0204a444         .text		 00000000 .GJTIE1270_0_0_
+0204a710         .text		 00000000 .GJTIE1271_0_0_
+0204b132         .text		 00000000 .GJTIE1274_0_0_
+02050048         .text		 00000000 .GJTIE1322_0_0_
+0204fde6         .text		 00000000 .GJTIE1322_1_1_
+020514c2         .text		 00000000 .GJTIE1322_2_2_
+02052dd2         .text		 00000000 .GJTIE1341_0_0_
+01c01208         .ram_text		 00000000 .GJTIE1354_0_0_
+01c01256         .ram_text		 00000000 .GJTIE1354_1_1_
+01c016a2         .ram_text		 00000000 .GJTIE1358_0_0_
+01c01f7c         .ram_text		 00000000 .GJTIE1369_0_0_
+01c0260c         .ram_text		 00000000 .GJTIE1370_0_0_
+01c02b3e         .ram_text		 00000000 .GJTIE1370_1_1_
+02054abc         .text		 00000000 .GJTIE1390_0_0_
+02054c3e         .text		 00000000 .GJTIE1391_0_0_
+02055728         .text		 00000000 .GJTIE1407_0_0_
+0205785a         .text		 00000000 .GJTIE1450_0_0_
+02057ca4         .text		 00000000 .GJTIE1453_0_0_
+02058012         .text		 00000000 .GJTIE1453_1_1_
+020080e4         .text		 00000000 .GJTIE199_0_0_
+020097f4         .text		 00000000 .GJTIE215_0_0_
+0200a0a0         .text		 00000000 .GJTIE221_0_0_
+02013fca         .text		 00000000 .GJTIE437_0_0_
+0201452c         .text		 00000000 .GJTIE449_0_0_
+02014632         .text		 00000000 .GJTIE449_1_1_
+020145d6         .text		 00000000 .GJTIE449_2_2_
+02014b8c         .text		 00000000 .GJTIE463_0_0_
+02014f72         .text		 00000000 .GJTIE471_0_0_
+02015336         .text		 00000000 .GJTIE474_0_0_
+02017124         .text		 00000000 .GJTIE514_0_0_
+0201943c         .text		 00000000 .GJTIE578_0_0_
+020193e2         .text		 00000000 .GJTIE578_1_1_
+0201a6fc         .text		 00000000 .GJTIE615_0_0_
+0201b212         .text		 00000000 .GJTIE615_1_1_
+0201f420         .text		 00000000 .GJTIE725_0_0_
+0201fa6a         .text		 00000000 .GJTIE731_0_0_
+020221ba         .text		 00000000 .GJTIE783_0_0_
+02024c88         .text		 00000000 .GJTIE849_0_0_
+02024f5c         .text		 00000000 .GJTIE850_0_0_
+02025e4a         .text		 00000000 .GJTIE877_0_0_
+02025e78         .text		 00000000 .GJTIE878_0_0_
+02026396         .text		 00000000 .GJTIE882_0_0_
+02028760         .text		 00000000 .GJTIE938_0_0_
+02028dc6         .text		 00000000 .GJTIE938_1_1_
+0202ce00         .text		 00000000 .GJTIE979_0_0_
+0202d004         .text		 00000000 .GJTIE979_1_1_
+0203322a         .text		 00000000 .GJTIL1079_0_0_
+02037aca         .text		 00000000 .GJTIL1125_0_0_
+0203f71e         .text		 00000000 .GJTIL1215_1_1_
+02040d6a         .text		 00000000 .GJTIL1226_0_0_
+02041e48         .text		 00000000 .GJTIL1236_0_0_
+0204248e         .text		 00000000 .GJTIL1236_1_1_
+02042832         .text		 00000000 .GJTIL1236_2_2_
+0204a438         .text		 00000000 .GJTIL1270_0_0_
+02050030         .text		 00000000 .GJTIL1322_0_0_
+0204fdce         .text		 00000000 .GJTIL1322_1_1_
+02055710         .text		 00000000 .GJTIL1407_0_0_
+02057834         .text		 00000000 .GJTIL1450_0_0_
+02013f5c         .text		 00000000 .GJTIL437_0_0_
+02014486         .text		 00000000 .GJTIL449_0_0_
+020145c2         .text		 00000000 .GJTIL449_2_2_
+02014b1e         .text		 00000000 .GJTIL463_0_0_
+02014f04         .text		 00000000 .GJTIL471_0_0_
+0201532a         .text		 00000000 .GJTIL474_0_0_
+02019434         .text		 00000000 .GJTIL578_0_0_
+0201a666         .text		 00000000 .GJTIL615_0_0_
+0201b204         .text		 00000000 .GJTIL615_1_1_
+02028756         .text		 00000000 .GJTIL938_0_0_
+0202cde0         .text		 00000000 .GJTIL979_0_0_
+02030b68         .text		 00000000 .GJTIS1053_0_0_
+0203347c         .text		 00000000 .GJTIS1079_1_1_
+02033554         .text		 00000000 .GJTIS1079_2_2_
+02037d24         .text		 00000000 .GJTIS1125_1_1_
+02003b88         .text		 00000000 .GJTIS113_0_0_
+0203b514         .text		 00000000 .GJTIS1165_0_0_
+0203d392         .text		 00000000 .GJTIS1189_0_0_
+0203edee         .text		 00000000 .GJTIS1209_0_0_
+0203f704         .text		 00000000 .GJTIS1215_0_0_
+0203fcd0         .text		 00000000 .GJTIS1216_0_0_
+0203fd32         .text		 00000000 .GJTIS1217_0_0_
+02045c5c         .text		 00000000 .GJTIS1238_0_0_
+02046f08         .text		 00000000 .GJTIS1241_0_0_
+02047d44         .text		 00000000 .GJTIS1243_0_0_
+0204832a         .text		 00000000 .GJTIS1248_0_0_
+020484e4         .text		 00000000 .GJTIS1250_0_0_
+02049228         .text		 00000000 .GJTIS1255_0_0_
+0204a70a         .text		 00000000 .GJTIS1271_0_0_
+0204b12a         .text		 00000000 .GJTIS1274_0_0_
+020514b6         .text		 00000000 .GJTIS1322_2_2_
+02052dcc         .text		 00000000 .GJTIS1341_0_0_
+01c011fc         .ram_text		 00000000 .GJTIS1354_0_0_
+01c0124a         .ram_text		 00000000 .GJTIS1354_1_1_
+01c0169a         .ram_text		 00000000 .GJTIS1358_0_0_
+01c01f78         .ram_text		 00000000 .GJTIS1369_0_0_
+01c02608         .ram_text		 00000000 .GJTIS1370_0_0_
+01c02b3a         .ram_text		 00000000 .GJTIS1370_1_1_
+02054ab4         .text		 00000000 .GJTIS1390_0_0_
+02054c36         .text		 00000000 .GJTIS1391_0_0_
+02057ca0         .text		 00000000 .GJTIS1453_0_0_
+02058008         .text		 00000000 .GJTIS1453_1_1_
+020080d8         .text		 00000000 .GJTIS199_0_0_
+020097f0         .text		 00000000 .GJTIS215_0_0_
+0200a09c         .text		 00000000 .GJTIS221_0_0_
+0201462c         .text		 00000000 .GJTIS449_1_1_
+02017120         .text		 00000000 .GJTIS514_0_0_
+020193d8         .text		 00000000 .GJTIS578_1_1_
+0201f414         .text		 00000000 .GJTIS725_0_0_
+0201fa62         .text		 00000000 .GJTIS731_0_0_
+020221ac         .text		 00000000 .GJTIS783_0_0_
+02024c84         .text		 00000000 .GJTIS849_0_0_
+02024f54         .text		 00000000 .GJTIS850_0_0_
+02025e40         .text		 00000000 .GJTIS877_0_0_
+02025e72         .text		 00000000 .GJTIS878_0_0_
+0202638e         .text		 00000000 .GJTIS882_0_0_
+02028dc0         .text		 00000000 .GJTIS938_1_1_
+0202cff6         .text		 00000000 .GJTIS979_1_1_
+0207fc7c l       .text		 0000000a .L.str.1021
+0207fd43 l       .text		 00000007 .L.str.1087
+02082180 l       .text		 00000009 .L.str.1478
+0205a98c l       .text		 00000006 .L.str.165
+020829c8 l       .text		 00000007 .L.str.1685
+02082a93 l       .text		 00000005 .L.str.1746
+02083424 l       .text		 00000006 .L.str.1835
+02071b98 l       .text		 00000005 .L.str.343
+020744cc l       .text		 00000007 .L.str.476
+0207cc07 l       .text		 00000006 .L.str.693
+01c08e10 l       .data		 000001c0 .L_MergedGlobals
+01c1ab00 l       .bss		 000001e4 .L_MergedGlobals.10
+01c1acf0 l       .bss		 000001fc .L_MergedGlobals.11
+01c1aef0 l       .bss		 000001c0 .L_MergedGlobals.12
+01c1b0b0 l       .bss		 000001a4 .L_MergedGlobals.13
+01c1b260 l       .bss		 000001fc .L_MergedGlobals.14
+01c1b460 l       .bss		 000001f0 .L_MergedGlobals.15
+01c1b650 l       .bss		 00000180 .L_MergedGlobals.16
+01c1b7d0 l       .bss		 000001bc .L_MergedGlobals.17
+01c1b990 l       .bss		 00000160 .L_MergedGlobals.18
+01c1baf0 l       .bss		 00000184 .L_MergedGlobals.19
+01c1bc80 l       .bss		 000001b8 .L_MergedGlobals.20
+01c1be40 l       .bss		 000001dc .L_MergedGlobals.21
+01c1c020 l       .bss		 000001fc .L_MergedGlobals.22
+01c1c220 l       .bss		 00000100 .L_MergedGlobals.23
+01c1c320 l       .bss		 00000100 .L_MergedGlobals.24
+01c1c420 l       .bss		 00000100 .L_MergedGlobals.25
+01c1c520 l       .bss		 00000100 .L_MergedGlobals.26
+01c1c620 l       .bss		 00000104 .L_MergedGlobals.27
+01c1c730 l       .bss		 00000104 .L_MergedGlobals.28
+01c1c840 l       .bss		 00000108 .L_MergedGlobals.29
+01c1c950 l       .bss		 00000120 .L_MergedGlobals.30
+01c1ca70 l       .bss		 00000124 .L_MergedGlobals.31
+01c1cba0 l       .bss		 00000138 .L_MergedGlobals.32
+01c1cce0 l       .bss		 00000194 .L_MergedGlobals.33
+01c1ce80 l       .bss		 000001d9 .L_MergedGlobals.34
+01c1d060 l       .bss		 000001d9 .L_MergedGlobals.35
+01c1d240 l       .bss		 000001e0 .L_MergedGlobals.36
+01c1a710 l       .bss		 000001fc .L_MergedGlobals.8
+01c1a910 l       .bss		 000001f0 .L_MergedGlobals.9
+020829dc l       .text		 0000003c .Lconfirm_backdrop.c
+02082932 l       .text		 0000000c .Ldraw_head_blocks.pos
+0207ca74 l       .text		 0000000c .Lintro_frame.order
+0207fae8 l       .text		 00000018 .Lscene_go.b
+0208358f l       .text		 0000000c .Lsm_summoner.b
+020835dc l       .text		 0000000c .Lswitch.table
+020835f0 l       .text		 0000004c .Lswitch.table.1
+02083640 l       .text		 00000014 .Lswitch.table.2
+02083654 l       .text		 0000000c .Lswitch.table.3
+02083660 l       .text		 00000010 .Lswitch.table.4
+02083670 l       .text		 0000000c .Lswitch.table.7
+0207fb18 l       .text		 00000018 .Lui_input.b
+0207fc86 l       .text		 00000018 .Lundo_other_pattern.b
+0207ff04 l       .text		 00000074 ABOUT_QR
+020763d0 l       .text		 00000028 AF_L
+0207a1ae l       .text		 00000a99 AF_L_DATA
+0207adcb l       .text		 00000029 AF_L_EX
+0207a05e l       .text		 00000150 AF_L_G
+0207adf4 l       .text		 00000034 AF_L_HC
+0207ad4a l       .text		 00000081 AF_L_KD
+0207ac48 l       .text		 00000102 AF_L_KERN
+02076470 l       .text		 00000028 AF_L_PX
+0207c412 l       .text		 00000029 AF_L_PX_EX
+0207c2c2 l       .text		 00000150 AF_L_PX_G
+020763a8 l       .text		 00000028 AF_M
+020784b8 l       .text		 00001724 AF_M_DATA
+0207a02c l       .text		 00000005 AF_M_EX
+02077e78 l       .text		 00000640 AF_M_G
+0207a031 l       .text		 0000002d AF_M_HC
+02079ebc l       .text		 00000170 AF_M_KD
+02079bdc l       .text		 000002e0 AF_M_KERN
+02076448 l       .text		 00000028 AF_M_PX
+0207c2ba l       .text		 00000007 AF_M_PX_EX
+0207c07a l       .text		 00000240 AF_M_PX_G
+02076380 l       .text		 00000028 AF_S
+02076b00 l       .text		 00001111 AF_S_DATA
+02077e73 l       .text		 00000005 AF_S_EX
+020764c0 l       .text		 00000640 AF_S_G
+02077da8 l       .text		 000000cb AF_S_KD
+02077c12 l       .text		 00000196 AF_S_KERN
+02076420 l       .text		 00000028 AF_S_PX
+0207bc96 l       .text		 000003dc AF_S_PX_DATA
+0207c072 l       .text		 00000007 AF_S_PX_EX
+0207ba56 l       .text		 00000240 AF_S_PX_G
+020763f8 l       .text		 00000028 AF_V
+0207af88 l       .text		 00000912 AF_V_DATA
+0207b9f9 l       .text		 0000002b AF_V_EX
+0207ae28 l       .text		 00000160 AF_V_G
+0207ba24 l       .text		 00000031 AF_V_HC
+0207b984 l       .text		 00000075 AF_V_KD
+0207b89a l       .text		 000000ea AF_V_KERN
+02076498 l       .text		 00000028 AF_V_PX
+0207c59c l       .text		 0000002b AF_V_PX_EX
+0207c43c l       .text		 00000160 AF_V_PX_G
+0207e56a l       .text		 00000e87 AI12_DATA
+0207d512 l       .text		 0000007f AI12_IDX
+0207d342 l       .text		 000000d2 AI12_INK
+0207f3f2 l       .text		 000000d2 AI12_OFF
+0207dc1c l       .text		 00000900 AI16_DATA
+0207d493 l       .text		 0000007f AI16_IDX
+0207d2f4 l       .text		 0000004e AI16_INK
+0207e51c l       .text		 0000004e AI16_OFF
+0207d591 l       .text		 00000667 AI24_DATA
+0207d414 l       .text		 0000007f AI24_IDX
+0207d2ac l       .text		 00000048 AI24_INK
+0207dbf8 l       .text		 00000024 AI24_OFF
+0207f4c4 l       .text		 00000039 AI_HC
+020878d4 l       .text		 00000004 ALM_DRV_T
+020878e8 l       .text		 00000004 ALM_GRN_T
+02075212 l       .text		 00000018 ALM_MOV_P
+020878d8 l       .text		 00000004 ALM_MOV_T
+0208355c l       .text		 00000010 ALM_NAMES
+020590f0 l       .text		 000005c0 ANALOG_PRESETS
+0205a4c4 l       .text		 00000010 ANALOG_SUB
+0205a4b4 l       .text		 00000010 ANALOG_SYNC
+02082cbc l       .text		 0000000c BA_NAME
+0207d06f l       .text		 00000005 BK_TIME
+0207d258 l       .text		 00000038 B_NAME
+02082b94 l       .text		 00000006 B_NOTE
+02076267 l       .text		 000000b2 CFG_DESC_PLAIN
+02076134 l       .text		 000000a0 CHIME
+02074704 l       .text		 0000001c CHORD_SHAPE
+0207612e l       .text		 00000006 CLICK_GAIN
+0207f658 l       .text		 0000000c CLICK_N
+0207f664 l       .text		 0000000c CLKLVL_N
+0207c5c8 l       .text		 0000002c CLK_WHY
+0207f670 l       .text		 0000000c COUNTIN_N
+020819fc l       .text		 00000114 CQ
+020879f0 l       .text		 00000010 CURVE_DARK
+020879e0 l       .text		 00000010 CURVE_LIGHT
+0208238c l       .text		 00000100 CUTOFF_HZ
+02080eb8 l       .text		 0000000c DAF_B
+02080ec4 l       .text		 0000000c DAF_C
+02080dc0 l       .text		 0000004b DAF_D
+02080e58 l       .text		 00000040 DAF_DR
+02080e0b l       .text		 0000004b DAF_L
+02080ed0 l       .text		 0000000c DAF_L_
+02080e98 l       .text		 00000020 DAF_PC
+02080d9c l       .text		 0000000c DEM_B
+02080da8 l       .text		 0000000c DEM_C
+02080c8c l       .text		 0000004b DEM_D
+02080d3c l       .text		 00000040 DEM_DR
+02080cd7 l       .text		 00000064 DEM_L
+02080db4 l       .text		 0000000c DEM_L_
+02080d7c l       .text		 00000020 DEM_PC
+02076255 l       .text		 00000012 DEV_DESC_PLAIN
+020746e4 l       .text		 00000014 DIV_48
+020746c8 l       .text		 00000006 DIV_DEN
+0207522a l       .text		 00000003 DIV_DOT
+02082910 l       .text		 0000000a DIV_ORDER
+02070ece l       .text		 00000012 DK_PLAYS
+0207fccc l       .text		 0000000b DK_SWAP
+0208353a l       .text		 0000001a DLY_6TH
+0207cc0d l       .text		 0000000a DRUMX_PKIT
+02073838 l       .text		 00000140 DRUMX_PRESETS
+02070e64 l       .text		 0000005e DRUM_GM
+02087920 l       .text		 00000008 DRUM_LANE_NOTE
+02070c64 l       .text		 00000200 DRUM_PRESETS
+02070520 l       .text		 00000024 DRW_FOLD_LIM
+02070544 l       .text		 00000012 DRW_LV
+02070570 l       .text		 000000a0 DRW_REG
+02070558 l       .text		 00000018 DRW_ROT_SPD
+02082920 l       .text		 0000000d DTIME_ORDER
+02071a90 l       .text		 000000a8 DV_DEF
+02070ee0 l       .text		 00000bb0 DV_KIT
+02071b38 l       .text		 0000000b DV_KIT_ACC
+02071b44 l       .text		 00000054 DV_METAL_R
+02070ec2 l       .text		 0000000c DV_TYPE_LANE
+02081bf4 l       .text		 0000000c DX_FILT
+02073978 l       .text		 0000005e DX_GM
+0207473d l       .text		 000002c0 DX_KITS
+0207d017 l       .text		 00000058 DX_KIT_DEF
+02087900 l       .text		 00000004 DX_NROW
+02081c00 l       .text		 00000010 DX_PMOD
+02087930 l       .text		 00000008 DX_RATIO
+02087904 l       .text		 00000004 DX_ROW0
+02081bd0 l       .text		 00000014 DX_VAL
+02081be4 l       .text		 00000010 DX_WAVE
+02087b70 l       .text		 00000020 DX_WIN
+0207f6e4 l       .text		 0000001d ED_BK_IDS
+0207f701 l       .text		 00000024 ED_MENU
+0207f5f8 l       .text		 00000003 ED_TIDS
+02058590 l       .text		 00000040 ENGINES
+0207fc9e l       .text		 0000000e ENGINE_ORDER
+020585d0 l       .text		 000000bc ENG_ANALOG
+02058d28 l       .text		 000000bc ENG_DRUM
+02058f5c l       .text		 000000bc ENG_DRUMX
+0205868c l       .text		 000000bc ENG_FM4_GONE
+02058ea0 l       .text		 000000bc ENG_FM6
+0205897c l       .text		 000000bc ENG_FORMANT
+02058bb0 l       .text		 000000bc ENG_GRAIN
+02058804 l       .text		 000000bc ENG_LOFI
+02058de4 l       .text		 000000bc ENG_NOISE
+02058748 l       .text		 000000bc ENG_PHASE
+02058c6c l       .text		 000000bc ENG_PHYS
+020588c0 l       .text		 000000bc ENG_SAMPLE
+02059018 l       .text		 000000bc ENG_SUMMON
+02058a38 l       .text		 000000bc ENG_TRIO
+02087ad0 l       .text		 00000020 ENG_VCOST
+02058af4 l       .text		 000000bc ENG_WHEEL
+020811e8 l       .text		 0000000c ENO_B
+020811f4 l       .text		 0000000c ENO_C
+020878fc l       .text		 00000004 ENO_CL
+02081010 l       .text		 000000af ENO_D
+02081188 l       .text		 00000040 ENO_DR
+020810bf l       .text		 000000c8 ENO_L
+020878f8 l       .text		 00000004 ENO_LL
+02081200 l       .text		 0000000c ENO_L_
+020811c8 l       .text		 00000020 ENO_PC
+02075098 l       .text		 00000100 ENV_EXP
+0206ff2c l       .text		 00000200 ENV_LIN
+0207d074 l       .text		 00000030 ESYNC_DESC
+0207d1ec l       .text		 00000068 ESYNC_NAMES
+02075198 l       .text		 00000032 ESYNC_UNITS
+02082a5c l       .text		 00000018 EU_FOOT
+0207d290 l       .text		 0000001c E_NAME
+020800a8 l       .text		 0000000b FAM_BTN
+02087b30 l       .text		 00000020 FM1_ANIM_POW
+02076232 l       .text		 0000001b FM1_ANIM_X
+02076216 l       .text		 0000001c FM1_ENC
+020761d4 l       .text		 00000042 FM1_KEYMAP
+02087b10 l       .text		 00000020 FM1__BR_K
+0207205e l       .text		 000000c0 FM6_ALG
+02087990 l       .text		 00000010 FM6_AMSENS
+02082694 l       .text		 000000c0 FM6_CELL
+0207255c l       .text		 00000080 FM6_COARSE
+0207245c l       .text		 00000100 FM6_DETUNE
+02072834 l       .text		 00001004 FM6_EXP2
+020722c4 l       .text		 00000021 FM6_EXPSCALE
+0207cc17 l       .text		 00000400 FM6_FACTORY
+020725dc l       .text		 00000190 FM6_FINE
+0207c653 l       .text		 00000080 FM6_INIT
+020722b0 l       .text		 00000014 FM6_LEVELLUT
+02072120 l       .text		 00000190 FM6_LFO_DELTA
+020727d0 l       .text		 00000064 FM6_PENV_RATE
+0207276c l       .text		 00000064 FM6_PENV_TAB
+02087928 l       .text		 00000008 FM6_PMS
+02071e98 l       .text		 000001c0 FM6_PRESETS
+02072328 l       .text		 00000134 FM6_STATICS
+020722e5 l       .text		 00000040 FM6_VELDATA
+0208266c l       .text		 00000010 FM_CURVE
+0208251c l       .text		 00000140 FM_F
+0208265c l       .text		 00000010 FM_HZ
+0208267c l       .text		 00000018 FM_WAVE
+0206fe2c l       .text		 00000100 FORMANT_PRESETS
+020878f4 l       .text		 00000004 FR_BARS
+0207f62a l       .text		 0000000f FXK_DEF
+02082a2c l       .text		 00000018 FX_LATCH_FOOT
+02082785 l       .text		 0000000b GC_Q
+02082834 l       .text		 0000002c GC_QN
+020819c4 l       .text		 0000000c GEE_B
+020819d0 l       .text		 0000000c GEE_C
+020818e4 l       .text		 00000032 GEE_D
+02081964 l       .text		 00000040 GEE_DR
+02081916 l       .text		 0000004b GEE_L
+020819dc l       .text		 0000000c GEE_L_
+020819a4 l       .text		 00000020 GEE_PC
+02082860 l       .text		 00000010 GEN_AMT
+02087960 l       .text		 00000008 GEN_ARR
+020828ac l       .text		 00000013 GEN_DEF
+02087968 l       .text		 00000008 GEN_G
+020827a4 l       .text		 0000004c GEN_LABEL
+0208010c l       .text		 00000013 GEN_MAX
+02082804 l       .text		 00000030 GEN_NOTE
+020800f0 l       .text		 0000001c GEN_PART
+020800c0 l       .text		 00000030 GEN_STYLE
+020827f0 l       .text		 00000014 GEN_VIBE
+02082771 l       .text		 00000014 GEN_WIN
+02082a44 l       .text		 00000018 GLO_LOCK_FOOT
+0207fd17 l       .text		 00000009 GLO_W
+0207c6fc l       .text		 00000240 GP
+02070610 l       .text		 00000100 GRAIN_PRESETS
+02070710 l       .text		 00000202 GR_HANN
+02070912 l       .text		 0000001a GR_NORM
+02080120 l       .text		 00000a20 GSTY
+02080fec l       .text		 0000000c HEA_B
+02080ff8 l       .text		 0000000c HEA_C
+02080edc l       .text		 00000064 HEA_D
+02080f8c l       .text		 00000040 HEA_DR
+02080f40 l       .text		 0000004b HEA_L
+02081004 l       .text		 0000000c HEA_L_
+02080fcc l       .text		 00000020 HEA_PC
+020878dc l       .text		 00000004 HL_AP
+020878e0 l       .text		 00000004 HL_APG
+020879d0 l       .text		 00000010 HL_LEN
+02087950 l       .text		 00000008 HOLD_MS
+0207f648 l       .text		 00000010 HOLD_N
+02081c10 l       .text		 00000570 ICON_MAP
+02087918 l       .text		 00000008 IMA_IDX
+0206fd7a l       .text		 000000b2 IMA_STEP
+02080c68 l       .text		 0000000c IMP_B
+02080c74 l       .text		 0000000c IMP_C
+02080b40 l       .text		 00000064 IMP_D
+02080c08 l       .text		 00000040 IMP_DR
+02080ba4 l       .text		 00000064 IMP_L
+02080c80 l       .text		 0000000c IMP_L_
+02080c48 l       .text		 00000020 IMP_PC
+0207d0a4 l       .text		 000000c0 INS_DESC
+020879c0 l       .text		 00000010 INS_HOLD
+020751d0 l       .text		 00000042 IN_PH_A
+0207ffb8 l       .text		 000000f0 KC
+0208346a l       .text		 00000064 KNOB_SMALL_ANG
+02083438 l       .text		 00000032 KNOB_SMALL_COV
+0207fad8 l       .text		 00000010 LAUNCH_AT
+0207fac8 l       .text		 00000010 LAUNCH_NAME
+0207fb7c l       .text		 00000100 LAYERS
+02081554 l       .text		 0000000c LCD_B
+02081560 l       .text		 0000000c LCD_C
+02081444 l       .text		 0000004b LCD_D
+020814f4 l       .text		 00000040 LCD_DR
+0208148f l       .text		 00000064 LCD_L
+0208156c l       .text		 0000000c LCD_L_
+02081534 l       .text		 00000020 LCD_PC
+0207ca44 l       .text		 00000014 LCD_SEQ
+020878f0 l       .text		 00000004 LEDS_MENU
+0207f690 l       .text		 00000010 LEDS_NAME
+02074d80 l       .text		 00000100 LEVEL_Q12
+0208218c l       .text		 00000200 LFO_HZ_X100
+02074e8c l       .text		 00000200 LFO_INC
+02082c98 l       .text		 00000024 LIST_NAME
+0205a894 l       .text		 00000010 LOFI_DCY
+0205a678 l       .text		 00000100 LOFI_PRESETS
+0205a884 l       .text		 00000010 LOFI_WAVNUM
+0207508c l       .text		 0000000b LSYNC_DIV
+02087958 l       .text		 00000008 LY_KC
+0207fd24 l       .text		 0000000c LY_SCL
+0207fd30 l       .text		 0000000c LY_SEQ
+0207fd4c l       .text		 000001b8 MENU_CREDITS
+0207f500 l       .text		 000000c0 MENU_FLAGS
+020879b0 l       .text		 00000010 MIDI_CC_ENG
+020746ce l       .text		 00000016 MIDI_CC_MAP
+0207f728 l       .text		 000000e8 MI_NAME
+0207f810 l       .text		 0000003a MI_TAB
+0207fd3c l       .text		 00000007 MOD_FIXED
+02082974 l       .text		 0000000c MTAB_ICON
+0207f84c l       .text		 00000018 MTAB_NAME
+0207ff78 l       .text		 00000040 NM_ABC
+02085711 l       .text		 00000011 NM_NUM
+02085753 l       .text		 0000002c NM_SET
+02071d90 l       .text		 00000010 NOISE_CLK
+02071d70 l       .text		 00000010 NOISE_LONG
+02071d80 l       .text		 00000010 NOISE_META
+02071bb0 l       .text		 00000100 NOISE_PRESETS
+02071cb0 l       .text		 000000c0 NOISE_SEQ
+02087a90 l       .text		 00000020 NOISE_TAPS
+0207c9fc l       .text		 00000010 N_ADRV
+020746b8 l       .text		 00000010 N_AFLT
+0207ca28 l       .text		 00000010 N_AGRN
+020744f8 l       .text		 00000008 N_ALLOC
+02074400 l       .text		 0000003c N_AMODE
+0207ca0c l       .text		 00000010 N_AMOV
+020590d4 l       .text		 0000001c N_ANALOG_WAVE
+0207ca1c l       .text		 0000000c N_ASPC
+0205a640 l       .text		 00000014 N_CHIP
+020745b0 l       .text		 00000028 N_CHRD
+0207c93c l       .text		 0000000c N_CLOCK
+0207c9e4 l       .text		 0000000c N_CMODE
+0207c984 l       .text		 00000004 N_DASH
+0205a8e8 l       .text		 00000084 N_DCY
+020745ec l       .text		 00000010 N_DIR
+0207443c l       .text		 00000028 N_DIV
+020745fc l       .text		 0000001c N_DKSRC
+0207c9f0 l       .text		 0000000c N_DMODE
+02070c5c l       .text		 00000008 N_DRUM_KICK
+02070c14 l       .text		 00000048 N_DRUM_KIT
+020703f8 l       .text		 0000001c N_DRW_PERC
+020703b8 l       .text		 00000040 N_DRW_REG
+02070414 l       .text		 0000000c N_DRW_ROTR
+0207c948 l       .text		 00000034 N_DTIME
+02074618 l       .text		 00000014 N_DTYPE
+0207c998 l       .text		 00000040 N_ENGNAME
+02071de8 l       .text		 00000088 N_FM6_ALG
+02071e70 l       .text		 00000028 N_FM6_PATCH
+02074690 l       .text		 0000000c N_FMODE
+0207469c l       .text		 00000010 N_FNOTE
+020744e4 l       .text		 00000008 N_GLMODE
+0207c990 l       .text		 00000008 N_GO
+0207d164 l       .text		 00000044 N_IBITS
+0207d1a8 l       .text		 00000044 N_IRATE
+02074668 l       .text		 00000028 N_ITYPE
+02074660 l       .text		 00000008 N_LPOL
+0207462c l       .text		 0000002c N_LSYNC
+02074658 l       .text		 00000008 N_LTRIG
+020743ec l       .text		 00000014 N_LWAVE
+02074554 l       .text		 0000005c N_MDST
+0207c97c l       .text		 00000008 N_MIDI_INPUT
+02074524 l       .text		 00000030 N_MSRC
+02071da0 l       .text		 00000024 N_NOISE_LONG
+02071dc4 l       .text		 00000024 N_NOISE_META
+02071ba0 l       .text		 00000010 N_NOISE_MODE
+02074464 l       .text		 00000008 N_ONOFF
+0205a994 l       .text		 00000008 N_ONOFF_E
+0207446c l       .text		 00000008 N_ORDER
+0205a518 l       .text		 00000008 N_PD_LINE
+0205a4d4 l       .text		 00000020 N_PD_WAVE
+0205a4f4 l       .text		 00000024 N_PD_WAVE2
+02070bf0 l       .text		 00000024 N_PHYS_CHORD
+0207092c l       .text		 00000010 N_PHYS_MODEL
+020744ec l       .text		 0000000c N_PRIO
+020744b4 l       .text		 00000018 N_QUANT
+0205a668 l       .text		 00000010 N_RARP
+0207c988 l       .text		 00000008 N_ROUTE
+0207c9d8 l       .text		 0000000c N_RTYPE
+0205a654 l       .text		 00000014 N_RWAVE
+02074474 l       .text		 00000040 N_SCALE
+020746ac l       .text		 0000000c N_SDIR
+02074500 l       .text		 0000000c N_SLCR
+0207450c l       .text		 00000018 N_SLDIV
+020739d8 l       .text		 0000000c N_SM_VOICES
+020701d0 l       .text		 00000010 N_TRIO_MODE
+02070190 l       .text		 00000040 N_TRIO_WAVE
+020745d8 l       .text		 00000014 N_VOIC
+020744d4 l       .text		 00000010 N_VOICE
+0205a8a4 l       .text		 00000044 N_WRAM
+0207f864 l       .text		 00000264 PAGES
+02087b50 l       .text		 00000020 PANEL_DEFAULT
+020878d0 l       .text		 00000004 PF_DEN
+02082b88 l       .text		 0000000c PF_DIV
+02082b78 l       .text		 0000000e PF_ICON
+02074c00 l       .text		 00000180 PF_SVF
+0205a520 l       .text		 00000120 PHASE_PRESETS
+02070af6 l       .text		 0000002a PHYS_CHORDS
+02070b20 l       .text		 00000080 PHYS_DESC
+02083d7a l       .text		 00000003 PHYS_DETUNE
+02070bb0 l       .text		 00000010 PHYS_D_BEND
+02070be0 l       .text		 00000010 PHYS_D_BUZZ
+02070bc0 l       .text		 00000010 PHYS_D_CHRD
+02070ba0 l       .text		 00000010 PHYS_D_HARM
+02070bd0 l       .text		 00000010 PHYS_D_SYMP
+02087980 l       .text		 00000010 PHYS_GAIN
+0207093c l       .text		 00000160 PHYS_PRESETS
+020596b0 l       .text		 00000300 PITCH_OCT
+0207c6e8 l       .text		 00000014 PROJ_SKF3
+0207c6d4 l       .text		 00000014 PROJ_SKF4
+02070a9c l       .text		 00000028 PX_MEMB_IDEAL
+02070ac4 l       .text		 00000028 PX_MEMB_LOADED
+02070aec l       .text		 0000000a PX_MEMB_M
+0207f6a0 l       .text		 0000000c RET_N
+02082c7c l       .text		 0000000c RET_SAY
+020878e4 l       .text		 00000004 REV_AP
+02087938 l       .text		 00000008 REV_COMB
+0207fcd7 l       .text		 00000003 RL_F
+02082a90 l       .text		 00000003 RL_ICON
+02082a84 l       .text		 0000000c RL_LABEL
+02087ab0 l       .text		 00000020 SCALE_MASK
+0207f67c l       .text		 00000014 SCROFF_N
+0208292d l       .text		 00000005 SCR_MIN
+0207015c l       .text		 00000034 SEMI_Q16
+02081b38 l       .text		 00000090 SHEETS
+02059ab0 l       .text		 00000802 SINE
+020817a4 l       .text		 0000000c SLB_B
+020817b0 l       .text		 0000000c SLB_C
+020816ac l       .text		 0000004b SLB_D
+02081744 l       .text		 00000040 SLB_DR
+020816f7 l       .text		 0000004b SLB_L
+020817bc l       .text		 0000000c SLB_L_
+02081784 l       .text		 00000020 SLB_PC
+0208291a l       .text		 00000006 SLDIV_ORDER
+020751ca l       .text		 00000006 SL_DEN
+02087af0 l       .text		 00000020 SL_PAT
+0205a96c l       .text		 00000020 SMP_ALL_NAMES
+0205ac38 l       .text		 00015142 SMP_DATA
+0205a99c l       .text		 00000140 SMP_PRESET_TABLE
+0205aadc l       .text		 00000028 SMP_SETS
+02074720 l       .text		 00000005 SMP_SET_ORIG
+0205ab04 l       .text		 00000134 SMP_ZONES
+02087a60 l       .text		 00000010 SM_HUE
+02073a84 l       .text		 00000018 SM_IV
+0207f63c l       .text		 0000000c SPK_EQ
+0207ca80 l       .text		 00000010 SPLASH_LINES
+0207ca90 l       .text		 000000db SPR_VL_HEAD
+0207cba5 l       .text		 0000003a SPR_XE_GREY
+0207cb6b l       .text		 0000003a SPR_XE_SAUCER
+020800b3 l       .text		 0000000b STEP_CLR
+0208131c l       .text		 0000000c STE_B
+02081328 l       .text		 0000000c STE_C
+0208120c l       .text		 0000004b STE_D
+020812bc l       .text		 00000040 STE_DR
+02081257 l       .text		 00000064 STE_L
+02081334 l       .text		 0000000c STE_L_
+020812fc l       .text		 00000020 STE_PC
+02076319 l       .text		 00000004 STR0
+0207631d l       .text		 0000002a STR1
+02076347 l       .text		 00000010 STR2
+02081688 l       .text		 0000000c STR_B
+02081694 l       .text		 0000000c STR_C
+02081578 l       .text		 0000004b STR_D
+02081628 l       .text		 00000040 STR_DR
+020815c3 l       .text		 00000064 STR_L
+020816a0 l       .text		 0000000c STR_L_
+02081668 l       .text		 00000020 STR_PC
+020739e4 l       .text		 000000a0 SUMMON_PRESETS
+020599b0 l       .text		 00000100 SVF_G
+0205a2b2 l       .text		 00000202 TANH_Q15
+02083370 l       .text		 00000030 TC_NAME
+0207fd20 l       .text		 00000003 THR_SEND
+02087a20 l       .text		 00000010 THR_TONE
+02074a00 l       .text		 00000200 TIME_MS_X10
+02082bd4 l       .text		 0000000e TL_ICON
+02082b9c l       .text		 00000038 TL_NAME
+0207fcdc l       .text		 00000038 TL_UNDO
+02073a9c l       .text		 00000950 TP
+0207f6ac l       .text		 00000038 TRANS_N
+020703a0 l       .text		 00000018 TRIO_MIX
+020701e0 l       .text		 00000120 TRIO_PRESETS
+02070300 l       .text		 000000a0 TRIO_SETS
+0207ca38 l       .text		 0000000c TRK_DEF
+0207522e l       .text		 00000f00 UAC_FIR
+02087a00 l       .text		 00000010 UF_CAP
+02076360 l       .text		 00000020 UF_FACE
+0207f5c0 l       .text		 00000020 UI_PALETTES
+0207c634 l       .text		 0000000b UI_PALETTE_MIGRATE11
+0207c63f l       .text		 00000014 UI_PALETTE_MIGRATE20
+0207f5e0 l       .text		 00000018 UI_TRACKS
+0207d254 l       .text		 00000003 UNIT_G
+0207014a l       .text		 0000000f VOWEL_B
+0207012c l       .text		 0000001e VOWEL_F
+02082b10 l       .text		 00000068 WAVE_ICON
+02070420 l       .text		 00000100 WHEEL_PRESETS
+020818c0 l       .text		 0000000c WIN_B
+020818cc l       .text		 0000000c WIN_C
+020817c8 l       .text		 00000032 WIN_D
+02081860 l       .text		 00000040 WIN_DR
+020817fa l       .text		 00000064 WIN_L
+020818d8 l       .text		 0000000c WIN_L_
+020818a0 l       .text		 00000020 WIN_PC
+02081b1c l       .text		 00000007 WL_KEYN
+02081b10 l       .text		 0000000c WL_PC
+02087a50 l       .text		 00000010 WL_SEC
+0205a784 l       .text		 00000100 WRAM
+02087a40 l       .text		 00000010 W_NOTE
+02082d30 l       .text		 00000360 XB_B
+02083090 l       .text		 000002d0 XB_O
+02081420 l       .text		 0000000c YAC_B
+0208142c l       .text		 0000000c YAC_C
+02081340 l       .text		 00000032 YAC_D
+020813c0 l       .text		 00000040 YAC_DR
+02081372 l       .text		 0000004b YAC_L
+02081438 l       .text		 0000000c YAC_L_
+02081400 l       .text		 00000020 YAC_PC
+01c0a1c0 l       .bss		 00000800 abuf
+02022402 l     F .text		 000000ac accel
+020277ce l     F .text		 0000003a act_col
+0201f3f0 l     F .text		 0000007a act_cols
+02029a06 l     F .text		 00000c5e act_do
+020835cc l       .text		 00000010 act_name.K3
+020835c0 l       .text		 0000000c act_name.UP_GO
+0202d706 l     F .text		 00000152 act_ready
+01c08040 l       .data		 00000db8 alm
+020098a4 l     F .text		 0000007e alm_dust
+01c1b6d0 l       .bss		 00000080 alm_l
+0200b80c l     F .text		 000000ac alm_post
+0200b8b8 l     F .text		 00000052 alm_post_blk
+0200a506 l     F .text		 000000d0 alm_pre
+0200a5d6 l     F .text		 0000004c alm_pre_blk
+01c1b750 l       .bss		 00000080 alm_r
+0200a3da l     F .text		 0000012c alm_space
+0200a1b2 l     F .text		 00000228 alm_stage
+02009922 l     F .text		 00000146 alm_wow
+020482c2 l     F .text		 0000002e analog_desc
+02046bec l     F .text		 0000002c analog_note_on
+02035a16 l     F .text		 00000020 analog_page
+02047b5a l     F .text		 00000768 analog_render
+02046c18 l     F .text		 00000a04 analog_render_m
+0204761c l     F .text		 0000053e analog_render_x
+02019c8c l     F .text		 00000012 apply_preset
+0201207a l     F .text		 00000132 apply_preset_to
+020081ce l     F .text		 000000c8 arp_chord
+02002848 l     F .text		 0000003c arp_chord_off
+02008296 l     F .text		 000000f8 arp_fire
+02007f2a l     F .text		 00000156 arp_list
+02002836 l     F .text		 00000012 arp_note_off
+02002884 l     F .text		 000000a2 arp_off
+02008080 l     F .text		 0000014e arp_pick
+01c74c24 l       .pool		 00000004 as.0
+01c74c28 l       .pool		 00000004 as.1
+01c74c2c l       .pool		 00000004 as.2
+01c74c30 l       .pool		 00000004 as.3
+01c74c34 l       .pool		 00000004 as.4
+01c74c38 l       .pool		 00000004 as.5
+01c74c3c l       .pool		 00000004 as.6
+01c74c40 l       .pool		 00000001 as.7
+01c74c42 l       .pool		 00000004 as.8
+01c74c48 l       .pool		 00000004 as.9
+020131a8 l     F .text		 00000016 as_mix
+01c1a75a l       .bss		 00000002 aud_req
+01c1a77c l       .bss		 00000004 audio_cpu_rem
+01c1a774 l       .bss		 00000004 audio_halves
+01c1a778 l       .bss		 00000004 audio_max_us
+020101d0 l     F .text		 00000030 audio_silence
+020147c8 l     F .text		 00000014 autosave_hold
+020131be l     F .text		 0000010e autosave_sig
+01c74bf8 l       .pool		 00000010 bank_act_name.b
+0201905c l     F .text		 00000040 bank_cancel
+02017584 l     F .text		 0000003e bank_cur
+02018e60 l     F .text		 00000038 bank_next
+0201621a l     F .text		 00000012 bank_poll
+02015f02 l     F .text		 00000318 bank_poll_trk
+0201856c l     F .text		 000000b8 bank_switch
+020155dc l     F .text		 0000001e bank_used
+02036646 l     F .text		 00000012 bar_x
+0208293e l       .text		 00000005 batt_icon.I
+0202dd84 l     F .text		 0000003c batt_shown
+01c1ae4c l       .bss		 00000034 bd
+02030846 l     F .text		 00000024 bd_in
+0203087a l     F .text		 00000068 bd_oval
+0203f1fa l     F .text		 0000033a beast_box_draw
+020365cc l     F .text		 0000002c beast_box_fits
+020365f8 l     F .text		 0000004e beast_sig
+01c1a7d4 l       .bss		 00000004 beat_n
+01c1a7d0 l       .bss		 00000004 beat_pos
+02001776 l     F .text		 00000036 beat_samples
+01c1b8f0 l       .bss		 0000009c bk
+02010118 l     F .text		 0000003a bk_body
+01c7148e l       .pool		 00000de0 bk_buf
+01c1a73f l       .bss		 00000001 bk_bufc
+020100b6 l     F .text		 0000004a bk_head
+02010152 l     F .text		 0000005a bk_lens
+02010100 l     F .text		 00000018 bk_newer
+02012c82 l     F .text		 00000052 bk_pack
+02012afc l     F .text		 00000186 bk_pack_raw
+020156f6 l     F .text		 00000004 bk_prog
+020100b2 l     F .text		 00000004 bk_read
+01c739bf l       .pool		 00000378 bk_rec
+02010098 l     F .text		 0000001a bk_sector
+020156fa l     F .text		 0000013e bk_write
+0202b3fe l     F .text		 0000003e black_held
+01c08e18 l       .data		 00000001 blk_tint
+01c1a746 l       .bss		 00000001 boot_clean
+01c1abf8 l       .bss		 00000018 boot_code
+02013656 l     F .text		 000001a4 boot_music
+020111da l     F .text		 000000e4 boot_why_at
+0201cc42 l     F .text		 0000007a btn_hold
+01c1a7b4 l       .bss		 00000004 c1_blocks
+01c03066 l     F .ram_text		 00000066 c1_parts
+01c1a756 l       .bss		 00000001 card_mot
+01c1ab24 l       .bss		 00000014 card_mot_mask
+01c1a755 l       .bss		 00000001 card_mot_next
+0203359e l     F .text		 0000003a card_mot_of
+01c1aac0 l       .bss		 00000010 card_span
+020335d8 l     F .text		 00000022 card_span_of
+01c08e17 l       .data		 00000001 card_tint
+01c1f000 l       .pool		 00000430 cast
+020104a6 l     F .text		 0000000a cast_audio_late
+01c7c0a4 l       .noinit		 00000004 cast_boot
+0201ba6e l     F .text		 00000048 cast_boot_hold
+020147dc l     F .text		 000000ba cast_cmd
+02000a60 l     F .text		 0000010c cast_flush
+0201bb8c l     F .text		 00000072 cast_frame
+0201bb02 l     F .text		 0000008a cast_hash
+02000b6c l     F .text		 0000002c cast_piece
+020005a4 l     F .text		 0000002c cast_px
+0200081c l     F .text		 00000058 cast_rec
+0201bab6 l     F .text		 0000004c cast_sound
+0201c014 l     F .text		 00000050 cast_take
+02002984 l     F .text		 000000c0 cc_out_of
+02002a44 l     F .text		 00000062 cc_value
+02026c1c l     F .text		 0000009c chain_cursor
+01c73dde l       .pool		 00000006 chain_go
+0201d072 l     F .text		 000000fc chain_next
+01c73daa l       .pool		 0000000c chain_p0
+01c73db6 l       .pool		 0000000c chain_pl
+01c73da3 l       .pool		 00000006 chain_rep
+0201d248 l     F .text		 000001dc chain_tails
+0201760e l     F .text		 00000092 chain_top
+020182aa l     F .text		 00000072 chain_wait
+01c1b860 l       .bss		 00000090 chime
+0200bffc l     F .text		 000004ba chime_render
+01c3c3d8 l       .pool		 00001000 cho_buf
+0200a7a4 l     F .text		 000001d0 cho_mode
+0200a622 l     F .text		 00000182 cho_st
+02004c98 l     F .text		 00000076 chord_build
+02003346 l     F .text		 00000038 chord_kit
+01c1aef0 l       .bss		 0000003c chord_last
+02004a38 l     F .text		 00000260 chord_make
+020399d4 l     F .text		 00000124 chord_name
+01c1a714 l       .bss		 00000001 cin_bars
+02003222 l     F .text		 00000030 cin_begin
+0200311e l     F .text		 00000060 cin_block
+01c1a7cc l       .bss		 00000004 cin_flush
+02004d58 l     F .text		 000000ac cin_keep
+01c1a712 l       .bss		 00000001 cin_left
+01c1a9ea l       .bss		 00000006 cin_n
+01c1ab68 l       .bss		 00000018 cin_note
+01c1a7ec l       .bss		 00000004 cin_pos
+02007e8a l     F .text		 000000a0 cin_record
+01c1a71a l       .bss		 00000001 cin_total
+01c1a9f0 l       .bss		 00000006 cin_up
+01c1abb0 l       .bss		 00000018 cin_vel
+01c08e00 l       .data		 00000001 click_lvl
+01c1a727 l       .bss		 00000001 click_mode
+0200bf02 l     F .text		 000000fa click_render
+01c1a71b l       .bss		 00000001 click_req
+01c745fc l       .pool		 000001a8 clip
+01c1a958 l       .bss		 00000004 clk.0
+01c1a95c l       .bss		 00000004 clk.1
+01c1a960 l       .bss		 00000004 clk.2
+01c1a964 l       .bss		 00000004 clk.3
+01c1a968 l       .bss		 00000004 clk.4
+01c08e1c l       .data		 00000004 clk_pos
+01c1a7f0 l       .bss		 00000004 clk_step
+020065c8 l     F .text		 00000092 clock_ext_block
+0201c064 l     F .text		 0000003c clock_wait_poll
+02020196 l     F .text		 0000001c confirm_open
+0201878c l     F .text		 00000068 copy_ids
+0201025e l     F .text		 00000010 cpal_bits
+01c73d59 l       .pool		 00000016 cpal_prev
+02032580 l     F .text		 0000005a cr_stroke
+01c7e8d8 l       .noinit		 00000004 crash_seen
+020174f6 l     F .text		 00000022 cur_page
+0202b43c l     F .text		 0000006e cursor_audition
+02027174 l     F .text		 00000024 cursor_fix
+02026cb8 l     F .text		 00000056 cursor_set
+02000bf0 l     F .text		 00000222 cv_alpha_hc
+02000b98 l     F .text		 00000058 cv_begin
+01c1a768 l       .bss		 00000002 cv_bg
+020012e4 l     F .text		 00000056 cv_blit
+01c1a764 l       .bss		 00000002 cv_cy0
+01c1a766 l       .bss		 00000002 cv_cy1
+0202e1f6 l     F .text		 0000004c cv_frame
+0202e1c2 l     F .text		 00000034 cv_free_hint
+0202e18c l     F .text		 00000036 cv_free_text
+01c1a888 l       .bss		 00000004 cv_h
+02013b14 l     F .text		 0000004e cv_icon_in
+02013b62 l     F .text		 0000001e cv_icon_mid
+0201393c l     F .text		 000001d8 cv_icon_on
+0202dc06 l     F .text		 0000003e cv_key_hint
+0202ee4a l     F .text		 000000c6 cv_key_row
+0202dbc4 l     F .text		 00000042 cv_keycap
+020308e2 l     F .text		 00000072 cv_line
+02030954 l     F .text		 0000002e cv_line_t
+01c1a890 l       .bss		 00000004 cv_oy
+020104b0 l     F .text		 0000002e cv_pset
+01c60338 l       .pool		 000102c0 cv_px
+020105b6 l     F .text		 00000066 cv_rect
+0201392c l     F .text		 00000010 cv_rrect
+020012c8 l     F .text		 0000001c cv_text
+0202fce4 l     F .text		 00000036 cv_text_fit
+02001298 l     F .text		 00000030 cv_text_flags
+0202e242 l     F .text		 0000002c cv_text_in
+020106e8 l     F .text		 00000014 cv_text_on
+0202560c l     F .text		 00000030 cv_text_r
+01c1a884 l       .bss		 00000004 cv_w
+01c1af2c l       .bss		 00000040 dac_lo
+01c1a830 l       .bss		 00000004 dc_l
+01c1a838 l       .bss		 00000004 dc_r
+01c1a834 l       .bss		 00000004 dce_l
+01c1a83c l       .bss		 00000004 dce_r
+0200a9c4 l     F .text		 00000042 delay_samples
+01c01a30 l     F .ram_text		 000000aa dist_crush
+01c01998 l     F .ram_text		 00000098 dist_fold
+01c01ada l     F .ram_text		 000000be dist_fuzz
+01c0190c l     F .ram_text		 0000008c dist_hard
+020018d6 l     F .text		 0000003a div_samples
+01c3d3d8 l       .pool		 00020000 dly_buf
+0200a974 l     F .text		 00000050 dly_clear
+0200aa06 l     F .text		 00000088 dly_mono
+0200aa8e l     F .text		 000001ec dly_stereo
+0200ac7a l     F .text		 00000098 dly_switch
+01c5d3d8 l       .pool		 00000080 dly_ts
+01c5d458 l       .pool		 00000080 dly_tw
+020337dc l     F .text		 0000004e draw_act_column
+0202fd1a l     F .text		 00000b10 draw_column
+02033ac4 l     F .text		 0000154a draw_columns
+02082cc8 l       .text		 00000007 draw_columns.FDST
+02087978 l       .text		 00000008 draw_columns.FI
+02082c88 l       .text		 00000010 draw_columns.FL
+02040d02 l     F .text		 0000067e draw_confirm
+020829cf l       .text		 00000002 draw_confirm_blocks.KEY
+020829d1 l       .text		 00000009 draw_confirm_blocks.ROW_Y
+02082980 l       .text		 00000048 draw_confirm_blocks.VERB
+0202f692 l     F .text		 000001a4 draw_countin
+01c1a8fc l       .bss		 00000004 draw_countin.shown
+02040248 l     F .text		 00000a82 draw_foot
+0202fb46 l     F .text		 000000ee draw_frame
+0203f534 l     F .text		 0000078e draw_graph
+0202e26e l     F .text		 00000996 draw_head
+02041dc6 l     F .text		 00001752 draw_layer
+0202ef10 l     F .text		 00000782 draw_menu
+02082944 l       .text		 00000030 draw_menu.KEYS
+0202ed98 l     F .text		 0000003c draw_rec_mark
+02043518 l     F .text		 0000055a draw_shift
+020110d8 l     F .text		 00000102 draw_splash
+02013b80 l     F .text		 0000002c draw_text_box
+0200133a l     F .text		 00000056 draw_text_line
+020350b2 l     F .text		 0000062a draw_tracks
+0202dc44 l     F .text		 000000ea draw_uboot
+01c1a758 l       .bss		 00000001 draw_uboot.shown
+02051702 l     F .text		 00000072 drum_amp
+0204e970 l     F .text		 0000009e drum_dec
+0204fa74 l     F .text		 00000068 drum_declick
+02051774 l     F .text		 00000028 drum_keys
+02003da2 l     F .text		 00000054 drum_kit_of
+02033aa8 l     F .text		 0000001c drum_kit_plays
+02003b16 l     F .text		 00000032 drum_lane
+02038acc l     F .text		 00000048 drum_lane_abbr
+02082be4 l       .text		 00000020 drum_lane_abbr.N
+0203b24c l     F .text		 0000004e drum_lane_has
+0202020a l     F .text		 00000048 drum_lane_name
+0207fcac l       .text		 00000020 drum_lane_name.N
+0204e900 l     F .text		 00000038 drum_lane_of
+01c1a9de l       .bss		 00000006 drum_mute
+0204e684 l     F .text		 0000027c drum_note_on
+0204fadc l     F .text		 00001c26 drum_render
+0204ea0e l     F .text		 000002e0 drum_smp
+020201b2 l     F .text		 00000058 drum_swaps
+02017518 l     F .text		 0000001e drum_track
+020319a4 l     F .text		 0000002c drum_user
+0203b1e2 l     F .text		 0000006a drum_user_zone
+02053c08 l     F .text		 00000036 drumx_amp
+02003df6 l     F .text		 00000054 drumx_kit_of
+02053044 l     F .text		 00000038 drumx_lane_of
+02052fa4 l     F .text		 000000a0 drumx_note_on
+020539f6 l     F .text		 00000212 drumx_render
+0203e64e l     F .text		 00000044 drw_level
+01c0f040 l       .bss		 00000240 drw_t
+01c1b320 l       .bss		 00000060 duck
+01c01b98 l     F .ram_text		 0000003c duck_apply
+020095bc l     F .text		 000000fe duck_block
+01c1a71d l       .bss		 00000001 duck_hits
+01c1a728 l       .bss		 00000001 duck_on
+0204f7e8 l     F .text		 000000fa dv_bell_run
+0204f36a l     F .text		 0000014e dv_clap_run
+0204f8e2 l     F .text		 0000011a dv_cym_run
+0204f4b8 l     F .text		 0000012e dv_hat_run
+0204ed94 l     F .text		 0000009a dv_hp1
+0204ecee l     F .text		 00000056 dv_kb
+0204eed2 l     F .text		 00000254 dv_kick_run
+0204eea4 l     F .text		 0000002e dv_metal_mix
+0204ee2e l     F .text		 00000076 dv_metal_run
+0204f9fc l     F .text		 00000078 dv_out
+0204ed44 l     F .text		 00000050 dv_pole
+0204f70c l     F .text		 000000dc dv_rim_run
+0204f126 l     F .text		 00000244 dv_snare_run
+0204f5e6 l     F .text		 00000126 dv_tom_run
+02054bc4 l     F .text		 00000214 dx_cards
+02081bc8 l       .text		 00000005 dx_cards.ICON
+01c08e74 l       .data		 00000058 dx_kit
+0200f088 l     F .text		 00000044 dx_kit_ok
+02054a64 l     F .text		 00000160 dx_knob
+020552f2 l     F .text		 0000002e dx_lane_turn
+02054e2e l     F .text		 0000006e dx_row_bar
+0205307c l     F .text		 0000097a dx_run
+020879a0 l       .text		 00000010 dx_run.FM_RATIO
+02054dd8 l     F .text		 00000056 dx_sig
+020552b8 l     F .text		 0000003a dx_title
+01c1aa86 l       .bss		 0000000c dx_title.t
+01c19dd8 l       .bss		 00000001 dx_ui_hits
+01c1a74e l       .bss		 00000001 dx_ui_lane
+01c08e16 l       .data		 00000001 dx_ui_seen
+01c1a753 l       .bss		 00000001 dx_ui_win
+0200d3b0 l     F .text		 0000009c e0_chunk
+0200d44c l     F .text		 0000003e e0_send
+0201cf66 l     F .text		 00000052 ed_add
+02014470 l     F .text		 00000358 ed_args_ok
+0200095a l     F .text		 00000024 ed_b
+02016832 l     F .text		 0000083e ed_backup_handle
+02014390 l     F .text		 00000026 ed_begin
+01c1a8bc l       .bss		 00000004 ed_bk_crc
+01c1a748 l       .bss		 00000001 ed_bk_gen
+01c1a749 l       .bss		 00000001 ed_bk_id
+01c1a8b8 l       .bss		 00000004 ed_bk_len
+01c1a8c4 l       .bss		 00000004 ed_bk_ms
+02016538 l     F .text		 00000184 ed_bk_object
+02014978 l     F .text		 00000048 ed_bk_pack
+01c1a8c0 l       .bss		 00000004 ed_bk_pos
+01c1a8b4 l       .bss		 00000004 ed_bk_put
+020166d6 l     F .text		 0000001c ed_bk_r32
+02016724 l     F .text		 000000c2 ed_bk_set_ok
+01c18a80 l       .bss		 00000290 ed_bk_settings
+020166bc l     F .text		 0000001a ed_bk_u32
+01c1a8b0 l       .bss		 00000004 ed_bk_usb
+01c1a8ac l       .bss		 00000004 ed_bk_valid
+020198de l     F .text		 00000014 ed_bs
+0201d424 l     F .text		 000001a4 ed_close
+0201cfdc l     F .text		 00000030 ed_cont
+0201d19c l     F .text		 00000086 ed_del
+02019902 l     F .text		 00000056 ed_desc
+0201ec24 l     F .text		 00000034 ed_end
+02014218 l     F .text		 0000000e ed_eng
+020155a2 l     F .text		 0000003a ed_flash_stop
+02017108 l     F .text		 0000020a ed_fm6_handle
+0201a59a l     F .text		 00001080 ed_handle
+0207f5fb l       .text		 0000001a ed_handle.TAGS1
+0207f615 l       .text		 00000015 ed_handle.TAGS2
+01c1baf0 l       .bss		 000000c0 ed_handle.r
+0201a53e l     F .text		 0000005c ed_known
+02023774 l     F .text		 0000003a ed_lift
+020199e4 l     F .text		 0000006c ed_load_after
+02019958 l     F .text		 0000007a ed_load_before
+020235b4 l     F .text		 00000108 ed_mark
+02017316 l     F .text		 00000120 ed_menu_handle
+02017312 l     F .text		 00000004 ed_menu_save
+0201982e l     F .text		 000000b0 ed_motion_reply
+01c1a88c l       .bss		 00000004 ed_n
+0201df54 l     F .text		 0000002c ed_open
+01c13758 l       .bss		 00000258 ed_out
+02014420 l     F .text		 00000050 ed_proj_name_in
+02017c2a l     F .text		 00000162 ed_project_handle
+02014226 l     F .text		 0000001c ed_room
+020152fa l     F .text		 0000000e ed_rv
+020143b6 l     F .text		 00000020 ed_send
+0201b628 l     F .text		 00000446 ed_service
+01c1b02c l       .bss		 00000040 ed_service.f
+020142d4 l     F .text		 000000bc ed_shadow
+01c18880 l       .bss		 00000200 ed_smp_buf
+02019df2 l     F .text		 000000ca ed_smp_end
+02019d8a l     F .text		 00000068 ed_smp_erase
+02019d4c l     F .text		 0000003e ed_smp_inval
+0201936c l     F .text		 00000392 ed_song_handle
+02019ae2 l     F .text		 000000fc ed_step_put
+02019bee l     F .text		 0000009e ed_step_reply
+02014262 l     F .text		 00000072 ed_step_sig
+020152d0 l     F .text		 0000002a ed_str
+020198f2 l     F .text		 00000010 ed_tdesc
+02014cca l     F .text		 0000001a ed_u28
+02015308 l     F .text		 0000029a ed_ui_handle
+02014920 l     F .text		 00000058 ed_ui_save
+02014ce4 l     F .text		 0000005e ed_ui_state
+0201d00c l     F .text		 00000056 ed_unfold
+02014896 l     F .text		 0000008a ed_unpack7
+020143d6 l     F .text		 00000028 ed_v
+02014242 l     F .text		 00000020 ed_val
+020237ae l     F .text		 00000024 ed_vals
+01c1a214 l       .bss		 00000001 ed_w.0
+01c1a218 l       .bss		 00000001 ed_w.1
+01c1a398 l       .bss		 00000172 ed_w.10
+01c1c520 l       .bss		 00000100 ed_w.11
+01c1a50c l       .bss		 00000024 ed_w.12
+01c1a530 l       .bss		 00000024 ed_w.13
+01c1a98c l       .bss		 00000004 ed_w.14
+01c1a21a l       .bss		 00000001 ed_w.2
+01c1a21c l       .bss		 00000001 ed_w.3
+01c1a220 l       .bss		 00000001 ed_w.4
+01c1a97c l       .bss		 00000004 ed_w.5
+01c1a980 l       .bss		 00000004 ed_w.6
+01c1a984 l       .bss		 00000004 ed_w.7
+01c1a988 l       .bss		 00000004 ed_w.8
+01c1a224 l       .bss		 00000172 ed_w.9
+02020068 l     F .text		 0000012e edit_load
+02024b1e l     F .text		 00000402 edit_param
+01c1a8f0 l       .bss		 00000004 edit_param.warned
+02025a54 l     F .text		 00000012 enc_drop
+0203a4f2 l     F .text		 00000026 eng_abbr
+02082c04 l       .text		 00000078 eng_abbr.A
+0200f1fa l     F .text		 0000001a eng_allowed
+0201ffc4 l     F .text		 000000a4 eng_list_pos
+01c1f430 l       .pool		 00000e80 eng_lite
+01c202b0 l       .pool		 0000c960 eng_mem
+020123f2 l     F .text		 00000020 eng_ok
+020225b2 l     F .text		 00000028 eng_rank
+02011808 l     F .text		 0000001a eng_refused
+020225da l     F .text		 0000003c eng_step_for
+0201ff12 l     F .text		 00000018 eng_vis
+02033972 l     F .text		 00000026 engine_icon
+02082a98 l       .text		 00000078 engine_icon.M
+0202533c l     F .text		 0000002c ent_at48
+02015eb4 l     F .text		 0000004e ent_block
+02018246 l     F .text		 0000004e ent_free_after
+02015dee l     F .text		 0000008c ent_go
+02025280 l     F .text		 000000bc ent_len48
+02015e7a l     F .text		 0000003a ent_link
+020155fa l     F .text		 00000028 ent_on
+02012476 l     F .text		 0000002c ent_pat
+0201c0a0 l     F .text		 0000002a ent_reps
+02018624 l     F .text		 000000ec entry_go
+020202aa l     F .text		 00000020 entry_ui
+02022ea0 l     F .text		 0000003a enum_order
+02005d72 l     F .text		 00000034 enum_orig
+02022eda l     F .text		 00000036 enum_rank
+01c0156c l     F .ram_text		 000000ae env2_tick
+0207624f l       .text		 00000003 ep0_service.RATE
+02076252 l       .text		 00000003 ep0_service.RATE48
+01c1a739 l       .bss		 00000001 ep0_service.alt
+0207624d l       .text		 00000002 ep0_service.zero2
+01c131e8 l       .bss		 00000044 ep0buf
+0200d232 l     F .text		 0000017e ep1_tx
+01c1322c l       .bss		 00000044 ep1rx
+01c131a8 l       .bss		 00000040 ep1tx
+01c1bbb0 l       .bss		 000000c4 ep4tx
+01c120e0 l       .bss		 00000ac8 esnd
+02015d6c l     F .text		 00000082 esnd_go
+02015c44 l     F .text		 00000128 esnd_make
+02018d28 l     F .text		 0000006e esnd_name
+02007574 l     F .text		 000000fe esnd_put
+01c013d0 l     F .ram_text		 0000019c esync_coef
+02022f10 l     F .text		 0000000c esync_idx
+01c1a9d4 l       .bss		 00000005 eu
+0201f058 l     F .text		 00000050 eu_close
+020202f0 l     F .text		 00000042 eu_fit
+01c742b8 l       .pool		 00000340 eu_from
+02020332 l     F .text		 0000003c eu_hit
+02020516 l     F .text		 00000158 eu_render
+02020690 l     F .text		 0000005e eu_say
+0201efa6 l     F .text		 00000024 eu_track
+02022bce l     F .text		 0000005a ev_fix
+02023004 l     F .text		 0000002e ev_follow
+0202295a l     F .text		 00000078 ev_id_ok
+02022b94 l     F .text		 0000003a ev_id_step
+02023032 l     F .text		 0000026a ev_knob
+02022944 l     F .text		 00000016 ev_len
+0203382a l     F .text		 000000fa ev_name
+02022934 l     F .text		 00000010 ev_row
+020228c0 l     F .text		 00000074 ev_rows
+02008d68 l     F .text		 00000854 events_block
+0200af1e l     F .text		 00000036 exp2_neg
+0200ffd6 l     F .text		 00000048 favorite_has
+0201001e l     F .text		 0000007a favorite_set
+01c115d8 l       .bss		 00000208 favorites
+020112be l     F .text		 0000008a fclk_adds
+0202273e l     F .text		 0000004a feel_get
+02001b90 l     F .text		 00000086 feel_of
+020336e8 l     F .text		 000000dc feel_text
+02083360 l       .text		 00000010 feel_text.TY
+02022788 l     F .text		 00000138 feel_turn
+02087910 l       .text		 00000004 feel_turn.HI
+0208790c l       .text		 00000004 feel_turn.LO
+02010200 l     F .text		 0000001a fl_erase4k
+01c002b8 l     F .ram_text		 0000038c fl_erase4k_ram
+0200e940 l     F .text		 0000000a fl_far
+01c00000 l     F .ram_text		 0000014c fl_jedec_ram
+01c00644 l     F .ram_text		 000003cc fl_prog_ram
+01c00a10 l     F .ram_text		 000001a8 fl_read_ram
+01c0014c l     F .ram_text		 0000016c fl_status_ram
+020133f0 l     F .text		 0000004a fl_write
+01c1a73b l       .bss		 00000001 flash_ok
+0203b984 l     F .text		 00000174 flt_curve
+0203b958 l     F .text		 0000002c flt_off
+02087b90 l       .text		 00000012 flt_off.OFF
+01c1ad5f l       .bss		 00000029 fm1__an_acc
+01c1ad36 l       .bss		 00000029 fm1__an_cb
+01c1a75e l       .bss		 00000002 fm1__an_f
+01c1a736 l       .bss		 00000001 fm1__an_glow
+0200cd8c l     F .text		 00000250 fm1__anim_frame
+01c1a762 l       .bss		 00000002 fm1__br_acc
+01c1a734 l       .bss		 00000001 fm1__br_d
+01c1a731 l       .bss		 00000001 fm1__br_lit
+01c1a75c l       .bss		 00000002 fm1__br_lv
+01c1a733 l       .bss		 00000001 fm1__br_on
+01c1a760 l       .bss		 00000002 fm1__br_ph
+01c1a735 l       .bss		 00000001 fm1__br_sel
+01c08e11 l       .data		 00000001 fm1__dim_k
+01c08e1a l       .data		 00000002 fm1__dim_t
+01c08e12 l       .data		 00000001 fm1__mid_n
+01c1a732 l       .bss		 00000001 fm1__mid_ph
+020008a2 l     F .text		 00000048 fm1__p33_op
+02000874 l     F .text		 0000002e fm1__p33_xfer
+0200cd5a l     F .text		 00000032 fm1__sr_bits
+01c1a730 l       .bss		 00000001 fm1__tick_col
+02012254 l     F .text		 00000060 fm1_adc_read
+01c1a1e8 l       .bss		 00000001 fm1_boot.0
+01c1a1ec l       .bss		 00000004 fm1_boot.1
+01c1a1f0 l       .bss		 00000001 fm1_boot.2
+01c1a72d l       .bss		 00000001 fm1_c1_gave_up
+01c0a140 l       .bss		 00000080 fm1_c1_mb
+01c1a7b0 l       .bss		 00000004 fm1_c1_on
+01c1a82c l       .bss		 00000004 fm1_c1_wait_max
+02011348 l     F .text		 0000002c fm1_clk320_loop_ticks
+01c00bb8 l     F .ram_text		 0000012a fm1_clk320_switch
+02014e5e l     F .text		 00000060 fm1_clk_mhz
+0200970c l     F .text		 00000074 fm1_cpu1_hold
+020122b4 l     F .text		 0000001a fm1_delay_ms
+02013bf2 l     F .text		 0000001c fm1_enc_take
+0200e7de l     F .text		 00000098 fm1_enter_uboot
+02084360 l       .text		 00000010 fm1_enter_uboot.k
+01c0a100 l       .bss		 00000004 fm1_fault_c.in_fault
+0200e876 l     F .text		 000000ca fm1_guard_enable
+01c1ca70 l       .bss		 00000124 fm1_in
+01c1be40 l       .bss		 000000ec fm1_in_stat
+02013bac l     F .text		 00000016 fm1_input_edges
+02087948 l       .text		 00000008 fm1_input_init.LEDP
+01c13574 l       .bss		 00000004 fm1_lcd_timeouts
+020004dc l     F .text		 00000030 fm1_lcd_wait
+01c1aa2a l       .bss		 0000000b fm1_led
+01c1aa35 l       .bss		 0000000b fm1_led_breath
+01c1aa40 l       .bss		 0000000b fm1_led_dim
+02012384 l     F .text		 00000028 fm1_led_dim_level
+01c1aa4b l       .bss		 0000000b fm1_led_mid
+02043a72 l     F .text		 00002f04 fm1_main
+01c1a894 l       .bss		 00000004 fm1_main.t0
+01c1a790 l       .bss		 00000004 fm1_ms
+0200e79a l     F .text		 00000044 fm1_p33_read
+01c139b0 l       .bss		 00000004 fm1_p33_timeouts
+020008ea l     F .text		 00000070 fm1_reboot
+01c1a78c l       .bss		 00000004 fm1_timer5_irq.acc
+01c1a788 l       .bss		 00000004 fm1_timer5_irq.last
+01c1a784 l       .bss		 00000004 fm1_timer5_irq.owed
+01c1a780 l       .bss		 00000004 fm1_timer5_irq.sub
+0200097e l     F .text		 0000000a fm1_wdt_feed
+020482f0 l     F .text		 00000002 fm4_gone_note_on
+020482f2 l     F .text		 00000002 fm4_gone_render
+02012022 l     F .text		 00000058 fm6_adopt
+0203e848 l     F .text		 00000040 fm6_alg_of
+02052e7a l     F .text		 00000044 fm6_block
+0203e8b6 l     F .text		 00000024 fm6_car_ops
+0203e888 l     F .text		 0000002e fm6_carriers
+02052ebe l     F .text		 000000e6 fm6_done
+01c0f280 l       .bss		 000004b0 fm6_eff
+0205226c l     F .text		 000000aa fm6_env_advance
+0203e8da l     F .text		 00000022 fm6_fb_op
+020115f8 l     F .text		 00000032 fm6_init
+01c1b7d0 l       .bss		 00000090 fm6_lfo
+01c1ab50 l       .bss		 00000018 fm6_lfo_d
+02052e46 l     F .text		 00000034 fm6_lfo_delay
+02052024 l     F .text		 00000074 fm6_lfo_reset
+02052db8 l     F .text		 0000008e fm6_lfo_sample
+01c1ab38 l       .bss		 00000018 fm6_lfo_v
+02011f9a l     F .text		 0000003e fm6_load_slot
+02051f56 l     F .text		 000000ce fm6_macro
+02011fd8 l     F .text		 0000004a fm6_match
+0205536c l     F .text		 00000030 fm6_max
+0207cbdf l       .text		 00000015 fm6_max.OPMAX
+0207cbf4 l       .text		 00000013 fm6_max.VMAX
+02051eea l     F .text		 0000006c fm6_note_of
+0205242c l     F .text		 0000019e fm6_note_on
+02052316 l     F .text		 0000009a fm6_op_env_init
+020525ca l     F .text		 0000008c fm6_op_fb
+02052656 l     F .text		 0000013e fm6_op_run
+01c19790 l       .bss		 00000300 fm6_own
+01c1a726 l       .bss		 00000001 fm6_own_ok
+0201629e l     F .text		 0000011a fm6_pack
+01c0f730 l       .bss		 000003a8 fm6_patch
+020523b0 l     F .text		 00000054 fm6_penv_advance
+02052404 l     F .text		 00000028 fm6_penv_init
+01c1a9e4 l       .bss		 00000006 fm6_pgen
+02052794 l     F .text		 00000624 fm6_render
+0203e8fc l     F .text		 00000052 fm6_routes
+02011422 l     F .text		 00000070 fm6_sanitize
+0205220e l     F .text		 0000005e fm6_scale_level
+0201159a l     F .text		 0000005e fm6_set_patch
+01c1aa02 l       .bss		 00000006 fm6_slot
+02052098 l     F .text		 00000176 fm6_sync
+02072058 l       .text		 00000006 fm6_sync.SPREAD
+02011492 l     F .text		 00000108 fm6_unpack
+020559c8 l     F .text		 00000138 fm_algo
+02057490 l     F .text		 00000006 fm_all_cards
+02057486 l     F .text		 0000000a fm_all_knob
+020574a0 l     F .text		 00000008 fm_all_title
+02055346 l     F .text		 00000026 fm_at
+02056ba6 l     F .text		 0000005c fm_at_x
+02056182 l     F .text		 0000001e fm_bp
+02056c94 l     F .text		 0000008c fm_caption
+02055606 l     F .text		 000002e6 fm_cards_of
+0203e94e l     F .text		 00000018 fm_dot
+02057380 l     F .text		 000000a0 fm_draw
+01c747a8 l       .pool		 00000438 fm_draw.s
+02056eae l     F .text		 00000038 fm_feeders
+02056c02 l     F .text		 00000092 fm_handles
+02056ee6 l     F .text		 000000e4 fm_heat
+02082766 l       .text		 0000000b fm_heat.SQ
+0205555a l     F .text		 00000040 fm_hundredths
+02055f48 l     F .text		 0000023a fm_keys
+02055dc8 l     F .text		 0000002c fm_keys_y
+020553b0 l     F .text		 000001a0 fm_knob
+020567b0 l     F .text		 000003f6 fm_lfo
+020555e4 l     F .text		 00000022 fm_lfo_hz10
+02056fca l     F .text		 00000076 fm_line
+02057040 l     F .text		 00000308 fm_lines
+020561a0 l     F .text		 0000004c fm_log2
+02056624 l     F .text		 00000024 fm_lvy
+020558ec l     F .text		 00000006 fm_op_cards
+02055550 l     F .text		 0000000a fm_op_knob
+0205742a l     F .text		 00000032 fm_op_title
+01c19dd9 l       .bss		 0000000c fm_op_title.t
+0205745c l     F .text		 0000002a fm_op_turn
+02055b00 l     F .text		 000000be fm_ops
+02056d20 l     F .text		 0000018e fm_pitch
+02056676 l     F .text		 00000040 fm_pitch_y
+01c1a8ec l       .bss		 00000004 fm_prng
+02055950 l     F .text		 00000078 fm_ramp
+02056658 l     F .text		 0000001e fm_range
+02082754 l       .text		 00000012 fm_range.R
+020566b6 l     F .text		 00000084 fm_range_labels
+0205539c l     F .text		 00000014 fm_ratio_pos
+0205625c l     F .text		 000003ae fm_run
+02057348 l     F .text		 00000038 fm_scroll
+0205673a l     F .text		 00000076 fm_secs
+02055df4 l     F .text		 00000108 fm_seg
+02055efc l     F .text		 0000004c fm_seg2
+020558f2 l     F .text		 0000005e fm_sig
+020555d8 l     F .text		 0000000c fm_signed
+0205660a l     F .text		 0000001a fm_sim
+02055bbe l     F .text		 0000020a fm_tabs
+0205559a l     F .text		 0000003e fm_tenths
+02055320 l     F .text		 00000026 fm_tr
+01c747a4 l       .pool		 00000003 fm_ui
+02056648 l     F .text		 00000010 fm_under
+020561ec l     F .text		 00000070 fm_warp
+02014dec l     F .text		 0000006c fmt_fix
+02014e58 l     F .text		 00000006 fmt_int
+0202066e l     F .text		 00000022 fmt_kn
+01c1a754 l       .bss		 00000001 fmt_named
+02049b14 l     F .text		 00000058 fmt_ratio
+0201188a l     F .text		 00000016 fnv
+020033e0 l     F .text		 00000056 fol_add
+02003a6c l     F .text		 0000003e fol_drop
+02003436 l     F .text		 00000058 fol_key
+01c2cf04 l       .pool		 00000300 fol_map
+02001e8c l     F .text		 00000048 fol_off
+020043e2 l     F .text		 00000184 fol_on
+02006f9e l     F .text		 0000005c fol_order
+0200337e l     F .text		 00000062 fol_root
+020042e4 l     F .text		 00000098 fol_shift
+01c2ced4 l       .pool		 00000030 fol_src
+02006776 l     F .text		 0000003a fol_step
+02000704 l     F .text		 0000001a fold
+01c1a990 l       .bss		 00000004 follow.0
+01c1a554 l       .bss		 00000002 follow.1
+01c1a558 l       .bss		 00000002 follow.2
+01c1a994 l       .bss		 00000004 follow.3
+0201c4b6 l     F .text		 0000004e follow_hold
+0201c504 l     F .text		 000000da follow_poll
+0203fec0 l     F .text		 00000218 foot_hint
+020401f2 l     F .text		 00000034 foot_hint_r
+02049a2a l     F .text		 00000062 formant_note_on
+01c08000 l       .data		 00000018 formant_nz
+02049c3a l     F .text		 00000796 formant_render
+01c1ae18 l       .bss		 00000034 fr
+0207fb3c l       .text		 00000040 fr_atan2.AT
+0201ccd8 l     F .text		 000000b4 fr_close
+0201cdce l     F .text		 00000112 fr_fit
+01c73f78 l       .pool		 00000340 fr_from
+0201cd8c l     F .text		 0000001a fr_inc
+02026298 l     F .text		 000000a2 fr_knob
+01c73e78 l       .pool		 00000100 fr_on
+0201cee0 l     F .text		 00000056 fr_pos
+0201d5c8 l     F .text		 0000035e fr_render
+0201cf36 l     F .text		 00000010 fr_step
+01c2d228 l       .pool		 00000800 free_ev
+0201c8ee l     F .text		 00000084 free_hint
+01c1a718 l       .bss		 00000001 free_hold
+01c1a7d8 l       .bss		 00000004 free_n
+01c1a7dc l       .bss		 00000004 free_n0
+02049b6c l     F .text		 000000ce fres_coef
+01c1a91c l       .bss		 00000004 fx.0
+01c1a920 l       .bss		 00000004 fx.1
+01c1a930 l       .bss		 00000004 fx.10
+01c1a934 l       .bss		 00000004 fx.11
+01c1a938 l       .bss		 00000004 fx.12
+01c1a93c l       .bss		 00000004 fx.13
+01c1a940 l       .bss		 00000004 fx.14
+01c1ab00 l       .bss		 00000010 fx.15
+01c1a208 l       .bss		 00000001 fx.16
+01c1a20c l       .bss		 00000001 fx.17
+01c1a944 l       .bss		 00000004 fx.18
+01c1a948 l       .bss		 00000004 fx.19
+01c1a924 l       .bss		 00000004 fx.2
+01c1a94c l       .bss		 00000004 fx.20
+01c1a950 l       .bss		 00000004 fx.21
+01c1a954 l       .bss		 00000004 fx.22
+01c1a928 l       .bss		 00000004 fx.3
+01c1a1f4 l       .bss		 00000008 fx.4
+01c1a1fc l       .bss		 00000004 fx.5
+01c1aaf0 l       .bss		 00000010 fx.6
+01c1a200 l       .bss		 00000001 fx.7
+01c1a204 l       .bss		 00000002 fx.8
+01c1a92c l       .bss		 00000004 fx.9
+01c1a72e l       .bss		 00000001 fx_lowcut
+0201c6d8 l     F .text		 00000036 fx_map
+01c3c358 l       .pool		 00000080 fx_sd
+01c1a711 l       .bss		 00000001 fx_usb_fixed
+02014a9a l     F .text		 00000040 fxk_fx
+01c1aa22 l       .bss		 00000008 fxk_set
+02027fe0 l     F .text		 00000124 g_bass_pitch
+02027f36 l     F .text		 0000001a g_chord_at
+02057ade l     F .text		 0000009a g_chord_name
+020284ba l     F .text		 000001ee g_drums
+0202835e l     F .text		 000000e0 g_eno_loop
+02027fb6 l     F .text		 0000002a g_in
+020819e8 l       .text		 00000006 g_mix.LEVEL
+020819ee l       .text		 00000006 g_mix.PAN
+02027a34 l     F .text		 00000018 g_n
+020279b4 l     F .text		 0000001c g_next
+02028174 l     F .text		 00000046 g_nudge
+02027f62 l     F .text		 00000054 g_pcs
+02027a4c l     F .text		 00000016 g_pct
+02028476 l     F .text		 00000044 g_snap
+020279d0 l     F .text		 00000064 g_stream
+02027990 l     F .text		 00000024 g_sty
+0202843e l     F .text		 00000038 g_tone
+01c1a751 l       .bss		 00000001 g_vary
+02028104 l     F .text		 0000002e g_vel
+020281ba l     F .text		 000001a4 g_voice
+02027af2 l     F .text		 00000136 gc_chord_code
+0201cb9e l     F .text		 0000001c gc_editable
+02027a9c l     F .text		 0000002e gc_mine
+02027aca l     F .text		 00000028 gc_n
+0201cb86 l     F .text		 00000018 gc_part
+0205771c l     F .text		 00000018 gc_song_mine
+020574a8 l     F .text		 00000058 gc_type
+01c1aeb4 l       .bss		 00000036 gch
+01c08e3c l       .data		 00000038 gen
+020819f4 l       .text		 00000006 gen_amt.K
+01c1aab0 l       .bss		 00000010 gen_arr
+0202a6b0 l     F .text		 00000120 gen_back
+02057734 l     F .text		 00000348 gen_cards
+02082790 l       .text		 00000013 gen_cards.ICON
+0201cbba l     F .text		 00000088 gen_chord_key
+0207fb30 l       .text		 0000000c gen_chord_key.WD
+02082870 l       .text		 0000000c gen_code.K
+0208287c l       .text		 00000030 gen_code.T
+02027826 l     F .text		 00000082 gen_copies_top
+02027946 l     F .text		 00000022 gen_flush
+02029852 l     F .text		 00000028 gen_is_song
+02057500 l     F .text		 0000021c gen_knob
+0202978a l     F .text		 000000c8 gen_lists_make
+02029764 l     F .text		 00000026 gen_lists_sig
+0202aaae l     F .text		 0000001e gen_lists_signed
+01c1a8e8 l       .bss		 00000004 gen_lsig
+01c1ce80 l       .bss		 000001d9 gen_lwas
+01c1a74f l       .bss		 00000001 gen_narr
+02029744 l     F .text		 00000020 gen_on_mask
+0202a922 l     F .text		 00000058 gen_part_of
+0202a7d0 l     F .text		 00000088 gen_part_steps
+020584f6 l     F .text		 00000032 gen_pick
+020278a8 l     F .text		 0000005c gen_pid_back
+02027c28 l     F .text		 0000030e gen_plan
+02027968 l     F .text		 00000028 gen_pool_free
+01c1a9d9 l       .bss		 00000005 gen_pvar
+02027808 l     F .text		 0000001e gen_role_on
+020286a8 l     F .text		 00000b6c gen_role_steps
+01c1aa0e l       .bss		 00000006 gen_rr
+01c1aa14 l       .bss		 00000006 gen_rr_pi
+0202a858 l     F .text		 000000ca gen_rr_poll
+01c1acf0 l       .bss		 0000001e gen_sid
+02057a7c l     F .text		 00000062 gen_sig
+01c1a750 l       .bss		 00000001 gen_smask
+01c1a76a l       .bss		 00000002 gen_sseed
+01c1ab10 l       .bss		 00000013 gen_sv
+020584ee l     F .text		 00000008 gen_title
+02027904 l     F .text		 00000042 gen_unkeep
+01c19a92 l       .bss		 00000340 gen_w
+02029214 l     F .text		 00000530 gen_write
+02002352 l     F .text		 00000034 glide_set
+02041986 l     F .text		 00000024 glo_mutes
+0202d8d8 l     F .text		 00000044 glo_sounding
+0201feec l     F .text		 00000026 glo_white
+0200078a l     F .text		 0000004a glyph
+02000750 l     F .text		 0000003a glyph_at
+02025488 l     F .text		 0000002e go_home
+0204b7b8 l     F .text		 000000d4 gr_fill
+0204b5a4 l     F .text		 000000a6 gr_find
+0204b6e4 l     F .text		 000000d4 gr_seek
+0204c178 l     F .text		 000003ca grain_block
+0204b64a l     F .text		 0000009a grain_note_on
+0204b88c l     F .text		 000008ec grain_render
+020384b6 l     F .text		 00000234 graph_adsr
+0203c5c0 l     F .text		 000007aa graph_alembic
+0208356c l       .text		 00000010 graph_alembic_teen.ST
+0203d134 l     F .text		 000003c8 graph_arp
+0208358c l       .text		 00000003 graph_arp.EX
+0203a828 l     F .text		 0000012e graph_bank
+0203a5a4 l     F .text		 00000162 graph_browse
+02039af8 l     F .text		 000003ec graph_chord
+0203c26c l     F .text		 0000023a graph_chorus
+0203bf2a l     F .text		 000001b8 graph_delay
+0203b7de l     F .text		 00000162 graph_drive
+0203a04e l     F .text		 000001ac graph_duck
+02054e9c l     F .text		 0000041c graph_dx
+0203af3a l     F .text		 000002a8 graph_events
+0203efde l     F .text		 0000009c graph_flt
+0203e966 l     F .text		 0000047a graph_fm6
+02057496 l     F .text		 0000000a graph_fm_all
+02057420 l     F .text		 0000000a graph_fm_op
+02039ee4 l     F .text		 00000064 graph_fx
+02057b78 l     F .text		 00000976 graph_gen
+0203c4a6 l     F .text		 0000011a graph_global
+02038b5a l     F .text		 0000028a graph_grid
+0202fae6 l     F .text		 00000012 graph_h
+01c08e28 l       .data		 00000004 graph_ht
+0203bc7e l     F .text		 000002ac graph_insert
+0203b390 l     F .text		 0000006c graph_lanes
+0203882c l     F .text		 000000c2 graph_lfo
+0203b3fc l     F .text		 00000106 graph_lmix
+0203a1fa l     F .text		 000002f8 graph_mod
+02083524 l       .text		 00000010 graph_mod.COL
+02087914 l       .text		 00000004 graph_mod.CX
+02036a32 l     F .text		 0000012a graph_names
+0203ee4a l     F .text		 00000194 graph_osc
+01c1ae80 l       .bss		 00000034 graph_pname
+01c1a908 l       .bss		 00000004 graph_pname_sig
+02035a36 l     F .text		 00000096 graph_project_used
+01c1a914 l       .bss		 00000004 graph_project_used.frame
+01c1a759 l       .bss		 00000001 graph_project_used.mask
+01c1a910 l       .bss		 00000004 graph_project_used.ms
+01c1a918 l       .bss		 00000004 graph_project_used.ready
+0203c0e2 l     F .text		 0000018a graph_reverb
+02083554 l       .text		 00000005 graph_reverb.ER
+0203914c l     F .text		 00000786 graph_roll
+0203e77a l     F .text		 000000ce graph_sample
+020398d2 l     F .text		 00000070 graph_scale
+02037000 l     F .text		 000014b6 graph_scope
+01c19de6 l       .bss		 00000400 graph_scope.snap
+02035b6c l     F .text		 00000a60 graph_signature
+02039f5e l     F .text		 000000f0 graph_slicer
+0203a706 l     F .text		 0000008c graph_slots
+0203a956 l     F .text		 000005e4 graph_song
+020368aa l     F .text		 00000188 graph_steps
+0203d83c l     F .text		 00000e12 graph_summon
+02038de4 l     F .text		 000002a6 graph_tiles
+020388ee l     F .text		 000001ac graph_title
+02038a9a l     F .text		 00000032 graph_tracks
+0203a792 l     F .text		 00000096 graph_user
+0203cd6a l     F .text		 00000120 graph_voice
+0208357c l       .text		 00000010 graph_voice.SAYS
+0203ce8a l     F .text		 000002aa graph_voice2
+0203e692 l     F .text		 000000e8 graph_wheel
+0208359c l       .text		 00000024 graph_wheel.names
+0202fad4 l     F .text		 00000012 graph_y
+020210b8 l     F .text		 0000008c grid_acc
+02020464 l     F .text		 00000082 grid_hit
+0202b4aa l     F .text		 00000190 grid_keys
+020176a0 l     F .text		 0000003e grid_on
+020203a2 l     F .text		 000000c2 grid_own
+0200af54 l     F .text		 00000058 hall_gains
+01c139b4 l       .bss		 0000060c hc_tab
+02040cca l     F .text		 00000038 head_hint_w
+0202df74 l     F .text		 00000038 head_title
+01c1b2c0 l       .bss		 00000060 held_dt
+01c1b260 l       .bss		 00000060 held_key
+02001390 l     F .text		 00000026 hexs
+01c2cc10 l       .pool		 000002c4 hl
+02040226 l     F .text		 00000022 home_lanes
+0202be34 l     F .text		 00000038 home_param
+0201380e l     F .text		 00000046 icon_cell
+0202fc34 l     F .text		 00000032 icon_for_label
+02013854 l     F .text		 000000d8 icon_ink
+01c1a723 l       .bss		 00000001 in_key
+02010506 l     F .text		 0000008a in_proj
+01c1a71c l       .bss		 00000001 in_solo
+0200116a l     F .text		 0000001c ink_in
+0202fc66 l     F .text		 0000001a ink_w
+02003504 l     F .text		 00000128 input_off
+020052d4 l     F .text		 000001a4 input_on
+01c3b5c0 l       .pool		 00000d98 ins
+02009f2c l     F .text		 00000286 ins_drive
+02009a68 l     F .text		 000001b6 ins_filter
+0203b940 l     F .text		 00000018 ins_mixq
+01c0187a l     F .ram_text		 00000040 ins_rest
+0203b502 l     F .text		 000000ca ins_shape
+02009c1e l     F .text		 0000030e ins_swept
+020106fc l     F .text		 00000894 intro_frame
+02087940 l       .text		 00000008 intro_frame.C
+0207ca58 l       .text		 0000001a intro_frame.TITLE
+020047a8 l     F .text		 0000003e kb_again
+01c1a722 l       .bss		 00000001 kb_asleep
+01c1a720 l       .bss		 00000001 kb_boot_hold
+01c1ac5b l       .bss		 0000001b kb_chn
+01c1b380 l       .bss		 0000006c kb_chord
+02004d0e l     F .text		 0000004a kb_chord_of
+0200437c l     F .text		 00000066 kb_degree
+02004864 l     F .text		 00000026 kb_engine
+020049d4 l     F .text		 00000064 kb_fresh
+02005478 l     F .text		 0000004e kb_lat
+01c1a810 l       .bss		 00000004 kb_layer
+01c1a721 l       .bss		 00000001 kb_lock
+0200497c l     F .text		 00000026 kb_map
+01c1a808 l       .bss		 00000004 kb_mask
+01c1acac l       .bss		 0000001b kb_note
+01c1ac91 l       .bss		 0000001b kb_ped
+02004732 l     F .text		 00000076 kb_ped_end
+01c1a71f l       .bss		 00000001 kb_ped_sol
+01c1a71e l       .bss		 00000001 kb_ped_trk
+020048d4 l     F .text		 000000a8 kb_pitch
+020746f8 l       .text		 0000000c kb_pitch.PLACE
+01c1a804 l       .bss		 00000004 kb_prev
+01c1ac40 l       .bss		 0000001b kb_sol
+02001df6 l     F .text		 00000058 kb_sol_held
+020046d4 l     F .text		 0000005e kb_sol_up
+020049a2 l     F .text		 00000032 kb_solo
+01c1ac76 l       .bss		 0000001b kb_trk
+0202db42 l     F .text		 00000024 kc_cat
+0202db10 l     F .text		 00000014 kc_name
+0202dffe l     F .text		 00000076 kc_tag
+0202db24 l     F .text		 0000001e kc_w
+0202e074 l     F .text		 00000092 kc_words
+0201624e l     F .text		 0000002c keep_all
+0202d6ae l     F .text		 00000058 keep_ready
+0200071e l     F .text		 00000032 kern
+0201fed0 l     F .text		 0000001c key_black
+02004676 l     F .text		 0000005e key_off
+020047e6 l     F .text		 00000048 key_place
+020054c6 l     F .text		 000002c8 keyboard_block
+0202546e l     F .text		 0000001a keys_mode
+0202dba0 l     F .text		 00000024 kh_ink
+0202db66 l     F .text		 0000003a kh_plain
+0202ed78 l     F .text		 00000020 kh_w
+02041bc8 l     F .text		 000000f2 l6_mute
+02041cba l     F .text		 0000009a l6_wide
+0203b29a l     F .text		 00000076 lane_fader_of
+02033924 l     F .text		 0000003a lane_follow
+0203b310 l     F .text		 00000080 lane_tile
+0202fc80 l     F .text		 0000002e large_face_has
+0201df9c l     F .text		 0000006e large_kind
+01c2da78 l       .pool		 00000001 last_hits
+01c08e10 l       .data		 00000001 last_note
+02006682 l     F .text		 00000076 launch_ahead
+0201833e l     F .text		 0000001e launch_at
+0200665a l     F .text		 00000028 launch_carry
+020123ac l     F .text		 00000028 launch_drop
+020074b0 l     F .text		 00000062 launch_here
+01c2f4bc l       .pool		 00000100 launch_in
+02018294 l     F .text		 00000016 launch_mode
+01c1a7f8 l       .bss		 00000004 launch_pos
+01c2da7c l       .pool		 00001a40 launch_q
+0200788c l     F .text		 000000de launch_step
+01c1a7f4 l       .bss		 00000004 launch_steps
+02007672 l     F .text		 0000021a launch_swap
+0201c686 l     F .text		 0000002e layer_allowed
+0201f322 l     F .text		 00000078 layer_arm
+0201ef8e l     F .text		 00000018 layer_bits_all
+0202d66c l     F .text		 0000001c layer_btn
+02082a74 l       .text		 00000010 layer_cards.TL
+0201fdfc l     F .text		 00000092 layer_gesture
+0202dfca l     F .text		 00000034 layer_head
+0201c6b4 l     F .text		 00000024 layer_held
+0201fcde l     F .text		 00000026 layer_home_lock
+020211f6 l     F .text		 00001108 layer_keys
+02024f20 l     F .text		 0000033e layer_knob
+0201fdaa l     F .text		 00000052 layer_knobs_quiet
+0201f0a8 l     F .text		 00000076 layer_let_go
+0201f2a2 l     F .text		 00000080 layer_lock_input
+0202dd62 l     F .text		 00000022 layer_locked
+0201fc66 l     F .text		 00000078 layer_masks
+0201f97c l     F .text		 000002ea layer_oct
+0201f39a l     F .text		 00000056 layer_oct_open
+0201ca52 l     F .text		 0000002c layer_open
+0201f11e l     F .text		 000000fc layer_opened
+0201f46a l     F .text		 00000036 layer_set_open
+0201f21a l     F .text		 00000072 layer_shift_lock
+0201fe8e l     F .text		 00000042 layer_show
+020270c4 l     F .text		 0000009a layer_tap
+0202715e l     F .text		 00000016 layer_unlock
+02041a0e l     F .text		 00000026 lc_box
+020419d2 l     F .text		 0000003c lc_fill
+01c1a840 l       .bss		 00000004 lc_l1
+01c1a844 l       .bss		 00000004 lc_l2
+01c1a848 l       .bss		 00000004 lc_r1
+01c1a84c l       .bss		 00000004 lc_r2
+01c1a900 l       .bss		 00000004 lc_w
+01c13570 l       .bss		 00000004 lcd_busy
+0200052c l     F .text		 0000002c lcd_cmd
+020005d0 l     F .text		 00000034 lcd_data
+0200065c l     F .text		 000000a8 lcd_fill
+01c13578 l       .bss		 000001e0 lcd_fillbuf
+0202dad0 l     F .text		 00000040 lcd_power
+01c1afec l       .bss		 00000040 lcd_small
+020004c0 l     F .text		 0000001c lcd_spin
+0200050c l     F .text		 00000020 lcd_sync
+02000604 l     F .text		 00000058 lcd_window
+01c1aaa0 l       .bss		 00000010 lce
+02041a34 l     F .text		 00000194 lcell
+01c1ad88 l       .bss		 00000029 led_pos
+0202d688 l     F .text		 00000026 led_put
+02023904 l     F .text		 000000d4 len_get
+020239d8 l     F .text		 000001c6 len_set
+0203876e l     F .text		 0000001c lfo_inc
+02009780 l     F .text		 00000062 lfo_rand
+02003d72 l     F .text		 00000030 lfo_restart
+020386fe l     F .text		 00000070 lfo_sync_inc
+0203878a l     F .text		 000000a2 lfo_view_at
+020386ea l     F .text		 00000014 lfo_view_t0
+020097e2 l     F .text		 00000078 lfo_wave
+01c08df8 l       .data		 00000004 lim_env
+0203a518 l     F .text		 00000020 list_bar
+020246e4 l     F .text		 00000018 list_mode
+0203a538 l     F .text		 0000006c list_row
+0201835c l     F .text		 00000026 list_sig
+01c72308 l       .pool		 000001d9 lists
+02012234 l     F .text		 00000020 lists_clear
+0201e996 l     F .text		 0000005e lists_undo
+02026ab8 l     F .text		 00000048 live_rec_sel
+02011bc6 l     F .text		 00000198 load_begin
+02011d9e l     F .text		 00000118 load_end
+02019a50 l     F .text		 00000082 load_extend
+01c1a745 l       .bss		 00000001 load_from
+01c1a744 l       .bss		 00000001 load_mo
+020119b8 l     F .text		 00000040 load_motion_hold
+02026b00 l     F .text		 000000d0 lock_held
+02022a6e l     F .text		 000000e0 lock_id
+0202ae2c l     F .text		 000000b6 lock_keys
+020229d2 l     F .text		 00000066 lock_page_ok
+0202bd6a l     F .text		 000000ca lock_turn
+02049386 l     F .text		 000000b4 lofi_amp
+0204943a l     F .text		 0000002e lofi_desc
+02048fa8 l     F .text		 0000003a lofi_note_on
+02048fe2 l     F .text		 000003a4 lofi_render
+0205a778 l       .text		 0000000c lofi_render.ARPS
+020878cc l       .text		 00000004 lofi_render.STEP_DUTY
+0202faba l     F .text		 0000001a lower_words
+02001680 l     F .text		 00000038 lowest_held
+01c12ea8 l       .bss		 00000300 lpan_buf
+01c01bd4 l     F .ram_text		 000001f4 lpan_mix
+01c017ca l     F .ram_text		 000000a0 lpan_render
+0201c638 l     F .text		 0000001e ly_bit
+0201c656 l     F .text		 00000030 ly_down
+020226ec l     F .text		 0000001a ly_page
+01c1b0f8 l       .bss		 0000004c lys
+01c08e24 l       .data		 00000004 master_knob
+0200b90a l     F .text		 00000298 master_out
+020141d8 l     F .text		 00000040 master_poll
+01c1ba30 l       .bss		 000000c0 mchord
+020032a6 l     F .text		 0000002a mchord_of
+02025ac6 l     F .text		 00000018 menu_act
+02025538 l     F .text		 0000002a menu_close
+0202570c l     F .text		 00000332 menu_document
+02013e34 l     F .text		 0000001c menu_flag
+02014ada l     F .text		 000001f0 menu_get
+02025bb8 l     F .text		 000001e0 menu_input
+0202ec04 l     F .text		 00000014 menu_large
+02014d42 l     F .text		 0000008a menu_n
+02013f0e l     F .text		 000002ca menu_put
+02025a3e l     F .text		 00000016 menu_scroll_max
+02025ade l     F .text		 00000062 menu_step
+02025a66 l     F .text		 00000022 menu_tab
+0202ec30 l     F .text		 00000148 menu_tabs
+0202563c l     F .text		 000000d0 menu_text
+02014ebe l     F .text		 00000412 menu_vname
+01c73d7b l       .pool		 00000014 menu_vname.b
+01c73d6f l       .pool		 0000000c menu_vname.c
+01c73d8f l       .pool		 00000014 menu_vname.m
+02035048 l     F .text		 00000040 meter_px
+01c1a7c4 l       .bss		 00000004 mi_r
+01c1a7c0 l       .bss		 00000004 mi_w
+01c74be0 l       .pool		 00000018 midi_at
+01c1a7bc l       .bss		 00000004 midi_beat_samples
+01c1ab98 l       .bss		 00000018 midi_bend_q8
+01c1ab80 l       .bss		 00000018 midi_bend_target
+020061d8 l     F .text		 0000007e midi_cc_map
+020060d6 l     F .text		 00000060 midi_cc_set
+01c1c11c l       .bss		 00000100 midi_ch
+02003280 l     F .text		 00000026 midi_channel
+01c1af6c l       .bss		 00000040 midi_clock
+0200592c l     F .text		 000000ea midi_clock_pulse
+02005a16 l     F .text		 0000002a midi_clock_spp
+0200578e l     F .text		 0000019e midi_clock_tempo
+020031a0 l     F .text		 00000082 midi_clock_transport
+0200d4b6 l     F .text		 00000058 midi_enqueue
+02006256 l     F .text		 00000372 midi_event
+020036e6 l     F .text		 00000056 midi_expression
+02005c76 l     F .text		 00000032 midi_expression_channel
+020039ce l     F .text		 0000009e midi_forget_track
+01c1a717 l       .bss		 00000001 midi_hint
+01c1c320 l       .bss		 00000100 midi_in_ms
+01c1a716 l       .bss		 00000001 midi_in_overflow
+01c1c220 l       .bss		 00000100 midi_in_q
+01c1afac l       .bss		 00000040 midi_in_source
+02006136 l     F .text		 000000a2 midi_learned
+020032d0 l     F .text		 00000076 midi_local_held
+020315f0 l     F .text		 00000030 midi_mark
+02005ad4 l     F .text		 0000017c midi_note_event
+0200348e l     F .text		 00000076 midi_note_held
+01c117e0 l       .bss		 00000200 midi_out_q
+01c1aa56 l       .bss		 0000000c midi_owners
+02005cdc l     F .text		 0000002c midi_pedal_up
+0200362c l     F .text		 000000ba midi_release
+0200373c l     F .text		 000000a8 midi_route_drop
+01c10dd8 l       .bss		 00000800 midi_sel_on
+02003252 l     F .text		 0000002e midi_slot
+02005c50 l     F .text		 00000026 midi_targets
+02005a82 l     F .text		 00000052 midi_track
+01c022ca l     F .ram_text		 00000d9c mix_part
+020096ba l     F .text		 00000052 mix_split
+01c01dc8 l     F .ram_text		 00000502 mix_spread
+01c74c58 l       .pool		 00000001 mk.0
+01c74c5c l       .pool		 00000001 mk.1
+01c74c5e l       .pool		 00000006 mk.2
+01c74c64 l       .pool		 00000018 mk.3
+0202d858 l     F .text		 0000002a ml_cc_of
+02025b5a l     F .text		 0000005e ml_clear_all
+02014dcc l     F .text		 00000020 ml_count
+0201c860 l     F .text		 00000040 ml_drop
+0201c830 l     F .text		 00000030 ml_is
+020224c8 l     F .text		 000000ea ml_knob
+0204011e l     F .text		 00000072 ml_line
+0201c8a0 l     F .text		 0000004e ml_name
+02025b40 l     F .text		 0000001a ml_off
+01c1d634 l       .bss		 00000060 mn.0
+01c1d694 l       .bss		 00000060 mn.1
+01c1d70c l       .bss		 00000004 mn.2.0
+01c1d710 l       .bss		 00000004 mn.2.1
+01c1d6f4 l       .bss		 00000004 mn.3
+01c1d6f8 l       .bss		 00000006 mn.4
+01c1d6fe l       .bss		 00000004 mn.5
+01c1d704 l       .bss		 00000004 mn.6
+01c1d708 l       .bss		 00000004 mn.7
+01c1d420 l       .bss		 00000200 mo.0
+01c1d620 l       .bss		 00000004 mo.1
+01c1d624 l       .bss		 00000004 mo.2
+01c1d628 l       .bss		 00000004 mo.3
+01c1d62c l       .bss		 00000004 mo.4
+01c1d630 l       .bss		 00000001 mo.5
+020037e4 l     F .text		 000001ea mo_block_begin
+02008bd0 l     F .text		 0000001c mo_block_end
+02002aa6 l     F .text		 000000d0 mo_ccs
+02002bea l     F .text		 0000007e mo_ccs_out
+02001fa4 l     F .text		 0000004a mo_flush
+02007330 l     F .text		 0000006e mo_motion
+02002c68 l     F .text		 0000008e mo_motion_end
+02001fee l     F .text		 00000152 mo_note
+02001f34 l     F .text		 00000070 mo_off
+02001ed4 l     F .text		 00000060 mo_put
+01c1a7e4 l       .bss		 00000004 mo_r
+01c1a7e0 l       .bss		 00000004 mo_w
+02003c6a l     F .text		 00000108 mod_at_note
+01c00fae l     F .ram_text		 00000412 mod_begin
+02033a1a l     F .text		 0000003c mod_dead
+02003c02 l     F .text		 00000068 mod_depth
+020833ac l       .text		 0000000c mod_dst_icon.I
+020339e0 l     F .text		 0000003a mod_dst_name
+01c018ba l     F .ram_text		 00000052 mod_end
+01c00f66 l     F .ram_text		 00000048 mod_gain
+02003b48 l     F .text		 0000002c mod_has
+02005ca8 l     F .text		 00000034 mod_midi
+02074e80 l       .text		 0000000c mod_param.ID
+01c0803c l       .data		 00000004 mod_seed
+020339c4 l     F .text		 0000001c mod_src_icon
+020833a0 l       .text		 0000000c mod_src_icon.I
+02007b1c l     F .text		 00000064 mod_time
+02003b74 l     F .text		 0000008e mod_tsrc
+01c1a74d l       .bss		 00000001 mod_ui_route
+01c0161a l     F .ram_text		 000001b0 mod_voice
+01c1cba0 l       .bss		 00000138 mod_w
+01c72274 l       .pool		 00000094 mom
+02011822 l     F .text		 00000068 mom_back
+0201c5ee l     F .text		 0000004a mom_down
+0201c720 l     F .text		 0000001e mom_fx
+0202be6c l     F .text		 0000003c mom_held
+02022350 l     F .text		 000000b2 mom_hold
+0201c9fe l     F .text		 00000054 mom_keep
+0201c73e l     F .text		 000000f2 mom_poll
+0202bea8 l     F .text		 00000166 mom_turn
+02087908 l       .text		 00000004 mom_turn.MIX_ID
+02002174 l     F .text		 00000042 mono_pick
+020024e0 l     F .text		 000001b8 mono_play
+01c08038 l       .data		 00000004 mono_play.seed
+02002140 l     F .text		 00000034 mono_remove
+01c1c620 l       .bss		 00000104 motion
+01c1b460 l       .bss		 00000078 motion_active
+01c119e4 l       .bss		 000006fc motion_base
+01c1a719 l       .bss		 00000001 motion_base_valid
+020129e0 l     F .text		 0000004e motion_base_value
+02002dbc l     F .text		 00000040 motion_begin
+02005f10 l     F .text		 000001c6 motion_capture
+02011694 l     F .text		 000000ae motion_clear
+020197a6 l     F .text		 00000088 motion_clear_locks
+02011d5e l     F .text		 00000040 motion_count
+0201970e l     F .text		 00000088 motion_delete_event
+02011958 l     F .text		 00000022 motion_enabled
+02022b4e l     F .text		 00000046 motion_find
+01c1a81c l       .bss		 00000004 motion_full
+0201162a l     F .text		 00000008 motion_guard
+020337c4 l     F .text		 00000018 motion_icon
+020238b2 l     F .text		 00000052 motion_lock_get
+02026bd0 l     F .text		 0000004c motion_lock_steps
+01c1b4d8 l       .bss		 00000078 motion_locked
+01c2da79 l       .pool		 00000001 motion_lost
+02022dc4 l     F .text		 000000dc motion_move
+02005d08 l     F .text		 0000006a motion_param
+02005dd0 l     F .text		 00000140 motion_put
+02011632 l     F .text		 00000062 motion_rebase
+02012950 l     F .text		 00000090 motion_replace_track
+02011742 l     F .text		 00000004 motion_reset
+02002b76 l     F .text		 00000074 motion_restore
+0201197a l     F .text		 0000003e motion_set_enabled
+020196fe l     F .text		 00000010 motion_set_event
+02019796 l     F .text		 00000010 motion_set_lock
+02022c28 l     F .text		 0000005a motion_sig
+02011b54 l     F .text		 00000072 motion_snapshot_track
+0200720a l     F .text		 00000126 motion_step
+02022fce l     F .text		 00000036 motion_undo_done
+02022c82 l     F .text		 00000142 motion_undo_take
+020070ea l     F .text		 00000120 motion_unlock
+02012720 l     F .text		 0000006a motion_valid
+0202ee22 l     F .text		 00000012 mr_gap
+0202ee0a l     F .text		 00000018 mr_h
+0202edf8 l     F .text		 00000012 mr_n
+0202edd4 l     F .text		 00000024 mr_top
+0202ee34 l     F .text		 00000016 mr_y
+02014a4a l     F .text		 0000000c mset_ch
+01c1a55c l       .bss		 00000002 mt.0
+01c1a998 l       .bss		 00000004 mt.1
+0202ec18 l     F .text		 00000018 mt_font
+02025a88 l     F .text		 0000001a mtab_first
+02025aa2 l     F .text		 00000024 mtab_rows
+0203bc70 l     F .text		 0000000e mulq16
+01c1a9f6 l       .bss		 00000006 mute_arm
+01c1abc8 l       .bss		 00000018 mute_at
+01c1a9fc l       .bss		 00000006 mute_mode
+02019256 l     F .text		 000000ca mute_switch
+0201909c l     F .text		 00000086 mute_to
+01c106d8 l       .bss		 00000700 mx
+0201ccbc l     F .text		 0000001c name_close
+02041380 l     F .text		 00000606 name_draw
+0202600a l     F .text		 0000028e name_input
+0201c5de l     F .text		 00000010 name_on
+02026558 l     F .text		 000000d0 name_open
+02029952 l     F .text		 0000007e name_rename
+02000e12 l     F .text		 00000016 nib
+01c73e48 l       .pool		 00000030 nm
+02025e26 l     F .text		 00000038 nm_black
+02025d98 l     F .text		 00000016 nm_commit
+02025e5e l     F .text		 0000006e nm_do
+02082a18 l       .text		 00000014 nm_draw_panel.FN
+02025dae l     F .text		 0000002e nm_group
+01c19a90 l       .bss		 00000002 nm_group.one
+02025ddc l     F .text		 0000004a nm_insert
+02051eb8 l     F .text		 00000032 noise_desc
+0205179c l     F .text		 00000040 noise_note_on
+020517dc l     F .text		 000006dc noise_render
+0201cf46 l     F .text		 00000020 note_at
+02033a56 l     F .text		 00000030 note_name
+020237d2 l     F .text		 00000080 note_span
+01c73dfc l       .pool		 00000043 nsel
+0201f4a0 l     F .text		 00000086 oct_taps
+01c1a74c l       .bss		 00000001 oct_taps.chord
+01c1a74b l       .bss		 00000001 oct_taps.down
+020264a2 l     F .text		 000000b6 open_family
+0203ede0 l     F .text		 0000006a osc_shape
+0201cda6 l     F .text		 00000028 osc_sine
+0201bfb0 l     F .text		 0000002e ota_crc16
+01c1a8cc l       .bss		 00000004 ota_deadline
+01c18d10 l       .bss		 00000280 ota_dec
+0201021a l     F .text		 0000002c ota_erase
+0201b61a l     F .text		 0000000e ota_frame_done
+020143fe l     F .text		 00000022 ota_frame_get
+020101ac l     F .text		 00000004 ota_fread
+02000988 l     F .text		 00000004 ota_idle
+020101b0 l     F .text		 00000020 ota_in_area
+0201bf8a l     F .text		 00000026 ota_jl_enc
+0201bfde l     F .text		 00000016 ota_memeq
+01c1ad0e l       .bss		 00000028 ota_msg
+0201bff4 l     F .text		 00000020 ota_prog
+0201bc26 l     F .text		 0000000a ota_rd16
+0201bc30 l     F .text		 00000010 ota_rd24
+0201be9a l     F .text		 00000010 ota_rd32
+0201beaa l     F .text		 000000e0 ota_read
+0201bd78 l     F .text		 00000030 ota_reply_identity
+02084bf2 l       .text		 0000000a ota_reply_identity.ID
+0201bcd6 l     F .text		 000000a2 ota_send_msg
+01c1b3ec l       .bss		 00000070 ota_session.parm
+0201bda8 l     F .text		 000000d8 ota_show
+0207fb00 l       .text		 00000018 ota_show.STEP
+01c19390 l       .bss		 00000200 ota_stage.b
+01c18f90 l       .bss		 00000400 ota_stage.hdr
+01c19590 l       .bss		 00000200 ota_stage.mine
+02087a10 l       .text		 00000010 ota_stage_head.NAME
+0201bc40 l     F .text		 00000096 ota_take
+02010246 l     F .text		 00000018 ota_unstage
+01c1adb1 l       .bss		 00000032 ota_wire
+0200098c l     F .text		 000000d4 ota_wire_send
+0201be80 l     F .text		 00000008 ota_wr16
+0201be88 l     F .text		 00000012 ota_wr32
+020249e8 l     F .text		 00000136 page_desc
+02082900 l       .text		 00000010 page_desc.SEND
+020828c0 l       .text		 00000040 page_desc.SMX_D
+020254b6 l     F .text		 00000082 page_entered
+020226d0 l     F .text		 0000001c page_first
+0202bc3e l     F .text		 00000018 page_group
+0202de74 l     F .text		 00000100 page_head
+01c1aae0 l       .bss		 00000010 page_head.hb
+0203fcc2 l     F .text		 00000034 page_icon
+02022a60 l     F .text		 0000000e page_lane
+02022a38 l     F .text		 00000028 page_lane_p
+02026440 l     F .text		 00000062 page_none
+01c1a8c8 l       .bss		 00000004 page_over
+02026d0e l     F .text		 000003b6 page_tap
+02026418 l     F .text		 00000028 page_vis_first
+0202633a l     F .text		 000000de page_visible
+0200ecac l     F .text		 00000036 palette_from_stored
+020102c0 l     F .text		 00000154 palette_set
+02035088 l     F .text		 0000002a pan_txt
+02027198 l     F .text		 0000001c panel_btn_of
+0201c972 l     F .text		 0000006e panel_enc
+02011374 l     F .text		 000000ae panel_init
+01c1a8e0 l       .bss		 00000004 panel_moved
+02039942 l     F .text		 00000092 panel_note
+02013c0e l     F .text		 00000226 panel_setup
+01c1a715 l       .bss		 00000001 panic_req
+0200f0cc l     F .text		 00000024 param_desc_of
+02005da6 l     F .text		 0000002a param_fit
+020331c8 l     F .text		 000003d6 param_format
+02033616 l     F .text		 000000d2 param_icon
+02007512 l     F .text		 00000062 param_kept
+02022f1c l     F .text		 000000b2 param_turn
+0200f136 l     F .text		 0000003a params_by_count
+01c1aa7a l       .bss		 0000000c part_cost
+0201278a l     F .text		 000001c6 pat_decode
+02015838 l     F .text		 00000102 pat_flush_one
+0201593a l     F .text		 0000002a pat_keep_now
+02015660 l     F .text		 00000096 pat_keep_rec
+02012d56 l     F .text		 000000e2 pat_load
+01c1c730 l       .bss		 00000104 pat_load.ms
+01c18540 l       .bss		 00000340 pat_load.st
+02018082 l     F .text		 0000002a pat_num
+02012506 l     F .text		 00000086 pat_read
+02017e18 l     F .text		 0000004a pat_refs
+0204841e l     F .text		 000000b2 pd_bends
+0204831c l     F .text		 00000102 pd_setup
+020484d0 l     F .text		 00000150 pd_wave
+01c1b5d0 l       .bss		 00000080 pd_xa
+01c1b550 l       .bss		 00000080 pd_xb
+020124a2 l     F .text		 0000001e pend_at
+0201622c l     F .text		 00000022 pend_free
+01c71488 l       .pool		 00000006 pend_id
+01c724ef l       .pool		 000014d0 pend_rec
+01c1a824 l       .bss		 00000004 perf_act
+01c1a72a l       .bss		 00000001 perf_auto_fx
+01c1a729 l       .bss		 00000001 perf_auto_on
+0202d882 l     F .text		 00000028 perf_avail
+01c00ce4 l     F .ram_text		 00000282 perf_begin
+01c03696 l     F .ram_text		 00000a4e perf_block
+02054a12 l     F .text		 00000052 perf_buf_done
+02054844 l     F .text		 0000012a perf_buf_start
+02041d54 l     F .text		 00000072 perf_cell
+01c2f5bc l       .pool		 00000001 perf_cut
+01c030cc l     F .ram_text		 0000005c perf_dub
+0201fd04 l     F .text		 000000a6 perf_encoders
+01c035fa l     F .ram_text		 0000009c perf_gate
+01c031e0 l     F .ram_text		 00000246 perf_harm
+02022332 l     F .text		 0000001e perf_harm_on
+01c1a814 l       .bss		 00000004 perf_held
+01c1aa1a l       .bss		 00000008 perf_k
+0200482e l     F .text		 00000036 perf_key
+01c1a72b l       .bss		 00000001 perf_kill
+01c1a74a l       .bss		 00000001 perf_latch_on
+01c1a820 l       .bss		 00000004 perf_latched
+02054826 l     F .text		 0000001e perf_len
+01c1a80c l       .bss		 00000004 perf_mask
+01c040e4 l     F .ram_text		 000000fa perf_master
+01c03426 l     F .ram_text		 000001d4 perf_mdl
+01c041de l     F .ram_text		 0000006a perf_mute
+01c1b144 l       .bss		 00000050 perf_ord
+020222fe l     F .text		 00000034 perf_pick
+01c03128 l     F .ram_text		 000000b8 perf_pre
+020546c0 l     F .text		 00000166 perf_pre_st
+0201f28c l     F .text		 00000016 perf_scenes
+01c1a818 l       .bss		 00000004 perf_seq
+01c1a72c l       .bss		 00000001 perf_solo
+0205496e l     F .text		 000000a4 perf_switch
+01c1a747 l       .bss		 00000001 persist_pending
+01c1a8f4 l       .bss		 00000004 persist_retry_ms
+01c13fc0 l       .bss		 00000290 persist_saved
+01c08ecc l       .data		 00000104 pf
+0203b6b6 l     F .text		 0000010e pg_curve_graph
+0203b602 l     F .text		 00000084 pg_drive_at
+02083534 l       .text		 00000005 pg_drive_at.DT_IT
+0205857c l     F .text		 0000000e pg_drive_curve
+0203b69a l     F .text		 0000001c pg_hline
+0203bba8 l     F .text		 000000c8 pg_ins_curve
+0203b7c4 l     F .text		 0000001a pg_text
+0203bb3a l     F .text		 00000026 pg_text_r
+0203b686 l     F .text		 00000014 pg_under
+020482f4 l     F .text		 00000028 phase_note_on
+02048d96 l     F .text		 00000212 phase_render
+02048620 l     F .text		 00000284 phase_render_f
+020488a4 l     F .text		 000004f2 phase_xfade
+0204e664 l     F .text		 00000020 phys_desc
+0204c5ea l     F .text		 00000054 phys_note_on
+01c0801c l       .data		 00000018 phys_nz
+0204e344 l     F .text		 00000320 phys_render
+0204c5ae l     F .text		 0000003c phys_reset
+0204c542 l     F .text		 0000006c phys_slot_of
+0204deba l     F .text		 00000098 phys_symp_pitches
+01c73d50 l       .pool		 00000004 pj_at
+01c73d54 l       .pool		 00000004 pj_clean
+01c73ddd l       .pool		 00000001 pj_dirty
+02025562 l     F .text		 000000aa play_press
+0201563e l     F .text		 00000022 pool_alloc
+02018784 l     F .text		 00000008 pool_alloc_after
+0201816a l     F .text		 00000088 pool_clear
+02017f26 l     F .text		 000000bc pool_clear_unused
+020180ac l     F .text		 000000be pool_empty
+02017ec8 l     F .text		 0000005e pool_flush_said
+02018736 l     F .text		 0000004e pool_free_after
+020181f2 l     F .text		 00000054 pool_len
+02017e62 l     F .text		 00000040 pool_refs
+02017ea2 l     F .text		 00000026 pool_unused
+020124c0 l     F .text		 00000046 pool_used
+0204959c l     F .text		 00000058 pow2_q16
+020390a0 l     F .text		 000000ac pr_bars
+020367ca l     F .text		 000000e0 pr_card
+02035afe l     F .text		 0000006e pr_held
+02036658 l     F .text		 00000172 pr_knob
+0208342a l       .text		 0000000e pr_knob.PT
+0203bb60 l     F .text		 00000048 pr_mix_card
+02035acc l     F .text		 00000032 pr_note
+0203908a l     F .text		 00000016 pr_row_y
+02038b14 l     F .text		 00000046 pr_split
+0201eb7c l     F .text		 00000056 pr_src
+020246fc l     F .text		 000000c2 preset_all_at
+02024604 l     F .text		 000000e0 preset_all_pos
+02024862 l     F .text		 0000005a preset_at
+02033998 l     F .text		 0000002c preset_favorite
+02011ed6 l     F .text		 000000c4 preset_fill
+020878ec l       .text		 00000004 preset_fill.FX_DEF
+020247be l     F .text		 00000042 preset_in_list
+02022648 l     F .text		 00000042 preset_mark
+02011eb6 l     F .text		 00000020 preset_orig
+02024800 l     F .text		 00000062 preset_pos
+0201ff86 l     F .text		 0000003e preset_rank
+020248bc l     F .text		 0000009a preset_step
+0202ba4c l     F .text		 000001f2 presets_turn
+0200f8c0 l     F .text		 00000050 proj_bound
+01c08e14 l       .data		 00000001 proj_cur
+0200f1d8 l     F .text		 00000022 proj_engines_ok
+0200f034 l     F .text		 00000054 proj_ent_ok
+0200fdbc l     F .text		 00000078 proj_fetch
+0200efda l     F .text		 0000003c proj_fmt_of
+0200f016 l     F .text		 0000001e proj_hash
+0200f214 l     F .text		 00000686 proj_import
+020299d0 l     F .text		 00000036 proj_k3
+01c724e2 l       .pool		 0000000d proj_name
+0200f0f0 l     F .text		 00000038 proj_name_get
+020132cc l     F .text		 00000022 proj_old
+0200f89a l     F .text		 00000026 proj_old_magic
+0200f910 l     F .text		 000004ac proj_pack2
+0200f170 l     F .text		 00000068 proj_power_on_trk
+01c14250 l       .bss		 00000ce0 proj_scratch
+02017d8c l     F .text		 0000008c proj_slot_refs_in
+020166f2 l     F .text		 00000032 proj_store_len
+0200f128 l     F .text		 0000000e proj_sum
+01c1a73e l       .bss		 00000001 proj_wire_gen
+01c15e30 l       .bss		 00000f00 proj_wire_u
+020163b8 l     F .text		 00000180 project_capture
+02017aa4 l     F .text		 0000000e project_changed
+020178ce l     F .text		 00000066 project_clean
+02017bd0 l     F .text		 0000000c project_cur_name
+02017a5c l     F .text		 00000048 project_dirty
+020266d6 l     F .text		 000000a2 project_erase
+02019ca4 l     F .text		 000000a8 project_load
+0202dfac l     F .text		 0000001e project_mark
+02017bdc l     F .text		 0000004e project_name
+02026778 l     F .text		 00000198 project_new
+02017ab2 l     F .text		 0000011e project_rename
+02012e42 l     F .text		 00000348 project_restore_runtime
+02019c9e l     F .text		 00000006 project_save
+02017934 l     F .text		 00000128 project_save_as
+020132ee l     F .text		 00000032 project_used
+01c1a6ec l       .bss		 00000001 proll.0
+01c1a6f0 l       .bss		 00000001 proll.1
+01c1a9b8 l       .bss		 00000004 proll.2
+01c1a6f4 l       .bss		 00000001 proll.3
+01c1a9bc l       .bss		 00000004 proll.4
+0204c6b6 l     F .text		 00000116 px_exp2
+0204d27e l     F .text		 0000006e px_isqrt64
+0204cfca l     F .text		 000002b4 px_memb_block
+0204cabc l     F .text		 000002a2 px_modal_block
+0204c894 l     F .text		 000001b0 px_modal_exciter
+0204ca44 l     F .text		 00000078 px_modal_q
+0204cd5e l     F .text		 0000026c px_modal_run
+0204c63e l     F .text		 00000078 px_sin
+0204d2ec l     F .text		 0000057e px_string_block
+0204d86a l     F .text		 00000252 px_string_excite
+0204dabc l     F .text		 000003fe px_string_run
+0204c7cc l     F .text		 000000c8 px_svf_coef
+0204df52 l     F .text		 000001ca px_symp_block
+0204e11c l     F .text		 00000228 px_symp_run
+02027a62 l     F .text		 0000003a q_ext
+01c73de4 l       .pool		 00000018 q_lsig
+01c73dc4 l       .pool		 00000018 q_sig
+02001186 l     F .text		 00000112 ramp
+020335fa l     F .text		 0000001c ratio_of
+01c1bd58 l       .bss		 000000e0 rc
+0202d91c l     F .text		 00000026 rec_clearable
+02017fe2 l     F .text		 000000a0 rec_empty
+01c1a724 l       .bss		 00000001 rec_feel
+02007a8a l     F .text		 00000092 rec_hold
+0200796a l     F .text		 00000120 rec_hold_mix
+01c2d222 l       .pool		 00000006 rec_mix
+02012cd4 l     F .text		 00000038 rec_motion_of
+01c2d204 l       .pool		 00000018 rec_n
+02004ffc l     F .text		 00000238 rec_note
+0201d926 l     F .text		 0000003e rec_on
+02004e04 l     F .text		 0000004a rec_poly
+02004ef2 l     F .text		 0000010a rec_put
+02001910 l     F .text		 00000200 rec_release
+02020252 l     F .text		 0000002e rec_set
+020176de l     F .text		 0000016c rec_tap
+01c2d21c l       .pool		 00000006 rec_tm
+02004e6e l     F .text		 00000084 rec_untie
+0201c70e l     F .text		 00000012 ret_beats
+02040190 l     F .text		 00000062 ret_hints
+02014a56 l     F .text		 0000001a ret_mode
+01c5d4d8 l       .pool		 00002692 rev_comb
+0200afac l     F .text		 00000634 rev_hall
+0200b6fc l     F .text		 0000001a rev_model
+0200b5e0 l     F .text		 0000011c rev_room
+0200b7e0 l     F .text		 0000002c rev_side_mix
+0200ad12 l     F .text		 0000020c rev_spring
+0200b716 l     F .text		 000000ca rev_switch
+01c5fb6c l       .pool		 000007cc rev_u
+02020280 l     F .text		 0000002a rl_name
+01c1aa92 l       .bss		 0000000e rmt_steps
+02020cca l     F .text		 00000018 rng
+01c08018 l       .data		 00000004 rng_state
+02017536 l     F .text		 0000004e roll_on
+02013e88 l     F .text		 0000003e rp_apply
+02013e50 l     F .text		 00000038 rp_get
+02013ec6 l     F .text		 00000048 rp_put
+01c1c840 l       .bss		 00000108 rs
+0201ece2 l     F .text		 00000032 run_done
+0201ec58 l     F .text		 0000008a run_undo
+0204979c l     F .text		 00000056 sample_declick
+020496d6 l     F .text		 000000c6 sample_next
+02049468 l     F .text		 00000134 sample_note_on
+020497f2 l     F .text		 00000238 sample_render
+01c1a560 l       .bss		 000000c0 sample_wave.0
+01c1a620 l       .bss		 000000c0 sample_wave.1
+01c1a99c l       .bss		 00000004 sample_wave.2
+01c1a9a0 l       .bss		 00000004 sample_wave.3
+01c1a9a4 l       .bss		 00000004 sample_wave.4
+01c1a9a8 l       .bss		 00000004 sample_wave.5
+01c1a9ac l       .bss		 00000004 sample_wave.6
+01c1a9b0 l       .bss		 00000004 sample_wave.7
+01c1a9b4 l       .bss		 00000004 sample_wave.8
+01c1a6e0 l       .bss		 00000001 sample_wave.9
+02035708 l     F .text		 00000288 sample_wave_tick
+0201e038 l     F .text		 0000005e say_count
+01c1a860 l       .bss		 00000004 sb_env
+01c1a864 l       .bss		 00000004 sb_h1
+01c1a868 l       .bss		 00000004 sb_h2
+01c1a86c l       .bss		 00000004 sb_hl
+01c1a850 l       .bss		 00000004 sb_lp1
+01c1a854 l       .bss		 00000004 sb_lp2
+01c1a858 l       .bss		 00000004 sb_lp3
+01c1a85c l       .bss		 00000004 sb_lp4
+02020e48 l     F .text		 00000020 scale_mask
+0200488a l     F .text		 0000004a scale_snap
+020236bc l     F .text		 00000060 scale_step
+01c74c7c l       .pool		 00000004 scd.0
+01c74c80 l       .pool		 0000000c scd.1
+02019122 l     F .text		 00000134 scene_go
+01c08e15 l       .data		 00000001 scene_last
+02019362 l     F .text		 0000000a scene_now
+02018e98 l     F .text		 000000e8 scene_saved
+02018fa8 l     F .text		 0000007e scene_trk
+02018f80 l     F .text		 00000028 scene_used
+01c102d8 l       .bss		 00000400 scope_buf
+01c1a7a8 l       .bss		 00000004 scope_w
+020149c0 l     F .text		 0000001c scr_get
+0201c9e0 l     F .text		 0000001e scr_wake
+02000558 l     F .text		 0000004c scr_wake_now
+01c1a210 l       .bss		 00000001 scrn.0
+01c1a96c l       .bss		 00000004 scrn.1
+01c1a970 l       .bss		 00000004 scrn.2
+01c1a974 l       .bss		 00000004 scrn.3
+01c1a978 l       .bss		 00000004 scrn.4
+020272ce l     F .text		 0000033c sel_copy
+0201ed14 l     F .text		 0000027a sel_delete
+0201a4d4 l     F .text		 00000014 sel_drop
+02022706 l     F .text		 00000038 sel_first
+0201ea9e l     F .text		 00000026 sel_hi
+0202b63a l     F .text		 000000d6 sel_keys
+0201eac4 l     F .text		 00000026 sel_lo
+020400d8 l     F .text		 00000046 sel_note
+0202760a l     F .text		 000001c4 sel_paste
+0201242a l     F .text		 00000024 sel_set
+0202b9a4 l     F .text		 000000a8 sel_shift
+0201eb18 l     F .text		 00000064 sel_step
+0202371c l     F .text		 00000058 sel_taken
+0202354c l     F .text		 00000068 sel_velocity
+0201ec00 l     F .text		 00000024 sel_voice
+0201ff46 l     F .text		 00000040 select_engine
+0202bc56 l     F .text		 00000114 select_turn
+02001b10 l     F .text		 00000048 seq_after
+0202dd2e l     F .text		 00000020 seq_at
+02006efc l     F .text		 000000a2 seq_audition
+02013320 l     F .text		 00000010 seq_counting
+02007c0a l     F .text		 0000013e seq_enter
+0202b710 l     F .text		 00000294 seq_entry
+01c1a725 l       .bss		 00000001 seq_fill
+0200739e l     F .text		 00000112 seq_fire
+02006ffa l     F .text		 00000076 seq_gate_end
+020030fa l     F .text		 00000024 seq_go
+01c2da34 l       .pool		 00000018 seq_h2
+02015622 l     F .text		 0000001c seq_is_empty
+01c2da2e l       .pool		 00000006 seq_k
+020067b0 l     F .text		 00000090 seq_keep_only
+0200317e l     F .text		 00000022 seq_locate
+02002fc0 l     F .text		 0000013a seq_locate_at
+02002f58 l     F .text		 00000068 seq_next
+02007d48 l     F .text		 00000074 seq_nudge
+02001b58 l     F .text		 00000038 seq_peek
+02007dbc l     F .text		 000000ce seq_ratchet
+02002926 l     F .text		 0000005e seq_release
+02002dfc l     F .text		 0000015c seq_start
+02006840 l     F .text		 000006bc seq_step
+02002cf6 l     F .text		 000000c6 seq_stop
+020066f8 l     F .text		 0000007e seq_ties_of
+02007b80 l     F .text		 0000008a seq_time
+01c2da28 l       .pool		 00000006 seq_tm
+020199d2 l     F .text		 00000012 set_engine
+020121ac l     F .text		 00000088 set_engine_of
+01c74c4c l       .pool		 00000004 set_later.0
+01c74c50 l       .pool		 00000001 set_later.1
+01c74c51 l       .pool		 00000001 set_later.2
+01c74c52 l       .pool		 00000001 set_later.3
+0200ef3c l     F .text		 0000009e settings_export
+01c08e13 l       .data		 00000001 settings_hold
+0200ee72 l     F .text		 000000ca settings_import
+0200ece2 l     F .text		 00000126 settings_import_per
+02010442 l     F .text		 00000064 settings_init
+02022616 l     F .text		 00000032 settings_later
+0201c44c l     F .text		 0000006a settings_later_poll
+01c1a73d l       .bss		 00000001 settings_leds
+020135aa l     F .text		 0000009c settings_poll
+020269c4 l     F .text		 000000f4 settings_reset
+02013646 l     F .text		 00000010 settings_save
+02013bc2 l     F .text		 00000030 setup_show
+01c74c53 l       .pool		 00000001 sg.0
+01c74c54 l       .pool		 00000001 sg.1
+01c74c55 l       .pool		 00000001 sg.2
+0200c4b6 l     F .text		 0000003a shed_check
+01c1a794 l       .bss		 00000004 shed_count
+01c1a72f l       .bss		 00000001 shed_over
+01c1a710 l       .bss		 00000001 shed_req
+0201df80 l     F .text		 0000001c sheet_of
+0201e970 l     F .text		 00000012 shift_held
+020833b8 l       .text		 0000006c shift_map.ALL
+0201e982 l     F .text		 00000014 shift_mark
+02015a58 l     F .text		 0000001a sid_p
+0200d030 l     F .text		 0000005a sie_rd
+0200cfdc l     F .text		 00000054 sie_wr
+020104de l     F .text		 00000028 sine_i
+0200ee08 l     F .text		 0000006a sks_pack
+01c1bf2c l       .bss		 000000f0 sl
+01c2da50 l       .pool		 00000018 sl_at
+01c2f5be l       .pool		 0000c000 sl_buf
+0205426e l     F .text		 000000e6 sl_enter
+01c1a828 l       .bss		 00000004 sl_lent
+01c2da4c l       .pool		 00000001 sl_on
+02039f48 l     F .text		 00000016 sl_pattern
+01c2da68 l       .pool		 00000004 sl_pos
+02054354 l     F .text		 0000036c slicer_track_sd
+01c1b990 l       .bss		 000000a0 sm
+02031620 l     F .text		 00000326 sm_being
+02008488 l     F .text		 0000003c sm_ct
+0203d4fc l     F .text		 00000040 sm_ctext
+0203d7d4 l     F .text		 00000068 sm_ellipse
+0203d5a8 l     F .text		 00000066 sm_glyph
+020084c4 l     F .text		 000000de sm_hit
+0202d9aa l     F .text		 0000004a sm_id
+0201cab6 l     F .text		 000000d0 sm_key
+0203d654 l     F .text		 00000014 sm_kind
+0203d53c l     F .text		 0000006c sm_labels
+0200838e l     F .text		 00000044 sm_let_go
+0202da10 l     F .text		 000000c0 sm_name
+020824ec l       .text		 00000030 sm_name.EN
+020824bc l       .text		 00000020 sm_name.MI
+0208248c l       .text		 00000030 sm_name.ON
+020824dc l       .text		 00000010 sm_name.VO
+020083d2 l     F .text		 00000066 sm_others
+0201ca7e l     F .text		 00000038 sm_page
+020331b2 l     F .text		 00000016 sm_pick
+020085a2 l     F .text		 0000062e sm_play
+02008438 l     F .text		 00000050 sm_rubs
+020359f0 l     F .text		 00000026 sm_shape
+0203d60e l     F .text		 00000046 sm_show
+0202d9f4 l     F .text		 0000001c sm_sigil
+0202d942 l     F .text		 00000068 sm_song_shape
+0203d668 l     F .text		 00000080 sm_spoke
+02005a40 l     F .text		 00000042 sm_touch
+0203d6e8 l     F .text		 000000ec sm_tri
+0202c00e l     F .text		 0000002c smp_set_missing
+020495f4 l     F .text		 000000e2 smp_sine
+01c1a79c l       .bss		 00000004 smp_user_gen
+02019ebc l     F .text		 0000005a smp_user_name
+0200e94a l     F .text		 00000150 smp_user_scan
+020356dc l     F .text		 0000002c smp_zone
+020540ce l     F .text		 000001a0 smx_render
+020540b6 l     F .text		 00000018 smx_right
+01c73d58 l       .pool		 00000001 smx_save
+01c745f8 l       .pool		 00000001 smx_seen
+01c745fa l       .pool		 00000002 smx_sel
+02024956 l     F .text		 00000092 smx_zone
+0201ff2a l     F .text		 0000001c snd_id
+0202987a l     F .text		 000000d8 snd_of
+01c1aa08 l       .bss		 00000006 snd_said
+01c1a874 l       .bss		 00000004 so_r
+01c1a870 l       .bss		 00000004 so_w
+0203b5cc l     F .text		 00000036 softclip
+01c1b194 l       .bss		 00000060 song
+0203fcf6 l     F .text		 000001ca song_act_name
+01c74c08 l       .pool		 0000001c song_act_name.b
+02025368 l     F .text		 000000c8 song_at
+0202a664 l     F .text		 0000004c song_back
+0202662e l     F .text		 00000020 song_clear
+02018aec l     F .text		 000001b8 song_clear_at
+0202f836 l     F .text		 00000258 song_clear_text
+0201e9f4 l     F .text		 000000aa song_del
+01c73ddc l       .pool		 00000001 song_end
+020271b4 l     F .text		 0000011a song_from
+02023320 l     F .text		 00000222 song_knob
+0202aacc l     F .text		 000000ce song_part_go
+0202329c l     F .text		 0000004e song_pick
+0201c0ca l     F .text		 00000382 song_poll
+020187f4 l     F .text		 000002f8 song_put
+0201786e l     F .text		 0000004e song_rewind
+02018d96 l     F .text		 000000ca song_snd_put
+02018710 l     F .text		 00000026 song_tag
+020178bc l     F .text		 00000012 song_top
+02026910 l     F .text		 0000004c song_wipe
+0202664e l     F .text		 00000088 sound_init
+020319d0 l     F .text		 000000e2 sound_name
+01c73e44 l       .pool		 00000001 sp_was
+01c08e2c l       .data		 00000010 span_face.got
+01c1aad0 l       .bss		 00000010 span_face.key
+02058544 l     F .text		 00000020 span_mod_dst
+02058528 l     F .text		 0000001c span_names
+02058564 l     F .text		 00000018 span_param
+020232ea l     F .text		 00000018 spick_pos
+02023302 l     F .text		 0000001e spick_val
+02010f90 l     F .text		 00000054 splash_band
+02010590 l     F .text		 00000026 spr_px
+01c12ba8 l       .bss		 00000300 spread_buf
+01c013c0 l     F .ram_text		 00000010 spread_clear
+01c0186a l     F .ram_text		 00000010 spread_sum
+01c1bc80 l       .bss		 000000d8 sq
+020045fc l     F .text		 00000032 sq_go
+01c1a7c8 l       .bss		 00000004 sq_in
+02001e4e l     F .text		 0000003e sq_take
+0200ebae l     F .text		 00000036 st_body
+01c14f30 l       .bss		 00000f00 st_buf
+0200eb22 l     F .text		 00000034 st_crc32
+0207c5f4 l       .text		 00000040 st_crc32.T
+0200ebe4 l     F .text		 00000086 st_current
+02013364 l     F .text		 0000008c st_erase
+0200eb56 l     F .text		 00000058 st_head
+0200ec6a l     F .text		 00000042 st_load
+0201343a l     F .text		 00000068 st_prog
+0200eade l     F .text		 00000044 st_read
+020135a4 l     F .text		 00000006 st_save
+020134a2 l     F .text		 00000102 st_save_to
+0200ea9a l     F .text		 00000044 st_sector
+02019320 l     F .text		 00000042 stage_cancel
+02018382 l     F .text		 000001ea stage_entry
+020419aa l     F .text		 00000028 stage_pending
+020210a0 l     F .text		 00000018 step_accents
+02019bde l     F .text		 00000010 step_chance
+02011746 l     F .text		 00000018 step_clear
+02007070 l     F .text		 0000007a step_cond_ok
+02074725 l       .text		 0000000c step_cond_ok.A
+02074731 l       .text		 0000000c step_cond_ok.B
+02023b9e l     F .text		 000009ba step_edit
+020125b2 l     F .text		 000000c2 step_get9
+0202036e l     F .text		 00000034 step_lanes
+0202ddc0 l     F .text		 000000b4 step_off
+0202fa8e l     F .text		 0000002c step_on
+02012a38 l     F .text		 000000c4 step_put9
+02012a2e l     F .text		 0000000a step_ratchet
+02019ad2 l     F .text		 00000010 step_set_chance
+0201258c l     F .text		 00000026 step_set_ratchet
+02023852 l     F .text		 00000060 step_span
+0201eaea l     F .text		 0000002e step_starts
+020204e6 l     F .text		 00000030 step_tie
+0201d062 l     F .text		 00000010 step_tied
+02004e4e l     F .text		 00000020 step_ties
+02023542 l     F .text		 0000000a step_vel
+02035990 l     F .text		 00000060 steps_hash
+020118a0 l     F .text		 00000012 steps_sig
+02011796 l     F .text		 00000028 str_cpy
+0201a1f6 l     F .text		 00000020 str_eq
+0202dd4e l     F .text		 00000014 str_hash
+020117be l     F .text		 0000000e str_len
+0203500e l     F .text		 0000003a strip_kind
+02008bec l     F .text		 0000017c strum_flush
+0200462e l     F .text		 00000048 strum_tick
+02053c3e l     F .text		 00000078 summon_note_on
+02053cb6 l     F .text		 00000334 summon_render
+01c1a737 l       .bss		 00000001 sx_busy
+01c1a738 l       .bss		 00000001 sx_collect
+01c13270 l       .bss		 00000280 sx_frame
+01c1a880 l       .bss		 00000004 sx_frame_len
+01c1c420 l       .bss		 00000100 sx_out_q
+01c1a87c l       .bss		 00000004 sx_pos
+01c1a73a l       .bss		 00000001 sx_ready
+01c1a89c l       .bss		 00000004 sync_reload
+02076357 l       .text		 00000006 sysex_byte.UBOOT_KEY
+01c1a770 l       .bss		 00000004 t5_nested_ticks
+0201d16e l     F .text		 0000002e tail_len
+0201d222 l     F .text		 00000026 tail_out
+01c1b06c l       .bss		 00000043 take_box
+0203f0c0 l     F .text		 0000013a take_box_draw
+0201e00a l     F .text		 0000002e take_box_fits
+0203f07a l     F .text		 00000046 take_box_key
+0201e096 l     F .text		 000008da take_commit
+01c042e8 l       .ramx		 00000800 take_ev
+01c1a7e8 l       .bss		 00000004 take_ev_n
+01c04ae8 l       .ramx		 00000200 take_kv
+01c1a7fc l       .bss		 00000004 take_kv_n
+01c1aa62 l       .bss		 0000000c take_lost
+02001d00 l     F .text		 000000f6 take_note
+0201d964 l     F .text		 00000208 take_notes
+01c2da6c l       .pool		 0000000c take_p0
+0201db6c l     F .text		 000003e8 take_part
+01c1aa6e l       .bss		 0000000c take_pass
+02001c16 l     F .text		 000000ea take_stamp
+0201cfb8 l     F .text		 00000024 take_tie
+0202fcae l     F .text		 00000036 tall_face
+0202e106 l     F .text		 00000086 text_fit
+02001150 l     F .text		 0000001a text_ink
+02000e28 l     F .text		 00000328 text_run
+020007d4 l     F .text		 00000048 text_w
+02010414 l     F .text		 0000002e theme_apply
+01c1d240 l       .bss		 000001e0 thr
+01c08034 l       .data		 00000001 thr_beats
+01c1a7b8 l       .bss		 00000004 thr_on
+01c1a7ac l       .bss		 00000004 thr_out
+0202268a l     F .text		 00000046 throw_id
+0200985a l     F .text		 0000004a throw_off
+020017ac l     F .text		 0000012a throw_on
+0201ebd2 l     F .text		 0000002e tie_alone
+020202ca l     F .text		 00000026 tl_cell
+02020e90 l     F .text		 000001aa tl_chord_to
+01c1ac10 l       .bss		 00000018 tl_do.b
+02021144 l     F .text		 00000058 tl_double
+02020d0e l     F .text		 0000004e tl_euclid
+0207fd14 l       .text		 00000003 tl_fill.E
+0202084a l     F .text		 00000024 tl_gate
+0202119c l     F .text		 0000005a tl_half
+0202104a l     F .text		 00000056 tl_hit_nth
+02020e68 l     F .text		 00000028 tl_in_scale
+0202103a l     F .text		 00000010 tl_lane
+02020cac l     F .text		 0000001e tl_lane_clear
+02020d5c l     F .text		 000000ec tl_lane_rnd
+0201efca l     F .text		 00000016 tl_len
+020206ee l     F .text		 000000fe tl_motion_plan
+02020bcc l     F .text		 000000b6 tl_order
+02020cfa l     F .text		 00000014 tl_per
+020207ec l     F .text		 0000005e tl_resize_ok
+0202086e l     F .text		 0000035e tl_reverse_notes
+02020ce2 l     F .text		 00000018 tl_rnd
+02020c82 l     F .text		 0000002a tl_shift
+02017436 l     F .text		 000000c0 tl_undo_take
+0201f010 l     F .text		 00000048 tl_unlock
+0201efe0 l     F .text		 00000030 tl_used_of
+0201177c l     F .text		 0000001a track_defaults
+0201175e l     F .text		 0000001e track_defaults_steps
+02012674 l     F .text		 000000ac track_desc
+02053fea l     F .text		 000000cc track_insert
+0201a4e8 l     F .text		 00000056 track_select
+020118b2 l     F .text		 000000a6 track_sig
+02024558 l     F .text		 00000078 tracks_edit
+0202695c l     F .text		 00000068 tracks_wipe
+02014a70 l     F .text		 0000002a trans_fx
+02013330 l     F .text		 00000034 transport_busy
+01c1a713 l       .bss		 00000001 transport_req
+0201784a l     F .text		 00000024 transport_stop_now
+0204a6fc l     F .text		 00000066 trio_naive
+0204a3d0 l     F .text		 00000034 trio_note_on
+0204a404 l     F .text		 000002f8 trio_pass
+0204a762 l     F .text		 000007d2 trio_render
+01c0a9c0 l       .bss		 00004140 trk
+02003aaa l     F .text		 0000006c trk_all_off
+0202d8aa l     F .text		 0000002e trk_cut
+020175c2 l     F .text		 0000004c trk_ent
+02014a20 l     F .text		 0000002a trk_ext
+020137fa l     F .text		 00000014 trk_face
+020159b6 l     F .text		 000000a2 trk_keep
+0203395e l     F .text		 00000014 trk_level
+020149fc l     F .text		 00000024 trk_midi_ch
+020149dc l     F .text		 00000020 trk_moff
+02015964 l     F .text		 00000052 trk_name
+02004566 l     F .text		 00000096 trk_note_go
+02002698 l     F .text		 0000019e trk_note_off
+02005234 l     F .text		 000000a0 trk_note_on
+0201831c l     F .text		 00000022 trk_pat
+01c7226e l       .pool		 00000006 trk_pid
+02012d0c l     F .text		 0000004a trk_rec
+01c73d38 l       .pool		 00000018 trk_sig
+02003e4a l     F .text		 0000049a trk_sound_on
+020224ae l     F .text		 0000001a trk_top
+02033a86 l     F .text		 00000022 trk_vmode
+01c1ac28 l       .bss		 00000018 ts.0
+01c1a6e4 l       .bss		 00000006 ts.1
+01c08e20 l       .data		 00000004 tsel
+01c1a7a0 l       .bss		 00000004 ua_r
+01c0fad8 l       .bss		 00000800 ua_ring
+01c1a7a4 l       .bss		 00000004 ua_w
+01c1b0b0 l       .bss		 00000048 uac
+0200d48a l     F .text		 0000002c uac_ep4_reset
+020016b8 l     F .text		 000000be uac_render_start
+01c08dfc l       .data		 00000004 uac_rng
+0200d08a l     F .text		 000001a8 uac_service
+0200bdcc l     F .text		 00000104 uac_tap
+0200bba2 l     F .text		 0000022a uac_tap48
+01c1cce0 l       .bss		 00000194 ui
+01c1a73c l       .bss		 00000001 ui_cpu
+01c1a757 l       .bss		 00000001 ui_draw.counting
+0202c10c l     F .text		 00001560 ui_input
+01c1a8d4 l       .bss		 00000004 ui_input.home_long
+01c1a8d8 l       .bss		 00000004 ui_input.kb_seen
+01c1a8d0 l       .bss		 00000004 ui_input.lock_ms
+01c1a8dc l       .bss		 00000004 ui_input.wr_hint_ms
+01c1a8f8 l       .bss		 00000004 ui_leds.ready
+02012e38 l     F .text		 0000000a ui_message
+0202c03a l     F .text		 000000d2 ui_notices
+020117cc l     F .text		 0000003c ui_say
+0201061c l     F .text		 00000066 ui_sprite
+0201318a l     F .text		 0000001e ui_way
+01c1acc8 l       .bss		 0000001c um
+01c134f0 l       .bss		 00000080 um_ring
+0200d50e l     F .text		 00000022 um_thru
+01c1a742 l       .bss		 00000001 undo_back
+0201244e l     F .text		 00000028 undo_clear
+01c1a740 l       .bss		 00000001 undo_depth
+020119f8 l     F .text		 00000050 undo_find
+01c1a898 l       .bss		 00000004 undo_label
+01c1a8e4 l       .bss		 00000004 undo_mot_tag
+01c1a741 l       .bss		 00000001 undo_n
+0201f526 l     F .text		 00000048 undo_other_pattern
+02011a48 l     F .text		 0000010c undo_push
+01c04ce8 l       .ramx		 000026e8 undo_ring
+0201f7d0 l     F .text		 000001ac undo_step
+0201f56e l     F .text		 00000262 undo_swap
+01c1a743 l       .bss		 00000001 undo_top
+01c724e1 l       .pool		 00000001 unit_g_adopt
+020123d4 l     F .text		 0000001e unit_g_id
+01c73e40 l       .pool		 00000004 unit_g_t
+0201a15e l     F .text		 0000005c up_auto_name
+01c16d30 l       .bss		 00001810 up_bank
+0200fe9c l     F .text		 000000b6 up_bank_check
+02012412 l     F .text		 00000018 up_engine
+01c1a8a8 l       .bss		 00000004 up_gen
+0200fe86 l     F .text		 00000016 up_grid
+020245d0 l     F .text		 00000034 up_listed
+0201a3a8 l     F .text		 0000012c up_load
+02018cd2 l     F .text		 00000056 up_name
+02019f16 l     F .text		 00000026 up_name_ok
+02018ca4 l     F .text		 0000002e up_old
+02019f70 l     F .text		 000000de up_parse
+0201a04e l     F .text		 000000ec up_put
+0200ff9a l     F .text		 0000001e up_rec
+0201a1ba l     F .text		 0000003c up_set_name
+02019f3c l     F .text		 00000034 up_set_sound
+0201a13a l     F .text		 00000024 up_slot_label
+0201a216 l     F .text		 00000192 up_store
+02026628 l     F .text		 00000006 up_ui
+02025ecc l     F .text		 0000013e up_ui_named
+0200ffb8 l     F .text		 0000001e up_used
+0200fe34 l     F .text		 00000052 up_valid
+02015a72 l     F .text		 00000018 up_value
+02015a8a l     F .text		 000000b8 up_values
+01c705f8 l       .pool		 00000e90 upf
+0200ff74 l     F .text		 00000026 upf_empty
+02015b42 l     F .text		 0000001c upf_fm6
+02015b88 l     F .text		 00000082 upf_get
+02015c0a l     F .text		 0000003a upf_patch
+020167e6 l     F .text		 0000004c upf_save
+02017070 l     F .text		 00000098 upf_set
+02015b5e l     F .text		 0000002a upf_tag
+0200ff52 l     F .text		 00000022 upf_valid
+01c073d0 l       .ramx		 00000002 upin.0
+01c073d2 l       .ramx		 00000002 upin.1
+01c073d4 l       .ramx		 00000004 upin.2
+01c1b1f4 l       .bss		 00000060 usb
+0201bbfe l     F .text		 00000028 usb_detach
+0200bed0 l     F .text		 00000032 usb_fixed_dac
+01c1a878 l       .bss		 00000004 usb_poll.tick
+01c1a8a4 l       .bss		 00000004 usb_retry.t
+020122ce l     F .text		 000000b6 usb_start
+0201627a l     F .text		 00000024 user_of
+02019026 l     F .text		 00000036 user_staged
+01c1c950 l       .bss		 00000120 usr_mix
+01c1a76c l       .bss		 00000003 usr_nz
+01c0eb00 l       .bss		 00000540 usr_zone
+01c1ade4 l       .bss		 00000034 ux
+01c1a8a0 l       .bss		 00000004 ux_cpal
+0201026e l     F .text		 00000052 ux_mix
+0207635d l       .text		 00000003 ux_mix.MK
+0208434c l       .text		 00000003 ux_mix.SH
+01c119e0 l       .bss		 00000004 vage
+0203baf8 l     F .text		 00000042 val_unit
+0204e938 l     F .text		 00000038 vmod_level
+01c1a798 l       .bss		 00000004 voice_kills
+020022e6 l     F .text		 0000006c voice_room
+02002386 l     F .text		 0000015a voice_start
+01c1a800 l       .bss		 00000004 voice_steals
+020021e8 l     F .text		 000000fe voice_victim
+020021b6 l     F .text		 00000032 voices_busy
+02049a8c l     F .text		 00000088 vowel_at
+01c1abe0 l       .bss		 00000018 vs_sm
+02028132 l     F .text		 00000042 w_note
+02027f50 l     F .text		 00000012 w_tie
+01c1b650 l       .bss		 00000080 wet
+0204b376 l     F .text		 0000022e wheel_block
+0204af34 l     F .text		 000000f4 wheel_note_on
+0204b028 l     F .text		 0000034e wheel_render
+01c1c020 l       .bss		 000000fc wl
+02036d7c l     F .text		 000000c6 wl_add
+02030982 l     F .text		 0000050a wl_band
+02036b6a l     F .text		 00000212 wl_begin
+02036fb4 l     F .text		 0000004c wl_elem
+0208350c l       .text		 00000018 wl_elem.E
+01c1a752 l       .bss		 00000001 wl_fxkey
+0202aee2 l     F .text		 00000036 wl_gen_layout
+02087970 l       .text		 00000008 wl_gen_layout.L
+01c19dd4 l       .bss		 00000004 wl_genmap
+0202af44 l     F .text		 0000007c wl_go
+02036b5c l     F .text		 0000000e wl_h
+02036e94 l     F .text		 00000120 wl_hand
+020834ec l       .text		 00000020 wl_hand.P
+0202aa76 l     F .text		 00000038 wl_key_white
+0202afc0 l     F .text		 0000043e wl_keys
+02025430 l     F .text		 0000003e wl_keys_on
+02082cd0 l       .text		 0000000e wl_letter.L
+01c1d060 l       .bss		 000001d9 wl_lwas
+0202525e l     F .text		 00000022 wl_on
+02036e42 l     F .text		 00000052 wl_oval_i
+0202acce l     F .text		 0000015e wl_poll
+0202ab9a l     F .text		 00000134 wl_rec_end
+0202af18 l     F .text		 0000002c wl_sec_name
+02081b24 l       .text		 00000014 wl_sec_name.GN
+0202a97a l     F .text		 000000fc wl_song
+02030eb2 l     F .text		 0000064e wl_strip_at
+01c1a904 l       .bss		 00000004 wl_strip_sig
+0203082a l     F .text		 00000004 wl_teen_h
+02030e8c l     F .text		 00000026 wl_teen_top
+020834da l       .text		 00000012 wl_visit.G
+020834ce l       .text		 0000000c wl_visit.VC
+01c1a6f8 l       .bss		 00000001 wv.0
+01c1a6fc l       .bss		 00000001 wv.1
+01c1a700 l       .bss		 00000002 wv.2
+01c1a704 l       .bss		 00000002 wv.3
+01c1a708 l       .bss		 00000002 wv.4
+01c1a9c0 l       .bss		 00000004 wv.5
+01c1a9c4 l       .bss		 00000004 wv.6
+01c1a9c8 l       .bss		 00000004 wv.7
+01c1a9cc l       .bss		 00000004 wv.8
+01c1a9d0 l       .bss		 00000004 wv.9
+02031ae0 l     F .text		 000000c6 xb_arc
+02031ab2 l     F .text		 0000002e xb_hash
+02031ba6 l     F .text		 0000006c xb_ln
+02031946 l     F .text		 0000005e xb_pack
+02031db0 l     F .text		 00000042 xb_put
+02031c12 l     F .text		 0000019e xb_sigil
+0201104e l     F .text		 0000008a xe_alien
+0203082e l     F .text		 00000018 xe_anim
+02031f92 l     F .text		 00000030 xe_blink
+0203253a l     F .text		 00000046 xe_disc
+020325da l     F .text		 0000005a xe_dots
+020327f8 l     F .text		 000009ba xe_home_in
+0203086a l     F .text		 00000010 xe_isqrt
+02031fc2 l     F .text		 0000048a xe_lanes
+02010682 l     F .text		 00000066 xe_line
+02031500 l     F .text		 0000001e xe_pos
+02032634 l     F .text		 000001c4 xe_reel
+0203244c l     F .text		 000000ee xe_ring
+0203151e l     F .text		 00000040 xe_sings
+02010fe4 l     F .text		 0000006a xe_stars
+0202fb24 l     F .text		 00000022 xe_teen_cards
+0202faf8 l     F .text		 0000002c xe_teen_tall
+0203155e l     F .text		 00000092 xe_tiny
+0208716b l       .text		 0000002a xe_tiny.ORD
+02082cde l       .text		 00000052 xe_tiny.T
+02031df2 l     F .text		 000001a0 xe_track_art
+01c7a100         *ABS*		 00000000 _sstack_lo
+01c7c0c8 g       .noinit		 00000010 settings
+02087ba4         .text		 00000000 _etext
+0200c4f0 g     F .text		 0000086a fm1_alnk0_irq
+01c0a100         .bss		 00000000 _c1_sstack_top
+02001656 g     F .text		 00000010 memcpy
+01c7c000         *ABS*		 00000000 _sstack_top
+01c09000         .bss		 00000000 _bss_start
+01c7a000         *ABS*		 00000000 _guard1
+01c1f000         .pool		 00000000 _pool_start
+01c7c000 g       .noinit		 00000044 fm1_crash
+01c1d718         .bss		 00000000 _bss_end
+0200d530 g     F .text		 0000126a fm1_timer5_irq
+01c7a000         *ABS*		 00000000 _ustack_top
+01c7c044 g       .noinit		 0000004c felucca_dbg
+01c1d714 g       .bss		 00000004 fm1_c1_trace
+01c7c0d8 g       .noinit		 00002800 proj_slot
+01c09000         .bss		 00000000 _c1_ustack
+02000120         .text		 00000000 _start
+01c08000         .data		 00000000 _data_start
+0208be8c         *ABS*		 00000000 _data_load
+01c00ce4         .ram_text		 00000000 _rt_hot
+01c042e8         .ramx		 00000000 _ramx_start
+0200046e         .text		 00000000 isr_timer5
+01c04248 g     F .ram_text		 0000009e fm1_c1_main
+02001666 g     F .text		 0000001a memcmp
+01c08fd0         .data		 00000000 _data_end
+01c073d8         .ramx		 00000000 _ramx_end
+0200164a g     F .text		 0000000c memset
+01c7c0a8 g       .noinit		 00000020 panel
+01c042e8         .ram_text		 00000000 _rt_end
+02046976 g     F .text		 00000276 fm1_cstart
+02087ba4         *ABS*		 00000000 _rt_load
+01c74c8c         .pool		 00000000 _pool_end
+01c77000         *ABS*		 00000000 _guard0
+01c7c090 g       .noinit		 0000000c bootguard
+020013b6 g     F .text		 00000294 fm1_fault_c
+0200047e         .text		 00000000 isr_alnk0
+01c7c09c g       .noinit		 00000008 clk320
+01c77100         *ABS*		 00000000 _ustack_lo
+02000490         .text		 00000000 fm1_c1_entry
+02000458         .text		 00000000 fm1_fatal_common
+02000158         .text		 00000000 fm1_fatal_stubs
+01c00000         .ram_text		 00000000 _rt_start

@@ -1,0 +1,18 @@
+
+../spampy/build/felucca.elf:	file format ELF32-pi32v2
+
+Sections:
+Idx Name          Size      Address          Type
+  0               00000000 0000000000000000 
+  1 .text         00081c18 0000000002000120 TEXT DATA 
+  2 .ram_text     00000b94 0000000001c00000 TEXT DATA 
+  3 .c1_text      0000003c 0000000001c00b94 TEXT DATA 
+  4 .lowram       000058f4 0000000001c00bd0 BSS
+  5 .data         0000361c 0000000001c08000 TEXT DATA 
+  6 .bss          00010bbc 0000000001c0b620 BSS
+  7 .pool         0004fcd4 0000000001c20000 BSS
+  8 .noinit       00003878 0000000001c7c000 BSS
+  9 .shstrtab     00000055 0000000000000000 
+ 10 .symtab       00007250 0000000000000000 
+ 11 .strtab       0000526c 0000000000000000 
+-rw-r--r-- 1 runner runner 548356 Nov 24 01:21 ../spampy/build/felucca.bin

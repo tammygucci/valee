@@ -1,0 +1,17 @@
+
+./build/felucca.elf:	file format ELF32-pi32v2
+
+Sections:
+Idx Name          Size      Address          Type
+  0               00000000 0000000000000000 
+  1 .text         00087a84 0000000002000120 TEXT DATA 
+  2 .ram_text     000042e8 0000000001c00000 TEXT DATA 
+  3 .ramx         000030f0 0000000001c042e8 BSS
+  4 .data         00000fd0 0000000001c08000 DATA 
+  5 .bss          00014718 0000000001c09000 BSS
+  6 .pool         00055c8c 0000000001c1f000 BSS
+  7 .noinit       000028dc 0000000001c7c000 BSS
+  8 .shstrtab     0000004a 0000000000000000 
+  9 .symtab       0000b250 0000000000000000 
+ 10 .strtab       0000744e 0000000000000000 
+-rw-r--r-- 1 runner runner 576828 Nov 24 01:21 ./build/felucca.bin
