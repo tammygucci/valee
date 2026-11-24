@@ -129,7 +129,8 @@ def generate():
             [tools / "gen_sprites.py", GEN / "ui_sprites.h"],
             [tools / "gen_tables.py", GEN / "felucca_tables.h"],
             [tools / "gen_fm6_patches.py", GEN / "felucca_fm6.h"],
-            [tools / "gen_samples.py", GEN / "felucca_samples.h"]]
+            [tools / "gen_samples.py", GEN / "felucca_samples.h"],
+            [tools / "gen_p5_tables.py", GEN / "p5_tables.h"]]   # ((Vallée) SLOOP's PROPHET, from SPAMPY)
     procs = [subprocess.Popen([sys.executable, *map(str, c)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                               text=True) for c in cmds]
     failed = []

@@ -19,6 +19,7 @@ static void *eng_part(const track_t *t);
 #include "eng_drumx.c"          /* (Skiff) DRUM-X: JIANT FM's drum engine (drumx_voice.c, GPL-3.0-only) */
 #include "eng_noise.c"
 #include "eng_summon.c"          /* (Vallée) SUMMON: SUMMONER (XENO), AURA (TEEN) */
+#include "sloop/sloop_engines.c"    /* (Vallée, the SPAMPY port) SLOOP's engines */
 #include "eng_fm6.c"            /* FM6: 6-operator FM, msfa ported (fm6_core.c, Apache-2.0) */
 #include "fm4_convert.c"        /* DIGITAL's tables, and its sounds -> FM6 */
 #if FELUCCA_FM4
@@ -40,6 +41,10 @@ typedef union {
     drumx_lane_t drumx[DV_NLANE];
     fm6_note_t fm6[FM6_POLY];
     drw_vc_t wheel[NVOICE];
+    p5_part_t prophet;               /* ((Vallée) SLOOP's engines, sloop/sloop_engines.c: their part state here, as */
+    cz_part_t cz;                    /* SPAMPY's eng_arena: zeroed by the switch) */
+    sid_part_t sid;
+    obv_part_t obervave;
 #if FELUCCA_SLICE
     int16_t slice[SLC_NV][SLC_RB];   /* SLICE's reverse windows */
 #endif
@@ -52,6 +57,10 @@ typedef union {
     drumx_lane_t drumx[DV_NLANE];
     fm6_note_t fm6[FM6_POLY];
     drw_vc_t wheel[NVOICE];
+    p5_part_t prophet;
+    cz_part_t cz;
+    sid_part_t sid;
+    obv_part_t obervave;
 #if FELUCCA_SLICE
     int16_t slice[SLC_NV][SLC_RB];
 #endif
@@ -64,6 +73,11 @@ static void *eng_part(const track_t *t)
         return &eng_lite[k - NHEAVY];
     return &eng_mem[k];
 }
+/* ((Vallée) SLOOP's engines ask for their part's state by the part's number (SPAMPY's engines.c accessors) */
+static p5_part_t *p5_part(uint32_t p) { return p < NPART ? (p5_part_t *)eng_part(&trk[p]) : 0; }
+static cz_part_t *cz_part(uint32_t p) { return (cz_part_t *)eng_part(&trk[p % NPART]); }
+static sid_part_t *sid_part(uint32_t p) { return (sid_part_t *)eng_part(&trk[p % NPART]); }
+static obv_part_t *obv_part(uint32_t p) { return (obv_part_t *)eng_part(&trk[p % NPART]); }
 static uint32_t eng_size(const track_t *t)            /* its area's bytes (the engine switch zeroes them) */
 {
     if ((uint32_t)(t - trk) % NPART >= NHEAVY)
