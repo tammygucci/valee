@@ -57,10 +57,8 @@ typedef union {
     drumx_lane_t drumx[DV_NLANE];
     fm6_note_t fm6[FM6_POLY];
     drw_vc_t wheel[NVOICE];
-    p5_part_t prophet;
-    cz_part_t cz;
-    sid_part_t sid;
-    obv_part_t obervave;
+    /* ((Vallée) SLOOP's engines: not on the light tracks yet (the pool's 8 KB headroom); phase 2b, once PHYS and
+     * GRAIN leave the heavy area, decides: until then eng_allowed keeps them off these tracks) */
 #if FELUCCA_SLICE
     int16_t slice[SLC_NV][SLC_RB];
 #endif
@@ -74,6 +72,8 @@ static void *eng_part(const track_t *t)
     return &eng_mem[k];
 }
 /* ((Vallée) SLOOP's engines ask for their part's state by the part's number (SPAMPY's engines.c accessors) */
+_Static_assert(sizeof(eng_mem_t) >= sizeof(obv_part_t) && sizeof(eng_mem_t) >= sizeof(cz_part_t) &&
+               sizeof(eng_mem_t) >= sizeof(p5_part_t) && sizeof(eng_mem_t) >= sizeof(sid_part_t), "SLOOP's parts");
 static p5_part_t *p5_part(uint32_t p) { return p < NPART ? (p5_part_t *)eng_part(&trk[p]) : 0; }
 static cz_part_t *cz_part(uint32_t p) { return (cz_part_t *)eng_part(&trk[p % NPART]); }
 static sid_part_t *sid_part(uint32_t p) { return (sid_part_t *)eng_part(&trk[p % NPART]); }
