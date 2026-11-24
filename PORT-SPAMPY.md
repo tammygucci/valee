@@ -100,6 +100,13 @@ Done since:
 - User presets: version 7 = SPAMPY's numbers; an older record is mapped in RAM at load (up_from_skiff), SAMPLE DRUM
   FM6 SUMMON kept (projects keep those four too now); ENG_FROM_SKIFF in core.h.
 - regress: PROPHET and FM6 O1..O17 (long releases, bells) 90 s to free; health clean; ASan stress clean.
+- The app is built as SPAMPY builds it: -mcpu=r3 -mfprev1 -ffp-contract=off (the FPU: PROPHET's float kernels; no
+  soft-float helpers exist to link). PROPHET's kernels (.p5_text) and tables (.p5_tables) at the start of .data in RAM,
+  as SPAMPY's app.ld; RAM 96 KiB (POOL -4 KiB: 0x01C20000, 0x54000), the guard's RAM PC window to _guard_ram_end.
+  CZ's patch copy in the POOL (RAM was 200 B over).
+- FM-1 build (CI run 45324607136): image 528,088 B of 581,564 (53 KB free); RAM .data+.bss 97,640 of 98,304 (664 B
+  free: phase 3 puts new state in the POOL); pool 313,144 of 344,064 (31 KB spare); RAM code 29,756 of 32,512.
+  Not yet measured on the unit: PROPHET's CPU (it runs on the FPU from RAM, as in SPAMPY).
 Next: update the tests written for the old engines (editor_test: PHYS/GRAIN light tracks, F2/F6 patches, version 6,
 INFO's engine names; upreset_test: version 7, DIGITAL back; persistence: preset save/erase compare with v7), the
 editor's mock tables (web/editor.html), then re-record the goldens after listening / looking.
