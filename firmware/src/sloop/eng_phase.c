@@ -19,9 +19,10 @@ static inline int32_t pd_cos(uint32_t ph16)             /* -cos, Q15, from the 1
 /* one wave's bend for a block: break points and the slopes of the bent phase
  * (Q16 reciprocals), so a sample costs a multiply instead of a divide (the
  * bent phase comes out the same or 1 lower in 65536) */
-typedef struct {
+typedef struct pd_s {
     uint32_t w, x, peak, rez;
     uint32_t k0, k1;
+    const struct pd_s *old;      /* (Vallée, Skiff's #41) the last block's bend: pd_wave fades from it */
 } pd_t;
 
 static inline uint32_t pd_slope(uint32_t span, uint32_t len) { return (span << 16) / (len ? len : 1u); }
@@ -30,6 +31,7 @@ static void pd_setup(pd_t *b, uint32_t w, uint32_t dcw)
 {
     uint32_t x;
     b->w = w;
+    b->old = 0;
     switch (w) {
     case 0:                                                  /* SAW */
         x = 32768u + ((dcw * 32767u) >> 16);
@@ -67,7 +69,7 @@ static void pd_setup(pd_t *b, uint32_t w, uint32_t dcw)
 }
 
 /* one sample at phase ph (16 bit): bipolar Q15 */
-static int32_t pd_wave(const pd_t *b, uint32_t ph)
+static int32_t pd_one(const pd_t *b, uint32_t ph)
 {
     uint32_t pd, x = b->x;
     switch (b->w) {
@@ -115,8 +117,20 @@ static int32_t pd_wave(const pd_t *b, uint32_t ph)
     return pd_cos(pd);
 }
 
+/* (Vallée, Skiff's #41) with b->old, the last block's bend fading into this one's over the block (i: the
+ * sample in it), as the amplitude ramps */
+static int32_t pd_wave(const pd_t *b, uint32_t ph, uint32_t i)
+{
+    int32_t s = pd_one(b, ph), s0;
+    if (!b->old)
+        return s;
+    s0 = pd_one(b->old, ph);
+    return s0 + ((s - s0) * (int32_t)(i + 1u) >> CTL_LOG2);
+}
+
 static void phase_note_on(track_t *t, voice_t *v)
 {
+    v->s[7] = -1;                /* (Vallée) the last block's DCW: none yet */
     (void)t;
     v->ph[1] = 0;
     v->ph[2] = 0;
@@ -134,7 +148,8 @@ static void phase_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const
     int32_t d16 = det * 16 / 100, rem = det * 16 - d16 * 100;
     uint32_t ph0 = v->ph[0], ph1 = v->ph[1], ph2 = v->ph[2];
     int32_t tg0 = v->s[0], tg1 = v->s[1];                    /* WAVE / WAVE2 toggles */
-    pd_t b1, b2;
+    pd_t b1, b2, o1, o2;                                     /* (Vallée) o: the last block's */
+    uint32_t was = (uint32_t)v->s[7];
     depth = clamp(depth + (m->shape - (64 << 8)), 0, 127 << 8);
     dcw = (uint32_t)depth * 65535u / (127u << 8);
     dcw = (dcw * 56000u) >> 16;                              /* the classic range of the bend */
@@ -142,16 +157,23 @@ static void phase_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const
     inc2 += (uint32_t)((int32_t)(inc2 >> 12) * (rem * 2367 / 16000));
     pd_setup(&b1, w1, dcw);
     pd_setup(&b2, w2 ? w2 - 1u : w1, dcw);                   /* WAVE2 (every other cycle) */
+    v->s[7] = (int32_t)dcw;
+    if (was != dcw && was < 56000u) {                        /* (Vallée, #41) DCW moved: fade from the last */
+        pd_setup(&o1, w1, was);
+        pd_setup(&o2, w2 ? w2 - 1u : w1, was);
+        b1.old = &o1;
+        b2.old = &o2;
+    }
     for (i = 0; i < n; i++) {
         uint32_t old = ph0;
         int32_t s;
-        s = pd_wave(tg0 ? &b2 : &b1, ph0 >> 16);
+        s = pd_wave(tg0 ? &b2 : &b1, ph0 >> 16, i);
         ph0 += inc;
         if (ph0 < old)
             tg0 ^= 1;
         if (line2) {
             uint32_t old2 = ph1;
-            int32_t s2 = pd_wave(tg1 ? &b2 : &b1, ph1 >> 16);
+            int32_t s2 = pd_wave(tg1 ? &b2 : &b1, ph1 >> 16, i);
             ph1 += inc2;
             if (ph1 < old2)
                 tg1 ^= 1;

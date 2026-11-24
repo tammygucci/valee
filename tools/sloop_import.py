@@ -103,6 +103,34 @@ def presets(t, f):
 
 # small fixes where Vallée already has the same thing (asserted to match exactly once)
 PATCHES = {
+    # (Vallée) PHASE: DCW (knob, ENV -> DCW, the shape) is set once a block, so a moving DCW steps the wave at each
+    # block's start: a faint buzz, a click as the knob turns (SPAMPY's own, measured). Skiff's #41 fade: the last
+    # block's bend fades into this one's over the block; only when DCW moved (a held note's steady bend: as before)
+    "eng_phase.c": [(re.escape("typedef struct {\n    uint32_t w, x, peak, rez;\n    uint32_t k0, k1;\n} pd_t;"),
+                     "typedef struct pd_s {\n    uint32_t w, x, peak, rez;\n    uint32_t k0, k1;\n"
+                     "    const struct pd_s *old;      /* (Vallée, Skiff's #41) the last block's bend: pd_wave fades from it */\n"
+                     "} pd_t;"),
+                    (re.escape("static void pd_setup(pd_t *b, uint32_t w, uint32_t dcw)\n{\n    uint32_t x;\n    b->w = w;"),
+                     "static void pd_setup(pd_t *b, uint32_t w, uint32_t dcw)\n{\n    uint32_t x;\n    b->w = w;\n    b->old = 0;"),
+                    (re.escape("static int32_t pd_wave(const pd_t *b, uint32_t ph)\n{"),
+                     "static int32_t pd_one(const pd_t *b, uint32_t ph)\n{"),
+                    (re.escape("static void phase_note_on(track_t *t, voice_t *v)\n{"),
+                     "/* (Vallée, Skiff's #41) with b->old, the last block's bend fading into this one's over the block (i: the\n"
+                     " * sample in it), as the amplitude ramps */\n"
+                     "static int32_t pd_wave(const pd_t *b, uint32_t ph, uint32_t i)\n{\n"
+                     "    int32_t s = pd_one(b, ph), s0;\n    if (!b->old)\n        return s;\n"
+                     "    s0 = pd_one(b->old, ph);\n    return s0 + ((s - s0) * (int32_t)(i + 1u) >> CTL_LOG2);\n}\n\n"
+                     "static void phase_note_on(track_t *t, voice_t *v)\n{\n"
+                     "    v->s[7] = -1;                /* (Vallée) the last block's DCW: none yet */"),
+                    (re.escape("    pd_t b1, b2;\n"), "    pd_t b1, b2, o1, o2;                                     /* (Vallée) o: the last block's */\n    uint32_t was = (uint32_t)v->s[7];\n"),
+                    (re.escape("    pd_setup(&b2, w2 ? w2 - 1u : w1, dcw);                   /* WAVE2 (every other cycle) */\n"),
+                     "    pd_setup(&b2, w2 ? w2 - 1u : w1, dcw);                   /* WAVE2 (every other cycle) */\n"
+                     "    v->s[7] = (int32_t)dcw;\n"
+                     "    if (was != dcw && was < 56000u) {                        /* (Vallée, #41) DCW moved: fade from the last */\n"
+                     "        pd_setup(&o1, w1, was);\n        pd_setup(&o2, w2 ? w2 - 1u : w1, was);\n"
+                     "        b1.old = &o1;\n        b2.old = &o2;\n    }\n"),
+                    (re.escape("        s = pd_wave(tg0 ? &b2 : &b1, ph0 >> 16);"), "        s = pd_wave(tg0 ? &b2 : &b1, ph0 >> 16, i);"),
+                    (re.escape("            int32_t s2 = pd_wave(tg1 ? &b2 : &b1, ph1 >> 16);"), "            int32_t s2 = pd_wave(tg1 ? &b2 : &b1, ph1 >> 16, i);")],
     # VOICE's breath noise: one xorshift shared by every track in SPAMPY (one core); the second core renders tracks at
     # once, so one per track (as Skiff's fix): the same sound, bit for bit on one core or two
     "eng_formant.c": [(r"\bformant_nz\b(?! = 0x2545F491)", "FORMANT_NZ(t)", 9),

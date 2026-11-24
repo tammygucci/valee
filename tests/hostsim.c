@@ -614,14 +614,13 @@ static int phase_test(const char *dir)
             in = e;
         }
     }
-    /* ((Vallée, the SPAMPY sound) SLOOP's PHASE (as SPAMPY ships it) moves DCW once a block: SPAMPY measures the same
-     * steps (CZ STRING ~11 x, SOFT KEYS ~108 x without the knob). Kept as SPAMPY's until the user decides on Skiff's
-     * #41 fade (PORT-SPAMPY.md): reported, not failed */
+    /* ((Vallée, the SPAMPY sound) SLOOP's PHASE set DCW once a block (SPAMPY: CZ STRING ~20 x here, SOFT KEYS ~108 x
+     * without the knob); Skiff's #41 fade ported (tools/sloop_import.py), as the user chose */
     printf("tracks: PHASE CZ STRING low notes, DCW turned: the largest second difference at a block boundary %d, inside "
-           "the blocks %d (%.2f x; SPAMPY's PHASE: about the same in SPAMPY) %s\n", at, in, (double)at / in,
-           at <= 2 * in ? "ok" : "as SPAMPY");
+           "the blocks %d (%.2f x; a bend switched at once: over 5 x) %s\n", at, in, (double)at / in,
+           at <= 2 * in ? "ok" : "FAIL");
     free(L);
-    return 0;
+    return at > 2 * in;
 }
 
 /* Skiff: the parts' shared engine area (engines.c eng_mem). Track 1 plays three PHYS notes (its three slots in its

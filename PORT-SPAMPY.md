@@ -134,17 +134,16 @@ project; DIGITAL is an engine again; old v4/v5 records mapped to v7 sounds as th
 GEN's style sounds: phase 5).
 Found on the way (pre-existing, Classic too, not from the swap): with an INSERT TYPE set the track runs 64 blocks of
 tail instead of 16, so a short sound's last few ms differ by rounding at MIX 0 (inaudible; the test's pad hides it).
-QUESTION for the user: SPAMPY's PHASE steps its DCW once a block (measured in SPAMPY's own host build: SOFT KEYS
-~108 x the in-block change at block edges, CZ LEAD ~14 x, CZ BRASS ~24 x without touching the knob; Skiff fixed the same
-in its PHASE, #41, by fading the step). Keep it as SPAMPY's, or apply the fade (a faint buzz gone; not bit-identical to
-SPAMPY then)? Kept as SPAMPY's for now (tests/hostsim.c reports, does not fail).
+DECIDED (user, 2026-11-24): PHASE gets Skiff's #41 fade (tools/sloop_import.py patch): block-edge steps from up to
+~115 x to under 3 x (SOFT KEYS 2.9, CZ BRASS 1.5, CZ STRING knob turned 1.9: the TRACKS check fails over 2 again).
+Not bit-identical to SPAMPY's PHASE only while DCW moves. The 7 arp sounds leave the arp as the track's (decided).
 Then re-record the goldens after listening / looking.
 STATE 2026-11-24 (CI run 45388473412, branch spampy-engine at 3dc7a86): the FM-1 firmware builds and fits (image
 528,000 B of 581,564; RAM 97,704 of 98,304; pool 313,144 of 344,064; RAM code 29,756 of 32,512). Every host, UI
 (ASan too), web, backup, installer and emulator test passes but the two goldens, which wait for a deliberate review:
 tests/golden.txt (the audio renders: the sounds changed by design) and tests/ui_golden.txt (834 pictures changed,
 6 gone (FM6's old EDIT picture), 66 new). Phase 5 begun: GEN's twelve styles on SPAMPY's sounds (summon_fit clean).
-Open questions for the user: PHASE's DCW steps (above); the 7 arp sounds switching the arp on (default: no).
+Decided since: PHASE fade on; arp sounds leave the arp off.
 Then 3 (drums), 4 (mix), 5 (GEN, SUMMON...), 6 (tests), 7 (installer).
 Local host builds: build/gen from a CI-like build + tools/gen_factory_block.py + tools/gen_p5_tables.py.
 Do not install this branch on a unit yet (the installer does not write the sample block).
