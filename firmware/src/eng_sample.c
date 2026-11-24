@@ -91,10 +91,10 @@ _Static_assert(SMP_USER_BASE + SMP_USER_FLASH_SLOTS * SMP_USER_SIZE <= FL_SLOT_H
 #define SMP_FACT_BUILTIN 0
 #endif
 _Static_assert(SMP_FACT_BASE + SMP_FACT_HDR + SMP_FACT_LEN <= 0xDC000u, "the factory samples past the sample area");
-static const uint8_t *smp_fact_data = SMP_FACT_IMG() + SMP_FACT_HDR;   /* the block's data (the zones' offsets count from
-                                                                       * it); never read before smp_fact_ok */
+/* the block's data (the zones' offsets count from it), never read before smp_fact_ok: a constant address on the FM-1
+ * (FM1_XIP), so the render loop reads no pointer for it (as Classic's built-in array: target_budget.py) */
 static uint8_t smp_fact_ok = SMP_FACT_BUILTIN;      /* 1: the block checked out (smp_fact_scan), else every set missing */
-#define SMP_DATA smp_fact_data
+#define SMP_DATA (SMP_FACT_IMG() + SMP_FACT_HDR)
 static uint32_t smp_crc32(const uint8_t *p, uint32_t n)   /* zlib's CRC-32 (bitwise: once at boot, no table) */
 {
     uint32_t c = 0xFFFFFFFFu, k;
@@ -111,7 +111,6 @@ static void smp_fact_scan(void)
     uint32_t magic = (uint32_t)b[0] | (uint32_t)b[1] << 8 | (uint32_t)b[2] << 16 | (uint32_t)b[3] << 24;
     uint32_t len = (uint32_t)b[8] | (uint32_t)b[9] << 8 | (uint32_t)b[10] << 16 | (uint32_t)b[11] << 24;
     uint32_t crc = (uint32_t)b[12] | (uint32_t)b[13] << 8 | (uint32_t)b[14] << 16 | (uint32_t)b[15] << 24;
-    smp_fact_data = b + SMP_FACT_HDR;
     smp_fact_ok = magic == SMP_FACT_MAGIC && b[4] == 1u && !b[5] && len == SMP_FACT_LEN && crc == SMP_FACT_CRC &&
                   smp_crc32(b + SMP_FACT_HDR, len) == crc;
 }

@@ -15,10 +15,13 @@ import re
 import sys
 
 FUNCS = ["analog_render", "digital_render", "digital_render_legacy", "digital_render_custom", "phase_render", "lofi_render", "sample_render", "formant_render",
-         "trio_render", "trio_pass", "wheel_render", "wheel_block",
-         "grain_render", "grain_block", "phys_render", "drum_render", "drumx_render", "dx_run",   # (Skiff) DRUM-X: eng_drumx.c, drumx_voice.c
-         "noise_render", "fm6_render", "fm6_op_run", "fm6_op_fb", "px_modal_block", "px_modal_run", "px_memb_block",
-         "px_string_excite", "px_string_run", "px_symp_run",
+         "trio_render", "trio_pass",
+         # ((Vallée, the SPAMPY sound) SLOOP's engines as SPAMPY uses them (sloop/): WHEEL (drawbar), MORPH (wavetable),
+         # PROPHET (its render, its block, the RAM kernel), CZ-1, SID, OBERVAVE, DRONE. GRAIN, PHYS, NOISE, DRUM-X
+         # retired (Vallée Classic keeps them)
+         "drawbar_render", "wt_render", "p5_render", "p5_block", "p5_samples", "cz_native_render", "cz_native_block",
+         "sid_render", "obv_render", "drone_render",
+         "drum_render", "fm6_render", "fm6_op_run", "fm6_op_fb",
          "dv_metal_run", "dv_kick_run", "dv_snare_run", "dv_clap_run", "dv_hat_run", "dv_tom_run",   # drum_voice.c
          "dv_rim_run", "dv_bell_run", "dv_cym_run", "dv_out", "dv_metal_mix",
          # ((2.5) slicer_track: inlined into mix_part, which runs from RAM (fx.c AUDIO_RAM, flatten): counted there)
@@ -53,7 +56,7 @@ FUNCS = ["analog_render", "digital_render", "digital_render_legacy", "digital_re
          "drum_smp"]                             # (2.0, #35) a user kit's lane (eng_drum.c)
 # built only with FELUCCA_FM4=1 (DIGITAL, src/eng_digital.c; not in the default build, so not in BUDGET): absent,
 # they are skipped; present, checked against these (their budget lines until the engine was retired in 1.0)
-OPTIONAL = {"digital_render": 12, "digital_render_legacy": 333, "digital_render_custom": 558,
+OPTIONAL = {"digital_render_legacy": 333, "digital_render_custom": 558,   # ((Vallée) digital_render: SPAMPY's, budgeted
             "uac_tap48": 504,           # (absent from a FELUCCA_UAC_48K=0 or FELUCCA_UAC=0 build)
             "slice_render": 453, "slc_rev": 120}   # ((Vallée) absent without FELUCCA_SLICE=1, core.h: its default)
 TOL = 0.10                      # exact (no noise): small edits pass, a grown render loop does not
