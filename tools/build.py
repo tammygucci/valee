@@ -334,8 +334,10 @@ def check(img, syms, dis, rt):
                  f"RAM code + .ramx {rtx} B of {rt_len}")
     if bss > ram_len:
         errors.append("RAM region overflow")
-    big = sorted(((int(q[-2], 16), q[-1]) for q in (ln.split() for ln in syms.splitlines())
-                  if len(q) >= 6 and q[-3] == ".pool"), reverse=True)   # ((Vallée) the pool's biggest, for planning
+    p0, p1 = sym("_pool_start"), sym("_pool_end")   # ((Vallée) the pool's biggest, for planning: by address
+    at = sorted({(int(q[0], 16), q[-1]) for q in (ln.split() for ln in syms.splitlines())
+                 if len(q) >= 4 and re.fullmatch(r"[0-9a-f]{8}", q[0]) and p0 <= int(q[0], 16) < p1 and not q[-1].startswith("_pool")})
+    big = sorted(((nx[0] if nx else p1) - a, n) for (a, n), nx in zip(at, at[1:] + [None]))[::-1]
     notes.append("pool's biggest: " + ", ".join(f"{n} {z}" for z, n in big[:30]))
     if pool_len - pool < 8192:                    # keep >= 8 KiB of the pool spare (app.ld POOL)
         errors.append(f"pool headroom {pool_len - pool} B < 8192 B")
