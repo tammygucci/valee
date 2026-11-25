@@ -2878,8 +2878,7 @@ static void draw_graph(void)
             cv_oy = 0;
             graph_bank();
             break;
-        case GR_DXSND:                               /* (Skiff phase 7, 8; FM6 LAB) a sheet, from the panel's top */
-        case GR_FMOP:
+        case GR_FMOP:                                /* (FM6 LAB) a sheet, from the panel's top */
         case GR_FMALL:
         case GR_GEN:                                 /* ((Vallée) GEN) */
             cv_oy = 0;

@@ -226,7 +226,7 @@ static int preferences(void)
         host_wire[n - 9 - 4] == 0 && host_wire[n - 9 - 3] == 64 && host_wire[n - 9 - 2] == 7 &&        /* ((Vallée, the SPAMPY
                                                      * sound) light: no PROPHET CZ SID OBERVAVE, 13..16) */
         host_wire[n - 10] == 0x43 && host_wire[n - 9] == 1 && host_wire[n - 8] == TC_COUNT &&
-        host_wire[n - 7] == 0x4B && host_wire[n - 6] == 1 && host_wire[n - 5] == 8 &&    /* (Skiff W3) the kit, */
+        host_wire[n - 7] == 0x4B && host_wire[n - 6] == 1 && host_wire[n - 5] == 0 &&    /* (Skiff W3) the kit ((Vallée) none), */
         host_wire[n - 4] == 0x57 && host_wire[n - 3] == 1 && host_wire[n - 2] == 127);   /* TRANSPORT .. PERFORM, (#21) SMP_MIX, (2.0) ties */   /* (Skiff W1) the step's FLAM
                                                                                           * COND NUDGE */
     request(ED_UI_SET, a, 2);
@@ -438,23 +438,10 @@ static int steps(void)
     n = request(ED_TRACK_STEP, a, 2);
     bad += check("no ties on a step with hits (its accents kept) or a TIE; TRACK_STEP writes and reads them on any track",
                  ok && n == 28u && host_wire[n - 5] == 2);
-    {   /* (Skiff W3) the DRUM-X kit: KIT_GET, KIT_PUT, a lane's 15 values; a bad one refused, the kit as it was */
-        static const uint8_t PUT[16] = {2, DXW_BELL, DXF_BP, 1, DXM_NOISE, 1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
-        dx_lane_t was = dx_kit[2];
-        n = request(ED_KIT_PUT, PUT, 16);
-        ok = n == 22u && (dx_kit[2].mode & 3u) == DXW_BELL && ((dx_kit[2].mode >> 2) & 3u) == DXF_BP && (dx_kit[2].mode & 0x10u) &&
-             ((dx_kit[2].mode >> 5) & 3u) == DXM_NOISE && (dx_kit[2].mode & DX_DRIVE) && dx_kit[2].a[0] == 10 && dx_kit[2].b[4] == 100 &&
-             !memcmp(host_wire + 5, PUT, 16);
-        a[0] = 2; n = request(ED_KIT_GET, a, 1);
-        ok &= n == 22u && !memcmp(host_wire + 5, PUT, 16);
-        memcpy(a, PUT, 16); a[2] = 3;
-        ok &= !request(ED_KIT_PUT, a, 16);
-        memcpy(a, PUT, 16); a[15] = 128;
-        ok &= !request(ED_KIT_PUT, a, 16);
-        a[0] = 8; ok &= !request(ED_KIT_GET, a, 1);
-        bad += check("KIT_PUT sets a DRUM-X lane (wave, filter, snap, pitch mod, drive, A, B), KIT_GET reads it; bad values refused",
-                     ok && dx_kit_ok(dx_kit));
-        dx_kit[2] = was;
+    {   /* ((Vallée) DRUM-X retired: KIT_GET and KIT_PUT refused, INFO 4B 01 0 (no lanes) */
+        static const uint8_t PUT[16] = {2, 1, 1, 1, 1, 1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
+        a[0] = 2;
+        bad += check("(Vallée) KIT_GET, KIT_PUT (DRUM-X, retired): refused", !request(ED_KIT_GET, a, 1) && !request(ED_KIT_PUT, PUT, 16));
     }
     return bad;
 }

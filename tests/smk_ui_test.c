@@ -165,7 +165,6 @@ static void ui_power_on(void)
     proj_cur = PROJ_NO_SLOT;
     memset(&favorites, 0, sizeof favorites);
     memset(undo_ring, 0, sizeof undo_ring);   /* (Skiff: the undo ring, ui.c) */
-    memcpy(dx_kit, DX_KIT_DEF, sizeof dx_kit);   /* ((Skiff phase 9) the factory kit: a DRUM-X preset loads others) */
     memset(bk_ram, 0xFF, sizeof bk_ram);         /* (Skiff: the pattern bank erased, as from a new unit) */
     bank_boot();
     memset(launch_q, 0, sizeof launch_q);        /* (.. nothing staged: launch.c) */

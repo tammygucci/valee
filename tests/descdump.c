@@ -133,33 +133,6 @@ int main(void)
     printf(",\n\"LANE_NOTE\":[");                    /* the DRUM grid: each lane's GM note, the lane of GM 35..81 */
     for (k = 0; k < NLANE; k++)
         printf("%s%d", k ? "," : "", DRUM_LANE_NOTE[k]);
-    printf("],\n\"DX_KIT\":[");                      /* (Skiff W3) the DRUM-X factory kit {mode, A, B}: the editor's */
-    for (k = 0; k < 8u; k++) {
-        printf("%s[%d,[", k ? "," : "", DX_KIT_DEF[k].mode);
-        for (i = 0; i < DXP_N; i++)
-            printf("%s%d", i ? "," : "", DX_KIT_DEF[k].a[i]);
-        printf("],[");
-        for (i = 0; i < DXP_N; i++)
-            printf("%s%d", i ? "," : "", DX_KIT_DEF[k].b[i]);
-        printf("]]");
-    }
-    printf("],\n\"DX_KITS\":[");                     /* (Skiff phase 9) the kits a DRUM-X preset loads (eng_drumx.c) */
-    for (e = 0; e < NELEM(DX_KITS); e++) {
-        printf("%s[", e ? "," : "");
-        for (k = 0; k < 8u; k++) {
-            printf("%s[%d,[", k ? "," : "", DX_KITS[e][k].mode);
-            for (i = 0; i < DXP_N; i++)
-                printf("%s%d", i ? "," : "", DX_KITS[e][k].a[i]);
-            printf("],[");
-            for (i = 0; i < DXP_N; i++)
-                printf("%s%d", i ? "," : "", DX_KITS[e][k].b[i]);
-            printf("]]");
-        }
-        printf("]");
-    }
-    printf("],\n\"DRUMX_PKIT\":[");
-    for (k = 0; k < NELEM(DRUMX_PKIT); k++)
-        printf("%s%d", k ? "," : "", DRUMX_PKIT[k]);
 #if !FELUCCA_FM4
     printf("],\n\"FM4\":{\"presets\":[");             /* DIGITAL (retired): its presets and conversions (fm4_convert.c) */
     for (k = 0; k < FM4_NPRESETS; k++) {

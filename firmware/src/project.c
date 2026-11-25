@@ -136,8 +136,6 @@ typedef struct {
     uint8_t cur[NTRK];                         /* (SKF2) the entry each track is on */
     uint8_t song;                              /* (SKF2) SONG on */
     uint8_t scene[PROJ_SCENES];                /* (SKF2) the scenes (bank.c) */
-    uint8_t dx_on;                             /* (Skiff phase 7) 1: dx is the project's DRUM-X kit; 0 none (the factory's) */
-    dx_lane_t dx[DV_NLANE];                    /* (SKF3) the DRUM-X kit (drumx_voice.c dx_kit), one for every DRUM-X track */
     uint8_t gch[sizeof gch];                   /* ((Vallée) GEN's own chords (vgen.c gch); SKF4: after the tracks */
     uint32_t sum;
 } project_t;
@@ -241,7 +239,8 @@ static int proj_era_off;
 #define PROJ_NAME_AT(f) ((f)->size - 4u - PROJ_NAME_LEN)
 #define PROJ_FM6_AT(f) (PROJ_NAME_AT(f) - (f)->nt * FM6_PACKED)
 #define PROJ_DX_MARK 0x58u                    /* ('X') the kit follows */
-#define PROJ_DX_AT(f) (PROJ_FM6_AT(f) - 1u - DV_NLANE * sizeof(dx_lane_t))   /* (a dx format's) */
+#define PROJ_DX_LANES 8u                       /* ((Vallée) DRUM-X, retired: its kit's room, 8 lanes of 11 bytes, read past */
+#define PROJ_DX_AT(f) (PROJ_FM6_AT(f) - 1u - PROJ_DX_LANES * 11u)   /* (a dx format's) */
 #define PROJ_NP 103u                          /* (phase 9) the parameters a track a store holds (see above) */
 #define PROJ_NX 32u                           /* .. the ones after them, in the PX block: P_DTYPE .. P_ESYNC ((2.0, #36)
                                                * frozen: the lane pans after them are SKF4's alone) */
@@ -250,11 +249,10 @@ static int proj_era_off;
 #define PROJ_PX_MARK 0x50u                    /* ('P') the PX block follows */
 #define PROJ_PX_AT(f) (PROJ_DX_AT(f) - 2u - (f)->nt * PROJ_PX_MAX)   /* (a dx format's) */
 #define PROJ_HEAD_END(f) ((f)->dx ? PROJ_PX_AT(f) : PROJ_FM6_AT(f))      /* where the tracks, lists and scenes end */
-_Static_assert(sizeof(dx_lane_t) == 11u, "a DRUM-X lane is 11 bytes in SKF3");
 _Static_assert(NTRK == 6u, "SKF3: six tracks");
 _Static_assert(P_COUNT >= PROJ_NP && PROJ_NX <= PROJ_PX_MAX, "the parameters past PROJ_NP fit the PX block");
 _Static_assert(68u + 6u * (PROJ_NP + 2u + NENT * 2u + 1u) + PROJ_SCENES <=
-               PROJ_STORE3 - 4u - PROJ_NAME_LEN - 6u * FM6_PACKED - 1u - DV_NLANE * 11u - 2u - 6u * PROJ_PX_MAX,
+               PROJ_STORE3 - 4u - PROJ_NAME_LEN - 6u * FM6_PACKED - 1u - PROJ_DX_LANES * 11u - 2u - 6u * PROJ_PX_MAX,
                "SKF3's tracks, lists and scenes end before its PX block");
 typedef union { uint32_t align; uint8_t raw[FELUCCA_LEGACY ? PROJ_STORE_SIZE : PROJ_STORE4]; } project_store_t;   /* ((2.0)
                                                 * SKF4's, the largest record it reads; the converter's SKF1) */
@@ -1211,12 +1209,8 @@ static int proj_unpack4(project_t *q, const uint8_t *b)
     memcpy(q->scene, b + pos, PROJ_SCENES); pos += PROJ_SCENES;
     q->sel = b[pos++]; q->song = b[pos++];
     if (!proj_ent_ok(q)) return 0;
-    if (b[8] == PROJ_LAYOUT4) {                          /* (layout 1: the DRUM-X kit, the FM6 patches here) */
-        if (b[pos] == PROJ_DX_MARK && dx_kit_ok((const dx_lane_t *)(b + pos + 1u))) {
-            memcpy(q->dx, b + pos + 1u, sizeof q->dx);
-            q->dx_on = 1;
-        }
-        pos += 1u + sizeof q->dx;
+    if (b[8] == PROJ_LAYOUT4) {                          /* (layout 1: the DRUM-X kit (retired: read past), the FM6 */
+        pos += 1u + PROJ_DX_LANES * 11u;                /* patches here) */
         for (t = 0; t < NTRK; t++)
             for (e = 0; e < FM6_PACKED; e++)
                 q->fm6[t][e] = b[pos++] & 0x7Fu;
@@ -1311,10 +1305,7 @@ static int proj_pack2(project_store_t *out, const project_t *q, const proj_fmt_t
                     x[2u + t * PROJ_NX + j] = (uint8_t)(q->t[t].p[PROJ_NP - 8u + j] + 64);
         }
     }
-    if (f->dx && q->dx_on && dx_kit_ok(q->dx)) {     /* (phase 7) the DRUM-X kit (none: 0, the factory's) */
-        b[PROJ_DX_AT(f)] = PROJ_DX_MARK;
-        memcpy(b + PROJ_DX_AT(f) + 1u, q->dx, sizeof q->dx);
-    }
+    /* ((Vallée) the DRUM-X kit of a dx format: none (0), DRUM-X retired) */
     memcpy(b + PROJ_FM6_AT(f), q->fm6, f->nt * FM6_PACKED);
     {
         char n[PROJ_NAME_LEN + 1u];
@@ -1358,10 +1349,7 @@ static int proj_unpack2(project_t *q, const uint8_t *b, const proj_fmt_t *f)
         68u + f->nt * (np + 2u + NENT * 2u + 1u) + f->sc > PROJ_HEAD_END(f))
         return 0;
     memset(q, 0, sizeof *q); q->magic = PROJ_MAGIC; q->size = sizeof *q;
-    if (f->dx && b[PROJ_DX_AT(f)] == PROJ_DX_MARK && dx_kit_ok((const dx_lane_t *)(b + PROJ_DX_AT(f) + 1u))) {
-        memcpy(q->dx, b + PROJ_DX_AT(f) + 1u, sizeof q->dx);   /* (phase 7) its DRUM-X kit (bytes: dx_lane_t's are) */
-        q->dx_on = 1;
-    }
+    /* ((Vallée) a dx format's DRUM-X kit: DRUM-X retired, its tracks DRUM's: not read) */
     proj_g_read27(q->g, b + 8); q->sel = b[62]; q->parts = b[63]; q->phys = b[64]; q->song = b[65];
     for (t = 0; t < f->nt; t++) {
         int16_t values[P_COUNT], def[P_COUNT];
@@ -1552,10 +1540,6 @@ static void project_capture(project_t *p)
     p->song = lists.song;
     memcpy(p->scene, lists.scene, sizeof p->scene);  /* (the scenes too: the project's) */
     memcpy(p->gch, gch, sizeof p->gch);            /* ((Vallée) GEN's own chords) */
-    if (memcmp(dx_kit, DX_KIT_DEF, sizeof dx_kit)) {   /* (phase 7) the DRUM-X kit, when not the factory's (none: */
-        p->dx_on = 1;                              /* the factory's when loaded; a project of before as it was) */
-        memcpy(p->dx, dx_kit, sizeof p->dx);
-    }
     p->sum = proj_sum(p);
 }
 
@@ -1733,7 +1717,6 @@ static int project_restore_runtime(const project_t *input)
         }
     }
     sel_set((uint8_t)(p->sel < NTRK ? p->sel : 0u));
-    memcpy(dx_kit, p->dx_on && dx_kit_ok(p->dx) ? p->dx : DX_KIT_DEF, sizeof dx_kit);   /* (phase 7) its DRUM-X kit */
     fm1_irq_on();
     proj_name_get(proj_name, (const uint8_t *)p->name);
     proj_cur = PROJ_NO_SLOT;                            /* (project_load: its slot) */
@@ -1969,7 +1952,6 @@ static uint32_t autosave_sig(void)
         h = as_mix(h, t->step, sizeof t->step);
         h = as_mix(h, fm6_patch[i], sizeof fm6_patch[i]);
     }
-    h = as_mix(h, dx_kit, sizeof dx_kit);             /* (phase 7) the DRUM-X kit */
     for (i = 0; i < G_COUNT; i++)                       /* ((Skiff U3) not the unit's CLOCK MIDI IN TUNE, ui.c) */
         if (i != G_SLOT && i != G_NAME && i != G_LOAD && i != G_SAVE && !unit_g_id(i))
             h = as_mix(h, &song.g[i], sizeof song.g[i]);
@@ -2099,7 +2081,6 @@ static void project_new(void)
     for (i = 0; i < G_COUNT; i++)
         if (i != G_SLOT && i != G_LOAD && i != G_SAVE && !unit_g_id(i))
             song.g[i] = GP[i].def;
-    memcpy(dx_kit, DX_KIT_DEF, sizeof dx_kit);
     sel_set(0);
     fm1_irq_on();
     undo_clear();

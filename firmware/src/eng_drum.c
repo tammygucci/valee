@@ -20,26 +20,9 @@
  * hit's: SPAMPY's own velocity response) do.
  *
  * State: the part's shared engine area (engines.c eng_mem): the voices' synth state and their sample treatments. */
-#include "drum_voice.c"                       /* (DRUM-X's lanes and types, retired with it) */
 #include "drum_synth.c"
-
-static const uint8_t DV_TYPE_LANE[DVT_COUNT] = {
-    DV_KICK, DV_KICK, DV_SNARE, DV_CLAP, DV_HATC, DV_HATO, DV_TOM, DV_TOM, DV_RIM, DV_RIM, DV_BELL, DV_BELL,
-};
-
-
-/* General MIDI notes 35..81 -> the drum (DVT_*; DVT_PUNCH: the kick KICK picks) and semitones from its
- * designed pitch */
-static const int8_t DRUM_GM[47][2] = {
-    {DVT_PUNCH, -2}, {DVT_PUNCH, 0}, {DVT_RIM, 0}, {DVT_SNARE, 0}, {DVT_CLAP, 0}, {DVT_SNARE, 2},     /* 35 */
-    {DVT_TOM, -7}, {DVT_HATC, 0}, {DVT_TOM, -4}, {DVT_HATC, -2}, {DVT_TOM, 0}, {DVT_HATO, 0},         /* 41 */
-    {DVT_TOM, 3}, {DVT_TOM, 5}, {DVT_CYM, 0}, {DVT_TOM, 8}, {DVT_CYM, -3}, {DVT_CYM, 2},              /* 47 */
-    {DVT_BELL, 5}, {DVT_HATC, 5}, {DVT_CYM, 4}, {DVT_BELL, 0}, {DVT_CYM, 1}, {DVT_CLAVE, -12},        /* 53 */
-    {DVT_CYM, -2}, {DVT_CONGA, 5}, {DVT_CONGA, 2}, {DVT_CONGA, 0}, {DVT_CONGA, 0}, {DVT_CONGA, -5},   /* 59 */
-    {DVT_TOM, 10}, {DVT_TOM, 7}, {DVT_BELL, 7}, {DVT_BELL, 3}, {DVT_HATC, 3}, {DVT_HATC, 7},          /* 65 */
-    {DVT_CLAVE, 7}, {DVT_CLAVE, 5}, {DVT_HATC, -4}, {DVT_HATC, -6}, {DVT_CLAVE, 0}, {DVT_CLAVE, -4},  /* 71 */
-    {DVT_CLAVE, -7}, {DVT_CONGA, 7}, {DVT_CONGA, 3}, {DVT_BELL, 12}, {DVT_BELL, 12},                  /* 77 */
-};
+/* a kit engine (the grid's lanes, its voices by lane): ((Vallée) DRUM alone, DRUM-X retired) */
+static inline int drum_engine(uint32_t e) { return e == ENGI_DRUM; }
 
 /* ----------------------------------------------------- the grid's lanes --- */
 /* A step's lane hits (step_t.hit / acc, the DRUM grid: SEQ > NOTES on a DRUM track) play these GM notes, on any
@@ -59,14 +42,6 @@ static uint32_t drum_lane(uint32_t note)
 {
     return note < 35u ? 0u : note > 81u ? 13u : LANE_OF_GM[note - 35u];
 }
-/* (DRUM-X's, retired with it: drum_voice.c's 8 lanes, a note's by its GM piece; tests/drum_test.c's old kit checks) */
-static const uint8_t DV_LANE_NOTE[DV_NLANE] = {36, 38, 39, 42, 46, 45, 37, 56};
-static uint32_t dv_lane(uint32_t note)
-{
-    uint32_t n = note >= 35u && note <= 81u ? note : 36u + (note + 120u - 36u) % 12u;
-    return DV_TYPE_LANE[DRUM_GM[n - 35u][0]];
-}
-
 /* the lane's name as the track's KIT plays it (5 characters at most) */
 /* (Skiff 1.3, from Felucca 1.4.1) the lanes' mutes, a bit each a track (KICK .. BELL), DRUM's and DRUM-X's: the EDIT
  * layer's black keys 1..8 (ui_layer.c). Performance state: not saved; a sound load clears the track's, a project load

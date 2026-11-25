@@ -493,9 +493,6 @@ function mockTables() {
   cmp("FM6 patches (init, factory, bank size)", T.FM6, fw.FM6);
   cmp("DRUM grid: the lanes' GM notes", [...E.LANE_NOTE], fw.LANE_NOTE);
   cmp("DRUM grid: the lane of GM 35..81", E.LANE_OF, fw.LANE_OF);
-  cmp("DRUM-X factory kit", E.DX_KIT_DEF, fw.DX_KIT);
-  cmp("DRUM-X preset kits (phase 9)", E.DX_KITS, fw.DX_KITS);
-  cmp("DRUM-X preset -> kit", E.DRUMX_PKIT, fw.DRUMX_PKIT);
   const mj = join(DESC, "../menu.json");
   if (E.MENU && existsSync(mj)) {                   /* the MENU settings: tests/editor_test.c's MENU_DESC replies */
     const fm = JSON.parse(readFileSync(mj, "utf8"));

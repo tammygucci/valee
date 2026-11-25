@@ -101,9 +101,7 @@
 #                   src/drum_synth.c): every kit x lane heard, bounded, ending; the synth voice sample for sample
 #                   drum_synth.c's; the lanes' TUNE DECAY BODY LEVEL PAN and mutes; 6 voices, the hat choke, no
 #                   click on a taken voice; SPAMPY's keys; the cost; a bar of each kit in build/drum_demo/.
-# DRUM-X (tests/drumx_test.c, after JIANT FM's): the engine (src/eng_drumx.c, src/drumx_voice.c): every lane sounds,
-#                   under full scale, ends; MORPH between A and B and while a hit rings; TUNE; the hat choke; the
-#                   knobs, FOLD and FM; a drum track as DRUM's; the project's kit plays; demos in build/drumx_demo/.
+# DRUM-X: (Vallée, the SPAMPY sound) retired, its code removed (its test with it; on Vallée Classic, v0.9.1-alpha).
 # NOISE (tests/noise_test.c): the engine (src/eng_noise.c): COLR's slope (white, pink, brown), the filter and the
 #                   register clock following the key, META periodic at the key, no DC, no clipping at the
 #                   corners, a note from silence the same twice, the cost per voice; demos in build/noise_demo/.
@@ -426,7 +424,7 @@ EOF
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/drum_test" tests/drum_test.c -lm
     mkdir -p build/drum_demo
     run "DRUM (SPAMPY's kits): every kit x lane, the synth voice exact, TUNE DECAY BODY LEVEL PAN, 6 voices, choke, keys, cost, demos" "$OUT/drum_test" build/drum_demo
-    # ((Vallée, the SPAMPY sound) DRUM-X and NOISE retired (MORPH plays at NOISE's number): drumx_test, noise_test not run
+    # ((Vallée, the SPAMPY sound) DRUM-X (removed) and NOISE retired (MORPH plays at NOISE's number): noise_test not run
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/fm6_test" tests/fm6_test.c -lm
     mkdir -p build/fm6_demo
     run "FM6: algorithms, envelopes, retrigger, DC, clipping, macros, patch formats, voices, cost, demos" "$OUT/fm6_test" build/fm6_demo

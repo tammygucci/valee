@@ -64,8 +64,6 @@ static __attribute__((noinline)) void esnd_put(track_t *t, const esnd_t *s)
     t->eng_req = s->eng;
     t->preset = s->preset;
     t->user = s->user;
-    if (s->kit)
-        memcpy(dx_kit, DX_KITS[s->kit - 1u], sizeof dx_kit);
     if (s->fm6) {
         memcpy(fm6_patch[k], s->f6, sizeof s->f6);
         fm6_pgen[k]++;

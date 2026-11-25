@@ -117,6 +117,14 @@ The old version stays installable: branch `vallee-skiff-engine` = release v0.9.1
       4c DECIDED (the owner, 2026-11-25): the reverb stays Vallée's (ROOM / SPRING / HALL); FREEZE stays the ring's
          grains (punch.c). Phase 4 done.
 - [ ] 5. Rewire GEN, PART SONG, THE SPELL, creatures, EDIT/SAVE/PRESETS; rebuild SUMMON.
+      DONE (2026-11-25): GEN's style sounds all SPAMPY names (checked: none missing); GEN's drums on the 16 lanes
+         (a CHORUS's CRASH, high-tom fills, T6's SHAKER / CONGA / RIDE). THE SPELL and PART SONG write through GEN
+         (no engine of their own). The creatures come from the sound's engine and place (ui_beast.c): the new
+         sounds have theirs (ui_test: neighbours differ). SUMMON is its own engine (partials, eng_summon.c) and
+         plays its part through its track (summon_play.c, follow.c's chord): nothing of Skiff's engines in it, kept.
+         DRUM-X's code removed (eng_drumx.c, drumx_voice.c, drum_voice.c, ui_dx.c, drumx_test.c): an old project's
+         kit bytes are read past, KIT_GET / KIT_PUT refused, INFO 4B 01 0; its SOUND page kept hidden (page ids
+         stable). The web editor's DRUM-X page stays dead code (shown only for an engine named DRUM-X).
 - [ ] 6. Tests: size, every page in both themes, every sound and kit, old projects, goldens on purpose.
 - [ ] 7. (after approval) installer: Vallée + Vallée Classic.
 

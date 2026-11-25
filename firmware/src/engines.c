@@ -8,7 +8,6 @@ static void *eng_part(const track_t *t);
 #include "dsp.c"
 #include "eng_sample.c"          /* (Vallée: the factory sample block; SPAMPY's sets, phase 1b) */
 #include "eng_drum.c"           /* DRUM: the 8-lane kit (drum_voice.c); (Vallée) SPAMPY's kits: phase 3 */
-#include "eng_drumx.c"          /* (Skiff) DRUM-X: retired with the SPAMPY sound (ENGI_DRUMX never matches); cleanup */
 #include "eng_summon.c"          /* (Vallée) SUMMON: SUMMONER (XENO), AURA (TEEN) */
 #include "sloop/sloop_engines.c"    /* ((Vallée) the SPAMPY sound: SLOOP's engines, as SPAMPY uses them) */
 #include "eng_fm6.c"            /* FM6: 6-operator FM, msfa ported (fm6_core.c, Apache-2.0) */
@@ -25,7 +24,6 @@ static void *eng_part(const track_t *t);
  * its index, PHYS its model, from zero). Data the main loop writes (FM6's patches, WHEEL's bars) stays out. */
 typedef union {
     drum_part_t drum;                /* ((Vallée) SPAMPY's drum voices (eng_drum.c) */
-    drumx_lane_t drumx[DV_NLANE];
     fm6_note_t fm6[FM6_POLY];
     drw_part_t drawbar;              /* ((Vallée) SLOOP's WHEEL */
     p5_part_t prophet;               /* ((Vallée) SLOOP's engines, sloop/sloop_engines.c: their part state here, as */
@@ -41,7 +39,6 @@ static eng_mem_t eng_mem[NHEAVY] __attribute__((section(".pool")));
  * accessors give it none: a heavy engine forced there is silent); DRUM's lanes the biggest, 1.8 KB */
 typedef union {
     drum_part_t drum;                /* ((Vallée) SPAMPY's drum voices (eng_drum.c) */
-    drumx_lane_t drumx[DV_NLANE];
     fm6_note_t fm6[FM6_POLY];
     drw_part_t drawbar;
     /* ((Vallée) SLOOP's engines: not on the light tracks yet (the pool's 8 KB headroom); phase 2b, once PHYS and

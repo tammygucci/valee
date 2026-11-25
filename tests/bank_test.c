@@ -1472,30 +1472,6 @@ static int migrate(void)
 #endif
 }
 
-/* ---- (Skiff phase 7) the DRUM-X kit is the project's: saved with it (SKF3), back when loaded, the factory's for a project
- * without one; an edit of it is something an autosave keeps ---- */
-static int dx_kit_project(void)
-{
-    int bad = 0, ok;
-    uint32_t sig;
-    fresh();
-    memcpy(dx_kit, DX_KIT_DEF, sizeof dx_kit);
-    sig = autosave_sig();
-    dx_kit[DV_KICK].a[DXP_DECAY] = 5;
-    ok = autosave_sig() != sig && project_save_as(1, "KIT") == 0;
-    dx_kit[DV_KICK].a[DXP_DECAY] = 99;
-    project_load(1);
-    if (NTRK > PROJ_NT) {                         /* ((Vallée, the SPAMPY sound) DRUM-X retired: SKF4 layout 2 holds no kit */
-        bad += check("(phase 7) the DRUM-X kit (retired): an edit an autosave keeps; (Vallée) no longer saved with the project",
-                     ok);
-    } else {
-        ok &= !memcmp(dx_kit, DX_KIT_DEF, sizeof dx_kit);
-        bad += check("(phase 7) the DRUM-X kit with four tracks (SKF2 holds none): the factory's when a project loads", ok);
-    }
-    memcpy(dx_kit, DX_KIT_DEF, sizeof dx_kit);
-    return bad;
-}
-
 /* ---- (2.0, #47) SONG ONCE (bank.c song_poll): each track its list once, its last entry's REPS too, then silent; the
  * transport stops when the last track's end comes in, each on its first entry again; a full list ends on its last;
  * a launch of its own goes on from there ---- */
@@ -1657,7 +1633,7 @@ int main(void)
 {
     int bad = layout() + fidelity() + keep() + entries() + staged_all() + last_track() + torn() + wear_and_wrap() +
               playing() + live() + scenes() + scenes_six() + song_test() + song_six() + song_rest() + song_once() +
-              song_chain() + song_sound() + song_same() + song_next_edit() + migrate() + dx_kit_project();
+              song_chain() + song_sound() + song_same() + song_next_edit() + migrate();
     printf("%s\n", bad ? "BANK TEST FAILED" : "pattern bank tests passed");
     return bad != 0;
 }

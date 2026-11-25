@@ -2817,13 +2817,11 @@ timeout:
     ui_message("SETUP CANCELLED");
 }
 
-#include "ui_dx.c"                                      /* (Skiff phase 7, 8) EDIT > SOUND: the DRUM-X sound sheet */
 #include "ui_fm6.c"                                     /* (FM6 LAB) EDIT > OPERATOR, ALL OPS: FM6's patch */
 
 /* (FM6 LAB) the sheets (ui.c sheet_t): their pages' every hook (the knobs, cards, panel, header, PRESETS, SELECT,
  * SHIFT's map) goes through here */
 static const sheet_t SHEETS[] = {
-    {GR_DXSND, ENGI_DRUMX, DX_NWIN, &dx_ui_win, dx_knob, dx_cards, dx_sig, graph_dx, dx_title, dx_lane_turn, "DRUM"},
     {GR_FMOP, ENGI_FM6, FM_NWIN, &fm_ui[1], fm_op_knob, fm_op_cards, fm_sig, graph_fm_op, fm_op_title, fm_op_turn,
      "OPERATOR"},
     {GR_FMALL, ENGI_FM6, FM_NWIN, &fm_ui[2], fm_all_knob, fm_all_cards, fm_sig, graph_fm_all, fm_all_title, fm_op_turn,

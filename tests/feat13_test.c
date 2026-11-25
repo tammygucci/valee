@@ -575,7 +575,7 @@ static int lane_mutes(void)
         ui_power_on();
         sel_set(3);
         t = TSEL;
-        set_engine_of(t, e ? ENGI_DRUMX : ENGI_DRUM);
+        set_engine_of(t, ENGI_DRUM);
         t->engine = t->eng_req;
         k0 = hit_level(t, 0);
         s0 = hit_level(t, 1);

@@ -923,8 +923,6 @@ static int esnd_make(uint32_t k, const uint8_t *b, esnd_t *s)
     s->eng = (uint8_t)eng;
     s->preset = (uint8_t)pi;
     s->user = 0;
-    if (eng == ENGI_DRUMX)
-        s->kit = DRUMX_PKIT[pi % NELEM(DRUMX_PKIT)];
     if (eng == ENGI_FM6 && fm6_slot_ok(s->p[P_E7])) {
         fm6_unpack(fm6_slot_pk((uint32_t)s->p[P_E7]), s->f6);
         s->fm6 = 1;
@@ -948,7 +946,7 @@ static int snd_of(uint32_t k, uint8_t *b)
             return 0;
     if (s.fm6 && memcmp(fm6_patch[k % NTRK], s.f6, FP_SIZE))
         return 0;
-    return !s.kit || !memcmp(dx_kit, DX_KITS[s.kit - 1u], sizeof dx_kit);
+    return 1;                                       /* ((Vallée) s.kit: DRUM-X's, retired: always 0) */
 }
 /* .. stopped: track k onto entry e brings its sound now. No undo step (the song's, as the pattern) */
 static void esnd_go(uint32_t k, uint32_t e)

@@ -71,8 +71,6 @@ static void skf4_edit(project_store_t *o, const project_store_t *s, uint32_t at,
 static void skf4_norm(project_t *q)
 {
     uint32_t t, i;
-    q->dx_on = 0;
-    memset(q->dx, 0, sizeof q->dx);
     for (t = 0; t < NTRK; t++) {
         if (q->t[t].engine != ENGI_FM6)
             memcpy(q->fm6[t], FM6_INIT, FM6_PACKED);
@@ -968,24 +966,12 @@ int main(void)
         ok = proj_pack2(&st, &a, &PROJ_SKF3) && proj_import(&c, &st, (int)PROJ_STORE3) &&
              c.t[k].engine == trk_def_engine(k) && c.t[k].preset == PROJ_DEF_SOUND && c.ent[k][15][0] == 64u;
         bad += check("  a crafted SKF3 with PROPHET on T6: T6's power-on sound, its list kept", ok);
-        a.t[k].engine = ENGI_DRUM; a.t[k].preset = 0;    /* (phase 7) the project's DRUM-X kit ((Vallée) DRUM-X retired: its bytes kept) */
-        memcpy(a.dx, DX_KIT_DEF, sizeof a.dx);
-        a.dx[DV_SNARE].b[DXP_COLOR] = 9;
-        a.dx[DV_BELL].mode = (uint8_t)(DX_MODE(DXW_BELL, DXF_LP, 1) | DX_DRIVE | DXM_SINE << 5);
-        a.dx_on = 1;
-        ok = proj_pack2(&st, &a, &PROJ_SKF3) && st.raw[1175] == PROJ_DX_MARK && st.raw[1176] == a.dx[0].mode &&
-             proj_import(&c, &st, (int)PROJ_STORE3) && c.dx_on && !memcmp(c.dx, a.dx, sizeof a.dx) &&
-             c.t[k].engine == ENGI_DRUM && proj_pack2(&st2, &c, &PROJ_SKF3) && !memcmp(&st, &st2, sizeof st);
-        bad += check("  (phase 7) the DRUM-X kit at 1175 (its mark, 88 bytes): round trip, byte for byte", ok);
-        st.raw[1176u + 3u] = 200u;                   /* (a value past 127: a damaged kit) */
+        a.t[k].engine = ENGI_DRUM; a.t[k].preset = 0;    /* ((Vallée) an SKF3 with a DRUM-X kit at 1175: read past */
+        ok = proj_pack2(&st, &a, &PROJ_SKF3) && !st.raw[1175];
+        st.raw[1175] = PROJ_DX_MARK; memset(st.raw + 1176, 5, 88);
         sum = proj_hash(st.raw, PROJ_STORE3 - 4u); memcpy(st.raw + PROJ_STORE3 - 4u, &sum, 4);
-        ok = proj_import(&c, &st, (int)PROJ_STORE3) && !c.dx_on;
-        a.dx_on = 0;
-        ok &= proj_pack2(&st, &a, &PROJ_SKF3) && !st.raw[1175] && proj_import(&c, &st, (int)PROJ_STORE3) && !c.dx_on;
-        bad += check("  no kit (a record of before: 0 there; a damaged one): none, the factory's when loaded", ok);
-        a.dx_on = 1; memcpy(a.dx, DX_KIT_DEF, sizeof a.dx);
-        ok = proj_pack2(&st, &a, &PROJ_SKF2) && proj_import(&c, &st, (int)PROJ_STORE2) && !c.dx_on;
-        bad += check("  (phase 7) SKF2 holds no DRUM-X kit (SKF3 does)", ok);
+        ok &= proj_import(&c, &st, (int)PROJ_STORE3) && c.t[k].engine == ENGI_DRUM && c.fm6[0][0] == a.fm6[0][0];
+        bad += check("  (Vallée) an SKF3's DRUM-X kit (DRUM-X retired): none written, one there read past", ok);
     }
     {   /* (2.0, Tier B 5) SKF4: 2560 bytes, the parameters by stored id; the lists at 10, the counted parts after */
         static project_t a, c, d;
@@ -1007,7 +993,6 @@ int main(void)
         memcpy(a.name, "SKF4 TEST", 9);
         a.fm6[k][5] = 77;                                /* (a DRUM track's: not kept, (Vallée) layout 2) */
         a.fm6[4][5] = 78;                                /* (the FM6 track's: kept) */
-        memcpy(a.dx, DX_KIT_DEF, sizeof a.dx); a.dx[DV_SNARE].b[DXP_COLOR] = 9; a.dx_on = 1;
         ok = proj_pack2(&st, &a, PROJ_SKF) && proj_import(&c, &st, (int)PROJ_STORE4);
         d = a;
         skf4_norm(&d);
@@ -1020,7 +1005,7 @@ int main(void)
                      ok && !memcmp(c.g, a.g, sizeof a.g) && !memcmp(c.ent, a.ent, sizeof a.ent) &&
                      !memcmp(c.cur, a.cur, sizeof a.cur) && c.song == SONG_ONCE && c.sel == k &&
                      !memcmp(c.scene, a.scene, sizeof a.scene) && !memcmp(c.name, a.name, sizeof a.name) &&
-                     !c.dx_on && c.fm6[4][5] == 78u && c.parts == PROJ_PARTS && c.phys == PROJ_PHYS &&
+                     c.fm6[4][5] == 78u && c.parts == PROJ_PARTS && c.phys == PROJ_PHYS &&
                      c.t[3].p[lp_body(15)] == a.t[3].p[lp_body(15)] && a.t[3].p[lp_body(15)] != 0);
         g0 = PROJ_ENT4 + NTRK * (NENT * 4u + 1u) + PROJ_SCENES + 2u;   /* ((Vallée) layout 2: no kit, no FM6 block here */
         p0 = g0 + 1u + 2u * G_COUNT + 3u;                /* T1's parameters (its count first) */

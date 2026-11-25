@@ -21,7 +21,7 @@ enum { ED_INFO = 1, ED_GET, ED_SET, ED_DUMP, ED_DESC, ED_STEP_GET, ED_STEP_SET, 
        ED_UI_STATE, ED_UI_SET, ED_UI_PALETTES, ED_FAV_GET, ED_FAV_SET, ED_COLORS,   /* ((Skiff #27) 39: THEME CUSTOM) */
        ED_MOTION = 64, ED_BACKUP_LIST, ED_BACKUP_GET, ED_BACKUP_PUT };                              /* v6: song chain */
 
-enum { ED_KIT_GET = 74, ED_KIT_PUT };                 /* (Skiff W3) the DRUM-X kit (INFO 4B 01 8) */
+enum { ED_KIT_GET = 74, ED_KIT_PUT };                 /* (Skiff W3) the DRUM-X kit: retired with it ((Vallée) refused) */
 enum { ED_SMP_MIX = 81 };                             /* (Skiff, #21) a user slot's sounds' LEVEL REV DLY (INFO 57 01 bit 5) */
 enum { ED_CAST = 83 };                                /* (Skiff Studio) the cast (cast.c; INFO 59 01) */
 
@@ -507,21 +507,13 @@ static int ed_args_ok(uint32_t cmd, const uint8_t *a, uint32_t n)
         return ed_project_args_ok(cmd, a, n);
     case ED_POOL: case ED_LIST: case ED_PERFORM: case ED_LIST2:
         return ed_song_args_ok(cmd, a, n);
-    case ED_KIT_GET:                                   /* (Skiff W3) a lane; a lane and its 15 values, each in range */
-        return n == 1u && a[0] < 8u;
+    case ED_KIT_GET:                                   /* ((Vallée) DRUM-X's kit, retired: refused */
+    case ED_KIT_PUT:
+        return 0;
 #if FELUCCA_CAST
     case ED_CAST:
         return n == 1u;
 #endif
-    case ED_KIT_PUT: {
-        uint32_t i;
-        if (n != 16u || a[0] >= 8u || a[1] > 3u || a[2] > DXF_HP || a[3] > 1u || a[4] > 3u || a[5] > 1u)
-            return 0;
-        for (i = 6; i < 16u; i++)
-            if (a[i] > 127u)
-                return 0;
-        return 1;
-    }
     case ED_STEP_SET:
         return n == 9u || n == 12u || (n == 13u && a[12] <= 100u) ||               /* notes only, or the complete grid extension, */
                (n == 14u && a[12] <= 100u && a[13] >= 1u && a[13] <= 4u) ||     /* its chance, its ratchet, */
@@ -639,7 +631,7 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         static const uint8_t TAGS2[] = {
             0x43, 1, TC_COUNT,                          /* (Skiff W1) a step's FLAM, COND (TC_COUNT of them), NUDGE
                                                          * after its ratchet */
-            0x4B, 1, 8,                                 /* (Skiff W3) the DRUM-X kit: KIT_GET, KIT_PUT, its 8 lanes */
+            0x4B, 1, 0,                                 /* (Skiff W3) the DRUM-X kit: ((Vallée) retired, no lanes */
             0x57, 1, ED_SKIFF_CAPS,                     /* (Skiff W3) TRANSPORT, PROJ_NAME (editor_project.c) */
             0x49, 1, P_COUNT & 127u, P_COUNT >> 7, P_E0 & 127u, P_E0 >> 7,   /* (Skiff 1.3) wide ids: P_COUNT and
                                          * P_E0 in two bytes; a track id from 128 on as scope 2 (ED_TID), a motion
@@ -1023,27 +1015,6 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         for (i = 0; i < P_COUNT; i++)
             ed_v(motion_base_value(&trk[a[0]], i));
         break;
-    case ED_KIT_GET:                                       /* (Skiff W3) lane -> lane, wave, filter, snap, pitch mod, */
-    case ED_KIT_PUT: {                                     /* drive, A's five, B's five (KIT_PUT: those set, then the same) */
-        dx_lane_t *L = &dx_kit[a[0] & 7u];
-        uint32_t i;
-        if (cmd == ED_KIT_PUT) {
-            L->mode = DX_MODE(a[1], a[2], a[3]) | (uint8_t)(a[4] << 5) | (a[5] ? DX_DRIVE : 0u);
-            for (i = 0; i < DXP_N; i++) {
-                L->a[i] = a[6 + i];
-                L->b[i] = a[6 + DXP_N + i];
-            }
-            ui.force = 1;
-        }
-        ed_b(a[0] & 7u);
-        ed_b(L->mode & 3u); ed_b((L->mode >> 2) & 3u); ed_b((L->mode >> 4) & 1u); ed_b((L->mode >> 5) & 3u);
-        ed_b((L->mode & DX_DRIVE) != 0u);
-        for (i = 0; i < DXP_N; i++)
-            ed_b(L->a[i]);
-        for (i = 0; i < DXP_N; i++)
-            ed_b(L->b[i]);
-        break;
-    }
     case ED_TRACK_STEP: {                                  /* track, index [, step] -> track, index, step (as STEP_GET) */
         step_t *st;
         if (na < 2u || a[0] >= NTRK || a[1] >= NSTEP)
