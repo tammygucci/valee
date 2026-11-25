@@ -855,10 +855,20 @@ async function editorGrid() {
   const h = E.parseHits("kick >snare HATCL cym openhat");   /* ((Vallée) SPAMPY's 16 lanes */
   ok(h && h.hit === (1 | 4 | 16 | 2048 | 32) && h.acc === 4 && E.hitsText(h.hit, h.acc) === "KICK >SNARE HAT OPENHAT CRASH" &&
      E.parseHits("KICK FOO") === null && E.parseHits(" ").hit === 0, "grid: hits as text (lanes, > accent, CYM / CONGA aliases)");
-  let s = E.parse[C.STEP_SET](await rq(E.req.stepSet(3, { n: 1, notes: [41, 0, 0, 0], time: 0, flags: 0, vel: 100, hit: 0x81, acc: 0x80 })));
-  ok(s.hit === 0x81 && s.acc === 0x80 && s.notes[0] === 41, "grid: STEP_SET / STEP_GET carry the hits (lane 8 too)");
-  s = E.parse[C.STEP_SET](await rq(E.req.stepSet(3, { n: 1, notes: [42, 0, 0, 0], time: 0, flags: 0, vel: 100 })));
-  ok(s.hit === 0x81 && s.notes[0] === 42, "grid: a STEP_SET without hits (an older editor) keeps them");
+  let s = E.parse[C.STEP_SET](await rq(E.req.stepSet(3, { n: 0, notes: [0, 0, 0, 0], time: 0, flags: 0, vel: 100, hit: 0x81, acc: 0x80 })));
+  ok(s.hit === 0x81 && s.acc === 0x80, "grid: STEP_SET / STEP_GET carry the hits (lane 8 too)");
+  s = E.parse[C.STEP_SET](await rq(E.req.stepSet(3, { n: 0, notes: [0, 0, 0, 0], time: 0, flags: 0, vel: 90 })));
+  ok(s.hit === 0x81 && s.vel === 90, "grid: a STEP_SET without hits (an older editor) keeps them");
+  s = E.parse[C.STEP_SET](await rq(E.req.stepSet(3, { n: 1, notes: [42, 0, 0, 0], time: 0, flags: 0, vel: 100, hit: 0x81, acc: 0 })));
+  ok(s.hit === 0 && s.acc === 0 && s.notes[0] === 42, "grid: (Vallée) a step holds notes or hits, never both");
+  /* ((Vallée, INFO 5A 01 16) lanes 9..16: a step's 20 bytes after its ties */
+  const y = { n: 0, notes: [0, 0, 0, 0], time: 0, flags: 0, vel: 100, chance: 100, ratchet: 1, flam: 0, cond: 0, nudge: 0, ties: 0 };
+  ok(info.lanes === 16, "grid: INFO 5A 01 16 (16 lanes)");
+  s = E.parse[C.STEP_SET](await rq(E.req.stepSet(30, { ...y, hit: 0x8801, acc: 0x8000, lanes16: true })));
+  ok(s.hit === 0x8801 && s.acc === 0x8000 && E.parse[C.STEP_GET](await rq(E.req.stepGet(30))).hit === 0x8801,
+     "grid: lanes 9..16 written and read back (20 bytes)");
+  s = E.parse[C.STEP_SET](await rq(E.req.stepSet(30, { ...y, hit: 0x02, acc: 0 })));
+  ok(s.hit === 0x8802, "grid: a write without lanes 9..16 (an editor of before) keeps them");
   const w = E.parse[C.TRACK_STEP](await rq(E.req.trackStep(2, 4, { n: 0, notes: [0, 0, 0, 0], time: 0, flags: 0, vel: 0, hit: 0x12, acc: 0x02 })));
   ok(w.hit === 0x12 && w.acc === 0x02 && E.parse[C.TRACK_STEP]([2, 4, 0, 0, 0, 0, 0, 0, 0, 0]).hit === 0,
     "grid: TRACK_STEP carries the hits (an older firmware's reply: none)");
@@ -978,7 +988,7 @@ async function editorStepTies() {
   ok(s.ties === 3 && E.parse[C.STEP_GET](await rq(E.req.stepGet(6))).ties === 3, "ties: STEP_SET writes them, to the step's 2 notes");
   s = E.parse[C.STEP_SET](await rq(E.req.stepSet(6, { ...x, n: 2, notes: [60, 64, 0, 0] })));
   ok(s.ties === 0, "ties: a write without them (an editor of before) leaves none");
-  s = E.parse[C.STEP_SET](await rq(E.req.stepSet(6, { ...x, n: 1, notes: [60, 0, 0, 0], hit: 1, acc: 1, ties: 1 })));
+  s = E.parse[C.STEP_SET](await rq(E.req.stepSet(6, { ...x, n: 0, notes: [0, 0, 0, 0], hit: 1, acc: 1, ties: 1 })));
   ok(s.ties === 0 && s.hit === 1 && s.acc === 1, "ties: none on a step with hits (its accents kept)");
   s = E.parse[C.TRACK_STEP](await rq(E.req.trackStep(2, 7, { ...x, n: 1, notes: [62, 0, 0, 0], ties: 1 })));
   ok(s.ties === 1 && E.parse[C.TRACK_STEP](await rq(E.req.trackStep(2, 7))).ties === 1, "ties: TRACK_STEP on another track");

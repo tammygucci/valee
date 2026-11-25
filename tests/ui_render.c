@@ -705,6 +705,10 @@ static void drum(uint32_t kit)
         if (i == 7u || i == 15u) s->hit |= 32u;
         if (i == 3u) s->hit |= 64u;
         if (i == 0u) s->hit |= 128u, s->acc |= 128u;
+        if (i == 0u) s->hit |= 1u << 11, s->acc |= 1u << 11;   /* ((Vallée) SPAMPY's lanes 9..16 too: a CRASH on 1, */
+        if (i == 6u || i == 14u) s->hit |= 1u << 9;           /* LOW TOM, SHAKER on the offbeats, a CONGA */
+        if (i % 2u == 1u) s->hit |= 1u << 13;
+        if (i == 11u) s->hit |= 1u << 14;
     }
     trk[3].p[P_SLEN] = 32;
 }
@@ -1106,8 +1110,8 @@ static void setup(int s)
     case S_HEAD_PROJECT: song.playing = 0; project_save(1); TSEL->p[P_LEVEL]--; fm1_ms += 300u; go_title("ENV"); ui.msg_t = 0; break;   /* ((U3,
                                                      * A2) project B, changed since it was saved: the dot) */
     case S_DRUM: drum(0); go_page(GR_ROLL); ui.cursor = 4; ui.lane = 1; trk[3].seq_idx = 9; break;
-    case S_DRUM_HAND: drum(1); go_page(GR_ROLL); ui.lane = 5; ui.cursor = 7; break;
-    case S_DRUM_CYM: drum(2); go_page(GR_ROLL); ui.lane = 7; break;
+    case S_DRUM_HAND: drum(1); go_page(GR_ROLL); ui.lane = 5; ui.cursor = 7; break;   /* ((Vallée) OPEN HAT: its name */
+    case S_DRUM_CYM: drum(2); go_page(GR_ROLL); ui.lane = 15; break;   /* ((Vallée) COWBELL: the lanes 9..16 shown */
     case S_MIXER:
         go_page(GR_TRK);
         trk[0].p[P_LEVEL] = 100; trk[1].p[P_LEVEL] = 84; trk[2].p[P_LEVEL] = 64; trk[3].p[P_LEVEL] = 110;

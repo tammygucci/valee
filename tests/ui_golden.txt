@@ -70,7 +70,7 @@ e4fe6a14ff5a2894 CUSTOM_TEEN_drive_fold
 9b3e825aab7336ff CUSTOM_TEEN_drive_hard
 73421316706cd1b5 CUSTOM_TEEN_drive_soft
 a36f18dbd4d397a8 CUSTOM_TEEN_drum
-0d12c037a4c11441 CUSTOM_TEEN_drum_cym
+d90bb5c828852067 CUSTOM_TEEN_drum_cym
 0abc684b558e8df4 CUSTOM_TEEN_drum_hand
 ffb1d0ad2d1d8cfe CUSTOM_TEEN_drum_kit_usr
 269de7de9a11b150 CUSTOM_TEEN_drum_lock_held
@@ -365,7 +365,7 @@ e4fe6a14ff5a2894 CUSTOM_XENO_drive_fold
 9b3e825aab7336ff CUSTOM_XENO_drive_hard
 73421316706cd1b5 CUSTOM_XENO_drive_soft
 a36f18dbd4d397a8 CUSTOM_XENO_drum
-0d12c037a4c11441 CUSTOM_XENO_drum_cym
+d90bb5c828852067 CUSTOM_XENO_drum_cym
 0abc684b558e8df4 CUSTOM_XENO_drum_hand
 ffb1d0ad2d1d8cfe CUSTOM_XENO_drum_kit_usr
 269de7de9a11b150 CUSTOM_XENO_drum_lock_held
@@ -660,7 +660,7 @@ a01826e33835052c LARGE_TEEN_dly_ping
 8d9a998eb1d122f2 LARGE_TEEN_drive_hard
 452f0bb7ea200e2f LARGE_TEEN_drive_soft
 b695ca18665448b7 LARGE_TEEN_drum
-7143cdac10c48b30 LARGE_TEEN_drum_cym
+59bfb7e772a594f1 LARGE_TEEN_drum_cym
 9c44dd8d16370ea1 LARGE_TEEN_drum_hand
 8b9166ebe6a29a62 LARGE_TEEN_drum_kit_usr
 6b2a07699896f291 LARGE_TEEN_drum_lock_held
@@ -955,7 +955,7 @@ d81e520825111164 LARGE_XENO_dly_ping
 297194399cb7ead9 LARGE_XENO_drive_hard
 b2b50d15ddb42476 LARGE_XENO_drive_soft
 049c55f07d74b23d LARGE_XENO_drum
-021bea8b5288632a LARGE_XENO_drum_cym
+49549399adfe7217 LARGE_XENO_drum_cym
 b7b02b2122004d33 LARGE_XENO_drum_hand
 f10a0d3bab43a464 LARGE_XENO_drum_kit_usr
 1f409e00d458bce1 LARGE_XENO_drum_lock_held
@@ -1254,7 +1254,7 @@ e76b333d64c83504 TEEN_drive_fuzz
 9290105f6cace7a6 TEEN_drive_hard
 99ac19101614f6c2 TEEN_drive_soft
 ba262488ac2bbcb4 TEEN_drum
-7ef0cd331f89931b TEEN_drum_cym
+e812bcd529f27d86 TEEN_drum_cym
 a0b9d3ce48cfce56 TEEN_drum_hand
 a6a1979c70a7fc80 TEEN_drum_kit_usr
 042b92d7f983c718 TEEN_drum_lock_held
@@ -1551,7 +1551,7 @@ db484eab797cd87c XENO_drive_fuzz
 764cbb02611ab0df XENO_drive_hard
 4453e5e9de6446f4 XENO_drive_soft
 4a7212d44f5c7905 XENO_drum
-b1f772d89b09a51e XENO_drum_cym
+fb8e486c91d27dcb XENO_drum_cym
 fb201760333b80bf XENO_drum_hand
 851e7d9cbd3dfe8c XENO_drum_kit_usr
 c7ab32c5ef64bab3 XENO_drum_lock_held
