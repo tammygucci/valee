@@ -1435,7 +1435,8 @@ static void proj_legacy_drums(track_t *t)
 }
 #endif
 
-static project_t proj_scratch;              /* decoded main-loop work, never audio ISR */
+static project_t proj_scratch                /* decoded main-loop work, never audio ISR ((Vallée) in the pool: */
+    __attribute__((section(".pool")));       /* .bss full with SPAMPY's 16 lanes' parameters) */
 static char proj_name[PROJ_NAME_LEN + 1u]    /* the name of the music as it is now (loaded, saved, the editor's */
     __attribute__((section(".pool")));       /* runtime restore); "" = none. A save takes it unless one is given */
 #define PROJ_NO_SLOT 0xFFu

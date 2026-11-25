@@ -156,12 +156,12 @@ static drum_part_t *drum_part_of(const track_t *t)
 {
     return t >= &trk[0] && t < &trk[NPART] ? (drum_part_t *)eng_part(t) : 0;   /* (the shared area, engines.c) */
 }
-/* the lane voice v counts as (LANES' LEVEL, LANE MIX's PAN: voice.c lpan_render; the mutes) */
-static uint32_t drum_vlane(const track_t *t, const voice_t *v)
+/* the lane voice v counts as (LANES' LEVEL, LANE MIX's PAN: voice.c lpan_render, from RAM: no call; the mutes): its
+ * s[6], set by drum_note_on */
+static inline __attribute__((always_inline)) uint32_t drum_vlane(const track_t *t, const voice_t *v)
 {
-    const drum_part_t *P = drum_part_of(t);
-    uint32_t i = (uint32_t)(v - t->v);
-    return P && i < DRUM_NV ? P->lane[i] : drum_lane(v->note);
+    (void)t;
+    return (uint32_t)v->s[6] & 15u;
 }
 static int drum_lane_has(const track_t *t, uint32_t l) { (void)t; (void)l; return 1; }   /* (no user kits) */
 static voice_t *drum_reuse(track_t *t, uint32_t note) { (void)t; (void)note; return 0; }   /* (SPAMPY: a free voice) */
@@ -202,6 +202,7 @@ static void drum_note_on(track_t *t, voice_t *v)
     P->choke[k] = 0;
     P->kit[k] = (uint8_t)kit;
     P->lane[k] = (uint8_t)ln;
+    v->s[6] = (int32_t)ln;                       /* (drum_vlane) */
     P->bodylp[k] = 0;
     if (note == 42u || note == 44u)             /* a closed or pedal hat chokes the open one */
         for (i = 0; i < DRUM_NV; i++)
