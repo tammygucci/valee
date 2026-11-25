@@ -804,6 +804,7 @@ static void sp_phrase(int32_t sprd, int32_t mode, int64_t *l1, int64_t *r1, int6
     t->sp_alt = 0;
     memset(t->v, 0, sizeof t->v);                       /* (no release left from the phrase before, nor its */
     lc_l1 = lc_l2 = lc_r1 = lc_r2 = dc_l = dc_r = dce_l = dce_r = 0;   /* trace in the master's filters) */
+    lim_reset();                                        /* ((Vallée) the limiter's look-ahead: none of the last run */
     trk_note_on(t, 48, 100);
     sp_run(40, l1, r1, &h);
     trk_note_on(t, 55, 100);
@@ -847,6 +848,7 @@ static void lp_hit(uint32_t eng, uint32_t lane, int32_t kick, int32_t snare, int
     t->p[P_PAN] = (int16_t)pan;
     memset(t->v, 0, sizeof t->v);
     lc_l1 = lc_l2 = lc_r1 = lc_r2 = dc_l = dc_r = dce_l = dce_r = 0;
+    lim_reset();
     trk_note_on(t, DRUM_LANE_NOTE[lane], 100);
     sp_run(40, l, r, &h);
     trk_note_off(t, DRUM_LANE_NOTE[lane]);

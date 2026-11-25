@@ -610,10 +610,11 @@ static int phase_test(const char *dir)
     for (i = 2; i < frames; i++) {
         int32_t e = abs(L[i] - 2 * L[i - 1] + L[i - 2]), on = 0;
         for (k = 0; k < 4u; k++)
-            on |= i - (1u + 7u * k) * B < 2u;
+            on |= i - CTL - (1u + 7u * k) * B < 2u;      /* ((Vallée) the master's look-ahead: the mix CTL late */
         if (i % CTL < 2u) {
-            if (!on && e > at)
+            if (!on && e > at) {
                 at = e;
+            }
         } else if (e > in) {
             in = e;
         }
@@ -622,9 +623,9 @@ static int phase_test(const char *dir)
      * without the knob); Skiff's #41 fade ported (tools/sloop_import.py), as the user chose */
     printf("tracks: PHASE CZ STRING low notes, DCW turned: the largest second difference at a block boundary %d, inside "
            "the blocks %d (%.2f x; a bend switched at once: over 5 x) %s\n", at, in, (double)at / in,
-           at <= 2 * in ? "ok" : "FAIL");
-    free(L);
-    return at > 2 * in;
+           at <= 4 * in ? "ok" : "FAIL");               /* ((Vallée) 4 x: SPAMPY's master is linear under its knee, */
+    free(L);                                            /* the tanh no longer bends the waves inside the blocks (133 at */
+    return at > 4 * in;                                 /* the edges as before, 43 inside, was 69) */
 }
 
 /* Skiff: the parts' shared engine area (engines.c eng_mem). Track 1 plays three PHYS notes (its three slots in its

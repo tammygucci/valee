@@ -635,6 +635,9 @@ typedef struct track {
     uint8_t rr;                  /* POLY ROTATE: next voice to try */
     /* mix runtime */
     int32_t peak;
+    int32_t glv, gpl, gpr;       /* ((Vallée, the SPAMPY sound) LEVEL and PAN as last mixed, Q12: a change glides over
+                                  * ~3 ms, block by block (fx.c mix_glide, SPAMPY 2.7); glon 0: none yet */
+    uint8_t glon;
     int32_t dist_hp, dist_lp1, dist_lp2;   /* DIST insert state (fx.c) */
     int32_t dist_dc;                       /* (Skiff phase 9) the DC after HARD's and FOLD's clip (fx.c dist_hard) */
     uint8_t tail;                /* blocks to mix after the last voice (the DIST tail; (1.3) the INSERT's) */

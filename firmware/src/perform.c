@@ -12,7 +12,7 @@
  * MENU > FX LATCH ON (#40, a hand that cannot hold FX, a key and a knob together): a key pressed with FX turns its
  * effect on, the next press turns it off (perf_latched; letting the key or FX go does nothing), the macros keep
  * their values when FX is let go, FX + OCT- turns everything off (ui_layer.c), so does the menu or a dialog.
- * Chain: the effect (punch.c) -> LPF -> HPF -> CRUSH, after the master level and before master_out (the limiter);
+ * Chain: the effect (punch.c) -> LPF -> HPF -> CRUSH, after the master level and before master_block (the limiter);
  * THROW and the mutes act before the buses (fx.c mix_block / mix_part).
  * Idle (no key, no knob, FX not held, no ramp left) every stage is skipped: the output is bit-identical. */
 static volatile uint32_t beat_pos, beat_n;     /* (seq.c's: samples into the beat, the beat of the bar) */

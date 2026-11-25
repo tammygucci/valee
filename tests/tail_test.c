@@ -73,7 +73,7 @@ static uint32_t render(int32_t master, uint32_t eq)
     trk[0].p[P_REL] = 120;                             /* a long release: the tail to measure */
     song.master_q12 = (uint32_t)master;
     fx_usb_fixed = 0;
-    lim_env = LIM_T;
+    lim_reset();
     dc_l = dc_r = dce_l = dce_r = 0;
     fx_lowcut = (uint8_t)eq;
     lc_l1 = lc_l2 = lc_r1 = lc_r2 = 0;
@@ -148,18 +148,32 @@ int main(void)
                 }
             }
 #if !OLD_TREE
-            {   /* ((Vallée, the SPAMPY sound) with the exact sine (tests/host_sine.h) the start is far cleaner than Skiff's
-                 * SUB BASS was, so a 3 dB rule reads rounding as growth: each case's limit is what Vallée Classic's way out
-                 * (the same code) measures with this same source, + 1.5 dB, never under 3 (run on vallee-skiff-engine with
-                 * this file and tests/host_sine.h: DAC / USB) */
-                static const double CLASSIC[3][2][2] = {{{8.6, 5.5}, {-6.2, -5.0}}, {{3.2, 7.3}, {-3.0, 8.9}},
-                                                        {{-17.9, -17.9}, {-0.3, -0.4}}};
-                double ld = CLASSIC[eq][mi][0] + 1.5 > 3.0 ? CLASSIC[eq][mi][0] + 1.5 : 3.0,
-                       lu = CLASSIC[eq][mi][1] + 1.5 > 3.0 ? CLASSIC[eq][mi][1] + 1.5 : 3.0;
+            {   /* ((Vallée, the SPAMPY sound) SPAMPY's master is linear below its knee (Vallée's tanh soft clip bent every
+                 * level): the start is ~50 dB cleaner, so growth from it reads the floor as growth. The rule, absolute: at
+                 * each step of the fade H3 stays under what Vallée 0.9.1's master made of this same source (dBFS) + 3 dB,
+                 * or under the floor that is no error of the note's (DAC 24 bits: -120 dBFS; USB, dithered 16: -110) */
+                static const double OLDABS[3][2][4][2] = {
+                    {{{-75.7, -69.7}, {-107.4, -100.7}, {-121.4, -119.7}, {-117.9, -115.0}},
+                     {{-90.4, -84.3}, {-122.2, -116.5}, {-147.4, -129.7}, {-146.4, -141.5}}},
+                    {{{-76.7, -70.7}, {-107.6, -101.6}, {-133.6, -119.5}, {-123.1, -112.9}},
+                     {{-96.1, -90.2}, {-130.6, -118.3}, {-141.3, -136.6}, {-149.0, -131.1}}},
+                    {{{-50.6, -44.6}, {-88.3, -82.3}, {-133.0, -127.1}, {-130.8, -130.9}},
+                     {{-69.9, -63.9}, {-90.6, -84.7}, {-145.3, -125.7}, {-146.8, -123.2}}}};
                 char what[160];
-                snprintf(what, sizeof what, "SPEAKER EQ %s, MASTER %d: H3/H1 grows at most as Classic's + 1.5 dB as the note "
-                         "fades 60 dB (DAC %+.1f of %+.1f, USB %+.1f of %+.1f)", EQ[eq], (int)M[mi], growd, ld, growu, lu);
-                fails += check(what, growd <= ld && growu <= lu);
+                int ok = 1;
+                for (d = 0; d < 4u; d++) {
+                    double hd, hu, rd = ratio_at(t_dac, n, 8388608.0, DOWN[d], 3.0, &hd),
+                                   ru = ratio_at(t_usb, n, 32768.0, DOWN[d], 3.0, &hu);
+                    double ad = hd + rd, au = hu + ru, od = OLDABS[eq][mi][d][0], ou = OLDABS[eq][mi][d][1];
+                    if (ad > (od + 3.0 > -120.0 ? od + 3.0 : -120.0) || au > (ou + 3.0 > -110.0 ? ou + 3.0 : -110.0)) {
+                        printf("tail:   %2.0f dB down: H3 DAC %.1f dBFS (0.9.1 %.1f), USB %.1f (%.1f)\n", DOWN[d], ad, od, au, ou);
+                        ok = 0;
+                    }
+                }
+                (void)r10d; (void)r10u; (void)growd; (void)growu;
+                snprintf(what, sizeof what, "SPEAKER EQ %s, MASTER %d: H3 as the note fades 60 dB under 0.9.1's + 3 dB, or the "
+                         "floor", EQ[eq], (int)M[mi]);
+                fails += check(what, ok);
             }
 #endif
         }

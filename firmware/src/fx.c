@@ -211,14 +211,32 @@ static void track_dist(track_t *t, int32_t *b, uint32_t n)
     }
 }
 
-/* master: peak limiter in front of the soft clipper. Fast attack (~0.1 ms),
- * ~150 ms release, threshold where tanh is still nearly linear, so chords
- * get quieter instead of crushed. */
+/* ((Vallée, the SPAMPY sound) master: SPAMPY's (SLOOP 2.6) peak limiter in front of its knee, a 35 ms hold then ~46 ms
+ * release, threshold where tanh is still nearly linear, so chords get quieter instead of crushed. It looks one block
+ * ahead (lim_block): the output is the mix CTL samples late (0.73 ms) and the gain glides over each block to what the
+ * loudest sample of it and of the next one needs, so a hot kick or bass is already turned down when it comes (Vallée's
+ * caught up in ~4 samples: the first ones went through the soft clip hot). On Q22 values ((2.5, #110) MASTER's
+ * product: the 7 bits under Q15 kept), LIM_T in Q15 */
 #define LIM_T 18000
-static int32_t lim_env = LIM_T;
-/* MENU > USB LEVEL FIXED (for #42: record over USB with the speaker turned down): the mix goes to master_out at the
+#define LIM_HOLD 48u                    /* (a held bass keeps one gain: no whistle at its pitch) blocks after a peak */
+#define LIM_REL 11                      /* the release after the hold: ~46 ms */
+typedef struct {
+    int32_t dl[CTL], dr[CTL];           /* the mix of the last block (the delay), Q22 */
+    uint32_t w;                         /* its oldest sample (the next out) */
+    int32_t env;                        /* the peak the gain fits under LIM_T (LIM_T: none), Q15 */
+    int32_t g;                          /* the gain at the end of the last block, Q15 (32768: 1) */
+    uint32_t hold;                      /* blocks before the release starts */
+} lim_t;
+static lim_t lim_dac = {.env = LIM_T, .g = 32768};
+static void lim_reset(void)             /* (power-on: the tests' runs compare) */
+{
+    memset(&lim_dac, 0, sizeof lim_dac);
+    lim_dac.env = LIM_T;
+    lim_dac.g = 32768;
+}
+/* MENU > USB LEVEL FIXED (for #42: record over USB with the speaker turned down): the mix goes to the master (master_block) at the
  * full MASTER level, USB audio takes that (audio.c uac_tap), and only then does MASTER scale what the DAC gets
- * (usb_fixed_dac). MASTER (0, the default): MASTER before master_out, as always (USB follows the knob) */
+ * (usb_fixed_dac). MASTER (0, the default): MASTER before the master, as always (USB follows the knob) */
 static volatile uint8_t fx_usb_fixed;
 #define MASTER_FULL 4096                /* main.c: the MASTER knob's top, Q12 */
 /* the MASTER pot (ADC 0..1023, smoothed in main.c) to its level, square law: 0 .. 4088 (Q12) */
@@ -301,13 +319,11 @@ static inline int32_t softclip22(int32_t x)
     return x < 0 ? -y : y;
 }
 
-/* the master: DC blocker, SPEAKER EQ, the limiter, the soft clip, on Q22 values in and out ((2.5, #110) MASTER's
- * product, fx.c master_q22). The DC blocker and SPEAKER EQ's high-passes take all 22 bits (BASS+'s harmonics are
- * made from the Q15 part); the limiter follows the Q15 part and, acting on a loud signal, drops the bits under it;
- * the soft clip takes all 22 bits */
-static inline void master_out(int32_t *l, int32_t *r)
+/* the master's first stage: DC blocker, SPEAKER EQ, on Q22 values in and out ((2.5, #110) MASTER's product, fx.c
+ * master_q22): all 22 bits (BASS+'s harmonics are made from the Q15 part). Then lim_block, knee22 (master_block) */
+static inline void master_pre(int32_t *l, int32_t *r)
 {
-    int32_t al, ar, a, xl = dc_block(*l, &dc_l, &dce_l), xr = dc_block(*r, &dc_r, &dce_r), ql, qr;
+    int32_t xl = dc_block(*l, &dc_l, &dce_l), xr = dc_block(*r, &dc_r, &dce_r);
     if (fx_lowcut) {                  /* two one-pole high-passes, error feedback as dc_block (the */
         uint32_t sh = fx_lowcut == 2u ? 5u : 6u;    /* rounded step stopped at |x - lc| < 32: an offset) */
         int32_t b = fx_lowcut == 2u ? spk_bass(((xl >> 7) + (xr >> 7)) >> 1) * 128 : 0;
@@ -316,22 +332,81 @@ static inline void master_out(int32_t *l, int32_t *r)
         xr = lowcut1(xr, &lc_r1, &lce[2], sh);
         xr = lowcut1(xr, &lc_r2, &lce[3], sh) + b;
     }
-    ql = xl >> 7;
-    qr = xr >> 7;
-    al = ql < 0 ? -ql : ql;
-    ar = qr < 0 ? -qr : qr;
-    a = al > ar ? al : ar;
-    if (a > lim_env)
-        lim_env += (a - lim_env) >> 2;
-    else if (lim_env > LIM_T)
-        lim_env -= ((lim_env - LIM_T) >> 12) + 1;
-    if (lim_env > LIM_T) {
-        int32_t g = (int32_t)(((uint32_t)LIM_T << 15) / (uint32_t)lim_env);   /* < 32768 */
-        xl = (((ql >> 4) * g) >> 11) * 128;              /* >> 4 first: |l| may be far above Q15 */
-        xr = (((qr >> 4) * g) >> 11) * 128;
+    *l = xl;
+    *r = xr;
+}
+
+/* ((Vallée, the SPAMPY sound) SPAMPY's limiter (lim_block of its fx.c) on Q22: l, r n (<= CTL) samples in; out: the n
+ * samples of CTL before, limited */
+static void lim_block(lim_t *s, int32_t *l, int32_t *r, uint32_t n)
+{
+    uint32_t i, w = s->w;
+    int32_t pk = 0, a, g0 = s->g, g1, dg, e = s->env;
+    for (i = 0; i < CTL; i++) {                         /* the samples going out now and the ones after them: CTL ahead */
+        a = s->dl[i] < 0 ? -s->dl[i] : s->dl[i], pk = a > pk ? a : pk;
+        a = s->dr[i] < 0 ? -s->dr[i] : s->dr[i], pk = a > pk ? a : pk;
     }
-    *l = softclip22(xl);
-    *r = softclip22(xr);
+    for (i = 0; i < n; i++) {
+        a = l[i] < 0 ? -l[i] : l[i], pk = a > pk ? a : pk;
+        a = r[i] < 0 ? -r[i] : r[i], pk = a > pk ? a : pk;
+    }
+    pk >>= 7;                                           /* (Q15) */
+    if ((int64_t)pk * 17 >= (int64_t)e * 16)           /* a peak within ~0.5 dB of the envelope: the hold again */
+        s->hold = LIM_HOLD;
+    if (s->hold)
+        s->hold--;
+    else if (e > LIM_T)                                 /* the release (after the hold), a block at a time */
+        e -= (int32_t)((((int64_t)(e - LIM_T) * (int32_t)n) >> LIM_REL) + 1);
+    if (e < LIM_T)
+        e = LIM_T;
+    if (pk > e)
+        e = pk, s->hold = LIM_HOLD;
+    s->env = e;
+    g1 = e > LIM_T ? (int32_t)(((uint32_t)LIM_T << 15) / (uint32_t)e) : 32768;
+    s->g = g1;
+    dg = (g1 - g0) / (int32_t)(n ? n : 1u);             /* (towards 0: the gain never above both ends' bound) */
+    for (i = 0; i < n; i++) {
+        int32_t xl = s->dl[w], xr = s->dr[w], g = g0 + dg * (int32_t)(i + 1u);
+        s->dl[w] = l[i], s->dr[w] = r[i];
+        w = (w + 1u) & (CTL - 1u);
+        if (i + 1u == n)
+            g = g1;
+        if (g < 32768) {                                /* (64-bit: |x| may be far above Q22's Q15) */
+            xl = (int32_t)(((int64_t)xl * g) >> 15);
+            xr = (int32_t)(((int64_t)xr * g) >> 15);
+        }
+        l[i] = xl, r[i] = xr;
+    }
+    s->w = w;
+}
+
+/* ((Vallée, the SPAMPY sound) SPAMPY's output stage on Q22: linear up to KNEE (a clean low end: no tanh harmonics on a
+ * loud sine), above it a tanh knee with the same slope at the joint, to full scale */
+#define KNEE22 (16384 << 7)
+static inline int32_t knee22(int32_t x)
+{
+    int32_t a = x < 0 ? -x : x;
+    if (a <= KNEE22)
+        return x;
+    a = KNEE22 + (softclip22(clamp(a - KNEE22, 0, 0x3FFFFFFF / 2) * 2) >> 1);
+    return x < 0 ? -a : a;
+}
+
+/* the master on a block of Q22 values (MASTER's product): master_pre, the limiter, the knee; out: Q15 for the DAC and
+ * USB, the 7 bits under it in dac_lo */
+static __attribute__((noinline)) void master_block(int32_t *l, int32_t *r, int32_t *out, uint32_t n)
+{
+    uint32_t i;
+    for (i = 0; i < n; i++)
+        master_pre(&l[i], &r[i]);
+    lim_block(&lim_dac, l, r, n);
+    for (i = 0; i < n; i++) {
+        int32_t a = knee22(l[i]), b = knee22(r[i]);
+        out[2u * i] = a >> 7;
+        out[2u * i + 1u] = b >> 7;
+        dac_lo[2u * i] = (uint8_t)(a & 127);
+        dac_lo[2u * i + 1u] = (uint8_t)(b & 127);
+    }
 }
 
 /* length of one division (N_DIV order) in samples at the song tempo */
@@ -1166,6 +1241,22 @@ static inline int32_t lvl_mul(int32_t x, int32_t lvl)
 {
     return clamp(((x >> 2) * lvl + (((x & 3) * lvl) >> 2) + 512) >> 10, -524287, 524287);
 }
+/* ((Vallée, the SPAMPY sound) SPAMPY 2.7's LEVEL and PAN glide (drums.c mix_glide): a change (the knob, automation, a new
+ * sound's trim) goes a quarter of the way each block, the last 8 at once: ~3 ms, no zipper, no click. mix_glides: the
+ * block's start values and its steps a sample (the end values in t) */
+static inline int32_t mix_glide(int32_t from, int32_t to)
+{
+    int32_t d = to - from;
+    return d <= 8 && d >= -8 ? to : from + d / 4;
+}
+static inline void mix_glides(track_t *t, int32_t lvl, int32_t gl, int32_t gr, int32_t *g0, int32_t *dg)
+{
+    if (!t->glon)
+        t->glv = lvl, t->gpl = gl, t->gpr = gr, t->glon = 1;
+    g0[0] = t->glv, g0[1] = t->gpl, g0[2] = t->gpr;
+    t->glv = mix_glide(g0[0], lvl), t->gpl = mix_glide(g0[1], gl), t->gpr = mix_glide(g0[2], gr);
+    dg[0] = (t->glv - g0[0]) >> CTL_LOG2, dg[1] = (t->gpl - g0[1]) >> CTL_LOG2, dg[2] = (t->gpr - g0[2]) >> CTL_LOG2;
+}
 /* (2.5) the delay's send *dl (Q15) of a track at PAN gains gl, gr (Q12, as its dry's): in a stereo MODE (G_DMODE) the
  * left part stays in *dl and the right one is returned (a centred track sends whole to both); MONO: *dl as it is and 0,
  * nothing right (2.2's sums, bit for bit) */
@@ -1194,9 +1285,13 @@ static __attribute__((noinline)) AUDIO_RAM void lpan_mix(track_t *t, const int32
     uint32_t i;
     xmax = 0x7FFFFFFF / ((xmax > r ? xmax : r) | 1);
     de = dly_send_r(&dl, gl, gr);
+    int32_t g0[3], dg[3];
+    mix_glides(t, lvl, gl, gr, g0, dg);                 /* ((Vallée) SPAMPY's LEVEL and PAN glide */
     for (i = 0; i < n; i++) {
-        int32_t x = lvl_mul(b[i], lvl), a = x < 0 ? -x : x, xs = clamp(x, -xmax, xmax);
-        int32_t yl = lvl_mul(d[i], lvl), yr = lvl_mul(e[i], lvl);
+        int32_t lv = g0[0] + dg[0] * (int32_t)i;
+        int32_t x = lvl_mul(b[i], lv), a = x < 0 ? -x : x, xs = clamp(x, -xmax, xmax);
+        int32_t yl = lvl_mul(d[i], lv), yr = lvl_mul(e[i], lv);
+        gl = g0[1] + dg[1] * (int32_t)i, gr = g0[2] + dg[2] * (int32_t)i;
         if (a > pk)
             pk = a;
         if (c)
@@ -1253,8 +1348,13 @@ static __attribute__((noinline)) AUDIO_RAM void mix_spread(track_t *t, int32_t *
         lpan_mix(t, b, d, e, n SM_ARG(sm));
         return;
     }
+    int32_t g0[3], dg[3];
+    mix_glides(t, lvl, 4096 - (pan > 0 ? pan * 64 : 0), 4096 + (pan < 0 ? pan * 64 : 0), g0, dg);   /* ((Vallée)
+                                                         * SPAMPY's LEVEL glide; the spread's pans as set, the track's
+                                                         * PAN kept for the other mixes' glide) */
     for (i = 0; i < n; i++) {
-        int32_t x = lvl_mul(b[i], lvl), a = x < 0 ? -x : x, y = lvl_mul(d[i], lvl);
+        int32_t lv = g0[0] + dg[0] * (int32_t)i;
+        int32_t x = lvl_mul(b[i], lv), a = x < 0 ? -x : x, y = lvl_mul(d[i], lv);
         int32_t xs = clamp(x, -xmax, xmax);
         if (a > pk)
             pk = a;
@@ -1381,8 +1481,10 @@ static void mix_part(track_t *t, uint32_t n SM_DECL)
             AUDIO_FAR(perf_mute)((uint32_t)(t - trk), b, n);   /* key held, (2.0) a MUTE, the ramp back */
         if ((duck_on >> (t - trk)) & 1u)
             duck_apply((uint32_t)(t - trk), b, n);      /* (Skiff) duck.c: under its source's hits */
+        int32_t g0[3], dg[3];
+        mix_glides(t, lvl, gl, gr, g0, dg);             /* ((Vallée) SPAMPY's LEVEL and PAN glide */
         for (i = 0; i < n; i++) {
-            int32_t x = lvl_mul(b[i], lvl), a = x < 0 ? -x : x;   /* ((2.5, #110) rounded, no bits lost) */
+            int32_t x = lvl_mul(b[i], g0[0] + dg[0] * (int32_t)i), a = x < 0 ? -x : x;   /* ((2.5, #110) rounded */
             int32_t xs = clamp(x, -xmax, xmax);         /* sends: mulq15 would overflow */
             if (a > pk)
                 pk = a;
@@ -1394,8 +1496,8 @@ static void mix_part(track_t *t, uint32_t n SM_DECL)
                 SM(e)[i] += mulq15(xs, de);
             if (r)
                 SM(v)[i] += mulq15(xs, r);
-            SM(l)[i] += (x * gl + 2048) >> 12;
-            SM(r)[i] += (x * gr + 2048) >> 12;
+            SM(l)[i] += (x * (g0[1] + dg[1] * (int32_t)i) + 2048) >> 12;
+            SM(r)[i] += (x * (g0[2] + dg[2] * (int32_t)i) + 2048) >> 12;
         }
         t->peak = pk;
     }
@@ -1454,7 +1556,7 @@ static __attribute__((noinline)) uint32_t mix_split(void)
 }
 #endif
 
-/* (2.5, #110) MASTER's product, kept below Q15: the mix x (Q15, |x| < 2^19) at mg (Q12) in Q22. master_out takes its
+/* (2.5, #110) MASTER's product, kept below Q15: the mix x (Q15, |x| < 2^19) at mg (Q12) in Q22. master_block takes its
  * Q15 part; the 7 bits under it go to the DAC (dac_lo; audio.c: out << 7 | dac_lo) and dither USB's 16-bit word
  * (usb.c uac_dith). Before, (x >> 2) * mg >> 10 cut the mix to Q15 after MASTER's attenuation: a fading note at a
  * low MASTER reached the DAC in coarse steps, its error tied to the note (#110) */
@@ -1463,12 +1565,11 @@ static inline int32_t master_q22(int32_t x, int32_t mg)
     return ((x >> 2) * mg + (((x & 3) * mg) >> 2)) >> 3;
 }
 
-/* the master with the FX layer's effects between its level and master_out (perform.c) */
+/* the master with the FX layer's effects between its level and master_block (perform.c) */
 static __attribute__((noinline)) AUDIO_RAM void perf_master(int32_t *out, uint32_t n)
 {
     uint32_t i;
     int32_t mg = fx_usb_fixed ? MASTER_FULL : (int32_t)song.master_q12;   /* (USB LEVEL FIXED: MASTER after) */
-    void (*mo)(int32_t *, int32_t *) = AUDIO_FAR(master_out);   /* (Skiff: XIP, from RAM) */
     for (i = 0; i < n; i++) {                           /* ((2.5) as mix_block: the Q15 part to the effects, the 7 bits */
         int32_t l = master_q22(mix_l[i] + wet[i], mg), r = master_q22(mix_r[i] + wet[i], mg);   /* under it kept: */
         mix_l[i] = l >> 7;                              /* a sample the effects leave is mix_block's to the bit) */
@@ -1478,13 +1579,10 @@ static __attribute__((noinline)) AUDIO_RAM void perf_master(int32_t *out, uint32
     }
     perf_block(mix_l, mix_r, n);
     for (i = 0; i < n; i++) {
-        int32_t l = mix_l[i] * 128 + dac_lo[2u * i], r = mix_r[i] * 128 + dac_lo[2u * i + 1u];   /* (master_out: Q22) */
-        mo(&l, &r);
-        out[2u * i] = l >> 7;
-        out[2u * i + 1u] = r >> 7;
-        dac_lo[2u * i] = (uint8_t)(l & 127);
-        dac_lo[2u * i + 1u] = (uint8_t)(r & 127);
+        mix_l[i] = mix_l[i] * 128 + dac_lo[2u * i];     /* (master_block: Q22) */
+        mix_r[i] = mix_r[i] * 128 + dac_lo[2u * i + 1u];
     }
+    AUDIO_FAR(master_block)(mix_l, mix_r, out, n);      /* (Skiff: XIP, from RAM) */
 }
 
 static void mix_block(int32_t *out, uint32_t n)
@@ -1542,11 +1640,8 @@ static void mix_block(int32_t *out, uint32_t n)
         return;
     }
     for (i = 0; i < n; i++) {
-        int32_t l = master_q22(mix_l[i] + wet[i], mg), r = master_q22(mix_r[i] + wet[i], mg);   /* ((2.5, #110) Q22) */
-        master_out(&l, &r);
-        out[2u * i] = l >> 7;
-        out[2u * i + 1u] = r >> 7;
-        dac_lo[2u * i] = (uint8_t)(l & 127);
-        dac_lo[2u * i + 1u] = (uint8_t)(r & 127);
+        mix_l[i] = master_q22(mix_l[i] + wet[i], mg);   /* ((2.5, #110) Q22) */
+        mix_r[i] = master_q22(mix_r[i] + wet[i], mg);
     }
+    master_block(mix_l, mix_r, out, n);
 }

@@ -184,7 +184,7 @@ static void test_bounded(void)
                     }
                 }
                 for (b = 0; b < NB; b++) {      /* the input gone (what stays: its swing; a constant offset is the
-                                                 * master's DC blocker's, fx.c master_out) */
+                                                 * master's DC blocker's, fx.c master_pre) */
                     memset(al_l, 0, sizeof al_l);
                     memset(al_r, 0, sizeof al_r);
                     run_blk(g, al_l, al_r);
