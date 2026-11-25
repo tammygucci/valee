@@ -574,5 +574,25 @@
   "CLAVE": 0.25,
   "KICK2": 4.0,
   "SNARE2": 5.75
+ },
+ "LM-1": {
+  "CLAP": 9.0,
+  "CHH": 24.0,
+  "OHH": 18.0,
+  "RIDE": 4.0
+ },
+ "LINNDRUM": {
+  "KICK2": -4.0,
+  "CLAP": 8.0,
+  "CHH": 22.0,
+  "OHH": 16.0,
+  "RIDE": 4.0
+ },
+ "SYNWAVE": {
+  "SNARE": -4.0,
+  "CLAP": 4.0,
+  "CHH": 12.0,
+  "OHH": 7.0,
+  "RIDE": 4.0
  }
 }

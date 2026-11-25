@@ -464,6 +464,9 @@
     <h2 data-t="samples" data-ic="symbol_waves"></h2>
     <p class="dim" data-t="smpHelp"></p>
     <div id="smpslots"></div>
+    <p><button id="factsmp">Write factory samples</button> <progress id="factprog" max="1" value="0" hidden></progress>
+      <span class="dim">Vallée's built-in samples (the sampled drum kits, piano, vibes, flute, sax). Needed once after
+      installing a new firmware; about 30 s. Keep the FM-1 connected until it says done.</span></p>
   </section>
 
   <section class="panel" id="p-projects" data-tab="projects" data-dev hidden>
@@ -5769,6 +5772,48 @@ async function smpUpload(k, prog) {
     renderSamples();
   }
 }
+
+/* ((Vallée, the SPAMPY sound) the factory sample block (firmware/vallee-samples.bin, beside the packages): SMP_* slot 127
+ * (editor.c ed_fact_*): BEGIN, the data from offset 512 in 256-byte pieces, END with the 16-byte header (the unit takes it
+ * only when it is its own build's: length, CRC) */
+async function factUpload() {
+  if (!dev || smpBusy) return;
+  const say = (m) => { $("status").textContent = m; };
+  let blk;
+  try {
+    const r = await fetch("../../firmware/vallee-samples.bin", { cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    blk = new Uint8Array(await r.arrayBuffer());
+  } catch (e) { say("Factory samples: the file is not on this page's site (" + e.message + ")"); return; }
+  if (blk.length < 1024 || blk[0] !== 0x56 || blk[1] !== 0x53 || blk[2] !== 0x4D || blk[3] !== 0x50) { say("Factory samples: not a sample block"); return; }
+  const hdr = blk.subarray(0, 16), data = blk.subarray(512), session = dev, releaseBusy = beginBusy(), prog = $("factprog");
+  smpBusy = true;
+  prog.hidden = false;
+  prog.value = 0;
+  try {
+    const t0 = performance.now();
+    let r = parse[CMD.SMP_BEGIN](await rq(req.smpBegin(127), { timeout: 3000, retries: 0 }));
+    if (r.rc) throw new Error("begin rc " + r.rc);
+    for (let off = 0; off < data.length; off += 256) {
+      const w = parse[CMD.SMP_WRITE](await rq(req.smpWrite(127, 512 + off, data.subarray(off, off + 256)), { timeout: 2000, retries: 1 }));
+      if (w.rc) throw new Error(`write at 0x${(512 + off).toString(16)} rc ${w.rc}`);
+      prog.value = (off + 256) / data.length;
+      if (!(off & 0x3FFF)) say(`Writing factory samples  ${kib(Math.min(data.length, off + 256))} / ${kib(data.length)} KiB`);
+    }
+    r = parse[CMD.SMP_END](await rq(req.smpEnd(127, hdr), { timeout: 8000, retries: 0 }));
+    if (r.rc === 2) throw new Error("these samples are not for the firmware on the unit (install the firmware from this same build)");
+    if (r.rc) throw new Error("end rc " + r.rc);
+    say(`Factory samples written (${((performance.now() - t0) / 1000).toFixed(1)} s). The sampled kits and sounds play now.`);
+  } catch (e) {
+    if (e.message !== "closed") say("Factory samples failed: " + e.message + ". Nothing is broken: try again.");
+  } finally {
+    smpBusy = false;
+    prog.hidden = true;
+    releaseBusy();
+    if (session === dev) try { renderSamples(); } catch (e) { /* the slots redraw on the next visit */ }
+  }
+}
+$("factsmp").addEventListener("click", factUpload);
 
 async function smpErase(k) {
   if (!dev || !confirm(t("confirmErase").replace("{n}", k + 1))) return;

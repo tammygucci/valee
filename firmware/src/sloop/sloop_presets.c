@@ -103,8 +103,40 @@ static uint32_t preset_logical_of(uint32_t e, uint32_t k)
 }
 /* ((Vallée) the trim the sound at place k of engine e loads with (SPAMPY's ui.c apply_preset_to), 1/2 dB; 0 for a
  * sound SPAMPY does not number */
+/* ((Vallée) SPAMPY's trims stop at its first 13 engines (PT_ENGINES): OBERVAVE, DRONE and SID came after and were
+ * never matched, 5 to 25 dB under PROPHET and ANALOG. Their trims, measured as SPAMPY's (tests/preset_level.c's
+ * phrases, the whole mix): each sound to ~75 dB as the others, at most +12 dB (the track's LEVEL has the room) */
+static const struct { uint8_t e; const char *name; int8_t trim; } VALLEE_TRIM[] = {
+    {ENGI_DRONE, "ABYSS CHOIR", 8},
+    {ENGI_DRONE, "AURORA AIR", 21},
+    {ENGI_DRONE, "CATHEDRAL HUM", 24},
+    {ENGI_DRONE, "DARK TIDE", 24},
+    {ENGI_DRONE, "DEEP SPACE", 24},
+    {ENGI_DRONE, "ECLIPSE", 24},
+    {ENGI_DRONE, "NIGHT FOG", 17},
+    {ENGI_OBERVAVE, "AIR CHOIR", 18},
+    {ENGI_OBERVAVE, "BIG BRASS", 19},
+    {ENGI_OBERVAVE, "DARK PAD", 20},
+    {ENGI_OBERVAVE, "DREAM ARP", 22},
+    {ENGI_OBERVAVE, "GHOST PAD", 20},
+    {ENGI_OBERVAVE, "HORN SECT", 22},
+    {ENGI_OBERVAVE, "NEON PAD", 7},
+    {ENGI_OBERVAVE, "OB ENSEMBLE", 18},
+    {ENGI_OBERVAVE, "OB PWM LEAD", 18},
+    {ENGI_OBERVAVE, "OB WARM PAD", 14},
+    {ENGI_OBERVAVE, "PWM STRING", 7},
+    {ENGI_OBERVAVE, "SLOW SWEEP", 24},
+    {ENGI_OBERVAVE, "SWEEP PAD", 17},
+    {ENGI_OBERVAVE, "TAPE KEYS", 17},
+    {ENGI_OBERVAVE, "UNISON LD", 16},
+    {ENGI_SID, "SID STRINGS", 11},
+};
 static int16_t sloop_trim_of(uint32_t e, uint32_t k)
 {
-    uint32_t l = preset_logical_of(e, k);
+    uint32_t l = preset_logical_of(e, k), i;
+    if (e >= PT_ENGINES && e < NENGINES && k < ENGINES[e]->npresets && ENGINES[e]->presets[k].name)
+        for (i = 0; i < sizeof VALLEE_TRIM / sizeof VALLEE_TRIM[0]; i++)
+            if (VALLEE_TRIM[i].e == e && str_eq(VALLEE_TRIM[i].name, ENGINES[e]->presets[k].name))
+                return VALLEE_TRIM[i].trim;
     return l == 0xFFu ? 0 : preset_trim(e, l);
 }

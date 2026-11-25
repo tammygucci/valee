@@ -215,3 +215,15 @@ creatures by sound, SUMMON rebuilt, DRUM-X code removed), 6 (emulator walk, old 
 Then 3 (drums), 4 (mix), 5 (GEN, SUMMON...), 6 (tests), 7 (installer).
 Local host builds: build/gen from a CI-like build + tools/gen_factory_block.py + tools/gen_p5_tables.py.
 Do not install this branch on a unit yet (the installer does not write the sample block).
+
+### Sound check (Nov 2026): every sound against SPAMPY's
+- Every preset rendered in both (tests/preset_level.c's phrases, SPAMPY's level trims applied): same tone, levels
+  within 2 dB.
+- DX BASS 2 and DX BASS 8 sounded an octave under the key (33 Hz on C2, under what the speaker plays): an octave up
+  (gen_fm6_patches.py EXTRA_TRANSPOSE). SPAMPY has the same.
+- voice.c told SLOOP's CZ, SID and PROPHET nothing on a retrigger or a steal (`*_voice_was`, SPAMPY's voice.c):
+  each restarted from silence, a click (PROPHET chords over tails, mono lines).
+- OBERVAVE, DRONE, SID had no level trims in SPAMPY (5..25 dB under): VALLEE_TRIM in sloop_presets.c.
+- Drum kits LM-1, LINNDRUM, SYNWAVE were never level-matched (hats ~25 dB under): drumkit_levels.json.
+- The factory sample block (the sampled kits, PIANO, VIBES, FLUTE, SAX): the editor's Samples page writes it
+  ("Write factory samples", vallee-samples.bin beside the packages) until the installer does (phase 7).

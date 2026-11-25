@@ -139,6 +139,19 @@ EXTRA_PATCHES = [
     ("FINGERCIM", 108), ("TIBET", 104),
 ]
 
+# ((Vallée) two of the FM-1's basses sound an octave below the key (their carriers' ratio and the bank's transpose
+# together): on C2 a 33 Hz fundamental the FM-1's speaker can't play, so only their upper partials were heard and GEN's
+# bass parts sounded hollow and wrong. An octave up (byte 117, TRANSPOSE: 24 = as played): the key's pitch, as the
+# other basses
+EXTRA_TRANSPOSE = {"SYN BASS 2": 12, "SYN BASS 8": 12}
+
+
+def extra_voice(bank, name, slot):
+    v = bytearray(bank[slot * 128:(slot + 1) * 128])
+    v[117] = min(48, v[117] + EXTRA_TRANSPOSE.get(name, 0))
+    return bytes(v)
+
+
 def c_rows(b):
     return ",\n".join("     " + ", ".join(f"{x:3d}" for x in b[i:i + 16]) for i in range(0, len(b), 16))
 
@@ -156,7 +169,7 @@ def main(path):
         L += [f"    {{/* {name} */", c_rows(pack(v)) + "},"]
     L += ["};", f"static const uint8_t FM6_EXTRA[{len(EXTRA_PATCHES)}][128] = {{"]
     for name, slot in EXTRA_PATCHES:
-        L += [f"    {{/* original FM-1 #{slot + 1}: {name} */", c_rows(bank[slot * 128:(slot + 1) * 128]) + "},"]
+        L += [f"    {{/* original FM-1 #{slot + 1}: {name} */", c_rows(extra_voice(bank, name, slot)) + "},"]
     L += ["};"]
     Path(path).write_text("\n".join(L) + "\n")
     print(f"fm6 patches: {len(PATCHES)} -> {path}")

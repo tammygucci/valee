@@ -93,6 +93,9 @@ def main(pkg, version, out, *more):
         shutil.copytree(HERE / "brand", inst / "brand", dirs_exist_ok=True)
     for _, data, n in pkgs:
         (fw / n).write_bytes(data)
+    smp = HERE.parent / "build" / "vallee-samples.bin"    # ((Vallée, the SPAMPY sound) the factory sample block: the
+    if smp.is_file():                                       # editor writes it to the unit's sample area (Samples page)
+        shutil.copy(smp, fw / "vallee-samples.bin")
     lic = HERE.parent / "LICENSES"                  # the package holds JieLi SDK files (Apache-2.0): their
     (fw / "LICENSES").mkdir(exist_ok=True)          # licence travels next to it, with Felucca's own
     names = sorted(f.name for f in lic.glob("*.txt"))

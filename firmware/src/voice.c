@@ -336,6 +336,15 @@ static void voice_start(track_t *t, voice_t *v, uint32_t note, uint32_t vel, int
         v->side = t->sp_alt;                            /* ((1.3) SPREAD: left, right, left .. (UNISON: mono_play); a */
         t->sp_alt ^= 1u;                                /* sounding voice keeps its side: no jump) */
     }                                                   /* sounding: the attack starts from the current level */
+    /* ((Vallée, the SPAMPY sound) as SPAMPY's voice.c: SLOOP's CZ, SID and PROPHET keep a sounding voice's state on a
+     * retrigger or a steal (their oscillators, filters, DC); told nothing, each restarted from silence: a click
+     * on every steal (a chord over the last one's tails, a mono line) */
+    if (e == &ENG_CZ)
+        cz_voice_was[(uint32_t)(t - trk) % NPART] = (uint8_t)sounding;
+    if (e == &ENG_SID)
+        sid_voice_was[(uint32_t)(t - trk) % NPART] = (uint8_t)sounding;
+    if (e == &ENG_PROPHET)
+        p5_voice_was[(uint32_t)(t - trk) % NPART] = (uint8_t)sounding;
     e->note_on(t, v);
     if (sounding && !e->sampled) {   /* retrigger / steal: keep */
         v->ph[0] = ph0;                                 /* phases and filter states (resetting them clicks); ((#35) a
