@@ -10,7 +10,7 @@
  *    as their mean, read between them): its replays are a little darker than SPAMPY's. While borrowed, a STUT track
  *    plays live (slicer.c sl_lent). A loop pressed before the ring holds its division's start waits for the next one
  *  - FREEZE: SPAMPY's holds its reverb (another reverb than Vallée's); here two grains of the ring's last 186 ms,
- *    as the FX layer's FREEZE was. Phase 4 (SPAMPY's mix stage) may bring SPAMPY's back
+ *    as the FX layer's FREEZE was (the owner kept Vallée's reverb)
  *  - the clock: seq.c beat_pos (samples into the beat), fx.c beat_samples; called from perform.c perf_block (in XIP:
  *    AUDIO_FAR) */
 #define PUNCH_N 32768u                    /* the ring's samples (44.1 kHz positions; a power of two) */

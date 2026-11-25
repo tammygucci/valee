@@ -99,7 +99,7 @@ The old version stays installable: branch `vallee-skiff-engine` = release v0.9.1
       3e PUNCH-IN FX (the owner: yes; SYN1..4 and user kits: no, for now). DONE (2026-11-24): punch.c, SPAMPY's 27,
          as the FX layer's keys (perform.c keeps its macros, latch, THE SPELL's keys: 14 of the 27). No pool for its
          64 KB ring: the SLICER's sl_buf borrowed while FX is held or an effect plays, at 22.05 kHz (0.74 s, as
-         SPAMPY's); FREEZE grains of the ring (SPAMPY's holds its own reverb: phase 4). FX's black keys no longer
+         SPAMPY's); FREEZE grains of the ring (SPAMPY's holds its own reverb; the owner kept Vallée's). FX's black keys no longer
          mute (GLO's do). tests/perform_test.c rewritten after SPAMPY's punch_test.c.
       3d verify: tests, CI, renders, old projects, RAM / CPU budgets. DONE (2026-11-25): a v0.9.1 unit's flash
          (tests/v091_flash.bin.gz: its project saved by v0.9.1-alpha's own code, persistence_test.c old_unit_test)
@@ -107,14 +107,15 @@ The old version stays installable: branch `vallee-skiff-engine` = release v0.9.1
          plays 6 s without a clip. RAM: .data+.bss 95,960 / 98,304, pool 319,864 / 344,064 (unchanged by the FX),
          RAM code 28,068 / 32,512. CPU (host): the FX layer's worst effect (KILL MID) 35 ns a sample, a DRUM part
          51, the heaviest part (PROPHET, 8 notes) 840.
-- [ ] 4. SPAMPY's mix stage (levels, glide, master) in fx.c.
+- [x] 4. SPAMPY's mix stage (levels, glide, master) in fx.c.
       Levels: the presets' trims (P_ED_FX) since phase 2, LEVEL_Q12 and the pan law as SPAMPY's already.
       4a DONE (2026-11-25): the master: SPAMPY's (SLOOP 2.6) look-ahead limiter (a block ahead, 35 ms hold, ~46 ms
          release, the gain glides over the block) and its knee (linear to 16384, tanh above) in place of Vallée's
          per-sample limiter and full-range tanh; on Q22 (#110's bits under Q15 kept), the DC blocker and SPEAKER EQ
          before it as Vallée's. The output is 0.73 ms later. tail_test: H3 now absolute (the start is ~50 dB cleaner).
       4b DONE (2026-11-25): LEVEL and PAN glide (SPAMPY 2.7 mix_glide, ~3 ms) in the mono, SPREAD and kit-pan mixes.
-      4c open: SPAMPY's reverb (its FDN; FREEZE holds it). Vallée's ROOM / SPRING / HALL stay until the owner says.
+      4c DECIDED (the owner, 2026-11-25): the reverb stays Vallée's (ROOM / SPRING / HALL); FREEZE stays the ring's
+         grains (punch.c). Phase 4 done.
 - [ ] 5. Rewire GEN, PART SONG, THE SPELL, creatures, EDIT/SAVE/PRESETS; rebuild SUMMON.
 - [ ] 6. Tests: size, every page in both themes, every sound and kit, old projects, goldens on purpose.
 - [ ] 7. (after approval) installer: Vallée + Vallée Classic.
