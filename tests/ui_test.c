@@ -10561,6 +10561,28 @@ static int test_gen(void)
         for (k = 0; k < NTRK; k++) ok &= trk[k].eng_req == was[k];
     }
     bad += check("(Vallée) GEN: DRUMS OFF leaves T4 and T6; SOUNDS KEEP leaves every sound", ok);
+    {   /* ((Vallée, the SPAMPY sound) GEN on SPAMPY's 16 lanes: a CHORUS opens on a CRASH; T6's second kit shakes and
+         * plays congas (AETHER), rides (HEX) */
+        uint32_t sh = 0, cg = 0, rd = 0, s16;
+        for (k = 0; k < GK_N; k++) gen.v[k] = 0;
+        ui_power_on();
+        gen.made = 0; gen.nseq = 0;
+        gen.v[GK_STYLE] = GS_IMPALA; gen.v[GK_ENERGY] = 70; gen.v[GK_PART] = GP_CHORUS;
+        gen.v[GK_DRUMS] = 2; gen.v[GK_BASS] = gen.v[GK_KEYS] = gen.v[GK_LEAD] = gen.v[GK_COLOR] = 2;
+        gen_write();
+        for (s16 = 0; s16 < NSTEP; s16++) {
+            sh |= (trk[5].step[s16].hit >> LN_SHAKER) & 1u;
+            cg |= (trk[5].step[s16].hit >> LN_CONGA) & 1u;
+        }
+        ok = ((trk[3].step[0].hit >> LN_CRASH) & 1u) && sh && cg;
+        gen.made = 0; gen.nseq = 0;
+        gen.v[GK_STYLE] = GS_STROKE;
+        gen_write();
+        for (s16 = 0; s16 < NSTEP; s16++)
+            rd |= (trk[5].step[s16].hit >> LN_RIDE) & 1u;
+        bad += check("(Vallée) GEN on 16 lanes: a CHORUS opens on a CRASH, T6 shakes and plays congas (AETHER), rides (HEX)",
+                     ok && rd);
+    }
     {   /* ENERGY sets the tempo: 0 well under the style's slowest, 100 at its fastest, rising in between */
         uint8_t e0 = gen.v[GK_ENERGY], tp = gen.v[GK_TEMPO], st0 = gen.v[GK_STYLE];
         uint32_t st, e, prev;

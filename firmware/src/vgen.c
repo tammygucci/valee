@@ -116,7 +116,20 @@ typedef struct { uint8_t n, c[8][3]; } gprog_t;
  * (with COMPLEX); 0: the lane silent. Bass: R root, 5 fifth, O octave, C a chord tone, A an approach to the next chord,
  * - held, . rest. Comping: X the chord, held on; s a short stab; - held; . rest. Lead: n a note, - held, . rest (two
  * bars). */
-typedef struct { const char *ln[8]; } gdrum_t;
+typedef struct { const char *ln[16]; } gdrum_t;   /* ((Vallée) rows 0..7 the 8 lanes of before, 8..15 SPAMPY's others */
+/* ((Vallée, the SPAMPY sound) a gdrum_t row's lane: 0..7 as before (KICK SNARE CLAP HAT OHAT LOW TOM RIM COWBELL:
+ * core.h LANE_FROM8), 8..15 the lanes SPAMPY added (KICK 2, PEDAL, SNARE 2, HIGH TOM, CRASH, RIDE, SHAKER, CONGA) */
+enum { GD_KICK2 = 8, GD_PEDAL, GD_SNARE2, GD_HTOM, GD_CRASH, GD_RIDE, GD_SHAKER, GD_CONGA };
+static const uint8_t GD_LANE[16] = {LN_KICK, LN_SNARE, LN_CLAP, LN_HAT, LN_OHAT, LN_LTOM, LN_RIM, LN_BELL,
+                                    LN_KICK2, LN_PEDAL, LN_SNARE2, LN_HTOM, LN_CRASH, LN_RIDE, LN_SHAKER, LN_CONGA};
+static uint32_t gd_lanes(uint32_t rows)
+{
+    uint32_t r = 0, l;
+    for (l = 0; l < 16u; l++)
+        if ((rows >> l) & 1u)
+            r |= 1u << GD_LANE[l];
+    return r;
+}
 typedef struct { uint8_t eng; const char *pre; } gsnd_t;
 typedef struct {
     uint8_t bpm_lo, bpm_hi, swing, ext, human_late;
@@ -159,7 +172,7 @@ static const gprog_t IMP_L[] = {
 static const gdrum_t IMP_DR[2] = {
     {{"x.....x...x.....", "....a.......a...", 0, "x.x.x.x.x.x.x.x.", "..............o.", 0, 0, 0}},
     {{"x.....x.x.x...o.", "....a.......a..g", 0, "x.xox.xox.xox.xo", "......o.......x.", 0, 0, 0}}};
-static const gdrum_t IMP_PC = {{0, 0, "....o.......x...", "xoxoxoxoxoxoxoxo", 0, "......o.....o...", 0, 0}};
+static const gdrum_t IMP_PC = {{[2] = "....o.......x...", [GD_SHAKER] = "xoxoxoxoxoxoxoxo", [GD_CONGA] = "......o.....o..."}};   /* ((Vallée) SPAMPY's lanes: SHAKER, CONGA, RIDE */
 static const char *const IMP_B[3] = {"R--.R.5-O-.CR-A-", "R-.R--C.5--.O-A.", "R--R.-C.5.-OC-A."};
 static const char *const IMP_C[3] = {"X---------------", "X-------X-------", "X-------.X------"};
 static const char *const IMP_L_[3] = {"..n-n.n---..n.n-n---n.n-n-----..", "n--.n.n-n---....n--.n.n-n-n---..",
@@ -178,7 +191,7 @@ static const gprog_t DEM_L[] = {
 static const gdrum_t DEM_DR[2] = {
     {{"x.......x.o.....", 0, 0, "x.x.x.x.x.x.x.x.", 0, 0, "....x.......x...", 0}},
     {{"x.....o.x.o.....", "....x.......x...", 0, "x.x.x.x.x.x.x.xo", "..............o.", 0, 0, 0}}};
-static const gdrum_t DEM_PC = {{0, 0, 0, "x.o.x.o.x.o.x.o.", 0, 0, 0, "..............o."}};
+static const gdrum_t DEM_PC = {{[GD_SHAKER] = "x.o.x.o.x.o.x.o.", [7] = "..............o."}};   /* ((Vallée) SPAMPY's lanes: SHAKER, CONGA, RIDE */
 static const char *const DEM_B[3] = {"R---5---C--.A---", "R--5--R-C---5-A-", "R---R-5-O---C-A-"};
 static const char *const DEM_C[3] = {"X-----X-.X------", "X---.X--X---.X--", "X-------X--.X---"};
 static const char *const DEM_L_[3] = {"n---n-n-----....n-n---n-------..", "..n-n-n-n---....n---n-n-n-----..",
@@ -195,7 +208,7 @@ static const gprog_t DAF_L[] = {
 static const gdrum_t DAF_DR[2] = {
     {{"a...x...a...x...", 0, "....x.......x...", "x.x.x.x.x.x.x.x.", "..x...x...x...x.", 0, 0, 0}},
     {{"a...x...a...x...", "............o...", "....a.......a...", "xxxxxxxxxxxxxxxx", "..x...x...x...x.", 0, 0, 0}}};
-static const gdrum_t DAF_PC = {{0, 0, 0, "x.xxx.xxx.xxx.xx", 0, 0, "...o.....o......", 0}};
+static const gdrum_t DAF_PC = {{[GD_SHAKER] = "x.xxx.xxx.xxx.xx", [6] = "...o.....o......"}};   /* ((Vallée) SPAMPY's lanes: SHAKER, CONGA, RIDE */
 static const char *const DAF_B[3] = {"R..R..R.O..R..A.", "R.O.R.O.R.O.R.OA", "R..RO..RR..O5.A."};
 static const char *const DAF_C[3] = {"..s...s...s...s.", "s.s..s.s..s.s.s.", "..s..s....s..s.."};
 static const char *const DAF_L_[3] = {"n.n.n...n.n.n...n.n.n...n.n.n-..", "..n-..n...n-..n...n-..n...n-..n.",
@@ -214,7 +227,7 @@ static const gprog_t HEA_L[] = {
 static const gdrum_t HEA_DR[2] = {
     {{"x..x.x..x.xo..x.", "....x..o..x.o..x", "....o.......x...", "xxoxxoxxxxoxxoxx", 0, 0, "..o..o.o...o..o.", 0}},
     {{"x..x.xx.x.xx..xo", "..o.x..x..x.x.xx", "....x..o....x..o", "xxxxxxoxxxxxxoxx", "..........o.....", 0, "o.o..o.o.o.o..o.", 0}}};
-static const gdrum_t HEA_PC = {{0, 0, 0, "o.o..o.oo..oo.o.", 0, "...o......o....o", "o....o..o...o...", 0}};
+static const gdrum_t HEA_PC = {{[GD_SHAKER] = "o.o..o.oo..oo.o.", [GD_CONGA] = "...o......o....o", [6] = "o....o..o...o..."}};   /* ((Vallée) SPAMPY's lanes: SHAKER, CONGA, RIDE */
 static const char *const HEA_B[3] = {"R..R.R..R.RR..R.", "R..R....R.R...R.", "R....R..R..R..R."};
 static const char *const HEA_C[3] = {"X---------------", "X---------------", "X-------X-------"};
 static const char *const HEA_L_[3] = {"n.n.n-..n.n.n-..n.n.n-..n-n-n---", "n-n-n---....n-n-n-n-n---........",
@@ -265,7 +278,7 @@ static const gprog_t STE_L[] = {
 static const gdrum_t STE_DR[2] = {
     {{"x.....x..x....x.", "....a..g.g..a..g", 0, "axxxaxxxaxxxaxxx", 0, 0, "..o.......o.....", 0}},
     {{"x.....x..x.x..x.", "..g.a..g.g.ga.gg", 0, "axxxaxxxaxxxaxxo", "..............x.", 0, 0, 0}}};
-static const gdrum_t STE_PC = {{0, 0, "....o.......o...", "x.ox.ox.x.ox.ox.", 0, 0, 0, 0}};
+static const gdrum_t STE_PC = {{[2] = "....o.......o...", [GD_SHAKER] = "x.ox.ox.x.ox.ox."}};   /* ((Vallée) SPAMPY's lanes: SHAKER, CONGA, RIDE */
 static const char *const STE_B[3] = {"R..O.RO..R.OR.CA", "R.O..RO.R..O.RCP", "R..RO.ORR.O..OCA"};
 static const char *const STE_C[3] = {".s..s.s..s..s.s.", "X-.s..s.X-.s..sP", ".s.s..X-..s.s.s."};
 static const char *const STE_L_[3] = {"......n-n-n-....n-..n-n---......", "..n-n-n-..n-....n-n-n---n-......",
@@ -288,7 +301,7 @@ static const gprog_t YAC_L[] = {
 static const gdrum_t YAC_DR[2] = {
     {{"x.....x.x.....x.", "....a.......a...", 0, "axxxaxxxaxxxaxxx", 0, 0, 0, 0}},
     {{"x.....x.x..x..x.", "....a..g....a..g", 0, "axxxaxxxaxxxaxxx", "..............o.", 0, 0, 0}}};
-static const gdrum_t YAC_PC = {{0, 0, "....o.......x...", "x.x.x.x.x.x.x.x.", 0, 0, 0, 0}};
+static const gdrum_t YAC_PC = {{[2] = "....o.......x...", [GD_SHAKER] = "x.x.x.x.x.x.x.x."}};   /* ((Vallée) SPAMPY's lanes: SHAKER, CONGA, RIDE */
 static const char *const YAC_B[3] = {"R..R..R.R.R..RP.", "R..R..O.R.R..RP.", "R..R.ROR..R.R.P."};
 static const char *const YAC_C[3] = {"s.s.ss.ss.s.ss.P", "s.ss.ss.s.ss.s.P", "s.s.ss.ss.s.s.sP"};
 static const char *const YAC_L_[3] = {"n--.n.n-n-------..n-n.n-n-----..", "..n-n-n-n--.n---....n-n-n---n---",
@@ -309,7 +322,7 @@ static const gdrum_t LCD_DR[2] = {
     {{"x.......x.......", "....x.......x...", 0, "x.x.x.x.x.x.x.x.", 0, 0, 0, 0}},
     {{"x.......x.x.....", "....a.......a...", "....x.......x...", "xxxxxxxxxxxxxxxx", "..............o.", 0, 0,
       0}}};
-static const gdrum_t LCD_PC = {{0, 0, 0, "xoxoxoxoxoxoxoxo", 0, 0, 0, 0}};
+static const gdrum_t LCD_PC = {{[GD_SHAKER] = "xoxoxoxoxoxoxoxo", [7] = "....o.......o..."}};   /* ((Vallée) SPAMPY's lanes: SHAKER, CONGA, RIDE */
 static const char *const LCD_B[3] = {"R.R.R.R.R.R.R.R.", "R.R.R.R.O.R.R.R.", "R.R.R.R.R.R.5.5."};
 static const char *const LCD_C[3] = {"X---------------", "X-------X-------", "X---------------"};
 static const char *const LCD_L_[3] = {"n---n-n-n-------........n-n-n---", "....n---n---n-------n-n-n-------",
@@ -328,7 +341,7 @@ static const gprog_t STR_L[] = {
 static const gdrum_t STR_DR[2] = {
     {{"x.....x.x.....x.", "....a.......a...", 0, "x.x.x.x.x.x.x.x.", 0, 0, 0, 0}},
     {{"x.....x.x.x...x.", "....a.......a.o.", 0, "x.x.x.x.x.x.x.x.", "a...............", 0, 0, 0}}};
-static const gdrum_t STR_PC = {{0, 0, 0, "x.x.x.x.x.x.x.x.", 0, 0, 0, 0}};
+static const gdrum_t STR_PC = {{[GD_RIDE] = "x.x.x.x.x.x.x.x."}};   /* ((Vallée) SPAMPY's lanes: SHAKER, CONGA, RIDE */
 static const char *const STR_B[3] = {"R.R.R.R.R.R.R.R.", "R.R.R.R.R.R.5.A.", "R.R.R.R.O.O.R.A."};
 static const char *const STR_C[3] = {"s.s.s.s.s.s.s.s.", "s.s.s.s.s.s.s.ss", "X--.s.s.s.s.X--."};
 static const char *const STR_L_[3] = {"n.n.n.n.n.n.n.n.n.n.n.n.n.n.n.n.", "n.n.n.nnn.n.n.n.n.n.n.n.n-n.n...",
@@ -348,7 +361,7 @@ static const gprog_t SLB_L[] = {
 static const gdrum_t SLB_DR[2] = {
     {{"x.....x.x.......", "....x.......x...", 0, "x.x.x.x.x.x.x.x.", 0, 0, 0, 0}},
     {{"x.....x.x.....x.", "....a.......a...", 0, "x.x.x.x.x.x.x.x.", "..............o.", 0, 0, 0}}};
-static const gdrum_t SLB_PC = {{0, 0, 0, "xxxxxxxxxxxxxxxx", 0, 0, 0, 0}};
+static const gdrum_t SLB_PC = {{[GD_SHAKER] = "xxxxxxxxxxxxxxxx"}};   /* ((Vallée) SPAMPY's lanes: SHAKER, CONGA, RIDE */
 static const char *const SLB_B[3] = {"R.R.R.R.R.R.R.R.", "R.R.R.R.5.5.R.R.", "R.R.O.R.R.R.O.R."};
 static const char *const SLB_C[3] = {"s.s.s.s.s.s.s.s.", "X-------X-------", "X---s.s.X---s.s."};
 static const char *const SLB_L_[3] = {"n-..n-..n-n-n---n-..n-..n-n-n---", "n.n.n---....n.n.n---....n.n.n---",
@@ -370,7 +383,7 @@ static const gdrum_t WIN_DR[2] = {
     {{"x.....x.x.......", "....a.......a...", "....x.......x...", "xxxxxxxxxxxxxxxx", 0, 0, 0, 0}},
     {{"x.....x.x.x.....", "....a.......a...", "....x.......x...", "axxxaxxxaxxxaxxx", "..............x.",
       "............o.o.", 0, 0}}};
-static const gdrum_t WIN_PC = {{0, 0, 0, "x.xxx.xxx.xxx.xx", 0, 0, 0, 0}};
+static const gdrum_t WIN_PC = {{[GD_SHAKER] = "x.xxx.xxx.xxx.xx", [GD_CONGA] = "..........o..o.."}};   /* ((Vallée) SPAMPY's lanes: SHAKER, CONGA, RIDE */
 static const char *const WIN_B[3] = {"R.R.R.R.R.R.R.R.", "R.R.R.RRR.R.O.RA", "R.R.O.R.R.R.O.R."};
 static const char *const WIN_C[3] = {"X-..X-..X-..X-.P", "X-------..s.X---", "X-.sX-.sX---s.s."};
 static const char *const WIN_L_[3] = {"..n-n-n-n---n-......n-n-n-n-----", "n-n-..n-n-n---..n-n-..n-n-n-----",
@@ -389,7 +402,7 @@ static const gdrum_t GEE_DR[2] = {
     {{"x.......x.x.....", "....a.......a...", 0, "x.x.x.x.x.x.x.x.", 0, 0, 0, 0}},
     {{"x.....x.x.x.....", "....a.......a..g", "....x.......x...", "x.x.x.x.x.x.x.x.", "......o.......o.", 0, 0,
       0}}};
-static const gdrum_t GEE_PC = {{0, 0, 0, 0, 0, "...........o.o.o", "o.......o.......", 0}};
+static const gdrum_t GEE_PC = {{[GD_CONGA] = "...........o.o.o", [6] = "o.......o......."}};   /* ((Vallée) SPAMPY's lanes: SHAKER, CONGA, RIDE */
 static const char *const GEE_B[3] = {"R-------R.......", "R-----R.R-------", "R-------5---R..A"};
 static const char *const GEE_C[3] = {"X--.s.X--.s.X-s.", "X-------X--.s.s.", "X--.X--.X---s..."};
 static const char *const GEE_L_[3] = {"....n-n-n---....n-n-n-n-n-------", "n---n-n-n-----..........n-n-n---",
@@ -762,16 +775,16 @@ static uint32_t g_voice(const gplan_t *p, uint32_t c, const uint8_t *prev, uint3
 }
 
 /* DRUMS (T4) and PERC (T6): the style's lanes; ENERGY the maybes, COMPLEX the ghosts and rolls; bar 4 a fill */
-static void g_drums(step_t *w, const gdrum_t *d, grng_t *r, int32_t energy, int fill, uint32_t len, int intro)
+static void g_drums(step_t *w, const gdrum_t *d, grng_t *r, int32_t energy, int fill, uint32_t len, int intro, int crash)
 {
     uint32_t i, l;
     for (i = 0; i < len; i++) {
         uint32_t hit = 0, acc = 0, ghost = 0, bar = i / 16u;
-        for (l = 0; l < 8u; l++) {                       /* (its 8 lanes of before: mapped below, lanes_from8) */
+        for (l = 0; l < 16u; l++) {                      /* (its rows: lanes below, gd_lanes) */
             char c = d->ln[l] ? d->ln[l][i % 16u] : '.';
             if (!d->ln[l] || c == '\0')
                 continue;
-            if (intro && bar < 2u && l != 0u && l != 3u)       /* (INTRO: the kick and the hats first) */
+            if (intro && bar < 2u && l != 0u && l != 3u && l != GD_SHAKER)   /* (INTRO: the kick and the hats first) */
                 continue;
             if (c == 'x' || (c == 'o' && g_pct(r, energy)) || c == 'a')
                 hit |= 1u << l;
@@ -783,15 +796,18 @@ static void g_drums(step_t *w, const gdrum_t *d, grng_t *r, int32_t energy, int 
         if (fill && bar == 3u && (i % 16u) >= 12u - (energy > 60 ? 4u : 0u)) {   /* the fill: the snare, the toms */
             uint32_t f = g_n(r, 3);
             hit &= (1u << 0) | (1u << 3);
-            hit |= f == 0 ? 1u << 1 : f == 1 ? 1u << 5 : (i & 1u) ? 1u << 1 : 1u << 5;
+            hit |= f == 0 ? 1u << 1 : f == 1 ? 1u << 5 : (i % 16u) < 14u ? 1u << GD_HTOM : 1u << 5;   /* ((Vallée) the
+                                                       * high tom, then down to the low one */
             if ((i % 16u) == 15u)
                 acc |= hit;
         }
+        if (crash && i == 0u && energy > 35)          /* ((Vallée) the CHORUS opens on a CRASH */
+            hit |= 1u << GD_CRASH, acc |= 1u << GD_CRASH;
         if (!hit && !ghost)
             continue;
         w[i].time = ST_NOTE;
-        w[i].hit = (uint16_t)lanes_from8(hit | ghost);   /* ((Vallée) GEN writes the old 8, mapped to SPAMPY lanes */
-        w[i].acc = (uint16_t)lanes_from8(acc);
+        w[i].hit = (uint16_t)gd_lanes(hit | ghost);      /* ((Vallée) GEN's rows to SPAMPY's 16 lanes */
+        w[i].acc = (uint16_t)gd_lanes(acc);
         w[i].vel = (uint8_t)clamp(g_vel(r, hit ? 100 : 46), 1, 127);
         if (gen.v[GK_COMPLEX] > 60 && ((hit >> 3) & 1u) && g_pct(r, gen.v[GK_COMPLEX] - 55))
             w[i].flags |= (uint8_t)(1u << SF_RATCH_SH);   /* (a hat doubled) */
@@ -1211,7 +1227,7 @@ static uint32_t gen_role_steps(uint32_t role, uint32_t part, const gplan_t *p, s
     case GR_DRUMS:
         if (sty != GS_ENO || energy > 50)
             g_drums(w, &s->drum[part == GP_CHORUS || (part == GP_LOOP && energy > 70) || amt == 3u],
-                    &r, energy, part != GP_INTRO && part != GP_OUTRO && amt > 1u, 64, part == GP_INTRO);
+                    &r, energy, part != GP_INTRO && part != GP_OUTRO && amt > 1u, 64, part == GP_INTRO, part == GP_CHORUS);
         break;
     case GR_COLOR:
         if (sty == GS_ENO)
@@ -1223,7 +1239,7 @@ static uint32_t gen_role_steps(uint32_t role, uint32_t part, const gplan_t *p, s
         if (sty == GS_HEAD)
             len = 12u + 2u * g_n(&r, 2);
         if (amt > 1u || part == GP_CHORUS)
-            g_drums(w, s->perc, &r, energy, 0, len, part == GP_INTRO);
+            g_drums(w, s->perc, &r, energy, 0, len, part == GP_INTRO, 0);
         break;
     }
     return len == 64u ? p->bars * 16u : len;            /* ((Vallée) MINE: as many bars as the part's chords) */
