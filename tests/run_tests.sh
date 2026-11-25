@@ -341,7 +341,8 @@ if [ -f build/gen/felucca_tables.h ]; then
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/click_test" tests/click_test.c -lm
     run "metronome and count-in: beats sample for sample (internal and external clock), accent, level, MASTER, not in USB, count-in timing, notes onto step 1" "$OUT/click_test"
     $CC -w -Ibuild/gen -Ifirmware/src -o "$OUT/persistence_test" tests/persistence_test.c -lm
-    run "persistence: deferred settings, retry and failed-save rollback; (2.0) a FUN5 slot OLD FORMAT" "$OUT/persistence_test"
+    gzip -dc tests/v091_flash.bin.gz > "$OUT/v091_flash.bin"   # ((Vallée) a v0.9.1 unit's flash: its project
+    run "persistence: deferred settings, retry and failed-save rollback; (2.0) a FUN5 slot OLD FORMAT; (Vallée) a v0.9.1 project" "$OUT/persistence_test" "$OUT/v091_flash.bin"
     # ((Vallée, the SPAMPY sound) a converter build (FELUCCA_LEGACY) retired here: Classic's converter's work
     $CC -w -Ibuild/gen -Ifirmware/src -o "$OUT/bank_test" tests/bank_test.c -lm
     run "pattern bank (Skiff): patterns kept exactly, torn saves, fallback, wear, the sequence wrap" "$OUT/bank_test"

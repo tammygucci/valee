@@ -101,7 +101,12 @@ The old version stays installable: branch `vallee-skiff-engine` = release v0.9.1
          64 KB ring: the SLICER's sl_buf borrowed while FX is held or an effect plays, at 22.05 kHz (0.74 s, as
          SPAMPY's); FREEZE grains of the ring (SPAMPY's holds its own reverb: phase 4). FX's black keys no longer
          mute (GLO's do). tests/perform_test.c rewritten after SPAMPY's punch_test.c.
-      3d verify: tests, CI, renders, old projects, RAM / CPU budgets.
+      3d verify: tests, CI, renders, old projects, RAM / CPU budgets. DONE (2026-11-25): a v0.9.1 unit's flash
+         (tests/v091_flash.bin.gz: its project saved by v0.9.1-alpha's own code, persistence_test.c old_unit_test)
+         loads: every sound on today's engines (DRUM and DRUM-X as DRUM 808), notes, the 8 lanes as 16, 97 BPM,
+         plays 6 s without a clip. RAM: .data+.bss 95,960 / 98,304, pool 319,864 / 344,064 (unchanged by the FX),
+         RAM code 28,068 / 32,512. CPU (host): the FX layer's worst effect (KILL MID) 35 ns a sample, a DRUM part
+         51, the heaviest part (PROPHET, 8 notes) 840.
 - [ ] 4. SPAMPY's mix stage (levels, glide, master) in fx.c.
 - [ ] 5. Rewire GEN, PART SONG, THE SPELL, creatures, EDIT/SAVE/PRESETS; rebuild SUMMON.
 - [ ] 6. Tests: size, every page in both themes, every sound and kit, old projects, goldens on purpose.

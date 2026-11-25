@@ -795,7 +795,59 @@ static int skiff_era_test(void)
                  "one of now: as saved", ok);
 }
 
-int main(void)
+/* ((Vallée, the SPAMPY sound) a unit of before: tests/v091_flash.bin.gz is the flash of a v0.9.1-alpha unit (Skiff's
+ * engines), its project slot 1 OLDTEST saved by that firmware's own code (its power-on sounds: ANALOG FM6 LOFI DRUM
+ * SAMPLE, T6 DRUM-X; T1 a chord every beat at LEVEL 77, T2 a note, T4 and T6 drum grids, 97 BPM; its patterns in the
+ * pool). Loaded here: every sound on today's engines, the notes, the 8 lanes as today's 16 (lanes_from8), and it
+ * plays: 6 s, sound, no clip. (run_tests.sh unpacks it; no path: skipped) */
+static int old_unit_test(const char *path)
+{
+    uint32_t t, s, ok = 1, clips = 0, nz = 0, big = 0;
+    int32_t o[2 * CTL];
+    FILE *f = fopen(path, "rb");
+    reset();
+    if (!f || fread(nor, 1, sizeof nor, f) != sizeof nor) { printf("old unit: no %s\n", path); return 1; }
+    fclose(f);
+    memset(proj_slot, 0, sizeof proj_slot);
+    bank_boot();
+    project_load(0);
+    for (t = 0; t < NTRK; t++)
+        printf("T%u engine %u (%s) preset %u level %d len %d\n", t + 1, trk[t].eng_req, ENGINES[trk[t].eng_req]->name,
+               trk[t].preset, trk[t].p[P_LEVEL], trk[t].p[P_SLEN]);
+    printf("name %s bpm %d\n", proj_name, song.g[G_BPM]);
+    ok &= song.g[G_BPM] == 97 && !strcmp(proj_name, "OLDTEST");
+    ok &= trk[0].p[P_LEVEL] == 77;
+    for (s = 0; s < 16; s += 4) ok &= trk[0].step[s].n == 2 && trk[0].step[s].note[0] == 48 && trk[0].step[s].note[1] == 52;
+    printf("T1 chords %s\n", ok ? "kept" : "LOST");
+    ok &= trk[1].step[3].n == 1 && trk[1].step[3].note[0] == 67;
+    printf("T2 note %s\n", ok ? "kept" : "LOST");
+    for (s = 0; s < 16; s++) {
+        uint32_t h = (s % 8 == 0 ? 1u : 0) | (s % 8 == 4 ? 4u : 0) | (s % 2 == 0 ? 16u : 0) | (s == 14 ? 32u : 0) | (s == 12 ? 8u : 0);
+        uint32_t want = lanes_from8((uint8_t)h);
+        if (trk[3].step[s].hit != want) { printf("T4 step %u hit %04x want %04x (old %02x)\n", s, trk[3].step[s].hit, want, h); ok = 0; }
+    }
+    ok &= trk[3].step[12].acc == lanes_from8(8u);
+    for (s = 0; s < 16; s++) {
+        uint32_t want = lanes_from8((uint8_t)((s % 4 == 0 ? 1u : 0) | (s % 2 == 1 ? 16u : 0)));
+        if (trk[5].step[s].hit != want) { printf("T6 step %u hit %04x want %04x\n", s, trk[5].step[s].hit, want); ok = 0; }
+    }
+    printf("grids %s\n", ok ? "ok" : "BAD");
+    transport_req = 1;
+    for (t = 0; t < FS * 6u / CTL; t++) {
+        uint32_t i;
+        mix_block(o, CTL);
+        for (i = 0; i < 2 * CTL; i++) {
+            if (o[i] >= 32700 || o[i] <= -32700) clips++;
+            if (o[i]) nz++;
+            if (abs(o[i]) > 2000) big++;
+        }
+    }
+    printf("render 6 s: playing %u, clips %u, nonzero %u, loud %u\n", song.playing, clips, nz, big);
+    ok &= song.playing && clips < 50 && big > FS;
+    return check("(Vallée) a v0.9.1 unit's project: sounds, notes, the 8 lanes as 16, it plays", (int)ok);
+}
+
+int main(int argc, char **argv)
 {
     int bad = 0, ok;
     uint32_t before;
@@ -1159,6 +1211,8 @@ int main(void)
 #if !FELUCCA_LEGACY
     bad += gen_chords_test() + skiff_era_test();
 #endif
+    if (argc > 1)
+        bad += old_unit_test(argv[1]);
     printf("%s\n", bad ? "PERSISTENCE TEST FAILED" : "persistence test passed");
     return bad != 0;
 }
