@@ -66,10 +66,13 @@ static void mapping_test(void)
     for (k = 0; k < 27u; k++)
         assert(kb_map(t, k) == 48u + k);
     t->p[P_QUANT] = 2;
-    host_preset(t, ENGI_DRUM, 0);              /* DRUM (the GM map, any part; SAMPLE PERC until 1.0.2): the first */
-    t->engine = t->eng_req = ENGI_DRUM;        /* C is the kick */
-    for (k = 0; k < 27u; k++)
-        assert(kb_map(t, k) == 29u + k);
+    host_preset(t, ENGI_DRUM, 0);              /* DRUM ((Vallée) SPAMPY's keys: a white key a lane from F3, a black key */
+    t->engine = t->eng_req = ENGI_DRUM;        /* its left neighbour's; no scale, no transpose) */
+    for (k = 0; k < 27u; k++) {
+        static const int8_t W[12] = {0, -1, 1, -1, 2, -1, 3, 4, -1, 5, -1, 6};
+        int32_t w = W[k % 12u] >= 0 ? W[k % 12u] : W[(k + 11u) % 12u];
+        assert(kb_map(t, k) == DRUM_LANE_NOTE[(uint32_t)((int32_t)(k / 12u) * 7 + w) & 15u]);
+    }
     t->engine = t->eng_req = 0;                /* SNAP (QNT 1, the old ON): every key, rounded down */
     t->p[P_QUANT] = 1;
     t->p[P_SCALE] = 2;                         /* C minor */
@@ -77,7 +80,7 @@ static void mapping_test(void)
     t->p[P_TRANS] = 0;
     song.octave = 0;
     assert(kb_map(t, 11) == 63u && kb_map(t, 10) == 63u && kb_map(t, 7) == 60u && kb_map(t, 8) == 60u);
-    puts("scales: all 16 scales, 12 roots, octave/transpose ranges, bypass, drums and SNAP ok");
+    puts("scales: all 16 scales, 12 roots, octave/transpose ranges, bypass, drums (SPAMPY's keys) and SNAP ok");
 }
 
 static void key_events_test(void)

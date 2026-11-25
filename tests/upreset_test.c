@@ -67,11 +67,11 @@ int main(void)
     bad += check("UP_PUT parses", up_parse(a, n, &r, &slot) == 0 && slot == 5u && r.engine == 2u &&
                                       up_valid(&r) && !memcmp(r.name, "Bass One", 8) && !r.name[8]);
     ok = 1;
-    for (i = 0; i < P_COUNT; i++)
-        ok &= up_value(&r, p_sid(i)) == (int16_t)(-40 + (int32_t)(i % 100u));
+    for (i = 0; i < P_COUNT; i++)                   /* ((Vallée) the SIDs a record holds: UP_NSID (the drum lanes' last past it) */
+        ok &= p_sid(i) >= UP_NSID || up_value(&r, p_sid(i)) == (int16_t)(-40 + (int32_t)(i % 100u));
     bad += check("UP_PUT values (negative v14 too)", ok);
     bad += check("(2.1) a version 6 record, the pattern passed over",   /* (P_COUNT past UP_PMAX * 2: the pattern's */
-                 r.ver == UP_VER_SPAMPY && r.np == SID_COUNT && !up_pat(&r) && !r.sid[SID_COUNT]);   /* bytes were E6 E7) */
+                 r.ver == UP_VER_SPAMPY && r.np == UP_NSID && !up_pat(&r));   /* bytes were E6 E7) */
     bad += check("UP_PUT short frame -> args", up_parse(a, n - 1u, &r, &slot) == 1);
     {
         up_rec_t keep = r;
@@ -295,19 +295,21 @@ int main(void)
     }
 #endif
 
-    /* map by count: a record from a build with 2 parameters fewer */
+    /* map by count: a record from a build of 141 parameters ((Vallée) a version 4 record holds 144 at most: P_COUNT 197
+     * is past them, only version 6 holds today's) */
+#define NPC 141u
     for (i = 0; i < P_COUNT; i++)
         def[i] = (int16_t)(1000 + i);
     r.ver = UP_VER;                                         /* ((2.1) UP_PUT's records are version 6) */
-    r.np = P_COUNT - 2u;
-    for (i = 0; i < P_COUNT; i++)
+    r.np = NPC;
+    for (i = 0; i < NPC; i++)
         up_set_value(&r, i, (int16_t)(i % 100u));
     up_params(&r, v, def);
     ok = 1;
     for (i = 0; i < P_E0; i++)
-        ok &= v[i] == (i < P_E0 - 2u ? (int16_t)(i % 100u) : def[i]);
+        ok &= v[i] == (i < NPC - 8u ? (int16_t)(i % 100u) : def[i]);
     for (i = 0; i < 8u; i++)
-        ok &= v[P_E0 + i] == (int16_t)((P_E0 - 2u + i) % 100u);
+        ok &= v[P_E0 + i] == (int16_t)((NPC - 8u + i) % 100u);
     bad += check("np < P_COUNT: mapped by count", ok);
 #if FELUCCA_LEGACY                                          /* ((2.0) versions 1..3: the converter's) */
     /* a record saved before the SLICER (P_COUNT 53, P_E0 45): the four SLICER parameters (just
@@ -319,8 +321,8 @@ int main(void)
     up_params(&r, v, def);
     ok = P_SLCR == 45 && P_SLDEPTH + 1 == P_M1SRC && P_M4AMT + 1 == P_FM1_ATK && P_FM4_LEVEL + 1 == P_CHRD &&
          P_VOIC + 1 == P_LN0 && P_LN7 + 1 == P_DIR && P_DKREL + 1 == P_DTYPE && P_LDECAY7 + 1 == P_LSYNC &&
-         P_ESYNC + 1 == P_LPAN0 && P_LPAN7 + 1 == P_FOLLOW && P_FNOTE + 1 == P_STRUM && P_SDIR + 1 == P_AFLT && P_AFLT + 1 == P_E0 &&
-         P_E0 == 141 && P_COUNT == 149;   /* ((Vallée) ANALOG's FILTER) */                      /* ((Skiff) DIR, the ducking; phase 9: DRIVE, ENV 2, the
+         P_ESYNC + 1 == P_LPAN0 && P_LPAN7 + 1 == P_FOLLOW && P_FNOTE + 1 == P_STRUM && P_SDIR + 1 == P_AFLT && P_AFLT + 1 == P_LN8 &&
+         P_LBODY15 + 1 == P_E0 && P_E0 == 189 && P_COUNT == 197;   /* ((Vallée) ANALOG's FILTER, SPAMPY's 16 lanes */                      /* ((Skiff) DIR, the ducking; phase 9: DRIVE, ENV 2, the
                                                               * lanes; 1.3: LFO SYNC TRIG POL, SPREAD, INSERT, ENV SYNC;
                                                               * (2.0, #36) the lane pans; (2.1) the chord follow; (2.5)
                                                               * STRUM, DIR) */
@@ -374,15 +376,17 @@ int main(void)
             }
         bad += check("v4 / v5 records of 91, 89 and 69 parameters: E0..E7 at P_E0, lane levels and chord keys defaults", ok);
     }
-    r.ver = UP_VER;
-    r.np = P_COUNT;
-    for (i = 0; i < P_COUNT; i++)
-        up_set_value(&r, i, (int16_t)i);
+    r.ver = UP_VER;                                         /* ((Vallée) the most a version 4 record holds: 144 */
+    r.np = (uint8_t)(UP_PMAX * 2u);
+    for (i = 0; i < UP_PMAX * 2u; i++)
+        up_set_value(&r, i, (int16_t)(i % 100u));
     up_params(&r, v, def);
     ok = 1;
-    for (i = 0; i < P_COUNT; i++)
-        ok &= v[i] == (int16_t)i;
-    bad += check("np == P_COUNT: as stored", ok);
+    for (i = 0; i < P_E0; i++)
+        ok &= v[i] == (i < UP_PMAX * 2u - 8u ? (int16_t)(i % 100u) : def[i]);
+    for (i = 0; i < 8u; i++)
+        ok &= v[P_E0 + i] == (int16_t)((UP_PMAX * 2u - 8u + i) % 100u);
+    bad += check("np 144 (a version 4 record's most): mapped by count", ok);
     {   /* (2.0, Tier B 7) version 6: the sound by stored id over the parameters' and the pattern's bytes, no pattern; a
          * newer record's ids passed over, an older one's missing ones at their defaults */
         static int16_t s[P_COUNT];
@@ -394,21 +398,17 @@ int main(void)
         six.used = UP_USED; six.engine = 2; memcpy(six.name, "SIX", 3);
         up_set_sound(&six, s);
         up_params(&six, v, def);
-        ok = six.ver == UP_VER_SPAMPY && six.np == SID_COUNT && up_valid(&six) && !up_pat(&six) && !up_grid(&six) &&
-             !memcmp(v, s, sizeof s) && UP_SIDS == 176u;
-        for (k = SID_COUNT; k < UP_SIDS; k++)
-            ok &= !six.sid[k];
-        bad += check("v6: by stored id, round trip, the rest 0", ok);
+        ok = six.ver == UP_VER_SPAMPY && six.np == UP_NSID && up_valid(&six) && !up_pat(&six) && !up_grid(&six) &&
+             UP_SIDS == 176u && UP_NSID == UP_SIDS;
+        for (i = 0; i < P_COUNT; i++)                       /* ((Vallée) the SIDs past its room (the drum lanes' last): */
+            ok &= v[i] == (p_sid(i) < UP_NSID ? s[i] : def[i]);   /* their defaults */
+        bad += check("v6: by stored id, round trip; (Vallée) the ids past its 176 at their defaults", ok);
         got = six;
-        got.np = (uint8_t)(SID_COUNT + 5u);                 /* a newer firmware's: five more ids */
-        memset(got.sid + SID_COUNT, 64 + 9, 5);
-        up_params(&got, v, def);
-        ok = up_valid(&got) && !memcmp(v, s, sizeof s);
         got.np = 100;                                       /* an older one's: the first 100 */
         up_params(&got, v, def);
-        ok &= up_valid(&got) && !memcmp(v, s, 100u * sizeof v[0]) && v[100] == def[100] &&
+        ok = up_valid(&got) && !memcmp(v, s, 100u * sizeof v[0]) && v[100] == def[100] &&
               v[P_COUNT - 1u] == def[P_COUNT - 1u];
-        bad += check("v6: a newer record's ids passed over, an older one's defaults", ok);
+        bad += check("v6: an older one's missing ids at their defaults", ok);
         got = six; got.sid[3] = 192u;
         ok = !up_valid(&got);
         got = six; got.np = (uint8_t)(UP_SIDS + 1u);

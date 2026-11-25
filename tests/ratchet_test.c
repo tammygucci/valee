@@ -240,7 +240,7 @@ static int presets(void)
 {
     int bad = 0;
     up_rec_t r;
-    uint8_t a[400];
+    uint8_t a[16u + 2u * P_COUNT + 32u];          /* ((Vallée) P_COUNT 197 */
     uint32_t slot, i, k, n;
     track_t *t;
     ui_power_on();
