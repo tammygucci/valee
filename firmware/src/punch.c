@@ -28,8 +28,8 @@ static const char *const PUNCH_NAME[PUNCH_NFX] = {
     "KILL LOW", "KILL MID", "KILL HIGH", "REWIND", "OCT UP", "FLANGER", "AUTO-PAN", "FREEZE", "LOOP 8T", "MONO",
     "FADE OUT"};
 #define PX_OCT_W 2048u                    /* OCT UP: the window of its two read taps (46 ms) */
-#define PX_FRZ_CAP 8192u                  /* FREEZE: the samples it catches (186 ms) */
-#define PX_GRAIN 2048u                    /* .. its two overlapping grains (46 ms) */
+#define PX_FRZ_CAP 16384u                 /* FREEZE: the samples it holds (372 ms), the ones before the key */
+#define PX_GRAIN 4096u                    /* .. its two overlapping grains (93 ms) */
 #define PX_RWD_ACC 17                     /* REWIND: speed change per sample (Q16): +1 to -3 in 0.35 s */
 #define PX_RWD_MAX (3 << 16)
 static struct {
@@ -43,6 +43,7 @@ static struct {
     uint32_t start, t, len;       /* loop / reverse: start index, samples since, length */
     uint32_t pre;                 /* loops: samples of dry still to go to the next division */
     uint32_t k, sub;              /* position in the loop; HALF: odd / even sample */
+    uint32_t lap;                 /* ((Vallée) loops: 0 on the first pass (the live sound: no fade in) */
     uint32_t dspd;                /* tape stop: speed step per sample */
     uint32_t gp;                  /* gate: samples into the 1/16 step */
     uint32_t rp;                  /* tape stop / rewind: read position Q16 */
@@ -75,21 +76,24 @@ static void pr_put(uint32_t v, int32_t x)
 }
 static int32_t ring_raw(uint32_t v)                 /* the stored 16 bits (mix / 8) */
 {
-    uint32_t j = v >> 1, jw = punch.w >> 1;
+    uint32_t j, jw = punch.w >> 1, lc = (punch.w & 1u) ? jw : jw - 1u;   /* lc: the newest pair stored */
     int32_t a;
+    j = v >> 1;
     if (j == jw && !(punch.w & 1u))                 /* the pair being written: its first sample */
         return punch.pend;
     a = PR_S[j & (PR_NS - 1u)];
     if (!(v & 1u))
         return (PR_S[(j - 1u) & (PR_NS - 1u)] + 3 * a) >> 2;
-    if (j + 1u == jw && !(punch.w & 1u))            /* (the next pair not stored yet) */
-        return a;
+    if (j - lc < 0x80000000u)                       /* (the pair after it not stored yet: what is there is 0.74 s */
+        return a;                                   /* old) */
     return (3 * a + PR_S[(j + 1u) & (PR_NS - 1u)]) >> 2;
 }
 static int32_t ring_at(uint32_t i) { return ring_raw(i) << 3; }
 static int32_t ring_raw_q16(uint32_t p)             /* read at Q16 position, linear */
 {
-    int32_t a = ring_raw(p >> 16), b = ring_raw((p >> 16) + 1u);
+    uint32_t d = (punch.w - (p >> 16)) & 0xFFFFu;  /* a Q16 position keeps 16 bits of the count: how far back */
+    uint32_t v = punch.w - (d >= 0x8000u ? 0u : d); /* (past the newest: not recorded yet, the newest) */
+    int32_t a = ring_raw(v), b = ring_raw(v == punch.w ? v : v + 1u);
     return a + (((b - a) * (int32_t)((p >> 1) & 0x7FFFu)) >> 15);
 }
 static int32_t ring_q16(uint32_t p) { return ring_raw_q16(p) << 3; }
@@ -100,6 +104,7 @@ static void punch_start(int32_t fx)
     static const uint8_t DIV[8] = {1, 2, 4, 8, 6, 1, 1, 2};   /* loops: beat / DIV */
     punch.cur = (int8_t)fx;
     punch.t = 0;
+    punch.lap = 1;                                      /* (material from the past: its seam fades in) */
     len = fx <= PX_HALF ? beat / DIV[fx] : fx == PX_LOOP8T ? beat / 3u : fx == PX_FREEZE ? PX_FRZ_CAP : beat;
     if (len > PUNCH_N - 1024u)
         len = PUNCH_N - 1024u;
@@ -134,6 +139,11 @@ static void punch_start(int32_t fx)
     punch.gpos[0] = 0;
     punch.gpos[1] = PX_GRAIN / 2u;
     punch.gs[0] = punch.gs[1] = punch.start;
+    if (fx == PX_FREEZE && punch.fill >= len) {         /* ((Vallée) FREEZE: what played just before the key (a sound */
+        punch.start = punch.w - len;                    /* stopped since: still there); a ring just taken: the next */
+        punch.t = len;                                  /* 372 ms, live meanwhile */
+        punch.gs[0] = punch.gs[1] = punch.start;
+    }
     if (fx == PX_PAN && song.playing)                   /* AUTO-PAN: a turn a beat, on the grid */
         punch.lfo = ph * (0xFFFFFFFFu / beat);
     if (fx == PX_FLANGE)                                /* FLANGER: the sweep starts at its shortest delay */
@@ -174,18 +184,21 @@ static int32_t punch_ring_fx(int32_t fx)
         punch.lfo += 4u * (0xFFFFFFFFu / PX_FS);        /* 4 Hz */
         return ring_q16((punch.w << 16) - ((uint32_t)d << 16));
     }
-    case PX_FREEZE:                                     /* ((Vallée) its first 186 ms live, then the grains */
+    case PX_FREEZE:                                     /* ((Vallée) the grains (a ring just taken: 372 ms live first) */
         if (punch.t < PX_FRZ_CAP)
             return ring_at(punch.w);
-        return (px_grain(0) + px_grain(1)) >> 7;        /* (the windows sum to PX_GRAIN / 2: >> 10, x 8) */
+        return (px_grain(0) + px_grain(1)) >> 8;        /* (the windows sum to PX_GRAIN / 2: >> 11, x 8) */
     default:                                        /* loops, HALF */
         y = ring_at(punch.start + k);
         break;
     }
-    if (fx != PX_HALF || (punch.sub ^= 1u) == 0u)       /* HALF: every other sample */
+    if (fx != PX_HALF || (punch.sub ^= 1u) == 0u) {     /* HALF: every other sample */
+        punch.lap |= k + 1u >= len;
         punch.k = k + 1u >= len ? 0u : k + 1u;
-    /* declick at the seams */
-    return k < 64u ? (y * (int32_t)k) >> 6 : len - k < 64u ? (y * (int32_t)(len - k)) >> 6 : y;
+    }
+    /* declick at the seams (the first pass of a loop recorded from the press on: the live sound, no seam before it) */
+    return k < 64u && (punch.lap || fx == PX_HALF) ? (y * (int32_t)k) >> 6
+         : len - k < 64u ? (y * (int32_t)(len - k)) >> 6 : y;
 }
 
 /* the loops, STUTTER, HALF, REVERSE ((Vallée) and FREEZE) replay ring samples [start, start + len) (REVERSE: up to
@@ -410,6 +423,7 @@ static inline __attribute__((always_inline)) void punch_process(int32_t *l, int3
                 if (!--punch.pre) {
                     punch.start = punch.w + 1u;
                     punch.k = 0;
+                    punch.lap = 0;
                 }
                 break;
             }

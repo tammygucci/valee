@@ -65,7 +65,7 @@ static const int16_t PF_SVF[64][3] = {
 
 static struct {
     uint32_t act;                      /* the effects held (latched, THE SPELL's) */
-    uint8_t busy, armed, mute;         /* armed: FX held or locked (the ring records); mute: tracks cut */
+    uint8_t busy, armed, mute;         /* armed: the ring records (no STUT track, or FX held / locked); mute: tracks cut */
     int32_t lc, hc, la, ha;            /* the macro's LPF and HPF: cutoffs (Q8 index) and shares (Q15) */
     int32_t lz[4], hz[4];              /* their states: L ic1 ic2, R ic1 ic2 */
     int16_t lk[3], hk[3];              /* their coefficients this block */
@@ -131,11 +131,16 @@ static uint32_t perf_pick(uint32_t a)
  * Returns 1 when a stage has something to do */
 static __attribute__((noinline)) AUDIO_RAM int perf_begin(uint32_t n)
 {
+    uint32_t k;
     uint32_t aut = perf_auto_on ? PF_BIT(SPELL_FX[perf_auto_fx % 14u]) : 0u;   /* ((Vallée) THE SPELL's keys */
     uint32_t held = perf_kill ? 0u : (perf_held | perf_latched | aut) & PF_ALL;
     uint32_t mute = perf_kill ? 0u : (uint32_t)perf_cut | (perf_solo ? ~(uint32_t)perf_solo & ((1u << NTRK) - 1u) : 0u);
     uint32_t armed = !perf_kill && (held || (fm1_in.buttons & perf_mask) || (kb_lock & 2u));   /* (FX held or locked) */
-    uint32_t k;
+    for (k = 0; k < NTRK && !armed; k++)            /* ((Vallée) the ring records all the time, as SPAMPY's, while no */
+        if (trk[k].p[P_SLCR] == SL_STUT)            /* track's SLICER is on STUT (its recordings share the memory): */
+            break;                                  /* a REVERSE or a loop has the beat before the key */
+    if (k == NTRK && !perf_kill)
+        armed = 1;
     int32_t m;
     (void)n;
     if (!held && !mute && !armed && !pf.busy && !(perf_k[0] | perf_k[1] | perf_k[2])) {   /* idle */

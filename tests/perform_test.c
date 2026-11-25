@@ -64,12 +64,14 @@ static void perf_reset(void)
 }
 /* the layer on g: FX held [arm, unarm), effects e1 held [on, off) and e2 [on2, off2) (-1: none), at 120 BPM */
 static int busy_after;                                /* a stage busy in the last second */
+static int stut_trk;                                  /* ((Vallée) 1: T6's SLICER on STUT (the ring borrowed only with FX) */
 static void run2(gen_f g, uint32_t ns, uint32_t arm, uint32_t unarm, int e1, uint32_t on, uint32_t off, int e2,
                  uint32_t on2, uint32_t off2, int playing)
 {
     uint32_t t, i;
     host_tracks_init();
     perf_reset();
+    trk[5].p[P_SLCR] = stut_trk ? SL_STUT : SL_OFF;
     song.g[G_BPM] = 120;
     song.playing = (uint8_t)playing;
     beat_pos = 0;
@@ -155,18 +157,30 @@ int main(int argc, char **argv)
             }
             okd &= dry(0, FS - CTL) && dry(FS * 3u / 2u + 3u * CTL, FS * 3u);
             okb &= bounded(0, FS * 3u);
-            okr &= !sl_lent && punch.cur < 0 && !busy_after;
+            okr &= sl_lent && punch.cur < 0;              /* ((Vallée) no STUT track: the ring keeps recording */
         }
         bad += check("27 effects: each changes the mix while held (FX held, its key)", ok);
         bad += check("  dry before, exactly dry again once the key and FX are up", okd);
-        bad += check("  bounded; the ring given back, the layer idle after", okb && okr);
+        bad += check("  bounded; the effect done after, the ring still recording (no STUT track)", okb && okr);
     }
     /* 2. idle */
     run2(g_mix, FS, NS, NS, -1, 0, 0, -1, 0, 0, 1);
-    bad += check("idle: nothing held, no knob: the mix bit-identical, no stage busy", dry(0, FS - CTL) && !busy_after && !sl_lent);
+    bad += check("idle, no STUT track: nothing held, no knob: the mix bit-identical, the ring recording (as SPAMPY's)",
+                 dry(0, FS - CTL) && sl_lent && punch.fill == PUNCH_N);
+    stut_trk = 1;
+    run2(g_mix, FS, NS, NS, -1, 0, 0, -1, 0, 0, 1);
+    bad += check("idle, a STUT track: the mix bit-identical, no stage busy, the SLICER's memory its own",
+                 dry(0, FS - CTL) && !busy_after && !sl_lent);
     run2(g_mix, FS * 2u, FS / 4u, FS / 2u, -1, 0, 0, -1, 0, 0, 1);
-    bad += check("FX held alone: the ring records (borrowed), the mix untouched, given back after",
+    bad += check("FX held alone (a STUT track): the ring records (borrowed), the mix untouched, given back after",
                  dry(0, FS - CTL) && !sl_lent && !busy_after);
+    run2(g_mix, FS * 3u, FS / 2u, FS * 3u / 2u, PX_LOOP16, FS, FS * 3u / 2u, -1, 0, 0, 1);
+    bad += check("  an effect (a STUT track): the ring given back, the layer idle after", !sl_lent && !busy_after &&
+                 dry(FS * 3u / 2u + 3u * CTL, FS * 3u));
+    stut_trk = 0;
+    run2(g_mix, FS * 3u, FS, FS * 2u, PX_REV, FS, FS * 2u, -1, 0, 0, 1);   /* (FX and the key at once) */
+    bad += check("REVERSE pressed with FX at once: the beat before, backwards (as loud as the mix)",
+                 rms(ol, FS + FS / 20u, FS * 3u / 2u) > 0.5 * rms(il, FS / 2u, FS));
     /* 3. the keys */
     {
         uint32_t seen = 0, ok = 1;
@@ -227,8 +241,18 @@ int main(int argc, char **argv)
         run_fx(PX_FREEZE, g_burst, FS * 3u, FS * 2u / 5u, FS * 5u / 2u, 0);
         {
             double d = rms(ol, FS / 10u, FS * 2u / 5u), h1 = rms(ol, FS, FS * 2u), tail = rms(ol, FS * 5u / 2u + 256u, FS * 3u);
-            snprintf(what, sizeof what, "FREEZE: rings on after the chord stops (%.2f of it), silent after", h1 / d);
-            bad += check(what, h1 > 0.2 * d && h1 < 2.0 * d && tail < 0.01 * d);
+            int32_t m2 = 0, c2 = 0;
+            for (t = FS; t < FS * 2u; t++) {          /* ((Vallée) no crackle: no step sharper than the chord's own */
+                int32_t q = abs(ol[t] - 2 * ol[t - 1] + ol[t - 2]);
+                m2 = q > m2 ? q : m2;
+            }
+            for (t = FS / 10u; t < FS * 2u / 5u; t++) {
+                int32_t c = abs(il[t] - 2 * il[t - 1] + il[t - 2]);
+                c2 = c > c2 ? c : c2;
+            }
+            snprintf(what, sizeof what, "FREEZE: the chord before the key rings on after it stops (%.2f of it), smooth "
+                     "(steps %d, the chord's %d), silent after", h1 / d, m2, c2);
+            bad += check(what, h1 > 0.4 * d && h1 < 2.0 * d && tail < 0.01 * d && m2 <= 2 * c2);
         }
         /* LOOP 16, playing: from the last 1/16 line, the loop a 1/16 long */
         run_fx(PX_LOOP16, g_burst, FS * 2u, FS / 4u + 1024u, FS * 3u / 2u, 1);
@@ -245,6 +269,7 @@ int main(int argc, char **argv)
         int ok;
         host_tracks_init();
         perf_reset();
+        trk[5].p[P_SLCR] = SL_STUT;                   /* ((Vallée) a STUT track: the ring only with FX */
         sl[0].rec = 100; sl[0].loop = 1; sl[0].rec_on = 1;
         fm1_in.buttons = perf_mask;
         for (i = 0; i < CTL; i++) ol[i] = or_[i] = 1000;
