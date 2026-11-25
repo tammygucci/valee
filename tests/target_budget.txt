@@ -10,7 +10,7 @@ sample_render 164
 formant_render 314
 trio_render 341
 trio_pass 175
-drum_render 89
+drum_render 919
 fm6_render 372
 fm6_op_run 72
 fm6_op_fb 26
