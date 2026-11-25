@@ -225,6 +225,8 @@ const TEXT = {
     saved20: "Vallée は、それより前のファームウェアで保存したデータをそのままでは開けません。先にこの機器の全体バックアップをこのパソコンに保存しました（Vallee-backup-....json）。これが元に戻す方法です: 今のファームウェアを入れ直し、エディタで復元します。Vallée をインストールしますか？",
     converting: "前のファームウェアで保存したデータを 2.0 用に変換中 ",
     converted: "完了。前のファームウェアで保存したデータを 2.0 用に変換しました（下に一覧）。",
+    samples: "内蔵サンプルを書き込み中 ", samplesDone: "完了。内蔵サンプルも書き込みました。", samplesHad: "完了しました",
+    samplesFailed: "ファームウェアは入りましたが、内蔵サンプルを書き込めませんでした（サンプルのキットと音が鳴りません）。もう一度 Install を押してください: ",
     asIs: "完了。この機器のデータはそのまま 2.0 で開けます。",
     convertedPart: "完了しましたが、前のファームウェアで保存したデータの一部はそのままです（下に一覧）。本体では OLD FORMAT と表示されます。空きパターンが足りなかったプロジェクトは、SAVE > PATTERNS で空けてからエディタでバックアップし、それを復元すると変換されます。",
     convertFailed: "インストールは完了しましたが、前のデータの変換に失敗しました。保存したバックアップをエディタで復元してください（復元時に変換されます）。",
@@ -293,6 +295,8 @@ const TEXT = {
     saved20: "Vallée opens nothing that firmware before it saves: a complete backup of this unit was saved to this computer first (Vallee-backup-....json). It is the way back: install your firmware of now, then restore it in the editor. Install Vallée?",
     converting: "Converting what the firmware before saved, for 2.0 ",
     converted: "Done. What the firmware before saved was converted for 2.0 (the list below).",
+    samples: "Writing the built-in samples ", samplesDone: "Done. The built-in samples are written too.", samplesHad: "Done",
+    samplesFailed: "The firmware is in, but its built-in samples could not be written (the sampled kits and sounds stay silent). Press Install again: ",
     asIs: "Done. Everything this unit had opens in 2.0 as it is.",
     convertedPart: "Done, but some of what the firmware before saved stays as it was (the list below): the unit shows it as OLD FORMAT. A project no free pattern could take converts once you free some (SAVE > PATTERNS), take a backup in the editor and restore it.",
     convertFailed: "Installed, but converting what the firmware before saved failed: restore the saved backup in the editor, which converts it. ",
@@ -390,12 +394,17 @@ $("go").addEventListener("click", async () => {
     if (!IS_OTA(dev.id) && needsStockUpdate(dev.id)) { sayK("needV016", dev.id.text); return; }
     const image = await imageFor(entry);
     const step = stepper();
-    if (IS_OTA(dev.id)) { sayK((await up.resume(image, step, entry.product)) ? "done" : "stopped"); return; }
     const model = entry.product.split("_")[0];
+    if (IS_OTA(dev.id)) {
+      if (!(await up.resume(image, step, entry.product))) { sayK("stopped"); return; }
+      await samplesAfter(up, model);
+      return;
+    }
     const archive = await backupBefore(up, model);   // ((2.0) over firmware before it: the backup first, the way back)
     if (archive && !confirm(t("saved20"))) return;
     await up.install(image, entry.product, step);
     if (archive) await convertAfter(up, model, archive);
+    await samplesAfter(up, model);
   } catch (e) {
     if (e && e.code && TEXT[lang][e.code]) sayK(e.code, e.detail || (e.code === "loadfail" ? e.message : ""));
     else sayK("error", e && e.message);
@@ -457,6 +466,52 @@ async function convertAfter(up, model, archive) {
       if (x.what !== "kept" || x.note) log(`${x.id}: ${x.was} -> ${x.now} (${x.what})${x.note ? `: ${x.note}` : ""}`);
     sayK(r.report.some((x) => /^(refused|kept as)/.test(x.what)) ? "convertedPart" : r.writeBack.length ? "converted" : "asIs");
   } catch (e) { sayK("convertFailed", e.message); log(String(e.stack || e)); }
+  finally { if (link) link.close(); }
+}
+// ((Vallée, the SPAMPY sound) the built-in samples (the sampled kits, piano, vibes, flute, sax) live in the unit's sample
+// area, not in the firmware: after the install, the unit is asked (INFO's last field, 56 01: in place and checked, then
+// its build's CRC) and, when they are missing or another build's, the block beside the packages is written over the
+// editor protocol (SMP_BEGIN / WRITE / END, slot 127: firmware editor.c ed_fact_*). Already in place: nothing written
+async function samplesAfter(up, model) {
+  const FACT = 127, SMP_BEGIN = 11, SMP_WRITE = 12, SMP_END = 13;
+  let link = null;
+  try {
+    const device = await up.waitFor((id) => !IS_OTA(id) && sameModel(id.model, model), 40000);
+    if (!device) throw new Error("the unit does not answer");
+    const input = device.link.input, output = device.link.output; device.link.close();
+    link = new BackupConnection(input, output);
+    let info = null;
+    for (let i = 0; i < 10 && !info; i++) {           // (just started: give it a moment)
+      try { info = await link.request([1, []], { timeout: 1500 }); }
+      catch (e) { if (e.code !== "timeout") throw e; await new Promise((r) => setTimeout(r, 500)); }
+    }
+    if (!info) throw new Error("the unit does not answer");
+    const at = info.length - 8;
+    if (at < 0 || info[at] !== 0x56 || info[at + 1] !== 1) { log("samples: this firmware keeps none outside"); return; }
+    const want = [0, 1, 2, 3, 4].reduce((c, i) => c + info[at + 3 + i] * 2 ** (7 * i), 0) >>> 0;
+    if (info[at + 2] === 1) { log("samples: in place"); sayK("samplesHad"); return; }
+    const r = await fetch(new URL("../../firmware/vallee-samples.bin", location.href), { cache: "no-store" });
+    if (!r.ok) throw new Error(`vallee-samples.bin: HTTP ${r.status}`);
+    const blk = new Uint8Array(await r.arrayBuffer()), dv = new DataView(blk.buffer);
+    if (blk.length < 1024 || dv.getUint32(0, true) !== 0x504D5356 || dv.getUint32(12, true) !== want)
+      throw new Error("the samples beside this installer are not this firmware's");
+    const data = blk.subarray(512), hdr = blk.subarray(0, 16);
+    let a = await link.request([SMP_BEGIN, [FACT]], { timeout: 5000 });
+    if (a[1]) throw new Error("begin rc " + a[1]);
+    for (let off = 0; off < data.length; off += 256) {
+      const o = 512 + off, args = [FACT, o & 127, (o >> 7) & 127, (o >> 14) & 127, ...bkPack(data.subarray(off, off + 256))];
+      let w = null;
+      for (let tries = 0; tries < 3 && !w; tries++) {
+        try { w = await link.request([SMP_WRITE, args], { timeout: 3000 }); }
+        catch (e) { if (e.code !== "timeout" || tries === 2) throw e; }
+      }
+      if (w[4]) throw new Error(`write at 0x${o.toString(16)} rc ${w[4]}`);
+      if (!(off & 0x1FFF)) sayK("samples", `${Math.round((off + 256) / data.length * 100)}%`);
+    }
+    a = await link.request([SMP_END, [FACT, ...bkPack(hdr)]], { timeout: 10000 });
+    if (a[1]) throw new Error("end rc " + a[1]);
+    sayK("samplesDone");
+  } catch (e) { sayK("samplesFailed", e.message); log(String(e.stack || e)); }
   finally { if (link) link.close(); }
 }
 function archiveInfo(a) {
