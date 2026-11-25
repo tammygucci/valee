@@ -334,6 +334,9 @@ def check(img, syms, dis, rt):
                  f"RAM code + .ramx {rtx} B of {rt_len}")
     if bss > ram_len:
         errors.append("RAM region overflow")
+    big = sorted(((int(q[-2], 16), q[-1]) for q in (ln.split() for ln in syms.splitlines())
+                  if len(q) >= 6 and q[-3] == ".pool"), reverse=True)   # ((Vallée) the pool's biggest, for planning
+    notes.append("pool's biggest: " + ", ".join(f"{n} {z}" for z, n in big[:30]))
     if pool_len - pool < 8192:                    # keep >= 8 KiB of the pool spare (app.ld POOL)
         errors.append(f"pool headroom {pool_len - pool} B < 8192 B")
     return errors, notes
