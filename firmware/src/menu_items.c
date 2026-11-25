@@ -151,8 +151,8 @@ static const char *const SCROFF_N[5] = {"NEVER", "5 MIN", "15 MIN", "30 MIN", "6
 static const char *const RET_N[3] = {"SNAP", "1 BEAT", "1 BAR"};
 /* (Vallée) MENU > FX > G5 KEY (TRANSITION FX before, in CONTROL): the FX layer's effect THE SPELL's last white key (G5)
  * plays while it is held (ui_world.c wl_poll; perform.c PF_*'s order); F5 .. F3 KEY the same names, OFF first */
-static const char *const TRANS_N[14] = {"REPEAT 1/8", "REPEAT 1/16", "REPEAT 1/32", "REVERSE", "LPF", "HPF",
-                                        "TAPE STOP", "FREEZE", "OCT UP", "OCT DN", "GATE", "DUB", "FLANGE", "VINYL"};
+static const char *const TRANS_N[14] = {"LOOP 8", "LOOP 16", "LOOP 32", "REVERSE", "LOW", "HIGH",   /* ((Vallée) */
+                                        "STOP", "FREEZE", "OCT UP", "HALF", "GATE", "ECHO", "FLANGER", "WOBBLE"};   /* perform.c SPELL_FX */
 
 /* MENU > USB SERIAL (#67). The serial console is a developer tool (README: FELUCCA_CDC). ON (the default) presents it,
  * the descriptors byte for byte as before; OFF re-enumerates as audio + MIDI only, device class 0 (the bytes of a
@@ -417,7 +417,7 @@ static void settings_reset(void)
     menu_put(MI_PHEAD, 0);
     menu_put(MI_PREVIEW, 0);
     menu_put(MI_RETURN, RET_BAR);
-    menu_put(MI_TRANS, 1);                             /* ((Vallée) REPEAT 1/16) */
+    menu_put(MI_TRANS, 1);                             /* ((Vallée) LOOP 16) */
     memset(fxk_set, 0, sizeof fxk_set);                /* ((Vallée) MENU > FX's keys: their defaults) */
 #if FELUCCA_CPU2
     menu_put(MI_CPU, CPU2_DEFAULT);                    /* ((2.5) 2 CORES on the FM-1, 1 CORE on the SMK-37: ui.c) */

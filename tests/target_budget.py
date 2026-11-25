@@ -33,8 +33,8 @@ FUNCS = ["analog_render", "digital_render", "digital_render_legacy", "digital_re
          "click_render",                                    # the metronome's click (click.c), while it sounds
          "mod_begin", "mod_voice", "mod_end",                 # the modulation matrix (mod.c), called when active
          "perf_begin", "perf_mute", "perf_pre", "perf_block", "perf_master",   # the FX layer (perform.c), when busy
-         "perf_gate", "perf_dub",                         # (Skiff phase 9) its GATE, DUB (FLANGE / VINYL: perf_mdl, a
-                                                          # sample a call, no loop: as perf_harm, not here)
+         "perf_punch",                                    # ((Vallée) SPAMPY's PUNCH-IN FX (punch.c punch_process,
+                                                          # inlined), while the FX layer is open or an effect plays
          "duck_block", "duck_apply",                       # (Skiff) ducking (duck.c): each block; a ducked track
          "launch_step", "launch_swap",                     # (Skiff) live switching (launch.c): a staged pattern
          "throw_on", "throw_off",                         # (Skiff) throws (throw.c): while one is out

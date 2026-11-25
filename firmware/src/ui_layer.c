@@ -52,7 +52,7 @@ typedef struct {
 } layer_t;
 static const layer_t LAYERS[LAYER_N] = {
     {0, 0, 0, "", {{0, 0}, {0, 0}, {0, 0}}},
-    {B_FX, LK_HOLD, FAM_HOME, "[FX] HOLD", {{KC_WHITE, "EFFECTS"}, {KC_BLACK, "MUTE"}, {KC_K14, "MACROS"}}},   /* (LET GO: the
+    {B_FX, LK_HOLD, FAM_HOME, "[FX] HOLD", {{KC_KEYS, "EFFECTS"}, {KC_K14, "MACROS"}, {0, 0}}},   /* (LET GO: the
                                                      * header's HOLD; (2.0, D 1A) BLACK: GLO's MUTE) */
     {B_GLO, LK_SET, FAM_HOME, "[GLO] SET", {{KC_PLAY, "RESTART"}, {KC_OCTDN, "UNDO"}, {KC_GLO, "DONE"}}},
     {B_SCL, LK_SET, FAM_SCL, "[SEL] SET", {{KC_KEYS, "ROOT"}, {KC_OCTDN, "UNDO"}, {KC_SCL, "DONE"}}},
@@ -76,7 +76,7 @@ static const page_t *ly_page(uint32_t l) { return l == LAYER_SCL ? &LY_SCL : l =
                                        * ((Vallée, the SPAMPY sound) 15 engines F3..F5, INIT G5), its map cell */
 typedef char ly_init_fits[LY_INIT < 16u ? 1 : -1];   /* (a white key: F3 .. G5) */
 #define layer_seen (favorites.factory[15][31])   /* bit l: layer l opened once (a byte no engine uses) */
-static const khint_t FX_LATCH_FOOT[3] = {{KC_WHITE, PERF_KEYS_LATCH ? "ON / OFF" : "HOLD"}, {KC_BLACK, "MUTE"}, {KC_OCTDN, "ALL OFF"}};
+static const khint_t FX_LATCH_FOOT[3] = {{KC_KEYS, PERF_KEYS_LATCH ? "ON / OFF" : "HOLD"}, {KC_OCTDN, "ALL OFF"}, {0, 0}};
 static const khint_t GLO_LOCK_FOOT[3] = {{KC_OCTDN, "UNDO"}, {KC_GLO, "DONE"}, {0, 0}};   /* (locked: PLAY plays) */
 static const khint_t EU_FOOT[3] = {{KC_OCTUP, "APPLY"}, {KC_OCTDN, "CANCEL"}, {0, 0}};   /* ((1.3) SEQ TOOLS' EUCLID open) */
 
@@ -543,7 +543,7 @@ static uint32_t glo_white(uint32_t k)
 static struct { uint8_t dn, cut, l[NTRK]; uint32_t t0[NTRK]; } mk __attribute__((section(".pool")));
 static int trk_cut(uint32_t t)                          /* track t cut by a black key held now */
 {
-    return !perf_kill && ((((perf_held >> PF_M1) | perf_cut) >> t) & 1u);
+    return !perf_kill && ((perf_cut >> t) & 1u);
 }
 static void mute_keys(uint32_t l, uint32_t keys)
 {
@@ -552,7 +552,7 @@ static void mute_keys(uint32_t l, uint32_t keys)
         if (!key_black(k) || (p = key_place(k)) >= NTRK)
             continue;
         b = 1u << p;
-        if (((keys >> k) & 1u) && (l == LAYER_GLO || l == LAYER_FX || l == LAYER_PERF)) {
+        if (((keys >> k) & 1u) && (l == LAYER_GLO || l == LAYER_PERF)) {   /* ((Vallée) FX's black keys: effects */
             mk.dn |= (uint8_t)b;
             mk.l[p] = (uint8_t)l;
             mk.t0[p] = now;
@@ -806,9 +806,7 @@ static uint32_t layer_leds(uint32_t *br)
     uint32_t mask = scale_mask(TSEL), root = (uint32_t)TSEL->p[P_ROOT] % 12u;
     for (k = 0; k < 27u; k++) {
         uint32_t p = key_place(k), b = (uint32_t)key_black(k), on = 0, can = 0, e;
-        if (l == LAYER_FX && b) {                       /* ((2.0, D 1A) the black keys as GLO's: sounding lit) */
-            on = p < NTRK && glo_sounding(p);
-        } else if (l == LAYER_FX) {                     /* effects breathe, held lit, a too-long REPEAT dark */
+        if (l == LAYER_FX) {                            /* ((Vallée) the 27 effects breathe, held lit */
             e = perf_key(k);
             can = e < PF_N && ((ok >> e) & 1u);
             on = can && ((held >> e) & 1u);
@@ -860,26 +858,28 @@ static uint32_t layer_leds(uint32_t *br)
  * REPEATs' division in the other corner); the footer the keycaps. A cell: RAISE
  * (can be pressed), the selection's fill (the value now, SET), the accent (held, HOLD), DIM (cannot now: pressing
  * it says why), KEY (a muted track, as the MUTE badge); HOLD cells in a SET layer: a corner triangle */
-static const char *const PF_DIV[3] = {"8", "16", "32"};   /* the REPEATs' 1/8 1/16 1/32 ((Skiff phase 9) 30 px cells: the
-                                                           * "1/" off); the other effects: their icon alone */
-static const uint8_t PF_ICON[PF_M1] = {ICON_X_REPEAT, ICON_X_REPEAT, ICON_X_REPEAT, ICON_X_REVERSE, ICON_CUTOFF,
-    ICON_X_HPF, ICON_X_TSTOP, ICON_X_FREEZE, ICON_X_OCT_UP, ICON_X_OCT_DN, ICON_X_CHOP, ICON_X_DUB, ICON_X_FLANGE,
-    ICON_X_VINYL};
+/* ((Vallée) FX: SPAMPY's 27 PUNCH-IN FX (punch.c) as a keyboard, two octaves: a row of 8 white keys (F3 .. F4, G4 ..
+ * G5) under the black keys they sit between (F#4 at the first row's right end), each a cell with its effect's short
+ * name; held lit, playing the accent */
+static const char *const PF_SHORT[PF_M1] = {"L4", "L8", "L16", "L32", "STUT", "REV", "STOP", "HALF", "LOW", "HIGH",
+    "PHON", "CRSH", "ALIA", "GATE", "ECHO", "WOBL", "K.LO", "K.MD", "K.HI", "RWD", "OCT+", "FLNG", "PAN", "FRZ", "L8T",
+    "MONO", "FADE"};
+#define LP_X(c) (6 + 29 * (int32_t)(c))                 /* FX: white key c of a row, 26 px: x 6 .. 235 */
+#define LP_W 26
+#define LP_BH 20                                         /* .. a black key's cell; a white key's under it */
+#define LP_WH 34
+#define LP_Y(r) (4 + 58 * (int32_t)(r))
 static const char W_NOTE[16] = {'F', 'G', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'A', 'B', 'C', 'D', 'E', 'F', 'G'};
 static const char B_NOTE[] = {'F', 'G', 'A', 'C', 'D', 'F'};   /* black keys 1..6: F# G# A# C# D# F# (the MUTEs) */
 _Static_assert(sizeof B_NOTE >= NTRK, "a black key's name for every track");
 #define LC_X(c) (6 + 58 * (int32_t)(c))                 /* cell column c: 54 px wide, 4 px apart */
 #define LC_W 54
 #define LC_H 42                                          /* the big cells: rows at y 4 and 50 */
-#define LF_X(c) (6 + 33 * (int32_t)(c))                 /* FX: the 14 effects, 7 a row (an octave each: F3 .. E4, F4 ..
-                                                         * E5), 30 px: x 6 .. 234 ((Skiff phase 9) were 10, 5 a row) */
-#define LF_W 30
-#define LF_ROW 7u
 #define LM_Y 96                                          /* the black keys' row (22 px) */
 #define LM_H 22
 enum { LS_OFF, LS_SEL, LS_HELD, LS_WAIT, LS_DIM, LS_MUTE };
 
-static int32_t lc_w = LC_W;                              /* the cells' width (FX's effects: LF_W) */
+static int32_t lc_w = LC_W;                              /* the cells' width */
 static uint16_t lc_fill(uint32_t st, uint16_t *ink)
 {
     *ink = st == LS_DIM ? T_DIM : T_THEME;
@@ -1003,21 +1003,27 @@ static void l6_mute(uint32_t k, uint32_t st, uint32_t icon)   /* (Skiff U2, R10)
     cv_text_on(x + 34 - b[2], y + CAP_IN(M, LM_H), &AF_M, d, idle ? T_TRK(k) : ink, fill);
 }
 
+static void lpx(int32_t x, int32_t y, int32_t h, uint32_t e, uint32_t st)   /* ((Vallée) an effect's cell */
+{
+    uint16_t ink, fill = lc_fill(st, &ink);
+    fill = lc_box(x, y, LP_W, h, fill);
+    GFX_HOOK_ALIGN(0, y, 0, y + h, AL_V, "FX key cell name centred up/down");
+    GFX_HOOK_ALIGN(x, 0, x + LP_W, 0, AL_H, "FX key cell name centred across");
+    cv_text_in(x, y + CAP_IN(S, h), LP_W, &AF_S, PF_SHORT[e], ink, fill);
+}
 static void layer_fx(void)
 {
-    uint32_t held = perf_kill ? 0u : perf_held | perf_latched, act = perf_act, ok = perf_avail(), e;
-    char n[3] = {0, 0, 0};
-    lc_w = LF_W;
-    for (e = 0; e < PF_M1; e++) {                       /* the effects of the white keys F3 .. E5, an octave a row */
-        if (e % LF_ROW == 0u)
-            GFX_HOOK_ALIGN(0, 0, 240, 0, AL_H | AL_CELLS | AL_N(LF_ROW), "FX cells' row centred");
-        uint32_t st = !((ok >> e) & 1u) ? LS_DIM : !((held >> e) & 1u) ? LS_OFF : (act >> e) & 1u ? LS_HELD : LS_WAIT;
-        n[0] = W_NOTE[e];
-        lcell(LF_X(e % LF_ROW), e < LF_ROW ? 4 : 50, LC_H, n, PF_ICON[e], e < 3u ? PF_DIV[e] : 0, st);
+    uint32_t held = perf_kill ? 0u : perf_held | perf_latched, e;
+    int32_t play = punch.req;
+    for (e = 0; e < PF_M1; e++) {
+        uint32_t st = (int32_t)e == play ? LS_HELD : (held >> e) & 1u ? LS_WAIT : LS_OFF;
+        if (e < 16u) {                                  /* a white key: row e / 8 */
+            lpx(LP_X(e % 8u), LP_Y(e / 8u) + LP_BH + 2, LP_WH, e, st);
+        } else {                                        /* a black key: after the white key before it */
+            int32_t w = punch_key(PUNCH_BLACK[e - 16u] - 1u), c = w % 8;
+            lpx(c < 7 ? LP_X(c) + 14 : LP_X(7) + 29 - LP_W - 3, LP_Y(w / 8), LP_BH, e, st);
+        }
     }
-    lc_w = LC_W;
-    for (e = 0; e < NTRK; e++)                          /* ((2.0, D 1A) the black keys 1..6 as GLO's: MUTE, a hold */
-        l6_mute(e, trk[e].p[P_MUTE] || trk_cut(e) ? LS_MUTE : LS_OFF, ICON_MUTE);   /* cutting) */
 }
 static void layer_glo(void)
 {
@@ -1352,7 +1358,7 @@ static void draw_layer(void)
                glo_mutes() * 7717u + perf_cut * 2803u;   /* ((2.0, D 1A) the black keys: GLO's MUTE) */
     else if (l == LAYER_GLO)
         sig += perf_solo * 31u + (uint32_t)song.g[G_CLOCK] * 5u + (uint32_t)seq_fill * 104729u +
-               glo_mutes() * 131u + trk_top() * 1299709u + (perf_cut | perf_held >> PF_M1) * 2803u;   /* ((2.0) holds) */
+               glo_mutes() * 131u + trk_top() * 1299709u + (uint32_t)perf_cut * 2803u + (uint32_t)(punch.req + 1) * 397u;   /* ((2.0) holds) */
     else if (l == LAYER_SCL)
         sig += (uint32_t)TSEL->p[P_SCALE] * 31u;
     else if (l == LAYER_REC)

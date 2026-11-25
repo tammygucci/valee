@@ -156,7 +156,7 @@ eb7e641883a31fb0 CUSTOM_TEEN_layer_glo_ext
 76799f882fe9d3bc CUSTOM_TEEN_layer_glo_peek
 3960f4c41d829e5b CUSTOM_TEEN_layer_hint
 9cbbe2ec0a14d224 CUSTOM_TEEN_layer_lock
-cb5b1fca0aa7d59c CUSTOM_TEEN_layer_lock_fx
+4e1da638cdb2bc21 CUSTOM_TEEN_layer_lock_fx
 b401a433ece27b1f CUSTOM_TEEN_layer_perform
 6a7d493ff0d3f1bb CUSTOM_TEEN_layer_perform_scenes
 082a1eede4e41329 CUSTOM_TEEN_layer_rec
@@ -173,7 +173,7 @@ cacc823cd8047f3d CUSTOM_TEEN_learn_cc
 1e33734db997d8eb CUSTOM_TEEN_menu
 33811c59acc18755 CUSTOM_TEEN_menu_audio
 f30938a247b28918 CUSTOM_TEEN_menu_end
-791dd8e561743b7e CUSTOM_TEEN_menu_fx
+a41ee7700ba56386 CUSTOM_TEEN_menu_fx
 8d88cb38ed0201a3 CUSTOM_TEEN_menu_hold
 6a954575401d07b6 CUSTOM_TEEN_menu_leds
 de21ed09e7a45b8b CUSTOM_TEEN_menu_midi
@@ -214,10 +214,10 @@ f808decc46710b98 CUSTOM_TEEN_notes_chain
 38005ba18f39c5ef CUSTOM_TEEN_notes_range
 f1d7512dc9084ce6 CUSTOM_TEEN_pattern
 4bc9c09622513827 CUSTOM_TEEN_pattern_64
-3edd47fa14e24f45 CUSTOM_TEEN_perform_harm
-2a5370f5ba16d69d CUSTOM_TEEN_perform_held
-efc69718425b1af0 CUSTOM_TEEN_perform_peek
-729d5e15ec0e9664 CUSTOM_TEEN_perform_wait
+e5981dedc899e138 CUSTOM_TEEN_perform_harm
+58d4a2ee5caa1576 CUSTOM_TEEN_perform_held
+7211730fb545ca3d CUSTOM_TEEN_perform_peek
+56c1947dc89b6ea5 CUSTOM_TEEN_perform_wait
 4c5c2bc41a311fa1 CUSTOM_TEEN_play_dir
 db83ff4b4f53a271 CUSTOM_TEEN_play_gate
 f5d8942fccd14b2d CUSTOM_TEEN_pool
@@ -251,7 +251,7 @@ c792714ec43e5604 CUSTOM_TEEN_shift_song
 36043a2a89a7e654 CUSTOM_TEEN_shift_step
 c396b48a13191ded CUSTOM_TEEN_six_edit
 9570e269e979acb1 CUSTOM_TEEN_six_edit_said
-7360b918fd6f0c1b CUSTOM_TEEN_six_fx
+656a0ae31d85ef7a CUSTOM_TEEN_six_fx
 0a5f1586bc623399 CUSTOM_TEEN_six_glo
 802b15feaf4a7d2b CUSTOM_TEEN_six_home
 7eb77444293934bb CUSTOM_TEEN_six_mixer
@@ -294,7 +294,7 @@ e55ca1d25e67de05 CUSTOM_TEEN_voice_2
 5e681bd3a31d64a5 CUSTOM_TEEN_voice_2_uni
 6681427f64edc40a CUSTOM_TEEN_voice_glide
 568c2873f94dcaad CUSTOM_TEEN_world
-1188d3e42b1d48a2 CUSTOM_TEEN_world_fx
+0e142a5672b3470a CUSTOM_TEEN_world_fx
 5f2336dbe17da12f CUSTOM_XENO_about
 b5088d883df79606 CUSTOM_XENO_about_credits
 9e340e5e1f64144a CUSTOM_XENO_about_end
@@ -451,7 +451,7 @@ eb7e641883a31fb0 CUSTOM_XENO_layer_glo_ext
 76799f882fe9d3bc CUSTOM_XENO_layer_glo_peek
 3960f4c41d829e5b CUSTOM_XENO_layer_hint
 9cbbe2ec0a14d224 CUSTOM_XENO_layer_lock
-cb5b1fca0aa7d59c CUSTOM_XENO_layer_lock_fx
+4e1da638cdb2bc21 CUSTOM_XENO_layer_lock_fx
 b401a433ece27b1f CUSTOM_XENO_layer_perform
 6a7d493ff0d3f1bb CUSTOM_XENO_layer_perform_scenes
 082a1eede4e41329 CUSTOM_XENO_layer_rec
@@ -468,7 +468,7 @@ f31c2c4eff03f4b1 CUSTOM_XENO_learn_cc
 1e33734db997d8eb CUSTOM_XENO_menu
 33811c59acc18755 CUSTOM_XENO_menu_audio
 f30938a247b28918 CUSTOM_XENO_menu_end
-791dd8e561743b7e CUSTOM_XENO_menu_fx
+a41ee7700ba56386 CUSTOM_XENO_menu_fx
 8d88cb38ed0201a3 CUSTOM_XENO_menu_hold
 6a954575401d07b6 CUSTOM_XENO_menu_leds
 de21ed09e7a45b8b CUSTOM_XENO_menu_midi
@@ -509,10 +509,10 @@ f808decc46710b98 CUSTOM_XENO_notes_chain
 38005ba18f39c5ef CUSTOM_XENO_notes_range
 f1d7512dc9084ce6 CUSTOM_XENO_pattern
 4bc9c09622513827 CUSTOM_XENO_pattern_64
-3edd47fa14e24f45 CUSTOM_XENO_perform_harm
-2a5370f5ba16d69d CUSTOM_XENO_perform_held
-efc69718425b1af0 CUSTOM_XENO_perform_peek
-729d5e15ec0e9664 CUSTOM_XENO_perform_wait
+e5981dedc899e138 CUSTOM_XENO_perform_harm
+58d4a2ee5caa1576 CUSTOM_XENO_perform_held
+7211730fb545ca3d CUSTOM_XENO_perform_peek
+56c1947dc89b6ea5 CUSTOM_XENO_perform_wait
 4c5c2bc41a311fa1 CUSTOM_XENO_play_dir
 db83ff4b4f53a271 CUSTOM_XENO_play_gate
 f5d8942fccd14b2d CUSTOM_XENO_pool
@@ -546,7 +546,7 @@ c792714ec43e5604 CUSTOM_XENO_shift_song
 36043a2a89a7e654 CUSTOM_XENO_shift_step
 c396b48a13191ded CUSTOM_XENO_six_edit
 9570e269e979acb1 CUSTOM_XENO_six_edit_said
-7360b918fd6f0c1b CUSTOM_XENO_six_fx
+656a0ae31d85ef7a CUSTOM_XENO_six_fx
 0a5f1586bc623399 CUSTOM_XENO_six_glo
 3bda8151aa8ca0ca CUSTOM_XENO_six_home
 7eb77444293934bb CUSTOM_XENO_six_mixer
@@ -589,7 +589,7 @@ e55ca1d25e67de05 CUSTOM_XENO_voice_2
 5e681bd3a31d64a5 CUSTOM_XENO_voice_2_uni
 6681427f64edc40a CUSTOM_XENO_voice_glide
 ca4da52bbb26f5c2 CUSTOM_XENO_world
-fe98893c47ab3921 CUSTOM_XENO_world_fx
+bdd63d5c5f6c2051 CUSTOM_XENO_world_fx
 d10fc3414b6550b2 LARGE_TEEN_about
 bf188abc466f04d7 LARGE_TEEN_about_credits
 0580a65466c478ae LARGE_TEEN_about_end
@@ -746,7 +746,7 @@ a22a634a49f6e6f3 LARGE_TEEN_layer_edit_peek
 bb5ecd402049e095 LARGE_TEEN_layer_glo_peek
 6c270d02b13257da LARGE_TEEN_layer_hint
 7b1d892d2525d999 LARGE_TEEN_layer_lock
-2d1c6259c705d0aa LARGE_TEEN_layer_lock_fx
+bf4074b5271827ea LARGE_TEEN_layer_lock_fx
 a82020dd96dc05ed LARGE_TEEN_layer_perform
 9de607baeb404d1a LARGE_TEEN_layer_perform_scenes
 01cd1bf1c0fa6c77 LARGE_TEEN_layer_rec
@@ -763,7 +763,7 @@ fbec9caf130257da LARGE_TEEN_lfo_2
 7c74f2136b2ac291 LARGE_TEEN_menu
 3797543e37c1493e LARGE_TEEN_menu_audio
 1ecf0054d87f6562 LARGE_TEEN_menu_end
-b032968c1832adce LARGE_TEEN_menu_fx
+ce9cc6e69d2d756f LARGE_TEEN_menu_fx
 ff5ea5fd7bdf7d74 LARGE_TEEN_menu_hold
 2bb02159d08d293b LARGE_TEEN_menu_leds
 08eb0cde91788107 LARGE_TEEN_menu_midi
@@ -804,10 +804,10 @@ d78f9e7a1da27a43 LARGE_TEEN_notes_overlap
 9cbd59bba0445979 LARGE_TEEN_notes_range
 869c7f3bffb42223 LARGE_TEEN_pattern
 18d66194613aabab LARGE_TEEN_pattern_64
-c0664e164c69a40e LARGE_TEEN_perform_harm
-164ddcef3b40d5e4 LARGE_TEEN_perform_held
-7d27fb7987c5c844 LARGE_TEEN_perform_peek
-7fc5de489ebc0364 LARGE_TEEN_perform_wait
+09b0faf2b9ab2131 LARGE_TEEN_perform_harm
+a7d9c916cf3ffb21 LARGE_TEEN_perform_held
+96b1fd5990c12ba4 LARGE_TEEN_perform_peek
+514e9cd8f3891741 LARGE_TEEN_perform_wait
 2e962a5711537b13 LARGE_TEEN_play_dir
 152e5577503ce736 LARGE_TEEN_play_gate
 b0ee5612d7d60b31 LARGE_TEEN_pool
@@ -841,7 +841,7 @@ a52efa241e658d95 LARGE_TEEN_scl
 ffa3e49532d3d48c LARGE_TEEN_shift_step
 d0e30ecc129a9d8f LARGE_TEEN_six_edit
 e30ff5804da58a90 LARGE_TEEN_six_edit_said
-4743557daca0bad4 LARGE_TEEN_six_fx
+497d2c81a3608794 LARGE_TEEN_six_fx
 0ebad7f6cf7833f7 LARGE_TEEN_six_glo
 68e91f2dbc17b42c LARGE_TEEN_six_home
 f56f48f74abc1677 LARGE_TEEN_six_mixer
@@ -1041,7 +1041,7 @@ cd4d2269127e09a9 LARGE_XENO_layer_glo_active
 23a90b4f5f0f0aef LARGE_XENO_layer_glo_peek
 5b0feae494ed215d LARGE_XENO_layer_hint
 5cd4c56615feb9f2 LARGE_XENO_layer_lock
-c0dfa944f813c4b5 LARGE_XENO_layer_lock_fx
+24803fee7311d033 LARGE_XENO_layer_lock_fx
 2e951507b1f39b6a LARGE_XENO_layer_perform
 fc463d8e9bd11a5d LARGE_XENO_layer_perform_scenes
 ab57f6f1c861908d LARGE_XENO_layer_rec
@@ -1058,7 +1058,7 @@ ab57f6f1c861908d LARGE_XENO_layer_rec
 19ed2ef45ae64842 LARGE_XENO_menu
 61389e57898b185a LARGE_XENO_menu_audio
 84939a7fee10ac91 LARGE_XENO_menu_end
-e99ec8fb83639d84 LARGE_XENO_menu_fx
+673566ef6df3c010 LARGE_XENO_menu_fx
 c8c2c98d04eaec19 LARGE_XENO_menu_hold
 6fc73ea768b6f5d6 LARGE_XENO_menu_leds
 cdda9c6f317f2a50 LARGE_XENO_menu_midi
@@ -1099,10 +1099,10 @@ d7b156b5fe7f7b99 LARGE_XENO_notes_pick
 8cbdb1f7c38ea1ba LARGE_XENO_notes_range
 3ccc0d4d13e52681 LARGE_XENO_pattern
 a01b75e35a8f1e25 LARGE_XENO_pattern_64
-8ec1516cb25d9c95 LARGE_XENO_perform_harm
-b8872d6ba461db68 LARGE_XENO_perform_held
-979e7ccd73d6f7cc LARGE_XENO_perform_peek
-7178f8b39ea54b53 LARGE_XENO_perform_wait
+63d1df78ab652019 LARGE_XENO_perform_harm
+5199267b7f4e6498 LARGE_XENO_perform_held
+e1f63258725c50ae LARGE_XENO_perform_peek
+c531bb5056bcb0d3 LARGE_XENO_perform_wait
 a95f3c854c1f020b LARGE_XENO_play_dir
 951aef1d775d2926 LARGE_XENO_play_gate
 981eed4e53e5687f LARGE_XENO_pool
@@ -1136,7 +1136,7 @@ f6175179e9f7e97a LARGE_XENO_shift_env
 64d133b47f9aa591 LARGE_XENO_shift_step
 7c50a9d3be173c56 LARGE_XENO_six_edit
 967a9ec60d2d5658 LARGE_XENO_six_edit_said
-f4478db0d6cc92b0 LARGE_XENO_six_fx
+65c53554720bd07a LARGE_XENO_six_fx
 b489bc8198286b43 LARGE_XENO_six_glo
 f0fce7f7c6084c95 LARGE_XENO_six_home
 0a3619437288fb67 LARGE_XENO_six_mixer
@@ -1340,7 +1340,7 @@ b225d805a4422cd5 TEEN_lanes
 e8bacf4022269d91 TEEN_layer_glo_peek
 0feac7a3affe3d5f TEEN_layer_hint
 5325a4c0d5898b23 TEEN_layer_lock
-6e0736ebcb7b8aa5 TEEN_layer_lock_fx
+9e3f35d44f0fa5fd TEEN_layer_lock_fx
 2281c41500255b46 TEEN_layer_perform
 b642475548ba92c1 TEEN_layer_perform_scenes
 58695cb9527c6f01 TEEN_layer_rec
@@ -1357,7 +1357,7 @@ cb0bd7d8c74484d4 TEEN_lfo_run
 738c1f9fca9ad4bb TEEN_menu
 65fc31dfe4b11221 TEEN_menu_audio
 1ecf0054d87f6562 TEEN_menu_end
-ec60fef90229f592 TEEN_menu_fx
+b330ea1247670a33 TEEN_menu_fx
 3c4396b564110edc TEEN_menu_hold
 bc7072fc5092ef75 TEEN_menu_leds
 4f0d3d27abdcc74c TEEN_menu_midi
@@ -1398,10 +1398,10 @@ d38eafc18a99b667 TEEN_notes_overlap
 f241119f4aecad93 TEEN_notes_range
 f35fa2e8f1e6225f TEEN_pattern
 35bab87929f85966 TEEN_pattern_64
-c9df7041f635202c TEEN_perform_harm
-980f4c8d87aa97bf TEEN_perform_held
-d5256188ed68c8ef TEEN_perform_peek
-3ccda61fcff5a09b TEEN_perform_wait
+5f8fca04fe952ea7 TEEN_perform_harm
+4e14df8940a5151a TEEN_perform_held
+260b5eae55705a6f TEEN_perform_peek
+8defee5808fac122 TEEN_perform_wait
 28ae583f6593efd4 TEEN_play_dir
 713a5f38a6e52c2c TEEN_play_gate
 576b9eb40373c19d TEEN_pool
@@ -1435,7 +1435,7 @@ c4fb0d93381f8f9a TEEN_shift_song
 320f5a9fb5b64dc0 TEEN_shift_step
 889805af13063199 TEEN_six_edit
 19e3faeea276b296 TEEN_six_edit_said
-a7c101554eb05d7f TEEN_six_fx
+f1911109156de3df TEEN_six_fx
 92020cfff9cf4dbb TEEN_six_glo
 af626e66d1ece14f TEEN_six_home
 0a7235b7e91f9231 TEEN_six_mixer
@@ -1478,7 +1478,7 @@ d13d6043c9a05d4b TEEN_user_foot
 f8d03980cb6f3af0 TEEN_voice_2_uni
 b4002a65378600cf TEEN_voice_glide
 6eb7e839bbc90da9 TEEN_world
-c77aac61559b28df TEEN_world_fx
+02feef7fa18710fc TEEN_world_fx
 b232ff74920bab36 XENO_about
 e790edac0116d661 XENO_about_credits
 7bd83a3be0aa1ec2 XENO_about_end
@@ -1637,7 +1637,7 @@ f2b78d9d6384bc47 XENO_layer_glo_active
 c08a33819fa428bf XENO_layer_glo_peek
 8d4ec3d0db7352a3 XENO_layer_hint
 1383870f8c541ba7 XENO_layer_lock
-32b1179856e9d03d XENO_layer_lock_fx
+1df9a5041a150d2b XENO_layer_lock_fx
 d2615e529ab0fdab XENO_layer_perform
 50175dffd5d95810 XENO_layer_perform_scenes
 da9416491e496bff XENO_layer_rec
@@ -1654,7 +1654,7 @@ cd5c2c9c295ba79b XENO_lfo_run
 6a21c115945d9b7a XENO_menu
 e09ca888502672cc XENO_menu_audio
 84939a7fee10ac91 XENO_menu_end
-fcbf05255dc1c8e4 XENO_menu_fx
+5ef6afe1ceffc388 XENO_menu_fx
 281b10536e8235d5 XENO_menu_hold
 62f119bea6a98096 XENO_menu_leds
 2ab1ac45585667ab XENO_menu_midi
@@ -1695,10 +1695,10 @@ b2fdfb5fda2c0ec1 XENO_notes_pick
 5b957e111910a182 XENO_notes_range
 142761fa5b9ec502 XENO_pattern
 9a4f60f8988aef31 XENO_pattern_64
-5cd81428066d2ee5 XENO_perform_harm
-b33ec108ff408d6e XENO_perform_held
-fa1500c2479dfb30 XENO_perform_peek
-7d33ead2734d6eaf XENO_perform_wait
+c13b0e8d4ab2193c XENO_perform_harm
+bb604f169c29880e XENO_perform_held
+c099b651ed040bfa XENO_perform_peek
+4b9242b1258c9227 XENO_perform_wait
 0de2746570d64479 XENO_play_dir
 279e22123a59d7f6 XENO_play_gate
 f5c19ee796020b47 XENO_pool
@@ -1732,7 +1732,7 @@ dc58d6843715680d XENO_shift_song
 78e63270f8127c17 XENO_shift_step
 6c0865e3f4d8f5f1 XENO_six_edit
 c78e858d47c14587 XENO_six_edit_said
-65e422dc4edea148 XENO_six_fx
+af0b79534339d542 XENO_six_fx
 a39a219fc9849dfb XENO_six_glo
 e93124882ce4cdcc XENO_six_home
 141cc3663843538c XENO_six_mixer
@@ -1775,4 +1775,4 @@ f496a0fe01a1515a XENO_step_tiles_bar2
 a9aa85c5765dea09 XENO_voice_2_uni
 54be4fc72d410741 XENO_voice_glide
 47db562309a0e819 XENO_world
-3f1d7212fbac577f XENO_world_fx
+246fea6ca10016d5 XENO_world_fx

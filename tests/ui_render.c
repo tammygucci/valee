@@ -1010,6 +1010,7 @@ static void setup(int s)
     fm1_in.buttons = 0;                             /* (no button held: momentary holds LFO) */
     memset(&scd, 0, sizeof scd);                    /* ((2.5) the scope's levels and notes: none, whatever came before) */
     perf_auto_on = 0;                               /* ((Vallée) THE SPELL's FX keys: none held) */
+    punch.req = -1; perf_cut = 0;                   /* ((Vallée) no PUNCH-IN effect playing, no cut */
     memset(fxk_set, 0, sizeof fxk_set);
     if (s >= S_MOCK_HOME) {
         mock_state(s);
@@ -1648,19 +1649,21 @@ static void setup(int s)
     case S_FX_HELD:                                 /* ((2.0, D 2A) the macros turned with FX held: they come back, the
                                                      * footer says how, as design/mockups/v2_mutes.png m2a) */
         go_home(); ui.layer = LAYER_FX;
-        perf_held = perf_act = PF_BIT(PF_R16) | PF_BIT(PF_LPF) | PF_BIT(PF_M1 + 1);
+        perf_held = perf_act = PF_BIT(PX_LOOP16) | PF_BIT(PX_LPF); perf_cut = 2;   /* ((Vallée) GLO's cut */
+        punch.req = PX_LPF;
         (void)mom_hold(&perf_k[0], 0); (void)mom_hold(&perf_k[1], 0); (void)mom_hold(&perf_k[3], 0);
         perf_k[0] = -40; perf_k[1] = 25; perf_k[3] = 30; ui.hot_col = 0; ui.hot_t = 30;
         break;
     case S_FX_WAIT:
         song.playing = 1; song.g[G_BPM] = 72; ui.layer = LAYER_FX;
-        perf_held = PF_BIT(PF_R16) | PF_BIT(PF_R8) | PF_BIT(PF_TAPE); perf_act = PF_BIT(PF_TAPE);
+        perf_held = PF_BIT(PX_LOOP16) | PF_BIT(PX_LOOP8) | PF_BIT(PX_STOP); perf_act = perf_held;   /* ((Vallée) */
+        punch.req = PX_STOP;
         perf_k[2] = 100;
         break;
     case S_FX_HARM:                                 /* OCT UP playing, KNOB 4 its shimmer; OCT DN held under it */
         song.playing = 1; ui.layer = LAYER_FX;
-        perf_ord[PF_ODN] = ++perf_seq; perf_ord[PF_OUP] = ++perf_seq;
-        perf_held = perf_act = PF_BIT(PF_OUP) | PF_BIT(PF_ODN);
+        perf_ord[PX_KMID] = ++perf_seq; perf_ord[PX_OCT] = ++perf_seq;   /* ((Vallée) black keys: OCT UP over */
+        perf_held = perf_act = PF_BIT(PX_OCT) | PF_BIT(PX_KMID); punch.req = PX_OCT;   /* KILL MID */
         perf_k[3] = 60; ui.hot_col = 3; ui.hot_t = 30;
         break;
     case S_REVERB: go_page(GR_REVERB); song.g[G_RTYPE] = 1; ui.hot_col = 0; ui.hot_t = 30; break;   /* TYPE: SPRING */

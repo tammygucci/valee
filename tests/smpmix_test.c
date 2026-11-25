@@ -647,9 +647,9 @@ int main(void)
         none = run((int16_t)SMP_NSETS, 60, 0, 0, 112, 60);    /* another sound of the slot: none of its own */
         t0 = run(0, 60, 0, 0, 112, 60);                       /* a built-in set */
         check("REV: none from a sound without it, none from a built-in set", none.er == 0 && t0.er == 0 && none.peak > 0, 0);
-        perf_held = 1u << PF_M1;                              /* the FX layer mutes track 1 */
+        perf_cut = 1u;                                        /* ((Vallée) GLO's black key cuts track 1 */
         muted = run((int16_t)SMP_NSETS, 61, 0, 0, 112, 60);
-        perf_held = 0;
+        perf_cut = 0;
         {
             int32_t o[2 * CTL];
             uint32_t k;

@@ -306,6 +306,19 @@ gets one from its name. They blink, sing on their track's notes, and sleep while
 creature six times its size, the sound's name and its engine. It closes by itself about a second after the last
 detent.
 
+## The FX layer: SPAMPY's PUNCH-IN FX
+
+Hold **FX** and hold a key: the whole mix goes through that key's effect for as long as you hold it; let go and
+the mix comes back. Every one of the 27 keys is an effect, locked to the tempo. White keys, from the left: LOOP 4
+(a beat), LOOP 8, LOOP 16, LOOP 32, STUTTER, REVERSE, STOP (a tape stop), HALF (half speed), LOW and HIGH (filter
+sweeps), PHONE, CRUSH, ALIAS, GATE, ECHO, WOBBLE. Black keys, from the left: KILL LOW, KILL MID, KILL HIGH,
+REWIND, OCT UP, FLANGER, AUTO-PAN, FREEZE, LOOP 8T (a triplet), MONO, FADE OUT. Two held: the last one pressed
+plays. KNOB 1..4 with FX are FILTER, CRUSH, THROW and DEPTH, as before.
+
+The loops reach back to the last beat line, so hold FX a moment before the key: Vallée has no room for SPAMPY's
+always-running recorder, so it borrows the SLICER's memory while FX is held (a track's STUT plays straight
+meanwhile). The muting moved to GLO's black keys.
+
 ## THE SPELL
 
 Tap **HOME** while on HOME and you're in THE SPELL. Tap HOME again for the tracks.
@@ -328,16 +341,16 @@ and PLAY starts from it. With SONG ON the song carries on from the block you jum
 until you press another key.
 
 **The transition key**: the keyboard's last white key (the top G, at the far right). Hold it and the effect set on
-MENU › FX › G5 KEY plays, just as a key of the FX layer does; let go and it stops. Any of the FX layer's
-effects (REPEAT 1/8 1/16 1/32, REVERSE, LPF, HPF, TAPE STOP, FREEZE, OCT UP, OCT DN, GATE, DUB, FLANGE, VINYL);
-REPEAT 1/16 to start with. Use it when you want it, e.g. held over the last beat before the chorus comes in. It
+MENU › FX › G5 KEY plays, just as a key of the FX layer does; let go and it stops. Any of 14 of the FX layer's
+effects (LOOP 8 16 32, REVERSE, LOW, HIGH, STOP, FREEZE, OCT UP, HALF, GATE, ECHO, FLANGER, WOBBLE);
+LOOP 16 to start with. Use it when you want it, e.g. held over the last beat before the chorus comes in. It
 breathes while THE SPELL is up, lit while held, and the map shows the effect's name. Jumps themselves are always plain.
 
 **The spare white keys are FX keys too.** A song uses as many white keys as it has blocks, from the left; every white
 key after them (up to the top F) plays an effect while you hold it, the same way. Each key has its own, set on
 **MENU › FX** (hold HOME for the MENU, ALGORITHM to the FX tab): G5 KEY, then F5 KEY, E5 KEY .. down to F3 KEY, each any
-of the effects above or OFF. They start as F5 REPEAT 1/8, E5 REPEAT 1/32, D5 REVERSE, C5 LPF, B4 HPF, A4 TAPE STOP,
-G4 FREEZE, F4 OCT UP, E4 OCT DN, D4 GATE, C4 DUB, B3 FLANGE, A3 VINYL, G3 and F3 REPEAT 1/16. A key that is a block of
+of the effects above or OFF. They start as F5 LOOP 8, E5 LOOP 32, D5 REVERSE, C5 LOW, B4 HIGH, A4 STOP,
+G4 FREEZE, F4 OCT UP, E4 HALF, D4 GATE, C4 ECHO, B3 FLANGER, A3 WOBBLE, G3 and F3 LOOP 16. A key that is a block of
 the song always plays its block, whatever is set for it; so with a GEN song's eight blocks, G4 up to F5 and G5 are
 your FX keys. They breathe on THE SPELL, the one held is lit. Two held: G5 wins, else the higher key. A key set to
 OFF says there's no part there. The settings are kept with the unit's other MENU settings.

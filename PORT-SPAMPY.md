@@ -93,6 +93,14 @@ The old version stays installable: branch `vallee-skiff-engine` = release v0.9.1
          user sample kits USR1..4 (the FM-1's sample area holds the factory block).
       3c screens and features: the grid and LANES / LANE MIX on 16 lanes; keys F3..G5 the 16 lanes (SPAMPY's
          lane_of_key); GEN's drum writer, THE SPELL, SUMMON; the web editor and emulator; both themes reviewed.
+         DONE (2026-11-24): 16-lane screens (OPEN HAT, COWBELL fit; the lane page follows the LANE knob: a key
+         toggle was tried and dropped, it flipped pages while finger drumming), the web editor and its emulator on
+         20-byte steps (INFO 5A 01 16). GEN / THE SPELL / SUMMON on more lanes: with phase 5.
+      3e PUNCH-IN FX (the owner: yes; SYN1..4 and user kits: no, for now). DONE (2026-11-24): punch.c, SPAMPY's 27,
+         as the FX layer's keys (perform.c keeps its macros, latch, THE SPELL's keys: 14 of the 27). No pool for its
+         64 KB ring: the SLICER's sl_buf borrowed while FX is held or an effect plays, at 22.05 kHz (0.74 s, as
+         SPAMPY's); FREEZE grains of the ring (SPAMPY's holds its own reverb: phase 4). FX's black keys no longer
+         mute (GLO's do). tests/perform_test.c rewritten after SPAMPY's punch_test.c.
       3d verify: tests, CI, renders, old projects, RAM / CPU budgets.
 - [ ] 4. SPAMPY's mix stage (levels, glide, master) in fx.c.
 - [ ] 5. Rewire GEN, PART SONG, THE SPELL, creatures, EDIT/SAVE/PRESETS; rebuild SUMMON.

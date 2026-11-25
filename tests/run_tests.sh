@@ -50,9 +50,10 @@
 # MOD (tests/mod_test.c): the modulation matrix: slots that do nothing are bit-identical, every source on each
 #                   kind of destination, clamping, MIDI CC1 / CC11 / aftertouch routing, the cost of 4 active
 #                   slots (at most +5 %), demos in build/mod_demo/.
-# PERFORM (tests/perform_test.c): the FX hold layer (src/perform.c): 1/16 starts, stereo buffer effects, the
-#                   too-long REPEAT, the SLICER interplay, silent layer keys, idle bit-identical, cost; build/perform_demo/;
-#                   OCT UP / DN (the harmonizer): pitch, stereo, clicks, the shimmer bounded, cost; build/fx_demo/.
+# PERFORM (tests/perform_test.c): the FX hold layer (src/perform.c) with (Vallée) SPAMPY's PUNCH-IN FX (src/punch.c):
+#                   each of the 27 effects changes the mix, bounded, dry again after; idle bit-identical; the keys; the
+#                   kills, OCT UP, MONO, AUTO-PAN, FADE, REWIND, the loops exact, FREEZE; the SLICER; the macros;
+#                   build/perform_demo/punch.wav.
 # ALEMBIC (tests/alembic_test.c, Vallée): GLO > ALEMBIC (src/alembic.c), the mix through DRIVE MOTION SPACE GRAIN: BLEND 0
 #                   bit for bit, every flavour bounded with no DC and quiet once the input goes, the glides and a flavour
 #                   change, SPACE into the right sends, the pages, a project keeps it (one of 2.5 loads it off), the cost.
@@ -382,8 +383,8 @@ if [ -f build/gen/felucca_tables.h ]; then
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/drift_test" tests/drift_test.c -lm
     run "(2.5, #107) DRIFT: the quarter x24, every DIV a share; 5 DIVs, the click, the launch points together for 30 min" "$OUT/drift_test"
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/perform_test" tests/perform_test.c -lm
-    mkdir -p build/perform_demo build/fx_demo
-    run "FX layer effects: on the 1/16, stereo, too-long REPEAT, SLICER, silent keys, idle bit-identical, clicks, OCT UP / DN, cost, demos" "$OUT/perform_test" build/perform_demo build/fx_demo
+    mkdir -p build/perform_demo
+    run "FX layer: SPAMPY's 27 PUNCH-IN FX, idle bit-identical, keys, kills, loops exact, FREEZE, SLICER, macros, demo" "$OUT/perform_test" build/perform_demo/punch.wav
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/duck_test" tests/duck_test.c -lm
     run "ducking (Skiff): under the source's hits (a kit's KICK only), DEPTH, RELEASE, no click, OFF bit-identical" "$OUT/duck_test"
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/drive_test" tests/drive_test.c -lm

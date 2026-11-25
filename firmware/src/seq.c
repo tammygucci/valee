@@ -954,12 +954,12 @@ static void input_off(track_t *t, uint32_t note)
         trk_note_off(t, note);                      /* the ARP on: not one a SOLO black key sounds) */
 }
 
-/* the effect of key k in the FX layer (PF_N none): the first PF_M1 white keys (F3 .. E5) in order, black keys
- * 1..6 (F#3 .. F#4) the tracks' cuts while held ((2.0) a tap: their MUTE, ui_layer.c mute_keys) */
+/* the effect of key k in the FX layer (PF_N none): ((Vallée) SPAMPY's PUNCH-IN FX, punch.c: the 16 white keys from F3
+ * and the 11 black keys) */
 static uint32_t perf_key(uint32_t k)
 {
-    uint32_t p = key_place(k);
-    return !key_black(k) ? (p < PF_M1 ? p : PF_N) : p < NTRK ? PF_M1 + p : PF_N;
+    int32_t e = punch_fx_of_key(k);
+    return e < 0 ? PF_N : (uint32_t)e;
 }
 
 /* (2.1, #74) the notes key k plays on track t into kb_chord[k], their number: its chord (chord_build), a SOLO black key's

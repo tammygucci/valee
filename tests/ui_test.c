@@ -2501,7 +2501,7 @@ static int test_layer(void)
         memcpy(before, TSEL->step, sizeof before);
         btn_down(B_FX); key_down(white(2)); frame();
         ok = ui.layer == LAYER_FX && !gates() && mo_w == mo && (kb_layer >> white(2)) & 1u &&
-             (perf_held & PF_BIT(PF_R32));                    /* white key 3 (A3): REPEAT 1/32 */
+             (perf_held & PF_BIT(PX_LOOP16));                 /* white key 3 (A3): ((Vallée) LOOP 16 */
         for (i = 0; i < 40u; i++) events_block(CTL);
         ok &= !memcmp(before, TSEL->step, sizeof before) && ui.cursor == cur;
         bad += check("FX + a key: the map at once; no voice, no MIDI, no recording, no step written", ok);
@@ -2513,35 +2513,37 @@ static int test_layer(void)
     song.playing = 0; song.rec = 0;
     /* FX let go first: the effect stays with its key, the map too; a key pressed now is a note */
     ui_power_on();
-    btn_down(B_FX); key_down(white(4)); frame();          /* white key 5 (C4): LPF */
+    btn_down(B_FX); key_down(white(4)); frame();          /* white key 5 (C4): ((Vallée) STUTTER */
     btn_up(B_FX); frame();
-    ok = (perf_held & PF_BIT(PF_LPF)) && ui.layer == LAYER_FX;
+    ok = (perf_held & PF_BIT(PX_STUT)) && ui.layer == LAYER_FX;
     key_down(white(0)); frame();
     ok &= gates() > 0 && !((kb_layer >> white(0)) & 1u);
     key_up(white(0)); key_up(white(4)); frame();
     bad += check("FX let go first: the key holds its effect and the map; a new key is a note", ok && !ui.layer && !perf_held);
-    /* OCT UP (G4) and OCT DN (A4), the 9th and 10th white keys: held effects, silent; KNOB 4 the shimmer while
-     * held, back to 0 with FX; ((Skiff phase 9) B4 GATE .. E5 VINYL) F5 on does nothing */
+    /* ((Vallée) SPAMPY's PUNCH-IN FX) G4 LOW and A4 HIGH, the 9th and 10th white keys: held effects, silent; KNOB 4
+     * (DEPTH) turns, back to 0 with FX; B4 PHONE, E5 GATE, F5 ECHO, a black key (F#3) KILL LOW: every key an effect */
     ui_power_on();
     usb.config = 1; mo = mo_w; MIDI_BYTE = NO_KEYS | MO_CLOCK_OFF;   /* ((2.2) the keys as pressed, no clock: as written) */
     btn_down(B_FX); key_down(white(8)); frame();
-    ok = ui.layer == LAYER_FX && !gates() && mo_w == mo && perf_held == PF_BIT(PF_OUP);
-    perf_begin(CTL);                                    /* (an audio block: OCT UP runs, KNOB 4 is SHIMR) */
-    turn(EN_K4, 40);
+    ok = ui.layer == LAYER_FX && !gates() && mo_w == mo && perf_held == PF_BIT(PX_LPF);
+    perf_begin(CTL);                                    /* (an audio block) */
+    turn(EN_K4, -40);                                   /* (DEPTH: left is less) */
     ok &= perf_k[3] == 40;
     key_up(white(8)); key_down(white(9)); frame();
-    ok &= perf_held == PF_BIT(PF_ODN) && !gates() && mo_w == mo;
+    ok &= perf_held == PF_BIT(PX_HPF) && !gates() && mo_w == mo;
     key_up(white(9)); key_down(white(10)); frame();
-    ok &= perf_held == PF_BIT(PF_GATE) && !gates() && mo_w == mo;
+    ok &= perf_held == PF_BIT(PX_TEL) && !gates() && mo_w == mo;
     key_up(white(10)); key_down(white(13)); frame();
-    ok &= perf_held == PF_BIT(PF_VIN) && !gates() && mo_w == mo;
+    ok &= perf_held == PF_BIT(PX_GATE) && !gates() && mo_w == mo;
     key_up(white(13)); key_down(white(14)); frame();
-    ok &= !perf_held && (kb_layer >> white(14)) & 1u && !gates();
-    key_up(white(14)); btn_up(B_FX); frame();
+    ok &= perf_held == PF_BIT(PX_ECHO) && (kb_layer >> white(14)) & 1u && !gates();
+    key_up(white(14)); key_down(key_at(1, 0)); frame();
+    ok &= perf_held == PF_BIT(PX_KLOW) && !gates() && mo_w == mo;
+    key_up(key_at(1, 0)); btn_up(B_FX); frame();
     ok &= !perf_held && !ui.layer && perf_k[3] > 0 && perf_k[3] <= 40;   /* ((2.0, D 2A) on its way back) */
     a_bar();
-    bad += check("FX + G4 / A4: OCT UP / DN held, silent, no MIDI; K4 turns; B4 GATE, E5 VINYL; F5 nothing; FX let go: K4 "
-                 "back to 0 over a bar", ok && !perf_k[3] && mo_w == mo);
+    bad += check("FX + G4 / A4: LOW / HIGH held, silent, no MIDI; K4 turns; B4 PHONE, E5 GATE, F5 ECHO, F#3 KILL LOW; FX let "
+                 "go: K4 back to 0 over a bar", ok && !perf_k[3] && mo_w == mo);
     /* REVERB > TYPE ((U3, N4) GLO's family, global): ROOM / SPRING on KNOB 1, kept by a project */
     ui_power_on();
     go_page(GR_REVERB);
@@ -2670,20 +2672,11 @@ static int test_layer(void)
         a = leds_at(0); b2 = leds_at(250);
         k = white(1);
         ok = ((a >> k) & 1u) && ((b2 >> k) & 1u);                    /* held: lit */
-        for (i = 0; i < 14u; i++)                                     /* the other effects (F3 .. E5): breathe */
-            ok &= i == 1u || ((a ^ b2) >> white(i)) & 1u;
-        for (i = 14; i < 16u; i++)                                    /* F5, G5: no effect, dark */
-            ok &= !((a | b2) >> white(i) & 1u);
-        ok &= ((a & b2) >> key_at(1, 0)) & 1u && !((a | b2) >> key_at(1, NTRK) & 1u);   /* ((2.0, D 1A) a black key as GLO's: its
-                                                                                        * track sounding lit), a spare dark */
-        song.g[G_BPM] = 72;
-        a = leds_at(0); b2 = leds_at(250);
-        ok &= !((a | b2) >> white(0) & 1u) && !((a | b2) >> white(3) & 1u);   /* 1/8, REVERSE: too long at 72 */
-        ok &= ((a ^ b2) >> white(2)) & 1u;                            /* 1/32 still blinks */
-        song.g[G_BPM] = 120;
+        for (i = 0; i < 27u; i++)                                     /* ((Vallée) the other 26 effects, white and */
+            ok &= i == k || ((a ^ b2) >> i) & 1u;                     /* black: breathe */
     }
     key_up(white(1)); btn_up(B_FX); frame();
-    bad += check("map LEDs: held lit, the 14 effects breathe, the black keys GLO's, F5 G5 and a too-long REPEAT dark", ok);
+    bad += check("map LEDs: held lit, ((Vallée) the other 26 effects, white and black keys, breathe", ok);
     usb.config = 0;
     return bad;
 }
@@ -3482,14 +3475,14 @@ static int test_quick_layers(void)
     bad += check("  again: unmuted; (#11) E4: UNMUTE ALL", ok && !trk[2].p[P_MUTE] && !trk[1].p[P_MUTE]);
     lay_combo(B_GLO, white(2));
     perf_begin(CTL);
-    ok = perf_solo == 4u && ((perf_act >> PF_M1) & 15u) == 0xBu;   /* T3 solo: T1 T2 T4 muted */
+    ok = perf_solo == 4u && ((uint32_t)pf.mute & 15u) == 0xBu;   /* T3 solo: T1 T2 T4 muted */
     btn_up(B_GLO); frame();
     perf_begin(CTL);
     ok &= perf_solo == 4u && ui.layer == LAYER_GLO;                 /* GLO let go first: the solo stays with its key */
     key_up(white(2)); frame();
     perf_begin(CTL);
     bad += check("GLO + A3 held: SOLO T3 (the others muted), lasts while the key is held, not P_MUTE",
-                 ok && !perf_solo && !((perf_act >> PF_M1) & 15u) && !trk[0].p[P_MUTE] && !ui.layer);
+                 ok && !perf_solo && !((uint32_t)pf.mute & 15u) && !trk[0].p[P_MUTE] && !ui.layer);
     song.g[G_BPM] = 100;
     btn_down(B_GLO); frame();
     for (i = 0; i < 3u; i++) { key_down(white(8)); frame(); key_up(white(8)); frames(480); }
@@ -6022,8 +6015,8 @@ static int test_layer_lock(void)
     ui_power_on();
     go_title("ENV"); frame();
     shift_lock(B_FX); frames(100);
-    key_down(white(4)); frame();                        /* C4: LPF while held ((Vallée) a locked FX layer plays as held) */
-    ok = (perf_held & PF_BIT(PF_LPF)) && !perf_latched && !gates();
+    key_down(white(4)); frame();                        /* C4: ((Vallée) STUTTER) while held (a locked FX layer plays as held) */
+    ok = (perf_held & PF_BIT(PX_STUT)) && !perf_latched && !gates();
     key_up(white(4)); frame();
     ok &= !perf_held && !perf_latched;                  /* let go: off */
     turn(EN_K2, 20);
@@ -6373,11 +6366,9 @@ static int test_fx_latch(void)
     turn(EN_K4, 5);  ok = perf_k[3] == 0;                         /* DEPTH 100 %: right stays at 100 */
     turn(EN_K4, -30); ok &= perf_k[3] == 30;                      /* left: 70 % */
     turn(EN_K4, 10); ok &= perf_k[3] == 20;                       /* right: 80 % */
-    key_down(white(8)); frame(); perf_begin(CTL);                 /* OCT UP: KNOB 4 is SHIMR, right is more */
-    turn(EN_K4, 10); ok &= perf_k[3] == 30;
-    key_up(white(8)); frame(); btn_up(B_FX); frame();
+    btn_up(B_FX); frame();
     a_bar();                                                      /* ((2.0, D 2A) FX let go: back over a bar) */
-    bad += check("#40 FX + KNOB 4: DEPTH rises to the right, falls to the left; SHIMR (OCT UP) rises to the right",
+    bad += check("#40 FX + KNOB 4: DEPTH rises to the right, falls to the left",
                  ok && !perf_k[3]);
     ui_power_on();
     btn_down(B_FX); key_down(lpf); frame(); key_up(lpf); frame(); btn_up(B_FX); frame();
@@ -6389,20 +6380,20 @@ static int test_fx_latch(void)
     shift_lock(B_FX);
     key_down(lpf); frame();
     turn(EN_K2, 30);
-    ok = perf_latch_on && perf_held == PF_BIT(PF_LPF) && !perf_latched && ui.layer == LAYER_FX &&
+    ok = perf_latch_on && perf_held == PF_BIT(PX_STUT) && !perf_latched && ui.layer == LAYER_FX &&
          str_eq(layer_head(), "[FX] LOCK") && perf_k[1] == 30;
-    ok &= perf_begin(CTL) && (perf_act & PF_BIT(PF_LPF));                 /* it runs while C4 is held, FX not */
+    ok &= perf_begin(CTL) && (perf_act & PF_BIT(PX_STUT));                 /* it runs while C4 is held, FX not */
     key_up(lpf); frame();
     ok &= !perf_held && !perf_latched && perf_k[1] == 30;                 /* let go: off; CRUSH stays */
-    bad += check("(Vallée) SHIFT + FX: locked, keys play as held: C4 LPF while held, off when let go, CRUSH stays at 30", ok);
-    key_down(m1); frame(); key_up(m1); frame();                   /* ((2.0, D 1A) a black key's tap: T1's MUTE, */
-    ok = !perf_latched && trk[0].p[P_MUTE] == 1;                  /* not a cut latched) */
+    bad += check("(Vallée) SHIFT + FX: locked, keys play as held: C4 STUTTER while held, off when let go, CRUSH stays at 30", ok);
+    key_down(m1); frame();                                        /* ((Vallée) a black key: its effect (KILL LOW) */
+    ok = perf_held == PF_BIT(PX_KLOW) && !trk[0].p[P_MUTE];
+    key_up(m1); frame();
+    ok &= !perf_latched && !perf_held && !trk[0].p[P_MUTE];
     turn(EN_K1, -40);
     btn_down(B_OCTDN); frame(); btn_up(B_OCTDN); frame();
-    ok &= !perf_latched && !perf_k[0] && !perf_k[1] && song.octave == 0 && msg_is("FX ALL OFF") && ui.lock == LAYER_FX &&
-          trk[0].p[P_MUTE] == 1;
-    bad += check("  a black key's tap: T1's MUTE (no cut latched); OCT-: every latched effect and macro "
-                 "off (no octave), the MUTE stays", ok);
+    ok &= !perf_latched && !perf_k[0] && !perf_k[1] && song.octave == 0 && msg_is("FX ALL OFF") && ui.lock == LAYER_FX;
+    bad += check("  (Vallée) a black key: its effect while held, no MUTE; OCT-: every macro off (no octave)", ok);
     trk[0].p[P_MUTE] = 0;
     turn(EN_K2, 20);
     press(B_FX); frame();                                         /* its tap: closed, the effects off ((2.0, D 2A) */
@@ -6433,7 +6424,7 @@ static int test_fx_latch(void)
     turn(EN_K2, 30);
     btn_up(B_FX); frame();
     a_bar();
-    ok = perf_k[1] == 30 && (perf_held & PF_BIT(PF_LPF)) && ui.layer == LAYER_FX;
+    ok = perf_k[1] == 30 && (perf_held & PF_BIT(PX_STUT)) && ui.layer == LAYER_FX;
     key_up(lpf); frame();
     a_bar();
     ok &= !perf_k[1] && !perf_held && !ui.layer;
@@ -7667,14 +7658,13 @@ static int test_mutes_1a(void)
     ok &= !trk_cut(0) && !trk[0].p[P_MUTE];
     bad += check("  GLO: a black key held past HOLD cuts T1 while held, its MUTE as it was", ok);
     btn_down(B_FX); frame();                            /* (the button a frame first: its keys the layer's) */
-    key_down(black(1)); frame(); key_up(black(1)); frame();
-    ok = trk[1].p[P_MUTE] == 1 && !perf_held;
-    key_down(black(1));
+    key_down(black(1)); frame();                        /* ((Vallée) G#3: KILL MID, an effect, no MUTE */
+    ok = perf_held == PF_BIT(PX_KMID) && !trk[1].p[P_MUTE];
     frames(600);
-    ok &= ((perf_held >> (PF_M1 + 1u)) & 1u) && trk[1].p[P_MUTE] == 1;
+    ok &= !trk_cut(1);
     key_up(black(1)); btn_up(B_FX); frame();
-    ok &= !perf_held && trk[1].p[P_MUTE] == 1;
-    bad += check("  FX: a tap toggles T2's MUTE (latched), a hold cuts while held and leaves it", ok);
+    ok &= !perf_held && !trk[1].p[P_MUTE] && !trk_cut(1);
+    bad += check("  FX: (Vallée) a black key is its effect (G#3 KILL MID), no MUTE, no cut", ok);
     btn_down(B_ARP); frame();
     key_down(black(2)); frame(); key_up(black(2)); frame();
     ok = trk[2].p[P_MUTE] == 1;                         /* (stopped: at once, as mute_switch) */
@@ -9729,7 +9719,7 @@ static int test_six_tracks(void)
     ui_power_on();
     lay_combo(B_GLO, white(4));                       /* C4 held */
     perf_begin(CTL);
-    ok = perf_solo == 1u << 4 && ((perf_act >> PF_M1) & 63u) == 0x2Fu;
+    ok = perf_solo == 1u << 4 && ((uint32_t)pf.mute & 63u) == 0x2Fu;
     key_up(white(4)); frame();
     key_down(white(5)); frame();                      /* D4 */
     perf_begin(CTL);
@@ -10203,21 +10193,21 @@ static int test_world(void)
             fclose(fp);
             ui.menu = 0; menu_put(MI_TRANS, 0); TRANS_BYTE = 2u; frame();
         }
-        ok &= menu_get(MI_TRANS) == 1u && menu_n(MI_TRANS) == 14u && str_eq(menu_vname(MI_TRANS, 6), "TAPE STOP") &&
-              str_eq(menu_vname(MI_TRANS, 1), "REPEAT 1/16");   /* (an old STYLE value in the byte: REPEAT 1/16) */
+        ok &= menu_get(MI_TRANS) == 1u && menu_n(MI_TRANS) == 14u && str_eq(menu_vname(MI_TRANS, 6), "STOP") &&
+              str_eq(menu_vname(MI_TRANS, 1), "LOOP 16");   /* (an old STYLE value in the byte: ((Vallée) LOOP 16) */
         menu_put(MI_TRANS, 5);                          /* (MENU > FX > G5 KEY: HPF) */
         ok &= menu_get(MI_TRANS) == 5u && str_eq(MI_NAME[MI_TRANS], "G5 KEY");
         wl_keys(1u << 3);                               /* (G#3: the next part, plain: no effect of its own) */
         ok &= wl.cue == cur + 2u && !perf_auto_on;
         world_play(6u);
-        ok &= pf.hc == 0;
+        ok &= punch.cur < 0;
         fm1_in.notes |= 1u << 26;                       /* (G5, the transition key, held: HPF, as an FX layer key) */
         world_play(6u);
-        ok &= perf_auto_on && perf_auto_fx == PF_HPF && pf.hc > 0 && ((wl_leds(0) >> 26) & 1u) && wl.cue;
+        ok &= perf_auto_on && perf_auto_fx == 5u && punch.cur == PX_HPF && ((wl_leds(0) >> 26) & 1u) && wl.cue;
         bad += check("(Vallée) THE SPELL: G# the next part at the bar, plain; G5 held: TRANSITION FX (HPF) while held", ok);
         fm1_in.notes &= ~(1u << 26);                    /* (let go: it ends) */
         world_play(6u);
-        ok = !perf_auto_on && pf.hc == 0;
+        ok = !perf_auto_on && punch.cur < 0;
         wl_keys(1u << 13);                              /* (F#4: the jump dropped) */
         ok &= !wl.cue;
         wl_keys(1u << 2);                               /* (G3: the 2nd block, a VERSE, for what follows) */
@@ -10229,7 +10219,7 @@ static int test_world(void)
             uint32_t nb = wl_song(at0, len, grp, ent, &pos, &total);
             memset(fxk_set, 0, sizeof fxk_set);
             ok = nb < 15u && str_eq(MI_NAME[MI_FXK0], "F5 KEY") && str_eq(MI_NAME[MI_FXK14], "F3 KEY") &&
-                 menu_n(MI_FXK0) == 15u && menu_get(MI_FXK0) == 1u && str_eq(menu_vname(MI_FXK0, 1), "REPEAT 1/8") &&
+                 menu_n(MI_FXK0) == 15u && menu_get(MI_FXK0) == 1u && str_eq(menu_vname(MI_FXK0, 1), "LOOP 8") &&
                  str_eq(menu_vname(MI_FXK0, 0), "OFF") && menu_get(MI_FXK14) == 2u && MI_TAB[MI_FXK7] == MTAB_FX;
             fm1_in.notes |= 1u << 24;                   /* (F5 held: no block there, REPEAT 1/8) */
             world_play(6u);
@@ -10248,7 +10238,7 @@ static int test_world(void)
             ok &= perf_auto_on && perf_auto_fx == 7u;
             fm1_in.notes |= 1u << 26;                   /* (G5 held too: G5 first, HPF) */
             world_play(6u);
-            ok &= perf_auto_on && perf_auto_fx == PF_HPF;
+            ok &= perf_auto_on && perf_auto_fx == 5u;
             fm1_in.notes &= ~(1u << 24 | 1u << 26);
             world_play(6u);
             menu_put(MI_FXK0, 0);                       /* (F5 OFF: nothing; a press says there's no part) */
