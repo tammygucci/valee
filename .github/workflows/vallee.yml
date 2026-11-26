@@ -9,7 +9,7 @@ on:
     inputs:
       release:
         description: "release version (X.Y-suffix, one digit each)"
-        default: "0.9.1-alpha"
+        default: "1.0"
   push:
     tags: ["v*"]
 
@@ -26,7 +26,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      REL: ${{ github.event.inputs.release || '0.9.1-alpha' }}
+      REL: ${{ github.event.inputs.release || '1.0' }}
       JIELI_TOOLCHAIN: ${{ github.workspace }}/../jieli/toolchain
       AC79_SDK: ${{ github.workspace }}/../fw-AC79_AIoT_SDK
     steps:
@@ -96,7 +96,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: build/release-${{ env.REL }}/*
+          files: |
+            build/release-${{ env.REL }}/*
+            build/vallee-samples.bin
 
       - name: Firmware with the serial console (a developer's; past the slot it warns, it doesn't fail)
         continue-on-error: true

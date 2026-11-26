@@ -1,8 +1,10 @@
 # Vallée
 
-Vallée is firmware for the M-VAVE FM-1, a fork of [Skiff](https://github.com/illuminus5/skiff) 2.6. Everything Skiff
-does, Vallée does the same way: the pages, the sequencer, the sounds, projects and saves, with one exception: **the
-SLICE engine is left out** (see [Room on the FM-1](#room-on-the-fm-1)). On top of that it adds:
+Vallée is firmware for the M-VAVE FM-1, a fork of [Skiff](https://github.com/illuminus5/skiff) 2.6. Skiff's pages,
+sequencer, editor, projects and saves work the same way here. **Since 1.0 the sound is SPAMPY's**: the synth engines,
+factory sounds, drum kits and the FX layer's effects of [SPAMPY](https://github.com/Spampy-Droid/SPAMPY-0.0-r949), built on
+[SLOOP](https://github.com/isod89/sloop-fm1)'s engines, replace Skiff's (see [The sound](#the-sound-spampys-engines)).
+On top of that it adds:
 
 - **An opening**: an animated intro with its own chime when you switch on.
 - **THEME XENO**, and **TEEN** (the same screens in teenage engineering's colours): a tape-machine HOME screen, and a
@@ -12,8 +14,8 @@ SLICE engine is left out** (see [Room on the FM-1](#room-on-the-fm-1)). On top o
 - **GEN**: a song generator in twelve styles, which writes ordinary steps you then edit in the sequencer.
 - **Performing the song**: THE SPELL's keys are its parts, in on the bar with a transition; the next part, a new take
   of a part while it plays, and your arrangement recorded as you play it.
-- **Its own sounds**: MOOG, OBERHEIM and JUNO filters and presets, and the kits DEAD, TAPE and CRUSH, which GEN's
-  styles are voiced with.
+- **SPAMPY's sound**: fifteen synth engines and about two hundred factory sounds, level-matched; a 16-sound drum
+  engine with 35 kits; the FX layer's 27 PUNCH-IN effects.
 - **SUMMON**: an ambient engine of its own: on its EDIT page any key starts a ceremony that calls a being, different
   every time, which plays its own part in the song's chords and grows over the song, shown as SUMMONER on XENO and AURA on TEEN. One in fifty is a demon, one in fifty an angel.
 - **ALEMBIC**: the whole mix through four effects in a row, DRIVE, MOTION, SPACE and GRAIN, each with a flavour and a
@@ -24,22 +26,40 @@ Vallée's first start sets the look it is made for, once, on a new unit and over
 LARGE OFF (its big cards hide the deck and the creatures), ANIM ON, PLAYHEAD THEME, BPM LOCK ON (SELECT on HOME opens
 GEN) and HINTS ON. Everything else you set under Skiff is kept, and the MENU can change any of these afterwards.
 
-## Vintage synths: MOOG, OBERHEIM, JUNO
+## The sound: SPAMPY's engines
 
-ANALOG has a **FILTER** of four kinds (EDIT > FILTER, on an ANALOG track: FILTER, then CUTOFF RES DRIVE again):
+Since 1.0 Vallée plays SPAMPY's sound: the engines of SLOOP (a Felucca fork) as SPAMPY builds, voices and levels them,
+adapted to Vallée's six tracks. Pick them as any engine (EDIT, then the engine; PRESETS for their sounds):
 
-| FILTER | What it is |
+| Engine | What it is |
 |---|---|
-| CLASSIC | ANALOG's own 12 dB low-pass, as always |
-| MOOG | a 24 dB low-pass; the input driven warm into it, the low end giving way as RES rises |
-| OBERHEIM | a 12 dB state-variable low-pass, its resonance gentle (it sings, it does not whistle), a little warmth after |
-| JUNO | a 24 dB low-pass, clean, its resonance up to self-oscillation (with the CHORUS send up: the Juno's shimmer) |
+| ANALOG | virtual analog: saws, pulses, supersaws, its filter; basses, leads, pads |
+| DIGITAL | 4-operator FM: electric pianos, bells, mallets, FM basses |
+| PHASE | phase distortion (CZ-style): basses, keys, strings, brass |
+| LOFI | chip sounds: game leads, arps, 1-bit beeps |
+| SAMPLE | sampled piano, vibes, flute, sax (the installer writes the samples) |
+| VOICE | formant voices: choirs, talkbox |
+| TRIO | stabs and string machines: one key, a whole chord |
+| WHEEL | drawbar organs |
+| FM6 | 6-operator FM: DX-style pianos, basses, strings, bells, the FM-1's own voices |
+| MORPH | wavetables that morph |
+| PROPHET | a five-voice analog polysynth, after the classic |
+| CZ-1 | an eight-step-envelope phase-distortion synth |
+| SID | the C64's sound chip |
+| OBERVAVE | a two-voice-card analog poly, after the classic |
+| DRONE | evolving ambient beds |
+| SUMMON | Vallée's own: see [SUMMON](#summon-a-being-called-from-the-room) |
+| DRUM | 16 sounds a kit (kick, two snares, clap, hats, toms, crash, ride, shaker, conga, cowbell, ...) |
 
-WAVE SYNC keeps CLASSIC's filter. Twenty-one presets use them (PRESETS on an ANALOG track): MOOG BASS, MOOG LEAD, MOOG
-SUB, MOOG FUNK, MOOG TAURUS, MOOG SWEEP, MOOG FLUTE; OBERHEIM, OBERHEIM PAD, OBERHEIM STR, OBERHEIM BASS, OBERHEIM
-LEAD, OBERHEIM KEY; JUNO PAD, JUNO STRINGS, JUNO BASS, JUNO HOOVER, JUNO BRASS, JUNO KEYS, JUNO ARP, JUNO SWEEP. Voiced
-after those instruments by ear; no circuit or sample of theirs is in here, and Vallée is not affiliated with Moog,
-Oberheim or Roland.
+Every factory sound is level-matched to the others, so switching sounds keeps the mix in balance. **DRUM's 35
+kits**: ACOUSTIC, DEEP, TIGHT, BRIGHT and DUST are sampled (the installer writes their samples, with SAMPLE's, to the
+FM-1's sample area after the firmware); the other thirty are synthesised: 808, 909, 606, 80S, VINTAGE, TRAP, DRILL,
+BOOMBAP, LO-FI, PHONK, HOUSE, TECHNO, ELECTRO, DISCO, GARAGE, JUNGLE, DUBSTEP, DEMBOW, AMAPIANO, AFRO, SYNTHWV, CHIP,
+GLITCH, INDUSTR, HYPER, AMBIENT, JAZZ, LM-1, LINNDRUM and SYNWAVE. The names say what each sound is modelled on; none
+of those makers' circuits or samples are in here, and Vallée is not affiliated with any of them.
+
+**Songs made before 1.0** (Vallée 0.9 or Skiff) open: each track's sound moves to the nearest new engine (its first
+sound; DRUM: the 808), and the steps, levels, pans and sends stay. The old sounds themselves are not in 1.0.
 
 ## ALEMBIC: the whole mix through four vessels
 
@@ -94,23 +114,6 @@ the medium; its reels turn (the record's sheen goes round) while the song plays.
 - **Cost**: nothing while all four BLENDs are 0. All four on costs about as much as an INSERT on all six tracks
   (tests/alembic_test.c measures it), and SPACE almost nothing (the delay and reverb run anyway). It uses about 3.8 KB
   of RAM and leaves the memory pool's 8 KB spare untouched.
-
-## Kits: DEAD, TAPE, CRUSH
-
-A kit for the DRUM engine: **KIT DEAD**, and the preset **DEAD DRUMS** (SAVE > PRESETS, or PRESETS on a DRUM
-track). A seventies studio kit muted with towels: a short fat kick with no click, a deep snare whose body thumps and
-whose wires stay low and dark, a short clap, hats taped down, a floor tom and (on the BELL lane) a rack tom, both dead,
-and a woody cross-stick on RIM. Synthesized, like Skiff's other kits (no samples: there is no room for them, and the
-sampled packs it is modelled on are not free to copy). EDIT > LANES and LANE MIX set each piece's level, tune, decay
-and pan as on any kit.
-
-Two more, put together from the model kits' pieces (as Skiff's DEEP, TIGHT and PERC are) and retuned:
-
-- **KIT TAPE**, preset **TAPE KIT**: a warm seventies soul session with the towels off. DEAD's kick let ring, with a
-  felt beater; a deep snare with its wires on; soft noise hats, the open one long; a ringing tom; the cross-stick; a
-  ride cymbal on the BELL lane.
-- **KIT CRUSH**, preset **CRUSH KIT**: a drum machine run too hot. A long kick driven hard, a snappy snare, eight
-  claps, a bright metal hat, a short rim, a cowbell on BELL; the preset adds DIST CRUSH.
 
 ## The opening
 
@@ -167,10 +170,9 @@ the accent colour, only the knobs you set away from where GEN starts: `E80` ENER
 `KEEP` SOUNDS, `DR3 BA1 KY0 LD2 CO0` the parts' amounts (0 OFF .. 3 BUSY), `X40` COMPLEX, `S20` SWING, `H30` HUMAN.
 No third line: everything else is as GEN starts.
 
-**Its sounds.** Each style picks every track's sound from three, the seed's pick, and the first of them, twice as
-likely as each other, is Vallée's own where the style has one: the MOOG, OBERHEIM and JUNO presets (AETHER's Moog bass
-and lead and Juno pad, ZETA's Moog funk bass and Oberheim stabs, ASTRAL's Juno pads, strings and arp ..) and its kits:
-DEAD DRUMS (AETHER, LOTUS, HEX), TAPE KIT (LEMURIA, SIGIL), CRUSH KIT (WRAITH, ORACLE, ASTRAL).
+**Its sounds.** Each style picks every track's sound from three of SPAMPY's that suit it, the seed's pick; the
+first, twice as likely as each other, is the style's own (LEMURIA's DX bass and M1 piano, ASTRAL's Juno strings,
+STEELY's Rhodes, AKASHA's glass pads ..), and its drums from the kits that fit it (LINNDRUM, LM-1, ACOUSTIC, JAZZ ..).
 
 **Your own chords (page 5, CHORDS).** Choose the chords of a part yourself, one a bar, and GEN writes the bass, keys,
 lead, colour and drums over them. Turn PART to the part (LOOP, INTRO, VERSE, CHORUS, BRIDGE or OUTRO: each keeps its
@@ -191,8 +193,7 @@ The panel shows the key and what the C key plays there (`C DOR  C KEY Cm`): KEY 
 so the C key is often Am or Cm. Set KEY to C and the white keys play the chords their names say. On PART SONG the
 page shows how many parts have their own chords (`2 MINE`) and lists them, a line each.
 
-On PART SONG each part uses its own chords. They are saved with the project. Skiff and Vallée 0.9 open such a
-project as ever and play GEN's parts as written; only the chords page is new.
+On PART SONG each part uses its own chords. They are saved with the project.
 
 **The buttons.**
 
@@ -468,8 +469,7 @@ or its kind, only the two symbols: on XENO the sigil as a glyph and the seal as 
 round it; on TEEN flat shapes in its colours (the sigil a shape with a smaller one on it, the seal a knob with a ring
 of lit dots and its pointer). Presets: CALLING, LOW HOST, VIGIL, SEANCE, EMPYREAN.
 
-Because SUMMON adds an engine key, the EDIT layer's keys after NOISE move up one: SUMMON is on C5, DRUM on D5, DRUM-X on
-E5 and INIT on F5.
+SUMMON has its own key on the EDIT layer, as every engine.
 
 ## A project to a file (the editor)
 
@@ -484,24 +484,15 @@ complete backup under it still saves and restores everything at once.
 
 ## Room on the FM-1
 
-The FM-1's firmware has to fit a fixed slot of 581,564 bytes. Skiff 2.6 already filled all but about 4.5 KB of it
-(its released file: an image of about 577,000 bytes), and Vallée's additions need about 34 KB. So Vallée is built
-without Skiff's SLICE engine and its two built-in drum loops (`FELUCCA_SLICE=0`, a build switch Skiff already had),
-which frees about 50 KB: with everything (THE SPELL, ALEMBIC, SUMMON and GEN's own chords included) the release build
-measures an image of 575,856 bytes, about 5.6 KB under the limit, and 87,816 bytes of the 94,208 of RAM (SUMMON, its two screens and
-AKASHA's new seeds included, and Vallée's own screens and GEN built for size as Skiff's UI is). Only the release has to
-fit: a development build with Skiff's serial console (`./build.sh`) is about 4 KB bigger, and CI builds it last and
-only warns when it doesn't fit; the tests read one built without the console (`FELUCCA_CDC=0 ./build.sh`).
-
-What that means for what you saved under Skiff:
-
-- A song with a SLICE track loads; that track becomes an FM6 sound, its steps, level, pan and sends kept.
-- A user preset made on SLICE loads as an FM6 sound, under its own name.
-- Everything else (every other engine, projects, user presets, samples you uploaded for SAMPLE) is as it was.
-
-`FELUCCA_SLICE=1 ./build.sh` builds SLICE back in, but then the image does not fit the FM-1: the build stops with
-"image exceeds the app slot" and makes no firmware file. That check (tools/build.py) is what stands between a too-big
-build and the unit, along with the RAM checks (92 KB of RAM, at least 8 KB of the pool spare).
+The FM-1's firmware has to fit a fixed slot of 581,564 bytes. Vallée 1.0's release build measures an image of 534,048
+bytes (about 47 KB under the limit), 96,264 bytes of its 98,304 of RAM, and 323,976 of the 344,064-byte memory pool
+(at least 8 KB of it always kept spare). The sample sets (SAMPLE's piano, vibes, flute and sax, and DRUM's sampled
+kits) don't sit in the firmware: they are one block in the FM-1's sample area, written by the installer after the
+firmware and checked at every start (a block that is missing or from another build plays nothing, never noise).
+Only the release has to fit: a development build with Skiff's serial console (`./build.sh`) is bigger, and CI builds
+it last and only warns when it doesn't fit; the tests read one built without the console (`FELUCCA_CDC=0 ./build.sh`).
+Those checks (tools/build.py) are what stand between a too-big build and the unit: a build that doesn't fit stops with
+"image exceeds the app slot" and makes no firmware file.
 
 ## Safety
 
@@ -533,7 +524,7 @@ The FM-1 firmware is built with JieLi's toolchain. The easiest way is GitHub Act
 3. Actions > **Vallée build** > Run workflow.
 
 It builds the firmware, runs every test (host, UI, web, emulator), then makes the release
-`vallee-0.9.1-alpha.fwsc` and the browser emulator, and publishes your site:
+`vallee-1.0.fwsc` and the browser emulator, and publishes your site:
 
 - the web installer, `/webapp/installer/` (Chrome or Edge, USB)
 - the editor, `/webapp/editor/`
@@ -541,18 +532,18 @@ It builds the firmware, runs every test (host, UI, web, emulator), then makes th
 
 The package and a one-file emulator page (`vallee-web.html`) are kept as downloads on the run.
 
-**Identity.** A release answers **FM-1_56XY** (0.9: `FM-1_5609`), Vallée's own number, not Skiff's FM-1_7XY, so
-The Firmware Hub can tell the two apart. Push a tag `v*` (e.g. `v0.9-alpha`) and the build also makes a GitHub
+**Identity.** A release answers **FM-1_56XY** (0.9: `FM-1_5609`, 1.0: `FM-1_5610`), Vallée's own number, not Skiff's FM-1_7XY, so
+The Firmware Hub can tell the two apart. Push a tag `v*` (e.g. `v1.0`) and the build also makes a GitHub
 release with the package attached; `fmhub.json` in the root is the hub's card (its text, picture and links).
 
 To build locally, see `BUILDING.md`:
 
 ```
 FELUCCA_CDC=0 ./build.sh && sh tests/run_tests.sh   # the development build (no console) and the tests
-./build.sh --release 0.9.1-alpha          # the package
-EMU_PREVIEW=0 EMU_VERSION=v0.9.1-alpha web/emu/build_clang.sh   # the emulator: plain clang, no Emscripten
+./build.sh --release 1.0                  # the package
+EMU_PREVIEW=0 EMU_VERSION=v1.0 web/emu/build_clang.sh   # the emulator: plain clang, no Emscripten
 python3 web/emu/bundle_single.py          # .. as one HTML file
-python3 web/make_site.py build/vallee-0.9.1-alpha.fwsc 0.9.1-alpha site
+python3 web/make_site.py build/vallee-1.0.fwsc 1.0 site
 ```
 
 **Flash space.** The FM-1's app slot is 581,564 bytes ([Room on the FM-1](#room-on-the-fm-1)). If the image doesn't

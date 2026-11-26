@@ -1,5 +1,30 @@
 # Changelog
 
+## 1.0
+
+A new sound. Every synth engine, factory sound and drum kit in Vallée is now
+[SPAMPY](https://github.com/Spampy-Droid/SPAMPY-0.0-r949)'s, built on [SLOOP](https://github.com/isod89/sloop-fm1)'s
+engines. Everything else (GEN, THE SPELL, ALEMBIC, SUMMON, the looks) stays.
+
+**Install:** the [Vallée installer](https://tammygucci.github.io/valee/webapp/installer/) in Chrome or Edge. After the
+firmware it writes the built-in samples (about 30 seconds more). It backs up your music first.
+
+### New
+- **Fifteen synth engines**: ANALOG, DIGITAL, PHASE, LOFI, SAMPLE, VOICE, TRIO, WHEEL, FM6, MORPH, PROPHET, CZ-1, SID,
+  OBERVAVE and DRONE, with about two hundred factory sounds, all level-matched.
+- **The DRUM engine has 16 sounds a kit and 35 kits**: five sampled (ACOUSTIC, DEEP, TIGHT, BRIGHT, DUST) and thirty
+  synthesised (808, 909, LINNDRUM, TRAP, AMAPIANO, JAZZ and more). GEN's drums use the new crash, toms and percussion.
+- **The FX layer's 27 effects** (SPAMPY's PUNCH-IN FX): loops, stutter, reverse, stop, rewind, freeze, filters, kills,
+  echo, flanger and more, in time with the song. THE SPELL's effect keys use them too.
+- **ALEMBIC 3: MEDIUM**: the whole mix played off a cassette, a tape machine, a VHS tape or a record, with WEAR and WOW.
+- **The mix**: SPAMPY's look-ahead limiter and speaker EQ; LEVEL and PAN glide instead of stepping.
+
+### Changed
+- **Songs from 0.9 open**, but each track's sound moves to the nearest new engine (steps, levels, pans and sends
+  kept). The old engines and sounds (DRUM-X, the MOOG/OBERHEIM/JUNO filters, the DEAD/TAPE/CRUSH kits) are gone.
+- **Going to Skiff**: songs made on 1.0 won't sound right there. Save a complete backup first.
+
+
 ## 0.9.1 alpha
 
 - **GEN: your own chords** (issue #1). GEN's new fifth page, CHORDS: pick a part and press keys, one chord a bar

@@ -214,7 +214,7 @@ NEXT: phase 3 (SPAMPY's sampled drums as DRUM), 4 (its mix stage), the rest of 5
 creatures by sound, SUMMON rebuilt, DRUM-X code removed), 6 (emulator walk, old projects on a unit), 7 (installer).
 Then 3 (drums), 4 (mix), 5 (GEN, SUMMON...), 6 (tests), 7 (installer).
 Local host builds: build/gen from a CI-like build + tools/gen_factory_block.py + tools/gen_p5_tables.py.
-Do not install this branch on a unit yet (the installer does not write the sample block).
+Released as Vallée 1.0 (the installer writes the sample block after the firmware).
 
 ### Sound check (Nov 2026): every sound against SPAMPY's
 - Every preset rendered in both (tests/preset_level.c's phrases, SPAMPY's level trims applied): same tone, levels

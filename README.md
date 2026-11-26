@@ -22,15 +22,17 @@
   <br><sub>The demo, a live performance and SUMMON (click to play)</sub>
 </p>
 
-> **This is an alpha (0.9.1).** Everything here works on my own FM-1 and passes the full test suite, but it hasn't been
-> on many units yet. Back up anything you care about first (the installer does this for you), expect a few rough
-> edges, and please [report what you find](https://github.com/tammygucci/valee/issues/new/choose). You can always
-> go back: see [Going back](#going-back) below.
+> **Vallée 1.0: a new sound.** Every synth engine, factory sound and drum kit is new in 1.0 (SPAMPY's), along with
+> the FX layer's 27 effects and ALEMBIC's MEDIUM. Songs from 0.9 open, but their tracks move to the new engines'
+> sounds. Back up anything you care about first (the installer does this for you), and please
+> [report what you find](https://github.com/tammygucci/valee/issues/new/choose). You can always go back: see
+> [Going back](#going-back) below.
 
 Vallée is built on [Skiff](https://github.com/illuminus5/skiff) 2.6 by illuminus5, a six-track groovebox firmware for
-the FM-1. Skiff's engines, sequencer, editor and saves all work the same way here. On top of that, Vallée adds a song
-generator, a way to play a whole song live from the keys, an effects chain across the whole mix, new synth sounds and
-drum kits, and its own look.
+the FM-1: Skiff's sequencer, editor and saves all work the same way here. Its sound comes from
+[SPAMPY](https://github.com/Spampy-Droid/SPAMPY-0.0-r949) by Spampy-Droid, built on the engines of
+[SLOOP](https://github.com/isod89/sloop-fm1) by isod89. On top of that, Vallée adds a song generator, a way to play a
+whole song live from the keys, an effects chain across the whole mix, and its own look.
 
 ## Going back
 
@@ -41,10 +43,10 @@ You can leave Vallée at any time, and your music comes with you.
   first. Your FM-1 goes back to the version it had before (V15 or V16), and the page tells you which one it needs.
   You can also use M-VAVE's own updater. Afterwards, pair any Bluetooth devices again.
 - **To Skiff:** install Skiff with the [Skiff installer](https://illuminus5.github.io/skiff/webapp/installer/), the
-  same way. Your projects, sounds and samples carry over, and Skiff simply ignores ALEMBIC. **One exception:** Skiff
-  has no SUMMON, so it won't open a project with a SUMMON track (or a sound saved from SUMMON). Before you switch,
-  change those tracks to another sound and save, or first use **Save backup** (Complete backup) in the [Vallée editor](https://tammygucci.github.io/valee/webapp/editor/). Nothing is erased: the
-  projects open again if you come back to Vallée.
+  same way. Vallée 1.0's sounds are SPAMPY's, which Skiff doesn't have, so songs made on 1.0 won't sound right there
+  (or won't open). First use **Save backup** (Complete backup) in the
+  [Vallée editor](https://tammygucci.github.io/valee/webapp/editor/). Nothing is erased: the projects open again if
+  you come back to Vallée.
 
 If the FM-1 won't start at all, see [If the FM-1 won't start](#install) below.
 
@@ -76,15 +78,19 @@ By the end of the song he has built a figure that comes from your sounds and you
 ### ALEMBIC: the whole mix through four vessels
 
 A chain on the master mix: **DRIVE** (soft, hard, fold, fuzz), **MOTION** (phaser, flanger, chorus, wobble),
-**SPACE** (echo, reverb or both) and **GRAIN** (tape wow, dust, crush, filter). Each stage has a BLEND knob, and
-BLEND 0 switches that stage off completely. On screen they're four flasks, filled as far as each BLEND and moving
+**SPACE** (echo, reverb or both) and **GRAIN** (tape wow, dust, crush, filter), then **MEDIUM**, the whole mix
+played off a cassette, a tape machine, a VHS tape or a record. Each stage has a BLEND knob, and BLEND 0 switches that
+stage off completely. On screen they're four flasks, filled as far as each BLEND and moving
 with the sound.
 
-### New sounds
+### The sound (new in 1.0)
 
-- **MOOG, OBERHEIM and JUNO filters** for the ANALOG engine, with 21 presets voiced after those instruments.
-- **Three drum kits**: DEAD (a seventies studio kit damped with towels), TAPE (warm soul session) and CRUSH (a drum
-  machine run too hot).
+- **Fifteen synth engines** from SPAMPY and SLOOP: ANALOG, DIGITAL, PHASE, LOFI, SAMPLE, VOICE, TRIO, WHEEL, FM6,
+  MORPH, PROPHET, CZ-1, SID, OBERVAVE and DRONE, with about two hundred factory sounds, all level-matched.
+- **35 drum kits** of 16 sounds each: five sampled (ACOUSTIC, DEEP, TIGHT, BRIGHT, DUST) and thirty synthesised, from
+  808, 909 and LINNDRUM to TRAP, AMAPIANO and JAZZ.
+- **27 effects on the FX layer** (SPAMPY's PUNCH-IN FX): loops, stutters, reverse, tape stop, freeze, filters, kills,
+  echo and more, in time with the song.
 - **SUMMON**, an ambient engine. Press any key on its EDIT page and it plays its own part in the song's chords, never against them, growing
   fuller over the song while candles light and a being forms, a different one for every key and every time (SUMMONER
   on XENO, AURA on TEEN). One in fifty is a demon; one in fifty an angel. Another key fades it out.
@@ -111,9 +117,11 @@ At your own risk, as with any FM-1 firmware. You can always go back.
    computer.
 2. Connect the FM-1 by USB (straight into the computer, not through a hub) and follow the page.
 
-The same page can take the FM-1 back to the official M-VAVE firmware. Your Skiff projects, presets and samples carry
-over. The only exception is that a SLICE track or preset becomes an FM6 sound, because Vallée leaves SLICE out to fit
-in the FM-1's memory ([why](VALLEE.md#room-on-the-fm-1)).
+After the firmware, the installer writes Vallée's built-in samples (the sampled drum kits and SAMPLE's sounds),
+about 30 seconds more. **Installed another way** (The Firmware Hub, M-Flasher, the `.fwsc` file): then open the
+[Vallée editor](https://tammygucci.github.io/valee/webapp/editor/), connect, and press **Write factory samples** on
+its Samples page, or the sampled drum kits and SAMPLE's sounds stay silent. Coming from Skiff or Vallée 0.9: your projects open, each track's sound moved to the nearest
+new engine, its steps and mix kept. The same page can take the FM-1 back to the official M-VAVE firmware.
 
 **If the FM-1 won't start:** Vallée leaves Skiff's update loader, recovery and save formats untouched, so
 [Skiff's recovery steps](SKIFF.md#if-the-fm-1-does-not-start) all apply (use Vallée's installer where they say
@@ -122,19 +130,18 @@ start goes into the chip's boot mode, where it can be written again.
 
 ## Known issues
 
-- **Skiff can't open a project with a SUMMON track** (see [Going back](#going-back)).
+- **Songs from before 1.0 change sound**: their tracks move to the new engines' sounds (the steps and mix stay).
+- **If the sampled kits or SAMPLE sounds are silent** (or a plain tone), the installer couldn't write the built-in
+  samples: press Install again, or **Write factory samples** on the editor's Samples page.
 - **The screen runs faster than Skiff's** (20 MHz instead of 12) so pages draw without tearing. Most units are fine
   with it; if yours shows flickering, stray lines or garbled pictures, please open an issue.
-- **A SLICE preset loaded from your user slots becomes FM6's first sound**, and holding SAVE does not undo that load.
-  Don't save over that slot if you want to keep the SLICE sound for Skiff later.
 - **GEN SONG, then a single PART written while the song plays:** the song's patterns stay in the pool, unused. GEN
   clears them by itself the next time it needs room (or SAVE > PATTERNS > CLEAR UNUSED).
 
 ## Learn it
 
 - **[VALLEE.md](VALLEE.md)**: everything Vallée adds, in full.
-- **[SKIFF.md](SKIFF.md)**: Skiff's manual, for everything Vallée shares with Skiff (the sequencer, engines, MIDI and
-  menus).
+- **[SKIFF.md](SKIFF.md)**: Skiff's manual, for everything Vallée shares with Skiff (the sequencer, MIDI and menus).
 - **[The cheat sheet](https://tammygucci.github.io/valee/webapp/installer/brand/vallee_cheatsheet.pdf)**: one page
   to keep next to the unit.
 
@@ -148,7 +155,9 @@ locally, see [BUILDING.md](BUILDING.md) and
 
 Vallée is a fork of **[Skiff](https://github.com/illuminus5/skiff)** by illuminus5, which is built on
 **[Felucca](https://github.com/hugelton/Felucca)** by Leo Kuroshita (Hügelton Instruments), with the work of the
-FM-1 community ([full credits](SKIFF.md#credits)). GEN's way of working (genre, seed, energy) comes from
+FM-1 community ([full credits](SKIFF.md#credits)). Its sound since 1.0 is
+**[SPAMPY](https://github.com/Spampy-Droid/SPAMPY-0.0-r949)** by Spampy-Droid, built on
+**[SLOOP](https://github.com/isod89/sloop-fm1)** by isod89, itself a Felucca fork. GEN's way of working (genre, seed, energy) comes from
 **GENE** in [JIANT FM](https://github.com/juanjiant-bit/JIANT) by juanjiant-bit, while Vallée's generator code is
 its own. SUMMON was inspired by the idea of **SWARM** in JIANT; none of its code is used. If Vallée is useful to you, please [support Felucca's author](https://github.com/sponsors/hugelton).
 
@@ -158,4 +167,5 @@ Free software under [GPL-3.0-only](LICENSE), as Skiff and Felucca are. If you sh
 with it. See [LICENSING.md](LICENSING.md) for the bundled fonts and DSP.
 
 M-VAVE and FM-1 are trademarks of their owners. Vallée is not affiliated with or endorsed by M-VAVE, Skiff's or
-Felucca's authors, Moog, Oberheim or Roland, or any artist a style leans toward.
+Felucca's, SLOOP's or SPAMPY's authors, any maker whose instrument a sound or kit is named after, or any artist a style
+leans toward.
