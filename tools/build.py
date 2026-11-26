@@ -459,10 +459,11 @@ def main():
         shutil.rmtree(rel, ignore_errors=True)
         (rel / "LICENSES").mkdir(parents=True)
         app = f"{stem}-{a.release}-app.bin"
-        (rel / name).write_bytes(pkg)
-        (rel / app).write_bytes(img)
+        rname = f"{stem}.fwsc"      # ((Vallée) the release's package keeps one name from version to version (vallee.fwsc):
+        (rel / rname).write_bytes(pkg)   # The Firmware Hub follows a card's file by name ("same asset name, same FM-1_
+        (rel / app).write_bytes(img)     # number"); the site's copy keeps its version in the name (make_site.py)
         (rel / "SHA256SUMS").write_text("".join(f"{hashlib.sha256(b).hexdigest()}  {n}\n"
-                                                for n, b in ((name, pkg), (app, bytes(img)))))
+                                                for n, b in ((rname, pkg), (app, bytes(img)))))
         for f in sorted((SRC / "LICENSES").glob("*.txt")):
             shutil.copy(f, rel / "LICENSES" / f.name)
         for doc in ("LICENSE", "LICENSING.md"):
