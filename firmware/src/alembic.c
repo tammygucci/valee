@@ -218,9 +218,9 @@ typedef struct {
 #define MD_HZ(f) ((uint32_t)((f) / 44100.0 * 4294967296.0))
 #define MD_MS(m) ((int32_t)((m) * 44.1 * 65536.0))
 static const md_t MD[4] = {
-    {MD_HZ(0.7), MD_HZ(8.0), MD_MS(0.45), MD_MS(0.06), 47356, 419, 2, 20, 110, 27000},   /* CASST */
+    {MD_HZ(0.7), MD_HZ(8.0), MD_MS(0.35), MD_MS(0.03), 47356, 419, 2, 20, 110, 27000},   /* CASST */
     {MD_HZ(0.25), MD_HZ(14.0), MD_MS(0.12), MD_MS(0.02), 58830, 233, 1, 26, 34, 32767},  /* TAPE */
-    {MD_HZ(0.45), MD_HZ(3.2), MD_MS(0.9), MD_MS(0.12), 41362, 835, 2, 18, 140, 8000},    /* VHS */
+    {MD_HZ(0.45), MD_HZ(3.2), MD_MS(0.6), MD_MS(0.06), 41362, 835, 2, 18, 140, 8000},    /* VHS */
     {MD_HZ(0.55), 0, MD_MS(0.28), 0, 55254, 205, 1, 16, 22, 30000},                       /* VINYL */
 };
 static inline int32_t md_noise(void)
@@ -230,8 +230,8 @@ static inline int32_t md_noise(void)
 }
 static __attribute__((noinline)) void alm_medium(int32_t *ml, int32_t *mr, uint32_t n)
 {
-    uint32_t f = alm_f(G_AMED, 4u), i, c;
-    int32_t ta = alm_b(G_AMEDB) * 258, wear = alm_b(G_AWEAR), wow = alm_b(G_AWOW), pk = 0;
+    uint32_t f = alm_f(G_AMED, 4u), i, c, kin, kout, kbr, krum, pdrop, ppop;
+    int32_t ta = alm_b(G_AMEDB) * 258, wear = alm_b(G_AWEAR), wow = alm_b(G_AWOW), pk = 0, wq, fq, hl, dq;
     const md_t *m;
     if (!amd.on) {
         if (!ta) {
@@ -255,78 +255,89 @@ static __attribute__((noinline)) void alm_medium(int32_t *ml, int32_t *mr, uint3
     if (f != amd.type)
         ta = 0;                                         /* (the one running fades out first) */
     m = &MD[amd.type];
+    /* per block (no divide per sample: the FM-1's core): the depths x WOW / 64 (Q8 samples), the hiss x WEAR, the
+     * saturation's gains (the mix at a fifth into the tanh: a full mix peaks at ~4 x a voice, ~100 000, and only
+     * its peaks are warmed, never clipped), the cassette's breath, the rumble, the odds of a pop and of a dropout */
+    wq = ((m->wd >> 8) * wow) >> 6;
+    fq = ((m->fd >> 8) * wow) >> 6;
+    dq = (int32_t)((MD_MS(0.25) >> 8) * wow) >> 6;      /* VHS's drift, Q8 samples */
+    hl = m->hiss * wear / 127;
+    kin = (uint32_t)m->drv * 819u;                      /* x drv / 16 / 5, Q16 */
+    kout = (uint32_t)(327680u / m->drv);                /* x 5 x 16 / drv, Q12 (mulq16 takes k up to 1.0 only) */
+    kbr = (uint32_t)wear * 52u;                         /* the breath: ~0.4 dB at WEAR 127 */
+    krum = (uint32_t)wear << 7;                         /* the rumble: ~-45 dBFS at WEAR 127 */
+    pdrop = (uint32_t)wear >> 6;                        /* ~0.3 a second at WEAR 127, none under 64 .. */
+    ppop = (uint32_t)wear / 4u + 1u;                    /* ~0..19 pops a second */
     for (i = 0; i < n; i++) {
-        int32_t a, d, hl, ns[2], pop = 0, x[2], y[2], g;
-        uint32_t q;
+        int32_t a, d, ns[2], pop = 0, x[2], y[2], g;
+        uint32_t q, ka;
         amd.a += clamp(ta - amd.a, -SL_SLOPE, SL_SLOPE);
         a = amd.a;
+        ka = (uint32_t)a << 1;                          /* the share, Q16 */
         if (ta)                                         /* the tape winding up (on) or down (off, BLEND faded) */
             amd.base = amd.base + 512u < MD_BASE ? amd.base + 512u : MD_BASE;
         else if (!a)
             amd.base = amd.base > 512u ? amd.base - 512u : 0u;
-        /* the read: the delay, the wow and the flutter (x WOW / 64, x the share), VHS's drift */
+        /* the read: the delay, the wow and the flutter, VHS's drift (all x the share) */
         d = (int32_t)amd.base;
         if (a) {
-            int32_t w = mulq16((int32_t)(((int64_t)osc_sine(amd.wph) * m->wd) >> 15) * wow / 64, (uint32_t)a << 1) +
-                        mulq16((int32_t)(((int64_t)osc_sine(amd.fph) * m->fd) >> 15) * wow / 64, (uint32_t)a << 1);
-            if (amd.type == 2u) {                       /* VHS: the transport drifting, a new place every ~0.4 s */
+            int32_t w = ((osc_sine(amd.wph) * wq) >> 7) + ((osc_sine(amd.fph) * fq) >> 7);   /* Q16 samples */
+            if (amd.type == 2u) {                       /* VHS: the transport drifting, a new place every ~0.5 s */
                 if (!amd.tcnt--) {
-                    amd.tcnt = 12000u + ((uint32_t)md_noise() & 8191u);
-                    amd.dto = md_noise() * (MD_MS(0.5) >> 15) * wow / 64;
+                    amd.tcnt = 16000u + ((uint32_t)md_noise() & 8191u);
+                    amd.dto = (md_noise() * dq) >> 7;
                 }
-                amd.drift += (amd.dto - amd.drift) >> 12;
-                w += mulq16(amd.drift, (uint32_t)a << 1);
+                amd.drift += (amd.dto - amd.drift) >> 14;
+                w += amd.drift;
             }
-            d += w;
+            d += mulq16(w, ka);
             if (d < 0)
                 d = 0;
         }
         amd.wph += m->wow;
         amd.fph += m->flut;
-        /* the noise: hiss (both sides their own), VINYL's crackle and rumble, all x WEAR x the share */
-        hl = m->hiss * wear / 127;
+        /* the noise: hiss (each side its own), VINYL's crackle and rumble; x the share */
         ns[0] = ns[1] = 0;
         if (a && hl) {
-            ns[0] = mulq16((md_noise() * hl) >> 15, (uint32_t)a << 1);
-            ns[1] = mulq16((md_noise() * hl) >> 15, (uint32_t)a << 1);
+            ns[0] = mulq16((md_noise() * hl) >> 15, ka);
+            ns[1] = mulq16((md_noise() * hl) >> 15, ka);
         }
         if (amd.type == 3u && a) {
-            uint32_t r = (uint32_t)md_noise() & 0xFFFFu;
-            if (wear && r < (uint32_t)wear / 4u + 1u)   /* ~0..19 pops a second */
-                amd.ck = md_noise() * (40 + wear * 2) / 2048;   /* (up to ~-17 dBFS) */
-            pop = mulq16(amd.ck, (uint32_t)a << 1);
-            amd.ck = amd.ck * 5 / 8;
-            amd.rum += mulq16(md_noise() - amd.rum, 186u); /* (20 Hz) */
-            pop += mulq16(amd.rum * wear / 512, (uint32_t)a << 1);   /* (~-45 dBFS) */
+            if (wear && ((uint32_t)md_noise() & 0xFFFFu) < ppop)
+                amd.ck = (md_noise() * (40 + wear * 2)) >> 11;   /* (up to ~-17 dBFS) */
+            pop = mulq16(amd.ck, ka);
+            amd.ck = (amd.ck * 5) >> 3;
+            amd.rum += mulq16(md_noise() - amd.rum, 186u);   /* (20 Hz) */
+            pop += mulq16(mulq16(amd.rum, krum), ka);
         }
-        /* VHS: a dropout now and then (WEAR): the level dips to a third for 30 .. 110 ms */
-        if (amd.type == 2u && a && wear) {
+        /* VHS: a dropout now and then (WEAR past half): the level dips to ~60 % for 30 .. 110 ms, eased */
+        if (amd.type == 2u && a && pdrop) {
             if (!amd.dcnt) {
-                if (((uint32_t)md_noise() & 0x3FFFFu) < (uint32_t)wear / 32u) {   /* (WEAR 127: ~0.7 a second) */
+                if (((uint32_t)md_noise() & 0x3FFFFu) < pdrop) {
                     amd.dcnt = 1300u + ((uint32_t)md_noise() & 3071u);
-                    amd.dtgt = 11000;
+                    amd.dtgt = 20000;
                 } else
                     amd.dtgt = 32767;
             } else if (!--amd.dcnt)
                 amd.dtgt = 32767;
         } else
             amd.dtgt = 32767;
-        amd.drop += clamp(amd.dtgt - amd.drop, -160, 160);
+        amd.drop += clamp(amd.dtgt - amd.drop, -40, 40);
         for (c = 0; c < 2u; c++) {
             int32_t v = (c ? mr[i] : ml[i]) + ns[c] + pop, s, r0, r1, fr, z, t;
-            /* the saturation (tanh, drive in 16ths), the share of it */
-            s = softclip(clamp(v * m->drv / 16, -2000000, 2000000)) * 16 / m->drv;
-            v += mulq16(s - v, (uint32_t)a << 1);
-            if (amd.type == 1u) {                       /* TAPE: the head bump */
+            /* the saturation: the mix at a quarter, x drive, through the tanh, back; the share of it */
+            s = (softclip(clamp(mulq16(v, kin), -2000000, 2000000)) * (int32_t)kout) >> 12;
+            v += mulq16(s - v, ka);
+            if (amd.type == 1u) {                       /* TAPE: the head bump (+~3 dB round 110 Hz) */
                 amd.bump[c] += mulq16(v - amd.bump[c], 1019u);
-                v += mulq16(amd.bump[c] * 2 / 5, (uint32_t)a << 1);
+                v += mulq16(mulq16(amd.bump[c], 26214u), ka);
             }
             amd.line[c][amd.wp] = v;
             q = (uint32_t)d;
             r0 = (int32_t)(amd.wp - (q >> 16)) & (int32_t)(MD_LEN - 1u);
             r1 = (r0 - 1) & (int32_t)(MD_LEN - 1u);
-            fr = (int32_t)((q >> 1) & 0x7FFFu);
-            z = amd.line[c][r0] + (int32_t)(((int64_t)(amd.line[c][r1] - amd.line[c][r0]) * fr) >> 15);
+            fr = (int32_t)((q >> 2) & 0x3FFFu);         /* Q14 */
+            z = amd.line[c][r0] + ((((amd.line[c][r1] - amd.line[c][r0]) >> 2) * fr) >> 12);
             /* the tone: the low-pass (1 or 2 poles), the low cut; the share of it */
             amd.lp1[c] += mulq16(z - amd.lp1[c], m->lp);
             t = amd.lp1[c];
@@ -336,15 +347,15 @@ static __attribute__((noinline)) void alm_medium(int32_t *ml, int32_t *mr, uint3
             }
             amd.hp[c] += mulq16(t - amd.hp[c], m->hp);
             t -= amd.hp[c];
-            z += mulq16(t - z, (uint32_t)a << 1);
-            if (amd.type == 0u)                         /* CASST: the level breathing with the wow (~0.4 dB) */
-                z -= mulq16(z, (uint32_t)((osc_sine(amd.wph) + 32768) * a >> 15) * wear / 1270u);
+            z += mulq16(t - z, ka);
+            if (amd.type == 0u && kbr)                  /* CASST: the level breathing with the wow */
+                z -= mulq16(mulq16(z, (uint32_t)(osc_sine(amd.wph) + 32768) * kbr >> 16), ka);
             y[c] = mulq16(z, (uint32_t)amd.drop << 1);
             x[c] = c ? mr[i] : ml[i];
         }
         amd.wp = (amd.wp + 1u) & (MD_LEN - 1u);
         /* the width: the side x (1 - (1 - width) x the share) */
-        g = 32768 - mulq16(32768 - m->width, (uint32_t)a << 1);
+        g = 32768 - mulq16(32768 - m->width, ka);
         {
             int32_t mid = (y[0] + y[1]) >> 1, side = mulq16((y[0] - y[1]) >> 1, (uint32_t)g << 1);
             ml[i] = mid + side;

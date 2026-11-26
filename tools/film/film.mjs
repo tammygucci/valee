@@ -34,7 +34,7 @@ d.tap(B.PLAY); wait(2400);
 
 // 3. HOME: the sounds and their creatures
 d.turn(EN.SELECT, -1); wait(150); d.turn(EN.SELECT, -1); wait(400);
-cap("Its own sounds", "Moog, Juno and Oberheim voices, its own drum kits, a creature for every one");
+cap("The SPAMPY sound", "fifteen synth engines, 35 drum kits, a creature for every sound");
 wait(2200);
 d.turn(EN.ALGO, 1); wait(300); d.turn(EN.PRESETS, 1); wait(1300); d.turn(EN.PRESETS, -1); wait(1500);
 d.turn(EN.ALGO, -1); wait(1200);
@@ -45,7 +45,7 @@ cap("Then you play it", "Every white key is a part of the song");
 wait(2600);
 cap("A: the chorus", "it comes in on the next bar, always in time");
 d.key(K.A3); wait(5600);
-cap("Hold a key past the song", "repeats, tape stop, filter sweeps, freeze");
+cap("Hold a key past the song", "loops, tape stop, filter sweeps, freeze");
 d.keyDown(K.G5); wait(1300); d.keyUp(K.G5); wait(1200);
 d.keyDown(K.A4); wait(1500); d.keyUp(K.A4); wait(1400);
 cap("G#: the next part", "one key walks the song");
@@ -64,6 +64,11 @@ d.turn(EN.K3, 2, 120); d.turn(EN.K4, 70, 14); wait(1800);
 d.tap(B.GLO); wait(500);
 d.turn(EN.K1, 2, 120); d.turn(EN.K2, 50, 14); wait(600);
 d.turn(EN.K3, 1, 120); d.turn(EN.K4, 70, 14); wait(2600);
+d.tap(B.GLO); wait(400);
+cap("ALEMBIC 3: MEDIUM", "the whole mix played off a cassette, a tape machine, VHS or vinyl");
+d.turn(EN.K2, 90, 14); wait(3200);
+d.turn(EN.K1, 3, 300); wait(3000);
+d.turn(EN.K2, -90, 10); wait(900);
 
 // 6. TEEN
 cap("Two looks", "XENO, and TEEN: plain, OP-1 style, a band of toys that play along");

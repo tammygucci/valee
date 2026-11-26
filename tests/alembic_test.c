@@ -400,6 +400,35 @@ static void test_medium(void)
         ck(what, before && after && !amd.on && fabs(10.0 * log10(eout / ein)) < 6.0 &&
                      step < (f == 3u ? 6000 : 20000.0 * 2.0 * M_PI * 220.0 / FS * 1.2));
     }
+    /* at a real mix's level (a full song peaks at ~100 000 here, 4 x a voice): the saturation warms, never clips. A
+     * 220 Hz sine at 25 000 and 100 000, WEAR and WOW 0, BLEND full: its 3rd harmonic under -40 dB and -20 dB */
+    for (f = 0; f < 4u; f++) {
+        static double y[32768];
+        uint32_t amp, k;
+        for (amp = 25000u; amp <= 100000u; amp += 75000u) {
+            double t = 0, re1 = 0, im1 = 0, re3 = 0, im3 = 0, h;
+            char what[96];
+            alm_off();
+            song.g[G_AMED] = (int16_t)f; song.g[G_AMEDB] = 127; song.g[G_AWEAR] = 0; song.g[G_AWOW] = 0;
+            for (k = 0, b = 0; b < 2u * FS / CTL; b++) {
+                for (i = 0; i < CTL; i++, t += 1.0)
+                    L[i] = R[i] = (int32_t)(amp * sin(2.0 * M_PI * 220.0 * t / FS));
+                alm_medium(L, R, CTL);
+                if (b >= FS / CTL)
+                    for (i = 0; i < CTL && k < 32768u; i++)
+                        y[k++] = L[i];
+            }
+            for (k = 0; k < 32768u; k++) {
+                double w = 0.5 - 0.5 * cos(2.0 * M_PI * k / 32768.0), a1 = 2.0 * M_PI * 220.0 * k / FS;
+                re1 += y[k] * w * cos(a1); im1 += y[k] * w * sin(a1);
+                re3 += y[k] * w * cos(3.0 * a1); im3 += y[k] * w * sin(3.0 * a1);
+            }
+            h = 20.0 * log10(sqrt(re3 * re3 + im3 * im3) / sqrt(re1 * re1 + im1 * im1));
+            snprintf(what, sizeof what, "MEDIUM %s at a mix's %s level: the 3rd harmonic %.1f dB (< %d)", NM[f],
+                     amp > 50000u ? "loudest" : "usual", h, amp > 50000u ? -20 : -40);
+            ck(what, h < (amp > 50000u ? -20.0 : -40.0));
+        }
+    }
     alm_off();
     ui_power_on();
     go_title("ALEMBIC 3"); frame();

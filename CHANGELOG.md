@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.1
+
+- **ALEMBIC 3 (MEDIUM) fixed**: cassette, tape, VHS and vinyl clipped the whole song into distortion (their saturation
+  was set for a single sound, not a full mix, which runs about four times louder). Now they warm only the loudest
+  peaks, and the rest of the song passes clean. The flutter, VHS's drift and its dropouts are gentler too, and the
+  stage costs the FM-1 less.
+- **The installer page's videos** are filmed again with 1.0's sound, the feature tour first, each showing a main
+  feature (THE SPELL, GEN, SUMMON) before you press play.
+
 ## 1.0
 
 A new sound. Every synth engine, factory sound and drum kit in Vallée is now

@@ -34,7 +34,7 @@ cap("", "");
 wait(7200);
 if (teen) { d.down(B.HOME); wait(1000); d.up(B.HOME); wait(400); d.tap(B.OCTUP); wait(400); d.tap(B.HOME); wait(500); }
 d.turn(EN.ALGO, 2); wait(200);
-d.down(B.EDIT); wait(500); d.key(K.C5); wait(200); d.up(B.EDIT); wait(400);
+d.down(B.EDIT); wait(500); d.key(K.E5); wait(200); d.up(B.EDIT); wait(400);   // (SUMMON: EDIT + E5, the 14th engine key)
 d.tap(B.EDIT); wait(300);
 d.tap(B.PLAY); wait(300);
 if (!teen) {

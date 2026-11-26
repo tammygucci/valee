@@ -5,11 +5,12 @@
 # (tools/film/compose.py), encoded with ffmpeg:
 #   tour     web/brand/vallee_demo.mp4 + poster.jpg            (tools/film/film.mjs: GEN, the sounds, THE SPELL, ALEMBIC, TEEN)
 #   perform  web/brand/vallee_perform.mp4 + poster_perform.jpg (tools/film/perform.mjs: a song written, then played live)
-# Run from anywhere after the emulator's build: tools/film/make.sh [tour|perform|all] (default all). Writes build/film*/;
+#   summon   web/brand/vallee_summon.mp4 + poster_summon.jpg   (tools/film/summon.mjs: SUMMON, XENO)
+# Run from anywhere after the emulator's build: tools/film/make.sh [tour|perform|summon|all] (default all). Writes build/film*/;
 # copy the results into web/brand/ to publish them.
 set -e
 cd "$(dirname "$0")/../.."
-film() {   # name script out poster_second
+film() {   # name script out poster_caption poster_file: the poster 2.5 s into that caption (a main feature, not a moment)
     node --max-old-space-size=4096 "tools/film/$2" "$3"
     N=$(python3 -c "import json;print(json.load(open('$3/captions.json'))['frames'])")
     DUR=$(python3 -c "print($N/30)"); FO=$(python3 -c "print($N/30-2.5)")
@@ -18,12 +19,16 @@ film() {   # name script out poster_second
       -c:v libx264 -crf 16 -preset veryfast -pix_fmt yuv420p -tune animation -c:a aac -b:a 192k -movflags +faststart \
       -t "$DUR" "$3/$1.tmp.mp4"
     mv "$3/$1.tmp.mp4" "$3/$1.mp4"
-    ffmpeg -v error -y -ss "$4" -i "$3/$1.mp4" -frames:v 1 -vf scale=1280:720 -q:v 3 "$3/$5"
+    AT=$(python3 -c "import json,sys;c=json.load(open('$3/captions.json'))['caps'];print([f for f,t,s in c if t=='$4'][0]/30+2.5)")
+    ffmpeg -v error -y -ss "$AT" -i "$3/$1.mp4" -frames:v 1 -vf scale=1280:720 -q:v 3 "$3/$5"
     echo "film: $3/$1.mp4, $3/$5"
 }
 case "${1:-all}" in
-    tour|all) film vallee_demo film.mjs build/film 46 poster.jpg ;;
+    tour|all) film vallee_demo film.mjs build/film "Then you play it" poster.jpg ;;
 esac
 case "${1:-all}" in
-    perform|all) film vallee_perform perform.mjs build/film_perform 42 poster_perform.jpg ;;
+    perform|all) film vallee_perform perform.mjs build/film_perform "One press" poster_perform.jpg ;;
+esac
+case "${1:-all}" in
+    summon|all) film vallee_summon summon.mjs build/film_summon "The being arrives" poster_summon.jpg ;;
 esac
