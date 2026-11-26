@@ -332,11 +332,11 @@ async function editorMock() {
   const set = E.parse[E.CMD.SET](await rq(E.req.set(0, 3, 500)));
   ok(set.value === 127, "editor: SET clamps to the range");
   {
-    /* GLO > SYSTEM ROUT (G_ROUTE 14): MIDI IN CH1-6 (0, the default; CH1-4 before six tracks) / SEL (1); the id unchanged ((2.5) G_COUNT 28: the DELAY MODE; (Vallée) 36: ALEMBIC's eight) */
+    /* GLO > SYSTEM ROUT (G_ROUTE 14): MIDI IN CH1-6 (0, the default; CH1-4 before six tracks) / SEL (1); the id unchanged ((2.5) G_COUNT 28: the DELAY MODE; (Vallée) 36: ALEMBIC's eight; 40: ALEMBIC 3's four) */
     const rd = E.parse[E.CMD.DESC](await rq(E.req.desc(1, 14)));
     const r1 = E.parse[E.CMD.SET](await rq(E.req.set(1, 14, 5)));
     const r0 = E.parse[E.CMD.SET](await rq(E.req.set(1, 14, 0)));
-    ok(rd.label === "ROUTE" && rd.def === 0 && eq(rd.names, ["CH1-6", "SEL"]) && r1.value === 1 && r0.value === 0 && info.gcount === 36,
+    ok(rd.label === "ROUTE" && rd.def === 0 && eq(rd.names, ["CH1-6", "SEL"]) && r1.value === 1 && r0.value === 0 && info.gcount === 40,
       "editor: MIDI IN routing (ROUT CH1-6 / SEL, global id 14)");
   }
   {
@@ -348,7 +348,7 @@ async function editorMock() {
     const [d25, d26, d27] = await Promise.all(inert);
     ok(rd.label === "TYPE" && rd.def === 0 && eq(rd.names, ["ROOM", "SPRING", "HALL"]) && r1.value === 2 && r0.value === 0 &&
        d25.label === "MODE" && eq(d25.names, ["CHORUS", "FLANGER", "PHASER"]) && d26.label === "FEEDBACK" && d26.max === 127 &&
-       d27.label === "DLY MODE" && eq(d27.names, ["MONO", "STEREO", "PING"]) && d27.def === 1 && info.gcount === 36,
+       d27.label === "DLY MODE" && eq(d27.names, ["MONO", "STEREO", "PING"]) && d27.def === 1 && info.gcount === 40,
       "editor: REVERB TYPE (ROOM / SPRING / HALL, global id 24); (phase 9) CHORUS MODE, FEEDBACK (25, 26); (2.5) DLY MODE (27)");
   }
   const st = E.parse[E.CMD.STEP_SET](await rq(E.req.stepSet(5, { n: 2, notes: [60, 64], time: 0, flags: 1, vel: 100 })));

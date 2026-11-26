@@ -862,6 +862,87 @@ static void graph_alembic_teen(void)
         cv_text_in(cx - 28, cy + R + 8, 56, &AF_S, ALM_NAMES[k][f], b ? col : T_DIM, T_BG);
     }
 }
+/* (Vallée) GLO > ALEMBIC 3: the medium the mix plays off (alembic.c alm_medium), drawn in lines in the fifth colour
+ * (BLEND 0: DIM): CASST a cassette (its reels in the window), TAPE a reel-to-reel's two reels and the tape over the
+ * head, VHS a tape's shell (its label, its two hubs behind the window), VINYL a record (grooves, its label, the arm).
+ * While the song plays the reels turn and the record's sheen goes round (XENO, ANIM on; TEEN: still). Its name under
+ * it. Laid out by the canvas's height */
+static void md_frame(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t c)
+{
+    cv_rect(x, y, w, 1, c);
+    cv_rect(x, y + h - 1, w, 1, c);
+    cv_rect(x, y, 1, h, c);
+    cv_rect(x + w - 1, y, 1, h, c);
+}
+static void md_reel(int32_t cx, int32_t cy, int32_t r, uint32_t ph, uint16_t c)
+{
+    uint32_t k;
+    xe_ring(cx, cy, r, c);
+    xe_ring(cx, cy, r / 3 > 2 ? r / 3 : 2, c);
+    for (k = 0; k < 3u; k++) {                                        /* three spokes */
+        uint32_t a = ph + k * 0x55555555u;
+        int32_t r0 = r / 3 > 2 ? r / 3 : 2;
+        cv_line(cx + sine_i(a) * r0 / 32768, cy - sine_i(a + 0x40000000u) * r0 / 32768,
+                cx + sine_i(a) * (r - 2) / 32768, cy - sine_i(a + 0x40000000u) * (r - 2) / 32768, c);
+    }
+}
+static void graph_medium(void)
+{
+    static const char *const NAME[4] = {"CASSETTE", "TAPE MACHINE", "VHS", "VINYL"};
+    const int32_t H = (int32_t)cv_h, top = H >= 110 ? 24 : 6, bot = H - 18, u = bot - top, cx = 120;
+    const int32_t cy = top + u / 2;
+    uint32_t f = (uint32_t)clamp(song.g[G_AMED], 0, 3);
+    int32_t b = clamp(song.g[G_AMEDB], 0, 127);
+    uint16_t col = b ? T_TRK(4) : T_DIM, bg = UX_TEEN ? T_BG : T_SURF, dim = ux_mix(col, bg, 45);
+    uint32_t ph = !UX_TEEN && xe_anim() && b && song.playing ? ui.frame * 0x05000000u : 0u;
+    if (top > 6 && !UX_TEEN)
+        pg_text(12, 16, "THE MIX, PLAYED OFF IT", T_MID);
+    if (f == 0u || f == 2u) {                                         /* CASST, VHS: a shell */
+        int32_t w = f ? 168 : 150, h = w * (f ? 55 : 62) / 100, x0, y0, rr;
+        if (h > u) {
+            h = u;
+            w = h * 100 / (f ? 55 : 62);
+        }
+        x0 = cx - w / 2;
+        y0 = cy - h / 2;
+        md_frame(x0, y0, w, h, col);
+        if (f == 0u) {
+            rr = h * 15 / 100;
+            md_frame(x0 + 8, y0 + 6, w - 16, h * 58 / 100, dim);      /* the label */
+            md_frame(cx - w * 14 / 100, y0 + 6 + h * 29 / 100 - rr * 7 / 10, w * 28 / 100, rr * 14 / 10, dim);   /* window */
+            md_reel(x0 + w * 29 / 100, y0 + 6 + h * 29 / 100, rr, ph, col);
+            md_reel(x0 + w * 71 / 100, y0 + 6 + h * 29 / 100, rr, ph + 0x20000000u, col);
+            md_frame(x0 + w * 24 / 100, y0 + h - h * 20 / 100, w * 52 / 100, h * 20 / 100 + 1, dim);   /* the heads' edge */
+        } else {
+            rr = h * 16 / 100;
+            md_frame(cx - w * 30 / 100, y0 + 5, w * 60 / 100, h * 26 / 100, dim);   /* the label */
+            md_frame(x0 + w * 16 / 100, y0 + h * 42 / 100, w * 68 / 100, h * 40 / 100, dim);   /* the window */
+            md_reel(x0 + w * 31 / 100, y0 + h * 62 / 100, rr, ph, col);
+            md_reel(x0 + w * 69 / 100, y0 + h * 62 / 100, rr, ph + 0x20000000u, col);
+        }
+    } else if (f == 1u) {                                             /* TAPE: two reels, the tape over the head */
+        int32_t r = (u - 12) / 2 > 44 ? 44 : (u - 12) / 2, ry = cy - 6, d = r + 10;
+        md_reel(cx - d, ry, r, ph, col);
+        md_reel(cx + d, ry, r, ph + 0x2AAAAAAAu, col);
+        cv_rect(cx - 6, ry + r + 4, 12, 6, dim);                      /* the head */
+        cv_line(cx - d, ry + r, cx - 6, ry + r + 4, col);             /* the tape */
+        cv_line(cx + d, ry + r, cx + 6, ry + r + 4, col);
+    } else {                                                          /* VINYL: the record, its arm */
+        int32_t R = u / 2 > 52 ? 52 : u / 2, k;
+        for (k = R; k > R * 38 / 100; k -= 5)                          /* the grooves */
+            xe_ring(cx, cy, k, k == R ? col : dim);
+        xe_disc(cx, cy, R * 30 / 100, col);                            /* the label, its hole */
+        cv_rect(cx - 1, cy - 1, 2, 2, bg);
+        if (ph) {                                                     /* the sheen going round */
+            uint32_t a = ph;
+            cv_line(cx + sine_i(a) * (R * 40 / 100) / 32768, cy - sine_i(a + 0x40000000u) * (R * 40 / 100) / 32768,
+                    cx + sine_i(a) * (R - 2) / 32768, cy - sine_i(a + 0x40000000u) * (R - 2) / 32768, col);
+        }
+        xe_ring(cx + R + 16, cy - R + 6, 4, col);                     /* the arm: its pivot, onto the outer grooves */
+        cv_line(cx + R + 16, cy - R + 6, cx + R * 60 / 100, cy + R * 20 / 100, col);
+    }
+    cv_text_in(cx - 60, H - 4 - AF_S.asc, 120, &AF_S, NAME[f], b ? T_TEXT : T_DIM, bg);
+}
 static void graph_alembic(uint16_t c)
 {
     const int32_t H = (int32_t)cv_h, r = H - 40 > 75 ? 25 : (H - 40) / 3, cy = H - 18 - r, ny = cy - r - (r > 20 ? 18 : 12);

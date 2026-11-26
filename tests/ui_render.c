@@ -821,6 +821,7 @@ enum { S_HOME, S_HOME_IDLE, S_MESSAGE, S_MESSAGE_KEY, S_MESSAGE_NOFILE, S_PRESET
        S_GEN, S_GEN_PART, S_GEN_PARTS, S_GEN_FEEL, S_GEN_WRITTEN, S_GEN_STEELY, S_GEN_DEMARCO, S_GEN_CHORDS, S_GEN_CHORDS_AUTO, S_GEN_CHORDS_SONG,  /* (Vallée) GEN */
        S_BEAST, S_BEAST_LONG, S_BEAST_HOOD, S_BEAST_MUTED, S_WORLD,                                  /* (Vallée) the creature box */
        S_ALEM, S_ALEM_ON, S_ALEM2, S_ALEM2_DUST,                                                     /* (Vallée) GLO > ALEMBIC */
+       S_ALEM3, S_ALEM3_CASST, S_ALEM3_TAPE, S_ALEM3_VHS, S_ALEM3_VINYL,                               /* .. ALEMBIC 3 */
        S_MENU_FX, S_WORLD_FX,                                                                       /* (Vallée) MENU > FX, a key held */
        S_MOCK_HOME, S_MOCK_PRESETS, S_MOCK_SEQ, S_MOCK_DRUM, S_MOCK_MIXER, S_MOCK_DIALOG, S_MOCK_MENU, S_COUNT };
 static const char *const S_NAME[S_COUNT] = {"home", "home_idle", "message", "message_key", "message_nofile", "presets", "presets_nofav", "user",
@@ -858,7 +859,7 @@ static const char *const S_NAME[S_COUNT] = {"home", "home_idle", "message", "mes
     "follow", "follow_scale", "follow_fit", "follow_off", "follow_wait", "free_take", "free_take_turned", "dly_mono", "dly_ping", "fx_delay", "fx_reverb", "fx_sends", "pattern_64", "song_strip", "project_new",
     "project_clear", "confirm_clear_song", "confirm_clear_trks", "insert_filter", "insert_filter_hp", "chord_strum",
     "chord_strum_alt", "shift_song", "hint_free_take", "gen", "gen_part", "gen_parts", "gen_feel", "gen_written",
-    "gen_steely", "gen_demarco", "gen_chords", "gen_chords_auto", "gen_chords_song", "beast", "beast_long", "beast_hood", "beast_muted", "world", "alembic", "alembic_on", "alembic_2", "alembic_2_dust", "menu_fx", "world_fx", "mock_home", "mock_presets", "mock_seq", "mock_drum", "mock_mixer", "mock_dialog", "mock_menu"};
+    "gen_steely", "gen_demarco", "gen_chords", "gen_chords_auto", "gen_chords_song", "beast", "beast_long", "beast_hood", "beast_muted", "world", "alembic", "alembic_on", "alembic_2", "alembic_2_dust", "alembic_3", "alembic_3_casst", "alembic_3_tape", "alembic_3_vhs", "alembic_3_vinyl", "menu_fx", "world_fx", "mock_home", "mock_presets", "mock_seq", "mock_drum", "mock_mixer", "mock_dialog", "mock_menu"};
 
 /* the scenes of the UI design screens: the state the UI-redesign
  * prototype drew them from (its setup(): two pattern tracks, the drum pattern on track 4, a synthetic scope),
@@ -1789,6 +1790,22 @@ static void setup(int s)
         go_title(s == S_ALEM2 || s == S_ALEM2_DUST ? "ALEMBIC 2" : "ALEMBIC");
         if (s != S_ALEM) {
             ui.hot_col = s == S_ALEM_ON ? 1 : 3;
+            ui.hot_t = 30;
+        }
+        break;
+    case S_ALEM3: case S_ALEM3_CASST: case S_ALEM3_TAPE: case S_ALEM3_VHS: case S_ALEM3_VINYL:
+        /* ((Vallée) GLO > ALEMBIC 3: off (the cassette, DIM); each medium on, playing (the reels a turn on), KNOB 2 hot */
+        song.g[G_AMED] = s == S_ALEM3 ? 0 : (int16_t)(s - S_ALEM3_CASST);
+        song.g[G_AMEDB] = s == S_ALEM3 ? 0 : 80;
+        song.g[G_AWEAR] = 64;
+        song.g[G_AWOW] = 64;
+        if (s != S_ALEM3) {
+            song.playing = 1;
+            ui.frame = 7;
+        }
+        go_title("ALEMBIC 3");
+        if (s != S_ALEM3) {
+            ui.hot_col = 1;
             ui.hot_t = 30;
         }
         break;

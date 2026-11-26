@@ -79,6 +79,7 @@ static const char *const N_ADRV[] = {"SOFT", "HARD", "FOLD", "FUZZ"};     /* (Va
 static const char *const N_AMOV[] = {"PHASR", "FLANG", "CHOR", "WOBBL"};
 static const char *const N_ASPC[] = {"ECHO", "VERB", "BOTH"};
 static const char *const N_AGRN[] = {"WOW", "DUST", "CRUSH", "FILTR"};
+static const char *const N_AMED[] = {"CASST", "TAPE", "VHS", "VINYL"};   /* (Vallée) ALEMBIC 3's MEDIUM */
 static const char *const N_GO[] = {"--", "GO"};
 static const char *const N_SLCR[] = {"OFF", "GATE", "STUT"};             /* SL_OFF .. SL_STUT (slicer.c) */
 static const char *const N_SLDIV[] = {"1/8", "1/16", "1/32", "8T", "16T", "32T"};   /* SL_DEN */
@@ -262,6 +263,10 @@ static const param_desc_t GP[G_COUNT] = {
     [G_ASPCB] = PD("BLEND", F_PCT, 0, 127, 0),
     [G_AGRN] = PE("GRAIN", N_AGRN, 0),
     [G_AGRNB] = PD("BLEND", F_PCT, 0, 127, 0),
+    [G_AMED] = PE("MEDIUM", N_AMED, 0),             /* (Vallée) ALEMBIC 3 (alembic.c alm_medium) */
+    [G_AMEDB] = PD("BLEND", F_PCT, 0, 127, 0),
+    [G_AWEAR] = PD("WEAR", F_PCT, 0, 127, 64),
+    [G_AWOW] = PD("WOW", F_PCT, 0, 127, 64),
 };
 
 /* (Skiff 1.3, from Felucca 1.5) the INSERT's A B C as its TYPE means them (TP's ranges and defaults): the drives DRIVE
@@ -563,7 +568,8 @@ enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_FX, GR_ROLL, GR_
        GR_FOLLOW,                  /* (2.1) SCL > FOLLOW: the chord it follows, as CHORD's (ui_graph.c graph_follow) */
        GR_FXDLY, GR_FXREV,         /* (2.5) FX > DELAY, REVERB: the track's send beside the bus's own (page_desc) */
        GR_GEN,                     /* (Vallée) HOME > GEN: the song generator, a sheet (vgen.c) */
-       GR_ALEM };                  /* (Vallée) GLO > ALEMBIC: the four vessels (ui_pgraph.c graph_alembic) */
+       GR_ALEM,
+       GR_ALEM3 };                 /* (Vallée) GLO > ALEMBIC 3: the medium, drawn (ui_pgraph.c graph_medium) */                  /* (Vallée) GLO > ALEMBIC: the four vessels (ui_pgraph.c graph_alembic) */
 
 typedef struct {
     const char *title;
@@ -627,6 +633,7 @@ static const page_t PAGES[] = {
     {"GLOBAL", FAM_GLO, SC_GLOBAL, GR_GLOBAL, {G_BPM, G_SWING, 0xFF, 0xFF}},   /* ((U3, R8) CLK TUNE: the MENU's) */
     {"ALEMBIC", FAM_GLO, SC_GLOBAL, GR_ALEM, {G_ADRV, G_ADRVB, G_AMOV, G_AMOVB}},     /* (Vallée) the whole mix through */
     {"ALEMBIC 2", FAM_GLO, SC_GLOBAL, GR_ALEM, {G_ASPC, G_ASPCB, G_AGRN, G_AGRNB}},   /* DRIVE MOTION SPACE GRAIN */
+    {"ALEMBIC 3", FAM_GLO, SC_GLOBAL, GR_ALEM3, {G_AMED, G_AMEDB, G_AWEAR, G_AWOW}},   /* (Vallée) the mix off a medium */
     {"PRESETS", FAM_SAVE, SC_GLOBAL, GR_BROWSE, {0xFF, 0xFF, 0xFF, 0xFF}},   /* browser: PRESETS knob / KNOB 1 */
     {"USER", FAM_SAVE, SC_GLOBAL, GR_USER, {0xFF, 0xFF, 0xFF, 0xFF}},       /* user presets: SLOT LOAD ERASE SAVE */
     {"PATTERNS", FAM_SAVE, SC_GLOBAL, GR_BANK, {0xFF, 0xFF, 0xFF, 0xFF}},   /* (Skiff phase 5) the pool: PATTERN LEN USED CLEAR */

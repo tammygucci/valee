@@ -33,6 +33,7 @@ typedef struct {
     uint8_t sty;                                /* .. the flavour sending */
     uint32_t seed, wph, fph;                    /* DUST's random; WOW's wow and flutter */
     int32_t ck;                                 /* DUST's pop */
+    uint16_t lvl_md;                            /* MEDIUM's likewise (amd: the pool) */
     uint16_t lvl[AS_N];                         /* each stage's, the last block's peak of what it changed (the
                                                  * vessels, ui_pgraph.c graph_alembic) */
 } alm_t;
@@ -179,12 +180,193 @@ static __attribute__((noinline)) void alm_space(const int32_t *ml, const int32_t
     alm.lvl[AS_SPC] = (uint16_t)clamp(pk >> 3, 0, 65535);
 }
 
+/* ---- (Vallée) MEDIUM (GLO > ALEMBIC 3): the whole mix as heard off an old medium, last (after GRAIN, the wet in):
+ *   CASST  a cassette: wow and flutter, its top rolled off (two poles at 9 kHz), soft saturation, hiss, a little
+ *          narrower, its level breathing with the wow
+ *   TAPE   a reel-to-reel machine: barely a wow, a fast faint flutter, the tape's warmth (more saturation) and its
+ *          head bump (+~3 dB round 110 Hz), the top at 16 kHz, faint hiss
+ *   VHS    a VHS's linear track: a deep wow drifting (the transport's), a warble, the band 90 Hz .. 7 kHz (two poles),
+ *          hiss, nearly mono, dropouts (WEAR)
+ *   VINYL  a record: its warp (0.55 Hz, 33 rpm), the top at 13 kHz, crackle and pops, a low rumble
+ * BLEND: how much of all that (the wow's depth, the tone, the saturation, the noise, the width, the dropouts: each
+ * scaled, never a dry/wet mix, which would comb with the delayed tape). WEAR: the noise, the crackle, the dropouts.
+ * WOW: the wow and flutter's depth (64 as the medium is, 127 twice). The tape runs 6 ms behind: switched on, its
+ * delay winds up from 0 (0.8 s, a tape starting: a little pitch under), off it winds back down, then nothing runs
+ * (the mix bit for bit). A medium changed: BLEND down, then the other up (the delay stays). State in the pool (4 KiB
+ * of lines: .bss has none to spare) */
+#define MD_LEN 512u                                     /* the tape's line, samples (11.6 ms; a power of 2) */
+#define MD_BASE (265u << 16)                            /* the tape's delay, Q16 samples (6 ms) */
+typedef struct {
+    int32_t line[2][MD_LEN];
+    uint32_t wp, base;                                  /* the next write; the delay now (Q16, to MD_BASE or 0) */
+    uint32_t wph, fph, seed;                            /* the wow's and flutter's phases; the noise */
+    int32_t a;                                          /* the medium's share now, Q15 (BLEND, gliding) */
+    uint8_t type, on;                                   /* the medium running; the stage running */
+    int32_t lp1[2], lp2[2], hp[2], bump[2], rum, ck;    /* the tone's filters; the rumble; a pop dying */
+    int32_t drift, dto, drop, dtgt;                     /* VHS: its drift (Q16 samples) and target; the dropout's gain */
+    uint32_t dcnt, tcnt;                                /* .. samples left of a dropout; to the drift's next target */
+    uint16_t lvl;                                       /* the last block's peak of what it changed (the screen) */
+} amd_t;
+static amd_t amd __attribute__((section(".pool")));
+typedef struct {
+    uint32_t wow, flut;                                 /* the rates (phase per sample) */
+    int32_t wd, fd;                                     /* their depths at WOW 64, Q16 samples */
+    uint16_t lp, hp;                                    /* one-pole coefficients, Q16 */
+    uint8_t poles, drv;                                 /* low-pass poles (1, 2); saturation's drive, 16ths */
+    int16_t hiss, width;                                /* hiss at WEAR 127 (Q15 scale); the width at full, Q15 */
+} md_t;
+#define MD_HZ(f) ((uint32_t)((f) / 44100.0 * 4294967296.0))
+#define MD_MS(m) ((int32_t)((m) * 44.1 * 65536.0))
+static const md_t MD[4] = {
+    {MD_HZ(0.7), MD_HZ(8.0), MD_MS(0.45), MD_MS(0.06), 47356, 419, 2, 20, 110, 27000},   /* CASST */
+    {MD_HZ(0.25), MD_HZ(14.0), MD_MS(0.12), MD_MS(0.02), 58830, 233, 1, 26, 34, 32767},  /* TAPE */
+    {MD_HZ(0.45), MD_HZ(3.2), MD_MS(0.9), MD_MS(0.12), 41362, 835, 2, 18, 140, 8000},    /* VHS */
+    {MD_HZ(0.55), 0, MD_MS(0.28), 0, 55254, 205, 1, 16, 22, 30000},                       /* VINYL */
+};
+static inline int32_t md_noise(void)
+{
+    amd.seed = amd.seed * 1664525u + 1013904223u;
+    return (int32_t)amd.seed >> 16;                     /* -32768 .. 32767 */
+}
+static __attribute__((noinline)) void alm_medium(int32_t *ml, int32_t *mr, uint32_t n)
+{
+    uint32_t f = alm_f(G_AMED, 4u), i, c;
+    int32_t ta = alm_b(G_AMEDB) * 258, wear = alm_b(G_AWEAR), wow = alm_b(G_AWOW), pk = 0;
+    const md_t *m;
+    if (!amd.on) {
+        if (!ta) {
+            alm.lvl_md = 0;
+            return;                                     /* dry: bit for bit */
+        }
+        memset(&amd, 0, sizeof amd);
+        amd.on = 1;
+        amd.type = (uint8_t)f;
+        amd.seed = 0x7A9Eu;
+        amd.drop = amd.dtgt = 32767;
+    }
+    if (f != amd.type && !amd.a) {                      /* faded out: the other medium from rest */
+        amd.type = (uint8_t)f;
+        memset(amd.lp1, 0, sizeof amd.lp1); memset(amd.lp2, 0, sizeof amd.lp2);
+        memset(amd.hp, 0, sizeof amd.hp); memset(amd.bump, 0, sizeof amd.bump);
+        amd.rum = amd.ck = amd.drift = amd.dto = 0;
+        amd.drop = amd.dtgt = 32767;
+        amd.dcnt = 0;
+    }
+    if (f != amd.type)
+        ta = 0;                                         /* (the one running fades out first) */
+    m = &MD[amd.type];
+    for (i = 0; i < n; i++) {
+        int32_t a, d, hl, ns[2], pop = 0, x[2], y[2], g;
+        uint32_t q;
+        amd.a += clamp(ta - amd.a, -SL_SLOPE, SL_SLOPE);
+        a = amd.a;
+        if (ta)                                         /* the tape winding up (on) or down (off, BLEND faded) */
+            amd.base = amd.base + 512u < MD_BASE ? amd.base + 512u : MD_BASE;
+        else if (!a)
+            amd.base = amd.base > 512u ? amd.base - 512u : 0u;
+        /* the read: the delay, the wow and the flutter (x WOW / 64, x the share), VHS's drift */
+        d = (int32_t)amd.base;
+        if (a) {
+            int32_t w = mulq16((int32_t)(((int64_t)osc_sine(amd.wph) * m->wd) >> 15) * wow / 64, (uint32_t)a << 1) +
+                        mulq16((int32_t)(((int64_t)osc_sine(amd.fph) * m->fd) >> 15) * wow / 64, (uint32_t)a << 1);
+            if (amd.type == 2u) {                       /* VHS: the transport drifting, a new place every ~0.4 s */
+                if (!amd.tcnt--) {
+                    amd.tcnt = 12000u + ((uint32_t)md_noise() & 8191u);
+                    amd.dto = md_noise() * (MD_MS(0.5) >> 15) * wow / 64;
+                }
+                amd.drift += (amd.dto - amd.drift) >> 12;
+                w += mulq16(amd.drift, (uint32_t)a << 1);
+            }
+            d += w;
+            if (d < 0)
+                d = 0;
+        }
+        amd.wph += m->wow;
+        amd.fph += m->flut;
+        /* the noise: hiss (both sides their own), VINYL's crackle and rumble, all x WEAR x the share */
+        hl = m->hiss * wear / 127;
+        ns[0] = ns[1] = 0;
+        if (a && hl) {
+            ns[0] = mulq16((md_noise() * hl) >> 15, (uint32_t)a << 1);
+            ns[1] = mulq16((md_noise() * hl) >> 15, (uint32_t)a << 1);
+        }
+        if (amd.type == 3u && a) {
+            uint32_t r = (uint32_t)md_noise() & 0xFFFFu;
+            if (wear && r < (uint32_t)wear / 4u + 1u)   /* ~0..19 pops a second */
+                amd.ck = md_noise() * (40 + wear * 2) / 2048;   /* (up to ~-17 dBFS) */
+            pop = mulq16(amd.ck, (uint32_t)a << 1);
+            amd.ck = amd.ck * 5 / 8;
+            amd.rum += mulq16(md_noise() - amd.rum, 186u); /* (20 Hz) */
+            pop += mulq16(amd.rum * wear / 512, (uint32_t)a << 1);   /* (~-45 dBFS) */
+        }
+        /* VHS: a dropout now and then (WEAR): the level dips to a third for 30 .. 110 ms */
+        if (amd.type == 2u && a && wear) {
+            if (!amd.dcnt) {
+                if (((uint32_t)md_noise() & 0x3FFFFu) < (uint32_t)wear / 32u) {   /* (WEAR 127: ~0.7 a second) */
+                    amd.dcnt = 1300u + ((uint32_t)md_noise() & 3071u);
+                    amd.dtgt = 11000;
+                } else
+                    amd.dtgt = 32767;
+            } else if (!--amd.dcnt)
+                amd.dtgt = 32767;
+        } else
+            amd.dtgt = 32767;
+        amd.drop += clamp(amd.dtgt - amd.drop, -160, 160);
+        for (c = 0; c < 2u; c++) {
+            int32_t v = (c ? mr[i] : ml[i]) + ns[c] + pop, s, r0, r1, fr, z, t;
+            /* the saturation (tanh, drive in 16ths), the share of it */
+            s = softclip(clamp(v * m->drv / 16, -2000000, 2000000)) * 16 / m->drv;
+            v += mulq16(s - v, (uint32_t)a << 1);
+            if (amd.type == 1u) {                       /* TAPE: the head bump */
+                amd.bump[c] += mulq16(v - amd.bump[c], 1019u);
+                v += mulq16(amd.bump[c] * 2 / 5, (uint32_t)a << 1);
+            }
+            amd.line[c][amd.wp] = v;
+            q = (uint32_t)d;
+            r0 = (int32_t)(amd.wp - (q >> 16)) & (int32_t)(MD_LEN - 1u);
+            r1 = (r0 - 1) & (int32_t)(MD_LEN - 1u);
+            fr = (int32_t)((q >> 1) & 0x7FFFu);
+            z = amd.line[c][r0] + (int32_t)(((int64_t)(amd.line[c][r1] - amd.line[c][r0]) * fr) >> 15);
+            /* the tone: the low-pass (1 or 2 poles), the low cut; the share of it */
+            amd.lp1[c] += mulq16(z - amd.lp1[c], m->lp);
+            t = amd.lp1[c];
+            if (m->poles == 2u) {
+                amd.lp2[c] += mulq16(t - amd.lp2[c], m->lp);
+                t = amd.lp2[c];
+            }
+            amd.hp[c] += mulq16(t - amd.hp[c], m->hp);
+            t -= amd.hp[c];
+            z += mulq16(t - z, (uint32_t)a << 1);
+            if (amd.type == 0u)                         /* CASST: the level breathing with the wow (~0.4 dB) */
+                z -= mulq16(z, (uint32_t)((osc_sine(amd.wph) + 32768) * a >> 15) * wear / 1270u);
+            y[c] = mulq16(z, (uint32_t)amd.drop << 1);
+            x[c] = c ? mr[i] : ml[i];
+        }
+        amd.wp = (amd.wp + 1u) & (MD_LEN - 1u);
+        /* the width: the side x (1 - (1 - width) x the share) */
+        g = 32768 - mulq16(32768 - m->width, (uint32_t)a << 1);
+        {
+            int32_t mid = (y[0] + y[1]) >> 1, side = mulq16((y[0] - y[1]) >> 1, (uint32_t)g << 1);
+            ml[i] = mid + side;
+            mr[i] = mid - side;
+        }
+        for (c = 0; c < 2u; c++) {
+            int32_t e = (c ? mr[i] : ml[i]) - x[c];
+            e = e < 0 ? -e : e;
+            pk = e > pk ? e : pk;
+        }
+    }
+    alm.lvl_md = (uint16_t)clamp(pk >> 3, 0, 65535);
+    if (!ta && !amd.a && !amd.base)
+        amd.on = 0;                                     /* wound down: nothing runs from the next block */
+}
+
 /* is any stage on or fading (mix_block: else nothing at all) */
 static inline int alm_pre_on(void)
 {
     return (song.g[G_ADRVB] | song.g[G_AMOVB] | song.g[G_ASPCB]) || alm.s[0][0].w || alm.s[1][0].w || alm.sw;
 }
-static inline int alm_post_on(void) { return song.g[G_AGRNB] || alm.s[2][0].w; }
+static inline int alm_post_on(void) { return song.g[G_AGRNB] || alm.s[2][0].w || song.g[G_AMEDB] || amd.on; }
 
 /* before the buses: DRIVE, MOTION on the dry mix, then SPACE's sends of it */
 static __attribute__((noinline)) void alm_pre(int32_t *ml, int32_t *mr, int32_t *sd, int32_t *se, int32_t *sr, uint32_t n)
@@ -215,6 +397,7 @@ static __attribute__((noinline)) void alm_post(int32_t *ml, int32_t *mr, uint32_
         pp[2] = 0;
     }
     alm_stage(AS_GRN, ALM_GRN_T[f], pp, ins_mixq(f == 2u ? b * 2 : b * 4), b, ml, mr, n);
+    alm_medium(ml, mr, n);                              /* ((Vallée) MEDIUM: last, the mix off its tape or record */
 }
 
 /* mix_block's calls (the audio ISR's: a call each, the tests and the work here, out of its loops): before the buses on

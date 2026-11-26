@@ -1209,6 +1209,8 @@ static void draw_columns(void)
         card_span_of(d);
         if (cur_page()->graph == GR_ALEM)               /* ((Vallée) ALEMBIC: each stage's two cards in its colour) */
             card_tint = (int8_t)((cur_page()->id[0] == G_ADRV ? 0 : 2) + c / 2u);
+        if (cur_page()->graph == GR_ALEM3)              /* ((Vallée) ALEMBIC 3: its cards in the medium's colour */
+            card_tint = 4;
         draw_column(c, (cur_page()->graph == GR_LANES || cur_page()->graph == GR_LMIX) && c == 1u ? "LEVEL" : d->label,
                     val, unit,                          /* ((phase 9) TUNE DECAY; (2.0) LANE MIX's PAN) */
                     card_dead(cur_page(), c) ? VR_DIM : VR_LIVE,

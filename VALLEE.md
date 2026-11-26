@@ -17,7 +17,8 @@ SLICE engine is left out** (see [Room on the FM-1](#room-on-the-fm-1)). On top o
 - **SUMMON**: an ambient engine of its own: on its EDIT page any key starts a ceremony that calls a being, different
   every time, which plays its own part in the song's chords and grows over the song, shown as SUMMONER on XENO and AURA on TEEN. One in fifty is a demon, one in fifty an angel.
 - **ALEMBIC**: the whole mix through four effects in a row, DRIVE, MOTION, SPACE and GRAIN, each with a flavour and a
-  BLEND, on two GLO pages drawn as the Alchemist's four vessels.
+  BLEND, on two GLO pages drawn as the Alchemist's four vessels; a third page, MEDIUM, plays the whole mix off a
+  cassette, a tape machine, a VHS tape or a record.
 
 Vallée's first start sets the look it is made for, once, on a new unit and over Skiff's settings alike: THEME XENO,
 LARGE OFF (its big cards hide the deck and the creatures), ANIM ON, PLAYHEAD THEME, BPM LOCK ON (SELECT on HOME opens
@@ -42,7 +43,7 @@ Oberheim or Roland.
 
 ## ALEMBIC: the whole mix through four vessels
 
-Tap **GLO** past GLOBAL: **ALEMBIC** and **ALEMBIC 2**. The whole mix (every track, after its own effects) runs
+Tap **GLO** past GLOBAL: **ALEMBIC**, **ALEMBIC 2** and **ALEMBIC 3**. The whole mix (every track, after its own effects) runs
 through four stages, always in this order, like a liquid poured from vessel to vessel:
 
 | Stage | Flavours (the first knob) | What it does |
@@ -70,6 +71,22 @@ through four stages, always in this order, like a liquid poured from vessel to v
   mix to what the tracks already send there.
 - Changing a flavour fades the old one out and the new one in (a few milliseconds), so turning KNOB 1 or 3 while
   playing doesn't click.
+**ALEMBIC 3: MEDIUM.** The whole mix as if played back off an old medium. It comes last, after GRAIN.
+
+| Page | K1 | K2 | K3 | K4 |
+|---|---|---|---|---|
+| ALEMBIC 3 | MEDIUM | BLEND | WEAR | WOW |
+
+- **CASST**: a cassette. Wow and flutter, the top end rolled off, soft saturation, hiss, a little narrower.
+- **TAPE**: a reel-to-reel machine. Barely any wow, the tape's warmth and low-end bump, a faint hiss.
+- **VHS**: a VHS tape's sound. A deep, drifting warble, a narrow band, nearly mono, dropouts now and then.
+- **VINYL**: a record. Its slow warp, crackle and pops, a low rumble.
+
+**BLEND** is how much of all of it you hear (0: off, the mix exactly as without it). **WEAR** is how worn the medium
+is: hiss, crackle and dropouts (50% as the medium is). **WOW** is how much its speed wanders (50% as the medium is, 100%
+twice that). Switched on, the tape winds up to speed in under a second, and back down when switched off. The page draws
+the medium; its reels turn (the record's sheen goes round) while the song plays.
+
 - **Saved with the project.** Songs made before ALEMBIC open with it off, and a Vallée project still opens on Skiff
   (which ignores these settings).
 - Most of it is Skiff's own effects reused (the INSERT's shapers, sweeps, CRUSH and FILTR, the FX layer's VINYL
@@ -557,8 +574,8 @@ The ABOUT page and its QR point at this repo (`ui_menu.c`); a fork of your own: 
 | `firmware/src/ui_xeno.c` | XENO's deck and lanes; the creature box |
 | `firmware/src/ui_beast.c` | the creatures: their parts and how a sound picks them |
 | `firmware/src/ui_world.c` | THE SPELL: the song's map, the Alchemist, the figure |
-| `firmware/src/alembic.c` | ALEMBIC: the four stages on the mix (fx.c `mix_block` calls it) |
-| `firmware/src/ui_pgraph.c` `graph_alembic` | ALEMBIC's four vessels |
+| `firmware/src/alembic.c` | ALEMBIC: the four stages and MEDIUM on the mix (fx.c `mix_block` calls it) |
+| `firmware/src/ui_pgraph.c` `graph_alembic`, `graph_medium` | ALEMBIC's four vessels; ALEMBIC 3's medium |
 | `tests/ui_test.c` `test_gen`, `test_beasts`, `test_world` | GEN's tests; the creatures (all different) and the box; THE SPELL |
 | `tests/vallee_stress.c` | the stress test: GEN fuzzed, a monkey on the whole UI, the creatures (ASan + UBSan) |
 | `tests/alembic_test.c` | ALEMBIC's tests |

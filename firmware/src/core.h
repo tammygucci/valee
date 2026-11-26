@@ -195,6 +195,8 @@ enum {                          /* global parameters */
     G_AMOV, G_AMOVB,            /* and its BLEND (0: the stage off, the mix bit for bit as before): DRIVE, MOTION, SPACE, */
     G_ASPC, G_ASPCB,            /* GRAIN. GSID 28 .. 35: SKF4 holds them by GSID (a project of before: their defaults, */
     G_AGRN, G_AGRNB,            /* all off; Skiff skips the ids it does not know) */
+    G_AMED, G_AMEDB,            /* (Vallée) GLO > ALEMBIC 3: MEDIUM (CASST TAPE VHS VINYL) and its BLEND (0 off), WEAR, WOW */
+    G_AWEAR, G_AWOW,            /* (alembic.c alm_medium). GSID 36 .. 39, as the others */
     G_COUNT
 };
 enum { DM_MONO, DM_STEREO, DM_PING };   /* G_DMODE */

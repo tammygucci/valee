@@ -1764,6 +1764,8 @@ static uint32_t graph_signature(void)
     if (pg->graph == GR_ALEM && xe_anim() && !UX_TEEN && /* ((Vallée) ALEMBIC: the liquid moving, a vessel on */
         (song.g[G_ADRVB] | song.g[G_AMOVB] | song.g[G_ASPCB] | song.g[G_AGRNB]))
         h ^= (ui.frame / 2u + 1u) * 2654435761u + (uint32_t)song.playing;
+    if (pg->graph == GR_ALEM3 && xe_anim() && !UX_TEEN && song.g[G_AMEDB] && song.playing)   /* ((Vallée) the reels turning */
+        h ^= (ui.frame + 1u) * 2654435761u;
     if (pg->graph == GR_VOICE2) {                    /* (Skiff U5) the voices sounding, the next one */
         for (i = 0; i < NVOICE; i++)
             h = (h ^ t->v[i].active << i) * 16777619u;
@@ -2927,6 +2929,10 @@ static void draw_graph(void)
         case GR_ALEM:                                /* ((Vallée) GLO > ALEMBIC: the four vessels) */
             cv_oy = 0;
             graph_alembic(c);
+            break;
+        case GR_ALEM3:                               /* ((Vallée) GLO > ALEMBIC 3: the medium) */
+            cv_oy = 0;
+            graph_medium();
             break;
         case GR_VOICE:
             cv_oy = 0;

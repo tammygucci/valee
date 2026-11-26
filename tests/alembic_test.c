@@ -37,7 +37,10 @@ static void alm_off(void)
     uint32_t g;
     for (g = G_ADRV; g <= G_AGRNB; g++)
         song.g[g] = 0;
+    song.g[G_AMED] = song.g[G_AMEDB] = 0;               /* (MEDIUM: ALEMBIC 3) */
+    song.g[G_AWEAR] = song.g[G_AWOW] = 64;
     memset(&alm, 0, sizeof alm);
+    memset(&amd, 0, sizeof amd);
     alm.seed = 0x5EEDu;
 }
 
@@ -349,6 +352,87 @@ static void test_pages(void)
     alm_off();
 }
 
+/* ---------------------------------------------- 7: ALEMBIC 3, MEDIUM --- */
+/* each medium on two tones (220 Hz left, 330 Hz right), switched on at 0.5 s and off at 2 s: before and after it the mix
+ * bit for bit, the stage at rest after (wound down); on: the level within 6 dB, no sample step past the tones' own
+ * x1.2 (VINYL: its pops); the page, its knobs, a project keeping it, an older project's globals loading it off */
+static void test_medium(void)
+{
+    static const char *const NM[4] = {"CASST", "TAPE", "VHS", "VINYL"};
+    int32_t L[CTL], R[CTL], L0[CTL], R0[CTL];
+    uint32_t f, b, i;
+    int ok;
+    for (f = 0; f < 4u; f++) {
+        int32_t step = 0, prev = 0;
+        double ein = 0, eout = 0, t = 0;
+        int before = 1, after = 1;
+        char what[96];
+        alm_off();
+        song.g[G_AMED] = (int16_t)f;
+        for (b = 0; b < 3u * FS / CTL; b++) {
+            uint32_t s0 = b * CTL;
+            if (s0 >= FS / 2u && s0 < FS / 2u + CTL)
+                song.g[G_AMEDB] = 100;
+            if (s0 >= 2u * FS && s0 < 2u * FS + CTL)
+                song.g[G_AMEDB] = 0;
+            for (i = 0; i < CTL; i++, t += 1.0) {
+                L0[i] = L[i] = (int32_t)(20000.0 * sin(2.0 * M_PI * 220.0 * t / FS));
+                R0[i] = R[i] = (int32_t)(14000.0 * sin(2.0 * M_PI * 330.0 * t / FS));
+            }
+            alm_medium(L, R, CTL);
+            for (i = 0; i < CTL; i++) {
+                int32_t d = L[i] - prev;
+                prev = L[i];
+                if (b && abs(d) > step)
+                    step = abs(d);
+                if (s0 < FS / 2u && (L[i] != L0[i] || R[i] != R0[i]))
+                    before = 0;
+                if (s0 > FS * 29u / 10u && (L[i] != L0[i] || R[i] != R0[i]))
+                    after = 0;
+                if (s0 > FS && s0 < 2u * FS) {
+                    ein += (double)L0[i] * L0[i];
+                    eout += (double)L[i] * L[i];
+                }
+            }
+        }
+        snprintf(what, sizeof what, "MEDIUM %s: off bit for bit, on and off with no click, level %+.1f dB, at rest after",
+                 NM[f], 10.0 * log10(eout / ein));
+        ck(what, before && after && !amd.on && fabs(10.0 * log10(eout / ein)) < 6.0 &&
+                     step < (f == 3u ? 6000 : 20000.0 * 2.0 * M_PI * 220.0 / FS * 1.2));
+    }
+    alm_off();
+    ui_power_on();
+    go_title("ALEMBIC 3"); frame();
+    ok = cur_page()->graph == GR_ALEM3 && cur_page()->fam == FAM_GLO && cur_page()->id[0] == G_AMED &&
+         cur_page()->id[1] == G_AMEDB && cur_page()->id[2] == G_AWEAR && cur_page()->id[3] == G_AWOW;
+    turn(EN_K1, 2);
+    turn(EN_K2, 30);
+    ok &= song.g[G_AMED] == 2 && song.g[G_AMEDB] == 30;
+    ok &= str_eq(GP[G_AMED].label, "MEDIUM") && str_eq(GP[G_AWEAR].label, "WEAR") && str_eq(GP[G_AWOW].label, "WOW") &&
+          GP[G_AMEDB].def == 0 && GP[G_AWEAR].def == 64 && GP[G_AWOW].def == 64;
+    ck("the page ALEMBIC 3: MEDIUM BLEND WEAR WOW, on GLO, off by default", ok);
+    song.g[G_AMED] = 3; song.g[G_AMEDB] = 77; song.g[G_AWEAR] = 99; song.g[G_AWOW] = 12;
+    project_save(1);
+    alm_off();
+    project_load(1);
+    ck("a project keeps MEDIUM, BLEND, WEAR, WOW",
+       song.g[G_AMED] == 3 && song.g[G_AMEDB] == 77 && song.g[G_AWEAR] == 99 && song.g[G_AWOW] == 12);
+    {   /* the globals of before (36: ALEMBIC 1 and 2): MEDIUM off, WEAR and WOW their defaults */
+        uint8_t rec[PROJ_STORE4];
+        int16_t g[G_COUNT];
+        uint32_t n;
+        for (n = 0; n < G_COUNT; n++)
+            g[n] = song.g[n];
+        gsid_put(rec, g);
+        rec[0] = 36;
+        for (n = 0; n < G_COUNT; n++)
+            g[n] = GP[n].def;
+        ck("  an older project (36 globals): MEDIUM off",
+           gsid_get(g, rec, sizeof rec) == 1u + 2u * 36u && g[G_AMEDB] == 0 && g[G_AWEAR] == 64 && g[G_AWOW] == 64);
+    }
+    alm_off();
+}
+
 /* ------------------------------------------------------------------ 6 --- */
 static double ns_of(int which)                          /* 0: ALEMBIC, every stage on; 1: six INSERTs */
 {
@@ -404,6 +488,7 @@ int main(void)
     test_glide();
     test_space();
     test_pages();
+    test_medium();
     test_cost();
     if (bad) {
         printf("alembic: %d FAILED\n", bad);

@@ -2284,6 +2284,8 @@ function makeMockDevice(opt = {}) {
     E("MOTION", ["PHASR", "FLANG", "CHOR", "WOBBL"], 0), D("BLEND", F.PCT, 0, 127, 0),   /* the mix through four stages */
     E("SPACE", ["ECHO", "VERB", "BOTH"], 0), D("BLEND", F.PCT, 0, 127, 0),               /* (alembic.c; new ids, SKF4 */
     E("GRAIN", ["WOW", "DUST", "CRUSH", "FILTR"], 0), D("BLEND", F.PCT, 0, 127, 0),     /* holds them by GSID) */
+    E("MEDIUM", ["CASST", "TAPE", "VHS", "VINYL"], 0), D("BLEND", F.PCT, 0, 127, 0),   /* 36 .. 39: ALEMBIC 3 */
+    D("WEAR", F.PCT, 0, 127, 64), D("WOW", F.PCT, 0, 127, 64),
   ];
   const NONE = D("-", F.INT, 0, 0, 0);
   const RATIO = [".5", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "14", "16"];
@@ -2602,7 +2604,7 @@ function makeMockDevice(opt = {}) {
   for (let k = 0; k < 8; k++) TP.push(D("TUNE", F.SEMI, -8, 7, 0));   /* 157..164 TUNE, */
   for (let k = 0; k < 8; k++) TP.push(D("DECAY", F.INT, -4, 3, 0));   /* 165..172 DECAY; */
   for (let k = 0; k < 16; k++) TP.push(D("BODY", F.INT, -4, 4, 0));   /* 173..188 every lane's BODY */
-  const P_COUNT = 197, G_COUNT = 36, NSTEP = 64, P_E0 = 189, G_ENGSEL = 20, P_SLCR = 45;
+  const P_COUNT = 197, G_COUNT = 40, NSTEP = 64, P_E0 = 189, G_ENGSEL = 20, P_SLCR = 45;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const enumOrig = (d, v) => d.fmt === F.ENUM && d.names ? aliasOf(d.names, v - d.min) + d.min : v;   /* params.c enum_orig */
   /* six tracks (firmware v3; Skiff phase 6), a synth part each; engine / preset / p / step below are the selected track's */
