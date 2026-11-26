@@ -181,6 +181,7 @@ static const preset_t ANALOG_PRESETS[] = {
 };
 
 static const engine_t ENG_ANALOG = {
+    .keep = 0x03,                 /* ((Vallée) as SPAMPY's voice.c keeps on a retrigger or a steal: the filter (s[0], s[1]); none: a click */
     .name = "ANALOG",
     .page_title = {"OSC", "FLT"},
     .edit = {

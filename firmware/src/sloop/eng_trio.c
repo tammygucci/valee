@@ -375,6 +375,7 @@ static const preset_t TRIO_PRESETS[] = {
 };
 
 static const engine_t ENG_TRIO = {
+    .keep = 0x13,                 /* ((Vallée) as SPAMPY's voice.c keeps on a retrigger or a steal: the filter (s[0], s[1]), the sample waiting for its step corrections (s[4]); none: a click */
     .name = "TRIO",
     .page_title = {"OSC", "TONE"},
     .edit = {

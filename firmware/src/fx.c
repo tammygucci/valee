@@ -220,19 +220,28 @@ static void track_dist(track_t *t, int32_t *b, uint32_t n)
 #define LIM_T 18000
 #define LIM_HOLD 48u                    /* (a held bass keeps one gain: no whistle at its pitch) blocks after a peak */
 #define LIM_REL 11                      /* the release after the hold: ~46 ms */
+#define LV_ATT 5                        /* ((Vallée) the leveller (lim_block): up in ~32 blocks (23 ms), */
+#define LV_REL 12                       /* down in ~4096 (3 s) */
+#define LV_PAD 18403                    /* ((Vallée) the mix into the limiter -5 dB (Q15). With SPAMPY's levels (its kicks peak
+                                         * near full scale) and MASTER past half, the limiter took 4 .. 15 dB and swung ~5 dB
+                                         * on every beat (two PROPHET sounds and a kick: "everything ducks"); with the pad and
+                                         * the leveller ~1 .. 2 dB, for ~1 dB less loudness (above half, MASTER mostly drove
+                                         * the limiter) */
 typedef struct {
     int32_t dl[CTL], dr[CTL];           /* the mix of the last block (the delay), Q22 */
     uint32_t w;                         /* its oldest sample (the next out) */
     int32_t env;                        /* the peak the gain fits under LIM_T (LIM_T: none), Q15 */
     int32_t g;                          /* the gain at the end of the last block, Q15 (32768: 1) */
     uint32_t hold;                      /* blocks before the release starts */
+    int32_t slow;                       /* ((Vallée) the leveller's: the mix's level held over ~1.5 s, Q15 (LIM_T: none) */
 } lim_t;
-static lim_t lim_dac = {.env = LIM_T, .g = 32768};
+static lim_t lim_dac = {.env = LIM_T, .g = 32768, .slow = LIM_T};
 static void lim_reset(void)             /* (power-on: the tests' runs compare) */
 {
     memset(&lim_dac, 0, sizeof lim_dac);
     lim_dac.env = LIM_T;
     lim_dac.g = 32768;
+    lim_dac.slow = LIM_T;
 }
 /* MENU > USB LEVEL FIXED (for #42: record over USB with the speaker turned down): the mix goes to the master (master_block) at the
  * full MASTER level, USB audio takes that (audio.c uac_tap), and only then does MASTER scale what the DAC gets
@@ -362,6 +371,17 @@ static void lim_block(lim_t *s, int32_t *l, int32_t *r, uint32_t n)
     if (pk > e)
         e = pk, s->hold = LIM_HOLD;
     s->env = e;
+    /* ((Vallée) the leveller: the peaks' level followed up in ~23 ms and down over ~3 s: a mix that stays hot
+     * (chords, a bass, a kick on every beat) comes down smoothly and stays down, and the fast stage only takes what
+     * pokes over it, instead of the whole mix ducked on every hit and let up between (SPAMPY's alone: pumping) */
+    if (pk > s->slow)
+        s->slow += (pk - s->slow) >> LV_ATT;
+    else if (s->slow > LIM_T)
+        s->slow -= ((s->slow - LIM_T) >> LV_REL) + 1;
+    if (s->slow < LIM_T)
+        s->slow = LIM_T;
+    if (s->slow > e)
+        e = s->slow;
     g1 = e > LIM_T ? (int32_t)(((uint32_t)LIM_T << 15) / (uint32_t)e) : 32768;
     s->g = g1;
     dg = (g1 - g0) / (int32_t)(n ? n : 1u);             /* (towards 0: the gain never above both ends' bound) */
@@ -397,8 +417,11 @@ static inline int32_t knee22(int32_t x)
 static __attribute__((noinline)) void master_block(int32_t *l, int32_t *r, int32_t *out, uint32_t n)
 {
     uint32_t i;
-    for (i = 0; i < n; i++)
+    for (i = 0; i < n; i++) {
         master_pre(&l[i], &r[i]);
+        l[i] = (int32_t)(((int64_t)l[i] * LV_PAD) >> 15);   /* ((Vallée) 5 dB of headroom into the limiter */
+        r[i] = (int32_t)(((int64_t)r[i] * LV_PAD) >> 15);
+    }
     lim_block(&lim_dac, l, r, n);
     for (i = 0; i < n; i++) {
         int32_t a = knee22(l[i]), b = knee22(r[i]);

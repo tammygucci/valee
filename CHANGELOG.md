@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.2
+
+- **No more ducking**: with the volume past half, the master limiter pulled the whole mix down 4 to 15 dB and let it
+  back up on every beat, so everything pumped when a kick, a bass and chords hit together. It now has 5 dB more
+  headroom and a slow levelling stage before it: the pumping is about a third of what it was, for about 1 dB less
+  loudness (past half, the volume knob mostly made the limiter work harder).
+- **No click when a note restarts a ringing voice**: ANALOG, DIGITAL, LOFI, TRIO and PHASE now carry their oscillators
+  and filters over (legato basses, fast notes, overlapping chords), as SPAMPY does.
+
 ## 1.0.1
 
 - **ALEMBIC 3 (MEDIUM) fixed**: cassette, tape, VHS and vinyl clipped the whole song into distortion (their saturation

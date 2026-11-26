@@ -213,6 +213,7 @@ static const preset_t LOFI_PRESETS[] = {
 };
 
 static const engine_t ENG_LOFI = {
+    .keep = 0x11,                 /* ((Vallée) as SPAMPY's voice.c keeps on a retrigger or a steal: the held sample and the low-pass (s[0], s[4]); none: a click */
     .name = "LOFI",
     .page_title = {"CHIP", "MOTN"},
     .edit = {

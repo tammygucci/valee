@@ -141,6 +141,7 @@ static const preset_t DIGITAL_PRESETS[] = {
 };
 
 static const engine_t ENG_DIGITAL = {
+    .keep = 0xE0,                 /* ((Vallée) as SPAMPY's voice.c keeps on a retrigger or a steal: the feedback history and op 4's phase (s[5..7]); the modulator envelope restarts; none: a click */
     .name = "DIGITAL",
     .page_title = {"OPS", "MOD"},
     .edit = {
